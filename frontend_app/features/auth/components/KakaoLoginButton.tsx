@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   image: {
-    width: 280,
-    height: 60,
+    width: 300,
+    height: 45,
   },
 });

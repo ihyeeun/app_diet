@@ -20,12 +20,12 @@ export default function KakaoLogin() {
     if (redirectResult.type === "code") {
       console.log("Kakao authorization code:", redirectResult.code);
       router.replace({
-        pathname: "/",
+        pathname: "/(tabs)/home",
         params: { authCode: redirectResult.code },
       });
     } else {
       router.replace({
-        pathname: "/",
+        pathname: "/(auth)/login",
         params: { authError: redirectResult.error },
       });
     }
@@ -43,7 +43,7 @@ export default function KakaoLogin() {
   }
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <WebView
         source={{ uri: kakaoAuthUrl }}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}

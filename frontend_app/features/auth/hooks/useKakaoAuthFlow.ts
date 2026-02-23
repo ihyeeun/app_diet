@@ -21,14 +21,14 @@ export function useKakaoAuthFlow() {
     if (typeof params.authCode === "string" && params.authCode.length > 0) {
       setPendingCode(params.authCode);
       setAuthError(null);
-      router.replace("/");
+      router.replace("/login");
       return;
     }
 
     if (typeof params.authError === "string" && params.authError.length > 0) {
       setAuthError(params.authError);
       setPendingCode(null);
-      router.replace("/");
+      router.replace("/login");
     }
   }, [params.authCode, params.authError, router]);
 
@@ -85,7 +85,7 @@ export function useKakaoAuthFlow() {
 
     setAuthError(null);
     setPendingCode(null);
-    router.push("/login");
+    router.push("/kakaoLogin");
   }, [router]);
 
   const clearSession = useCallback(() => {
