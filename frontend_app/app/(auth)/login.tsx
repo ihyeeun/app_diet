@@ -1,15 +1,22 @@
 import React from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { useKakaoAuthFlow } from "@/features/auth/hooks/useKakaoAuthFlow";
 import { KakaoLoginButton } from "@/features/auth/components/KakaoLoginButton";
+import { AppleLoginButton } from "@/features/auth/components/AppleLoginButton";
 
 export default function LoginPage() {
-  const { authError, isExchangingCode, session, startKakaoLogin, clearSession } =
-    useKakaoAuthFlow();
+  const { authError, isExchangingCode, session, startKakaoLogin } = useKakaoAuthFlow();
+
+  const startAppleLogin = React.useCallback(() => {
+    Alert.alert("안내", "애플 로그인 연동은 준비 중입니다.");
+  }, []);
 
   return (
     <View style={styles.container}>
-      <KakaoLoginButton onPress={startKakaoLogin} />
+      <View style={styles.socialButtonGroup}>
+        <KakaoLoginButton onPress={startKakaoLogin} />
+        <AppleLoginButton onPress={startAppleLogin} />
+      </View>
 
       {!!isExchangingCode && <Text style={styles.infoText}>code를 토큰으로 교환 중입니다...</Text>}
       {!!authError && <Text style={styles.errorText}>error: {authError}</Text>}
@@ -19,8 +26,6 @@ export default function LoginPage() {
       {!!session?.refreshToken && (
         <Text style={styles.infoText}>refresh token도 수신되었습니다.</Text>
       )}
-
-      <Button title={"로그인 세션 초기화"} onPress={clearSession} />
     </View>
   );
 }
@@ -28,13 +33,12 @@ export default function LoginPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  fallbackContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  socialButtonGroup: {
     gap: 12,
-    paddingHorizontal: 16,
+    alignItems: "center",
   },
   successText: {
     color: "#1e7e34",
