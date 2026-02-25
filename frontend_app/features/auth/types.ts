@@ -1,8 +1,4 @@
-export type LoginSession = {
+export type Tokens = {
   accessToken: string;
-  refreshToken?: string;
+  refreshToken: string;
 };
-
-export type KakaoRedirectResult =
-  | { type: "code"; code: string }
-  | { type: "error"; error: string };

@@ -1,12 +1,10 @@
 import React from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
-import { useKakaoAuthFlow } from "@/features/auth/hooks/useKakaoAuthFlow";
+import { Alert, StyleSheet, View } from "react-native";
 import { KakaoLoginButton } from "@/features/auth/components/KakaoLoginButton";
 import { AppleLoginButton } from "@/features/auth/components/AppleLoginButton";
+import { router } from "expo-router";
 
 export default function LoginPage() {
-  const { authError, isExchangingCode, session, startKakaoLogin } = useKakaoAuthFlow();
-
   const startAppleLogin = React.useCallback(() => {
     Alert.alert("안내", "애플 로그인 연동은 준비 중입니다.");
   }, []);
@@ -14,18 +12,9 @@ export default function LoginPage() {
   return (
     <View style={styles.container}>
       <View style={styles.socialButtonGroup}>
-        <KakaoLoginButton onPress={startKakaoLogin} />
+        <KakaoLoginButton onPress={() => router.push("/kakaoLogin")} />
         <AppleLoginButton onPress={startAppleLogin} />
       </View>
-
-      {!!isExchangingCode && <Text style={styles.infoText}>code를 토큰으로 교환 중입니다...</Text>}
-      {!!authError && <Text style={styles.errorText}>error: {authError}</Text>}
-      {!!session?.accessToken && (
-        <Text style={styles.successText}>로그인 완료 (access token 수신)</Text>
-      )}
-      {!!session?.refreshToken && (
-        <Text style={styles.infoText}>refresh token도 수신되었습니다.</Text>
-      )}
     </View>
   );
 }
