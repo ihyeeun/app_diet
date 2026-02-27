@@ -1,13 +1,5 @@
 import type { ExpoConfig } from "expo/config";
 
-const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY;
-
-if (!kakaoNativeAppKey) {
-  throw new Error(
-    "Missing EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY. Set it in frontend_app/.env."
-  );
-}
-
 const config: ExpoConfig = {
   name: "frontend_app",
   slug: "frontend_app",
@@ -20,6 +12,9 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.example",
+    config: {
+      usesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {
@@ -47,31 +42,6 @@ const config: ExpoConfig = {
         backgroundColor: "#ffffff",
         dark: {
           backgroundColor: "#000000",
-        },
-      },
-    ],
-    [
-      "expo-build-properties",
-      {
-        android: {
-          extraMavenRepos: [
-            "https://devrepo.kakao.com/nexus/content/groups/public/",
-          ],
-        },
-      },
-    ],
-    [
-      "@react-native-kakao/core",
-      {
-        nativeAppKey: kakaoNativeAppKey,
-        android: {
-          authCodeHandlerActivity: true,
-          followChannelHandlerActivity: true,
-          forwardKakaoLinkIntentFilterToMainActivity: true,
-        },
-        ios: {
-          handleKakaoOpenUrl: true,
-          naviApplicationQuerySchemes: true,
         },
       },
     ],
