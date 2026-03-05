@@ -1,6 +1,7 @@
 /* 전역 기본값 */
-
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -9,7 +10,6 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  font-family: pretendard;
 }
 
 html,
@@ -18,14 +18,61 @@ body {
 }
 
 #root {
-  width: min(100%, 375px);
+  /* width: min(100%, 375px); */
   min-height: 100dvh;
   margin: 0 auto;
   isolation: isolate;
   display: flex;
   flex-direction: column;
+  padding: 0 20px;
 }
 
 body {
   position: relative;
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+p {
+  margin: 0;
+  font-size: var(--fs-body1);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-regular);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+h3 {
+  font-size: var(--fs-h3);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
+}
+
+h4 {
+  font-size: var(--fs-h4);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-regular);
 }
