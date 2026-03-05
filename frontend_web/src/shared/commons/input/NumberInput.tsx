@@ -1,8 +1,7 @@
-import { Field } from "@base-ui/react/field";
 import { Input } from "@base-ui/react/input";
+import styles from "./NumberInput.module.css";
 
 type Props = {
-  label: string;
   value?: number;
   onChange: (v?: number) => void;
   placeholder?: string;
@@ -10,12 +9,17 @@ type Props = {
   max?: number;
   step?: number;
   unit?: string;
-  description?: string;
-  errorText?: string; // 유효성 실패 시 메시지
+  inputMode?: "numeric" | "decimal";
 };
 
+function clamp(n: number, min?: number, max?: number) {
+  let v = n;
+  if (min !== undefined) v = Math.max(min, v);
+  if (max !== undefined) v = Math.min(max, v);
+  return v;
+}
+
 export function NumberInput({
-  label,
   value,
   onChange,
   placeholder,
@@ -23,35 +27,44 @@ export function NumberInput({
   max,
   step,
   unit,
-  description,
-  errorText,
+  inputMode = "decimal",
 }: Props) {
   return (
-    <Field.Root>
-      <Field.Label>{label}</Field.Label>
+    <div className={styles.inputBox}>
+      <Input
+        className={styles.input}
+        type="number"
+        inputMode={inputMode}
+        value={value ?? ""}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => {
+          const raw = e.target.value;
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Input
-          type="number"
-          inputMode="decimal"
-          value={value ?? ""}
-          placeholder={placeholder}
-          min={min}
-          max={max}
-          step={step}
-          onChange={(e) => {
-            const raw = e.target.value;
-            if (raw === "") return onChange(undefined);
-            const num = Number(raw);
-            if (!Number.isNaN(num)) onChange(num);
-          }}
-          style={{ fontSize: 16 }}
-        />
-        {unit && <span>{unit}</span>}
-      </div>
+          if (raw === "") return onChange(undefined);
 
-      {description && <Field.Description>{description}</Field.Description>}
-      {errorText && <Field.Error>{errorText}</Field.Error>}
-    </Field.Root>
+          const num = Number(raw);
+          if (!Number.isNaN(num)) {
+            onChange(Number(num.toFixed(1)));
+          }
+        }}
+        onBlur={(e) => {
+          const raw = e.target.value;
+          if (raw === "") return;
+
+          const num = Number(raw);
+          if (Number.isNaN(num)) return;
+
+          const fixed = clamp(num, min, max);
+
+          // 범위 밖이었으면 값 보정
+          if (fixed !== num) onChange(fixed);
+        }}
+      />
+
+      {unit && <span className={styles.unit}>{unit}</span>}
+    </div>
   );
 }
