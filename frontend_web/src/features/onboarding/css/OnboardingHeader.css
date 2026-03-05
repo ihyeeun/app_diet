@@ -1,0 +1,34 @@
+.onboarding-header {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0px;
+  gap: 10px;
+}
+
+.onboarding-back {
+  border: 0;
+  background: none;
+  margin: 0;
+  padding: 0;
+  text-align: start;
+  cursor: pointer;
+}
+
+.onboarding-progress {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  align-items: center;
+}
+
+.progress-segment {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e5e5;
+  transition: background 0.25s ease;
+}
+
+.progress-segment.filled {
+  background: rgba(0, 0, 0, 0.55);
+}
