@@ -33,10 +33,9 @@ export function BaseAlertModal({
                 {description}
               </AlertDialog.Description>
             ) : null}
-
-            <div className="modal-actions" data-actions={actionCount}>
-              {children}
-            </div>
+          </div>
+          <div className="modal-actions" data-actions={actionCount}>
+            {children}
           </div>
         </AlertDialog.Popup>
       </AlertDialog.Portal>
