@@ -32,7 +32,7 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
             value={data.protein}
             onChange={(v) => update({ protein: v })}
           />
-          <NutrientCard label="지방" value={data.fat} onChange={(v) => update({ fat: v })} />{" "}
+          <NutrientCard label="지방" value={data.fat} onChange={(v) => update({ fat: v })} />
         </div>
       </div>
     </section>
