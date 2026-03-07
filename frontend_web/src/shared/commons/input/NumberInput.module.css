@@ -9,7 +9,12 @@
   outline: none;
   text-align: right;
   font-size: 40px;
+  font-weight: var(--font-weight-medium);
   width: 100%;
+}
+
+input::placeholder {
+  color: var(--gray-600);
 }
 
 /* Chrome / Safari / Edge spinner 제거 */
@@ -20,7 +25,11 @@
 }
 
 .unit {
-  margin-left: 6px;
+  margin-left: 4px;
   font-size: 40px;
-  color: #888;
+  color: var(--gray-600);
+}
+
+.inputBox:has(input:not(:placeholder-shown)) .unit {
+  color: var(--gray-1300);
 }

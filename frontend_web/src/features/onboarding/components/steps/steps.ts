@@ -9,6 +9,7 @@ import StepSubscribedCode from "./StepSubscribedCode";
 import type { ComponentType } from "react";
 import StepGoalKalories from "./StepGoalKalories";
 import StepNutrient from "./StepNutrient";
+import { isValidBirthYear } from "@/shared/commons/picker/yearOptions";
 
 export const STEP_COMPONENTS: Record<StepId, ComponentType<StepComponentProps>> = {
   gender: StepGender,
@@ -31,8 +32,7 @@ export const STEPS: StepMeta[] = [
   {
     id: "birthYear",
     title: "출생연도",
-    // isValid: (d) => !!d.birthYear,
-    isValid: () => true,
+    isValid: (d) => isValidBirthYear(d.birthYear),
   },
   {
     id: "body",

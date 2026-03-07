@@ -2,9 +2,12 @@ import type { StepComponentProps } from "@/features/onboarding/onboarding.types"
 
 export default function StepActivity({ data, update }: StepComponentProps) {
   return (
-    <div>
-      <h2>평소에 얼마나 움직이시나요?</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <section>
+      <div className="onboarding-title">
+        <h2>평소에 얼마나 움직이시나요?</h2>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0px 5px" }}>
         <ActivityCard
           selected={data.activityLevel === 1}
           onClick={() => update({ activityLevel: 1 })}
@@ -30,7 +33,7 @@ export default function StepActivity({ data, update }: StepComponentProps) {
           description="하루에 12,000보 이상 걸어요"
         />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -54,16 +57,18 @@ function ActivityCard({
       style={{
         padding: "16px 20px",
         width: "100%",
+        height: "82px",
         borderRadius: 8,
         border: selected ? "1px solid #FD8F2E" : "1px solid #e5e5e5",
         background: selected ? "#fd8f2e20" : "#fff",
         textAlign: "left",
         cursor: "pointer",
+        color: "black",
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <p style={{ margin: 0 }}>{title}</p>
-        <p style={{ margin: 0 }}>{description}</p>
+        <p style={{ fontSize: 17, fontWeight: 600 }}>{title}</p>
+        <p style={{ fontSize: 15, fontWeight: 500, color: "#626262" }}>{description}</p>
       </div>
     </button>
   );

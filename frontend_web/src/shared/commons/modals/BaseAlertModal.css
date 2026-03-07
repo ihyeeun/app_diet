@@ -18,18 +18,21 @@
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .modal-surface {
   /* 서비스가 정한 기본 그림자 */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .modal-title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
   text-align: center;
 }
@@ -40,9 +43,7 @@
   text-align: center;
 }
 
-/* ✅ actions 기본은 grid로 두고 개수에 따라 분기 */
 .modal-actions {
-  margin-top: 16px;
   display: grid;
   gap: 8px;
 }

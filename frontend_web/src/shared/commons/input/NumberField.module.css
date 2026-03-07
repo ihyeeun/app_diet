@@ -48,6 +48,7 @@
   user-select: none;
   background: none;
   cursor: pointer;
+  color: black;
 
   @media (hover: hover) {
     &:hover {

@@ -1,4 +1,5 @@
 import Picker from "react-mobile-picker";
+import type { TouchEvent } from "react";
 import "./WheelPicker.css";
 
 type Props = {
@@ -18,8 +19,16 @@ export default function WheelPicker({
   height = 180,
   itemHeight = 44,
 }: Props) {
+  const preventBackgroundScroll = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.cancelable) event.preventDefault();
+  };
+
   return (
-    <div className="wheelPicker" style={{ height }}>
+    <div
+      className="wheelPicker"
+      style={{ height }}
+      onTouchMoveCapture={preventBackgroundScroll}
+    >
       <Picker
         value={{ col: value }}
         onChange={(val) => onChange(val.col)}

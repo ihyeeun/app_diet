@@ -30,14 +30,14 @@ body {
 body {
   position: relative;
   font-family: var(--font-family-base);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
 }
 
 p {
   margin: 0;
   font-size: var(--fs-body1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-regular);
 }
@@ -51,28 +51,28 @@ h4 {
 
 h1 {
   font-size: var(--fs-h1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 h2 {
   font-size: var(--fs-h2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-semibold);
 }
 
 h3 {
   font-size: var(--fs-h3);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-semibold);
 }
 
 h4 {
   font-size: var(--fs-h4);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-regular);
 }

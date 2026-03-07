@@ -4,9 +4,12 @@ import { Field } from "@base-ui/react";
 
 export default function StepBody({ data, update }: StepComponentProps) {
   return (
-    <div>
-      <h2>키 / 몸무게가 몇인가요?</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <section>
+      <div className="onboarding-title">
+        <h2>키 / 몸무게가 몇인가요?</h2>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0px 5px" }}>
         <InputCard
           label="키"
           value={data.heightCm}
@@ -29,7 +32,7 @@ export default function StepBody({ data, update }: StepComponentProps) {
           unit="kg"
         />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -47,7 +50,6 @@ type InputCardProps = {
 
 export function InputCard({
   label,
-  description,
   value,
   onChange,
   placeholder,
@@ -65,14 +67,11 @@ export function InputCard({
         background: "#fff",
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: 6,
+        height: "112px",
       }}
     >
-      <Field.Label style={{ fontSize: 18 }}>{label}</Field.Label>
-
-      {description && (
-        <Field.Description style={{ fontSize: 14, color: "#888" }}>{description}</Field.Description>
-      )}
+      <Field.Label style={{ fontSize: 18, fontWeight: 500 }}>{label}</Field.Label>
 
       <NumberInput
         value={value}

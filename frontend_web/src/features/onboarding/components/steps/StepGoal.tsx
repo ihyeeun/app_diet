@@ -2,8 +2,10 @@ import type { StepComponentProps } from "@/features/onboarding/onboarding.types"
 
 export default function StepGoal({ data, update }: StepComponentProps) {
   return (
-    <div>
-      <h2>이루고 싶은 목표가 무엇인가요?</h2>
+    <section>
+      <div className="onboarding-title">
+        <h2>이루고 싶은 목표가 무엇인가요?</h2>
+      </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <GoalCard
@@ -25,7 +27,7 @@ export default function StepGoal({ data, update }: StepComponentProps) {
           description="근육량을 늘리고 싶어요"
         />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -49,16 +51,18 @@ function GoalCard({
       style={{
         padding: "16px 20px",
         width: "100%",
+        height: "82px",
         borderRadius: 8,
         border: selected ? "1px solid #FD8F2E" : "1px solid #e5e5e5",
         background: selected ? "#fd8f2e20" : "#fff",
         textAlign: "left",
         cursor: "pointer",
+        color: "black",
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <p style={{ margin: 0 }}>{title}</p>
-        <p style={{ margin: 0 }}>{description}</p>
+        <p style={{ fontSize: 17, fontWeight: 600 }}>{title}</p>
+        <p style={{ fontSize: 15, fontWeight: 500, color: "#626262" }}>{description}</p>
       </div>
     </button>
   );

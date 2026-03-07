@@ -9,18 +9,21 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
       : undefined;
 
   return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "16px 0px" }}>
+    <section>
+      <div
+        className="onboarding-title"
+        style={{ display: "flex", flexDirection: "column", gap: 4 }}
+      >
         <h2>목표 몸무게가 몇인가요?</h2>
         {diff !== undefined && (
-          <p style={{ fontSize: 16 }}>
+          <p style={{ fontSize: 16, fontWeight: 500, color: "#4c4c4c" }}>
             현재 몸무게 기준 {diff > 0 ? "+" : ""}
             {diff}kg
           </p>
         )}
       </div>
 
-      <Field.Root>
+      <Field.Root style={{ padding: "0px 5px" }}>
         <div
           style={{
             padding: "16px 20px",
@@ -42,6 +45,6 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
           />
         </div>
       </Field.Root>
-    </div>
+    </section>
   );
 }

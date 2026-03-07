@@ -63,7 +63,6 @@ export function NumberInput({
           if (fixed !== num) onChange(fixed);
         }}
       />
-
       {unit && <span className={styles.unit}>{unit}</span>}
     </div>
   );

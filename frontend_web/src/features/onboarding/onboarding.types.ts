@@ -40,5 +40,5 @@ export type StepMeta = {
   id: StepId;
   title: string;
   isValid: (data: OnboardingData) => boolean;
-  nextText?: string; // Footer 커스터마이징
+  nextText?: string;
 };

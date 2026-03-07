@@ -10,15 +10,17 @@ type Props = {
 export default function OnboardingHeader({ stepIndex, total, onPrev }: Props) {
   return (
     <header className="onboarding-header">
-      <button
-        type="button"
-        className="onboarding-back"
-        onClick={onPrev}
-        disabled={stepIndex === 0}
-        aria-label="이전"
-      >
-        <ChevronLeft />
-      </button>
+      <div className="onboarding-navigation">
+        <button
+          type="button"
+          className="onboarding-back"
+          onClick={onPrev}
+          disabled={stepIndex === 0}
+          aria-label="이전"
+        >
+          <ChevronLeft size={24} />
+        </button>
+      </div>
 
       <div className="onboarding-progress">
         {Array.from({ length: total }).map((_, i) => (

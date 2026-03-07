@@ -1,6 +1,9 @@
 .wheelPicker {
   position: relative;
   width: 100%;
+  /* 모바일에서 picker 제스처가 상위 스크롤로 체이닝되는 것 방지 */
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 
 .wheelPicker__item {

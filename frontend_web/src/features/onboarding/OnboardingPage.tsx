@@ -83,7 +83,6 @@ export default function OnboardingPage() {
 
       <main className="onboarding-content">
         <StepComponent data={userData} update={update} />
-        <pre className="onboarding-debug">{JSON.stringify(userData, null, 2)}</pre>
       </main>
 
       <footer className="onboarding-footer">

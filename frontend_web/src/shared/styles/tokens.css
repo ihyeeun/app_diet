@@ -9,9 +9,9 @@
     "Pretendard", system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo",
     "Malgun Gothic", sans-serif;
 
-  --line-height-140: 1.4;
+  --line-height-145: 1.45;
   /* -0.5% = -0.005em */
-  --letter-spacing-tight: -0.005em;
+  --letter-spacing-tight: -0.004em;
 
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -97,112 +97,112 @@ body {
  * ========================= */
 .typo-h1-bold {
   font-size: var(--fs-h1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 .typo-h2-bold {
   font-size: var(--fs-h2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 .typo-h3-bold {
   font-size: var(--fs-h3);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 .typo-h3-semibold {
   font-size: var(--fs-h3);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-semibold);
 }
 
 .typo-h4-bold {
   font-size: var(--fs-h4);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 .typo-h4-regular {
   font-size: var(--fs-h4);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-regular);
 }
 
 .typo-body1-bold {
   font-size: var(--fs-body1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 .typo-body1-semibold {
   font-size: var(--fs-body1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-semibold);
 }
 
 .typo-body1-medium {
   font-size: var(--fs-body1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-medium);
 }
 
 .typo-body1-regular {
   font-size: var(--fs-body1);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-regular);
 }
 
 .typo-body2-bold {
   font-size: var(--fs-body2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
 }
 
 .typo-body2-semibold {
   font-size: var(--fs-body2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-semibold);
 }
 
 .typo-body2-medium {
   font-size: var(--fs-body2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-medium);
 }
 
 .typo-body2-regular {
   font-size: var(--fs-body2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-regular);
 }
 
 .typo-caption-medium {
   font-size: var(--fs-caption);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-medium);
 }
 
 .typo-caption-regular {
   font-size: var(--fs-caption);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-regular);
 }

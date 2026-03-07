@@ -11,7 +11,9 @@ export default function StepGender({ data, update }: StepComponentProps) {
 
   return (
     <section>
-      <h2>성별이 어떻게 되시나요?</h2>
+      <div className="onboarding-title">
+        <h2>성별이 어떻게 되시나요?</h2>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <GenderCard
@@ -55,7 +57,7 @@ function GenderCard({
         color: "black",
       }}
     >
-      <div style={{ fontSize: 16, fontWeight: 700 }}>{label}</div>
+      <div style={{ fontSize: 17, fontWeight: 600 }}>{label}</div>
     </button>
   );
 }
