@@ -31,11 +31,11 @@ export function CheckButtonModal({
           <Button
             variant="primary"
             disabled={confirmDisabled}
+            {...props}
             onClick={(e) => {
               onConfirm?.();
               props.onClick?.(e);
             }}
-            {...props}
           >
             {confirmText}
           </Button>
