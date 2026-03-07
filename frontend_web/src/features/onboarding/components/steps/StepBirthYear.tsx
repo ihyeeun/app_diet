@@ -1,0 +1,34 @@
+import { useEffect } from "react";
+import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import WheelPicker from "@/shared/commons/picker/WheelPicker";
+import {
+  getBirthYearRange,
+  isValidBirthYear,
+  makeYearOptions,
+} from "@/shared/commons/picker/yearOptions";
+
+export default function StepBirthYear({ data, update }: StepComponentProps) {
+  const { min: minYear, max: maxYear } = getBirthYearRange();
+  const years = makeYearOptions({ from: maxYear, count: maxYear - minYear + 1 }).map(String);
+  const selectedYear = isValidBirthYear(data.birthYear) ? data.birthYear : maxYear;
+
+  useEffect(() => {
+    if (data.birthYear === selectedYear) return;
+    update({ birthYear: selectedYear });
+  }, [data.birthYear, selectedYear, update]);
+
+  return (
+    <section>
+      <div className="onboarding-title">
+        <h2>출생 연도를 알려주세요</h2>
+      </div>
+
+      <WheelPicker
+        value={String(selectedYear)}
+        options={years}
+        suffix="년"
+        onChange={(v) => update({ birthYear: Number(v) })}
+      />
+    </section>
+  );
+}

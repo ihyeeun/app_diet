@@ -1,0 +1,208 @@
+/* Pretendard (원하면 @import 말고 local/font-face 방식으로 바꿔도 됨) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css");
+
+:root {
+  /* =========================
+   * Typography
+   * ========================= */
+  --font-family-base:
+    "Pretendard", system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+
+  --line-height-145: 1.45;
+  /* -0.5% = -0.005em */
+  --letter-spacing-tight: -0.004em;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Font sizes */
+  --fs-h1: 32px;
+  --fs-h2: 24px;
+  --fs-h3: 20px;
+  --fs-h4: 18px;
+  --fs-body1: 16px;
+  --fs-body2: 14px;
+  --fs-caption: 12px;
+
+  /* =========================
+   * Colors - Primary (orange)
+   * ========================= */
+  --orange-50: #fffee8;
+  --orange-100: #fffac4;
+  --orange-200: #fffac4;
+  --orange-300: #fff173;
+  --orange-400: #fdec52;
+  --orange-500: #fbe72f;
+  --orange-600: #ffdd35;
+  --orange-700: #ffc72f;
+  --orange-800: #ffae27;
+  --orange-850: #ff9f4a;
+  --orange-900: #ff8519;
+  --orange-950: #ff7700;
+
+  /* Etc */
+  --gray-50: #4b311a;
+
+  /* =========================
+   * Gray Scale
+   * ========================= */
+  --gray-100: #ffffff;
+  --gray-200: #fafafa;
+  --gray-300: #f5f5f5;
+  --gray-400: #f0f0f0;
+  --gray-500: #d9d9d9;
+  --gray-600: #bfbfbf;
+  --gray-700: #8c8c8c;
+  --gray-800: #595959;
+  --gray-900: #434343;
+  --gray-1000: #262626;
+  --gray-1100: #1f1f1f;
+  --gray-1200: #141414;
+  --gray-1300: #111111;
+
+  /* =========================
+   * BG
+   * ========================= */
+  --bg-primary: #ffe9d5;
+  --bg-gray: #f8f8f8;
+
+  /* =========================
+   * Status (이미지의 사각형 색상 기준으로 추출한 값)
+   * ========================= */
+  --status-error: #ee6259;
+  --status-warning: #f9dc78;
+  --status-link: #7ebcf1;
+  --status-success: #a1e4a6;
+
+  /* =========================
+   * Border
+   * ========================= */
+  --border-primary: #fd8f2e;
+  --border-gray: #e5e5e5;
+}
+
+/* =========================
+ * Base (선택)
+ * ========================= */
+body {
+  font-family: var(--font-family-base);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* =========================
+ * Typography presets (class)
+ * ========================= */
+.typo-h1-bold {
+  font-size: var(--fs-h1);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.typo-h2-bold {
+  font-size: var(--fs-h2);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.typo-h3-bold {
+  font-size: var(--fs-h3);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.typo-h3-semibold {
+  font-size: var(--fs-h3);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
+}
+
+.typo-h4-bold {
+  font-size: var(--fs-h4);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.typo-h4-regular {
+  font-size: var(--fs-h4);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-regular);
+}
+
+.typo-body1-bold {
+  font-size: var(--fs-body1);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.typo-body1-semibold {
+  font-size: var(--fs-body1);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
+}
+
+.typo-body1-medium {
+  font-size: var(--fs-body1);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-medium);
+}
+
+.typo-body1-regular {
+  font-size: var(--fs-body1);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-regular);
+}
+
+.typo-body2-bold {
+  font-size: var(--fs-body2);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.typo-body2-semibold {
+  font-size: var(--fs-body2);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
+}
+
+.typo-body2-medium {
+  font-size: var(--fs-body2);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-medium);
+}
+
+.typo-body2-regular {
+  font-size: var(--fs-body2);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-regular);
+}
+
+.typo-caption-medium {
+  font-size: var(--fs-caption);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-medium);
+}
+
+.typo-caption-regular {
+  font-size: var(--fs-caption);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-regular);
+}

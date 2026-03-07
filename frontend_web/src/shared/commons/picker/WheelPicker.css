@@ -1,0 +1,27 @@
+.wheelPicker {
+  position: relative;
+  width: 100%;
+  /* 모바일에서 picker 제스처가 상위 스크롤로 체이닝되는 것 방지 */
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.wheelPicker__item {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.wheelPicker__highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-22px); /* itemHeight/2 */
+  height: 44px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}

@@ -1,0 +1,66 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* 화면 중앙에 띄우기 */
+.modal-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: calc(100% - 40px);
+  outline: none;
+  background: #fff;
+
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-surface {
+  /* 서비스가 정한 기본 그림자 */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.modal-description {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.modal-actions {
+  display: grid;
+  gap: 8px;
+}
+
+/* ✅ 1버튼: fullWidth */
+.modal-actions[data-actions="1"] {
+  grid-template-columns: 1fr;
+}
+
+/* ✅ 2버튼: 50:50 */
+.modal-actions[data-actions="2"] {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* (옵션) 3개 이상이면 오른쪽 정렬로 바꾸고 싶다면 */
+.modal-actions[data-actions]:not([data-actions="1"]):not([data-actions="2"]) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
