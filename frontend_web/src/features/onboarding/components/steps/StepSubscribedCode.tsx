@@ -13,6 +13,7 @@ export default function StepSubscribedCode({ data, update }: StepComponentProps)
           type="text"
           inputMode="text"
           placeholder="구독코드"
+          aria-label="구독 코드"
           style={{
             fontSize: 40,
             border: "1px solid #e5e5e5",
