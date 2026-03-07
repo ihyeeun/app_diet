@@ -23,7 +23,7 @@ export default function StepSubscribedCode({ data, update }: StepComponentProps)
             textAlign: "right",
           }}
           className="input"
-          value={data.subscribedCode}
+          value={data.subscribedCode ?? ""}
           onChange={(e) => update({ subscribedCode: e.target.value })}
         />
       </Field.Root>
