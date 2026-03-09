@@ -24,8 +24,9 @@ export default function StepGoalKalories({ data, update }: StepComponentProps) {
       </div>
 
       <Field.Root style={{ padding: "0px 5px" }}>
-        <div
+        <button
           style={{
+            width: "100%",
             padding: "16px 20px",
             borderRadius: "8px",
             border: "1px solid #e5e5e5",
@@ -34,10 +35,11 @@ export default function StepGoalKalories({ data, update }: StepComponentProps) {
             flexDirection: "column",
             textAlign: "end",
           }}
+          type="button"
           onClick={() => setOpen(true)}
         >
           <p style={{ fontSize: 40 }}>{data.goalKalories} kcal</p>
-        </div>
+        </button>
       </Field.Root>
 
       <p style={{ padding: "16px 5px", textAlign: "center", fontSize: 18, fontWeight: "500" }}>

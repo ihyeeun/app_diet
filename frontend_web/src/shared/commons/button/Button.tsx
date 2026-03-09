@@ -34,6 +34,7 @@ export function Button({
   return (
     <BaseButton
       {...props}
+      type={props.type ?? "button"}
       className={
         ["btn", VARIANT_CLASS[variant], SIZE_CLASS[size], fullWidth && "btn--full"]
           .filter(Boolean)

@@ -72,10 +72,13 @@ export function ConfirmModal({
           variant={confirmVariant}
           disabled={confirmDisabled}
           onClick={async () => {
-            await onConfirm();
-            // 성공 시 닫고 싶다면 여기에서 닫아도 되고,
-            // 더 세밀하게 처리하려면 onConfirm 내부에서 닫아도 됨.
-            onOpenChange(false);
+            try {
+              await onConfirm();
+              onOpenChange(false);
+            } catch (error) {
+              // 에러는 onConfirm 내부에서 처리하거나 여기서 처리
+              console.error(error);
+            }
           }}
         >
           {confirmText}
