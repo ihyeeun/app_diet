@@ -1,14 +1,22 @@
 import Picker from "react-mobile-picker";
-import type { TouchEvent } from "react";
+import { useEffect, useRef, useState, type TouchEvent } from "react";
 import "./WheelPicker.css";
 
 type Props = {
-  value: string; // 선택 값 (Picker는 string이 편함)
-  options: string[]; // 표시할 리스트
-  onChange: (v: string) => void; // 변경
-  suffix?: string; // "년" 같은 단위
-  height?: number; // picker 높이
-  itemHeight?: number; // 한 칸 높이
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  suffix?: string;
+  height?: number | string;
+  itemHeight?: number;
+  highlightHeight?: number;
+};
+
+const getToneClassName = (distance: number) => {
+  if (distance === 0) return "wheelPicker__item--active";
+  if (distance === 1) return "wheelPicker__item--near";
+  if (distance === 2) return "wheelPicker__item--mid";
+  return "wheelPicker__item--far";
 };
 
 export default function WheelPicker({
@@ -19,35 +27,58 @@ export default function WheelPicker({
   height = 180,
   itemHeight = 44,
 }: Props) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [measuredHeight, setMeasuredHeight] = useState(typeof height === "number" ? height : 180);
+
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+
+    const el = wrapperRef.current;
+
+    const updateHeight = () => {
+      setMeasuredHeight(el.clientHeight || 180);
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [height]);
+
   const preventBackgroundScroll = (event: TouchEvent<HTMLDivElement>) => {
     if (event.cancelable) event.preventDefault();
   };
 
+  const selectedIndex = options.indexOf(value);
+  const currentIndex = selectedIndex >= 0 ? selectedIndex : 0;
+
   return (
-    <div
-      className="wheelPicker"
-      style={{ height }}
-      onTouchMoveCapture={preventBackgroundScroll}
-    >
+    <div ref={wrapperRef} className="wheelPicker" onTouchMoveCapture={preventBackgroundScroll}>
       <Picker
         value={{ col: value }}
         onChange={(val) => onChange(val.col)}
-        height={height}
+        height={measuredHeight}
         itemHeight={itemHeight}
+        wheelMode="natural"
       >
         <Picker.Column name="col">
-          {options.map((opt) => (
-            <Picker.Item key={opt} value={opt}>
-              <div className="wheelPicker__item">
-                {opt}
-                {suffix ?? ""}
-              </div>
-            </Picker.Item>
-          ))}
+          {options.map((opt, index) => {
+            const toneClassName = getToneClassName(Math.abs(index - currentIndex));
+
+            return (
+              <Picker.Item key={opt} value={opt}>
+                <div className={`wheelPicker__item ${toneClassName}`}>
+                  {opt}
+                  {suffix ?? ""}
+                </div>
+              </Picker.Item>
+            );
+          })}
         </Picker.Column>
       </Picker>
 
-      {/* 가운데 선택 라인 */}
       <div className="wheelPicker__highlight" />
     </div>
   );

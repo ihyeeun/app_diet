@@ -14,7 +14,7 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
         className="onboarding-title"
         style={{ display: "flex", flexDirection: "column", gap: 4 }}
       >
-        <h2>목표 몸무게가 몇인가요?</h2>
+        <h2 className="typo-title1-semibold">목표 몸무게가 몇인가요?</h2>
         {diff !== undefined && (
           <p style={{ fontSize: 16, fontWeight: 500, color: "#4c4c4c" }}>
             현재 몸무게 기준 {diff > 0 ? "+" : ""}

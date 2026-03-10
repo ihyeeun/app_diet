@@ -4,7 +4,7 @@ export default function StepGoal({ data, update }: StepComponentProps) {
   return (
     <section>
       <div className="onboarding-title">
-        <h2>이루고 싶은 목표가 무엇인가요?</h2>
+        <h2 className="typo-title1-semibold">이루고 싶은 목표가 무엇인가요?</h2>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

@@ -15,7 +15,7 @@ export default function StepGoalKalories({ data, update }: StepComponentProps) {
         className="onboarding-title"
         style={{ display: "flex", flexDirection: "column", gap: 4 }}
       >
-        <h2>목표 칼로리를 선택해주세요</h2>
+        <h2 className="typo-title1-semibold">목표 칼로리를 선택해주세요</h2>
         <p style={{ fontSize: 16, fontWeight: 500, color: "#4c4c4c" }}>
           추천하는 목표 칼로리는 ~~kcal예요
           <br />

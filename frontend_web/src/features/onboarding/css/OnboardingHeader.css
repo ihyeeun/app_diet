@@ -1,6 +1,7 @@
 .onboarding-header {
   display: flex;
   flex-direction: column;
+  padding: 0px 25px;
 }
 
 .onboarding-navigation {
@@ -24,7 +25,7 @@
   width: 100%;
   align-items: center;
   height: 12px;
-  padding: 4px 5px;
+  padding: 4px 0px;
 }
 
 .progress-segment {
@@ -36,5 +37,5 @@
 }
 
 .progress-segment.filled {
-  background: var(--orange-850);
+  background: var(--orange-800);
 }

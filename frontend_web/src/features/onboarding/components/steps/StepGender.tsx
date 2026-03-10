@@ -12,7 +12,7 @@ export default function StepGender({ data, update }: StepComponentProps) {
   return (
     <section>
       <div className="onboarding-title">
-        <h2>성별이 어떻게 되시나요?</h2>
+        <h2 className="typo-title1-semibold">성별이 어떻게 되시나요?</h2>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
