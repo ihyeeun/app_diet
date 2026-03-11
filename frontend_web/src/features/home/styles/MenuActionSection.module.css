@@ -39,8 +39,6 @@
   width: 100%;
 }
 
-/*  */
-
 .meal_card_list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

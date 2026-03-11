@@ -46,11 +46,9 @@
   top: 50%;
   transform: translateY(-50%);
   height: var(--wheel-highlight-height, 80px);
-
   border-radius: 8px;
   border: 1px solid #fd8f2e;
   background: #fd8f2e1a;
-
   pointer-events: none;
 }
 
