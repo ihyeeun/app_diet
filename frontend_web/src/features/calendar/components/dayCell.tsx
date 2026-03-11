@@ -25,6 +25,11 @@ export default function DayCell({ day, weekdayLabel, onSelect, compact = false }
       className={classNames}
       onClick={() => onSelect(day.date)}
       aria-pressed={day.isSelected}
+      aria-label={`${day.date.toLocaleDateString("ko-KR", {
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+      })}${day.isToday ? ", 오늘" : ""}${!day.isCurrentMonth ? ", 이번 달 아님" : ""}`}
     >
       {weekdayLabel && (
         <div className="calendar-day-weekday-container">

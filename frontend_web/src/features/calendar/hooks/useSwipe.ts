@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type TouchEvent } from "react";
 
 type UseSwipeParams = {
   onSwipeLeft?: () => void;
@@ -10,13 +10,13 @@ export function useSwipe({ onSwipeLeft, onSwipeRight, threshold = 40 }: UseSwipe
   const startXRef = useRef<number | null>(null);
   const startYRef = useRef<number | null>(null);
 
-  const onTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+  const onTouchStart = (e: TouchEvent<HTMLElement>) => {
     const touch = e.touches[0];
     startXRef.current = touch.clientX;
     startYRef.current = touch.clientY;
   };
 
-  const onTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
+  const onTouchEnd = (e: TouchEvent<HTMLElement>) => {
     if (startXRef.current === null || startYRef.current === null) return;
 
     const touch = e.changedTouches[0];
