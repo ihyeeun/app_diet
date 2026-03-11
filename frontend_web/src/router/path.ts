@@ -6,4 +6,5 @@ export const PATH = {
   COMPARE: "/compare",
   PROFILE: "/profile",
   TERMS: "/terms",
+  MEAL_DETAIL: "/meal-detail",
 };
