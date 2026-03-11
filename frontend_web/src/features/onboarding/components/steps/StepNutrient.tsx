@@ -8,7 +8,7 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
         className="onboarding-title"
         style={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
-        <h2>추천하는 탄단지 비율이에요</h2>
+        <h2 className="typo-title1-semibold">추천하는 탄단지 비율이에요</h2>
         <p style={{ fontSize: 18, fontWeight: 500, color: "#4c4c4c" }}>비율을 수정할 수 있어요</p>
       </div>
       <div

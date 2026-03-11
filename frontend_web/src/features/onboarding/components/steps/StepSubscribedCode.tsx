@@ -6,7 +6,7 @@ export default function StepSubscribedCode({ data, update }: StepComponentProps)
   return (
     <section>
       <div className="onboarding-title">
-        <h2>구독 코드가 있다면 입력해주세요</h2>
+        <h2 className="typo-title1-semibold">구독 코드가 있다면 입력해주세요</h2>
       </div>
       <Field.Root style={{ padding: "0px 5px" }}>
         <Input

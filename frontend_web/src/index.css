@@ -24,22 +24,23 @@ body {
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  padding: 0 20px;
+  padding: 0px;
 }
 
 body {
   position: relative;
   font-family: var(--font-family-base);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-130);
+  letter-spacing: var(--letter-spacing-body);
 }
 
 p {
   margin: 0;
-  font-size: var(--fs-body1);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-regular);
+  font-size: var(--fs-body2);
+  line-height: var(--line-height-130);
+  letter-spacing: var(--letter-spacing-body);
+  font-weight: var(--font-weight-medium);
+  word-break: keep-all;
 }
 
 h1,
@@ -51,28 +52,37 @@ h4 {
 
 h1 {
   font-size: var(--fs-h1);
-  line-height: var(--line-height-145);
+  line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-medium);
 }
 
 h2 {
   font-size: var(--fs-h2);
-  line-height: var(--line-height-145);
+  line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-semibold);
 }
 
 h3 {
   font-size: var(--fs-h3);
-  line-height: var(--line-height-145);
+  line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-semibold);
 }
 
 h4 {
-  font-size: var(--fs-h4);
+  font-size: var(--fs-title1);
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-regular);
+  font-weight: var(--font-weight-semibold);
+}
+
+button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  margin: 0;
+  text-align: start;
 }

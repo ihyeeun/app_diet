@@ -4,6 +4,7 @@
   font-size: 16px;
   cursor: pointer;
   forced-color-adjust: none;
+  text-align: center;
 }
 
 .btn--primary {
@@ -18,7 +19,7 @@
 
 .btn:disabled {
   opacity: 0.6;
-  background: #efeeec;
+  background: var(--gray-300);
   color: black;
   cursor: not-allowed;
 }

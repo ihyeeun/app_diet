@@ -18,15 +18,17 @@ export default function StepBirthYear({ data, update }: StepComponentProps) {
   }, [data.birthYear, selectedYear, update]);
 
   return (
-    <section>
+    <section style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <div className="onboarding-title">
-        <h2>출생 연도를 알려주세요</h2>
+        <h2 className="typo-title1-semibold">출생 연도를 알려주세요</h2>
       </div>
 
       <WheelPicker
         value={String(selectedYear)}
         options={years}
         suffix="년"
+        height={"100%"}
+        itemHeight={80}
         onChange={(v) => update({ birthYear: Number(v) })}
       />
     </section>
