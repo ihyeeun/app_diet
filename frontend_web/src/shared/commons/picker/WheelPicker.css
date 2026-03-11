@@ -16,9 +16,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gray-1100);
+  color: var(--text-normal);
   font-size: var(--wheel-far-font-size, 28px);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
 }
@@ -47,8 +47,8 @@
   transform: translateY(-50%);
   height: var(--wheel-highlight-height, 80px);
   border-radius: 8px;
-  border: 1px solid #fd8f2e;
-  background: #fd8f2e1a;
+  border: 1px solid var(--border-primary);
+  background: var(--interaction-primary);
   pointer-events: none;
 }
 
@@ -78,9 +78,9 @@
 
 .wheelPicker__item--active {
   font-size: 40px;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
-  color: var(--gray-1100);
+  color: var(--text-normal);
   opacity: 1;
 }

@@ -38,7 +38,7 @@
   font-size: var(--fs-h2);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
   margin-right: 4px;
 }
 
@@ -46,8 +46,8 @@
   font-size: 20px;
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-medium);
-  color: var(--gray-1300);
+  font-weight: var(--fw-medium);
+  color: var(--gray-1100);
   margin-right: 8px;
 }
 
@@ -56,12 +56,12 @@
   align-items: baseline;
   gap: 3px;
   font-size: 14px;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
   color: #2e2e2e;
 }
 
 .current {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
   font-size: 18px;
 }
 
@@ -75,7 +75,7 @@
 
 .badge_content_container {
   padding: 6px 16px;
-  background-color: var(--gray-0);
+  background-color: var(--common-0);
   border-radius: 100px;
   width: fit-content;
 }

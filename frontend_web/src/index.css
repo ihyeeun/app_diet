@@ -39,7 +39,7 @@ p {
   font-size: var(--fs-body2);
   line-height: var(--line-height-130);
   letter-spacing: var(--letter-spacing-body);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
   word-break: keep-all;
 }
 
@@ -54,28 +54,28 @@ h1 {
   font-size: var(--fs-h1);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
 }
 
 h2 {
   font-size: var(--fs-h2);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
 }
 
 h3 {
   font-size: var(--fs-h3);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
 }
 
 h4 {
   font-size: var(--fs-title1);
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
 }
 
 button {

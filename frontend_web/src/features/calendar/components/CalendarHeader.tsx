@@ -26,9 +26,11 @@ export default function CalendarHeader({
           onClick={onToggleViewMode}
           aria-label={viewMode === "week" ? "월 달력 펼치기" : "주 달력 접기"}
         >
-          <span className="calendar-title">{formatCalendarHeader(viewDate, viewMode)}</span>
+          <span className="calendar-title typo-title3-semibold">
+            {formatCalendarHeader(viewDate, viewMode)}
+          </span>
           <ChevronDown
-            size={18}
+            size={24}
             className={`calendar-title-icon ${viewMode === "month" ? "is-open" : ""}`}
           />
         </button>

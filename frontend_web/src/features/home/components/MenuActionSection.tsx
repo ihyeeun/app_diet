@@ -124,7 +124,7 @@ function TodayCard({
         <PlusIcon size={20} />
       </div>
       <p style={{ textAlign: "right" }} className="typo-label1-medium">
-        <span className="typo-h3-semibold text-orange-950">
+        <span className={`typo-h3-semibold ${style.highlightValue}`}>
           {typeof value === "number" ? value.toLocaleString() : value}
         </span>{" "}
         {unit}

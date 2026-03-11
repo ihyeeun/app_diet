@@ -8,7 +8,7 @@
   border-radius: 6px;
   outline: none;
   font-size: 16px;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
   width: 100%;
   padding: 12px;
 }
@@ -21,7 +21,7 @@
 }
 
 .inputBox:has(input:not(:placeholder-shown)) .unit {
-  color: var(--gray-1300);
+  color: var(--gray-1100);
 }
 
 .input::-webkit-inner-spin-button,

@@ -32,16 +32,12 @@
 }
 
 .calendar-title {
-  color: var(--gray-100);
-  font-size: var(--fs-title5);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-medium);
+  color: var(--static-white);
 }
 
 .calendar-title-icon {
   transition: transform 0.2s ease;
-  color: var(--gray-100);
+  color: var(--static-white);
 }
 
 .calendar-title-icon.is-open {
@@ -123,7 +119,7 @@
   color: var(--gray-100);
   font-size: var(--fs-body2);
   letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--fw-medium);
 }
 
 .calendar-day-cell.is-compact {
@@ -133,19 +129,19 @@
 .calendar-day-cell.is-selected {
   background: rgba(255, 255, 255, 0.5);
   color: var(--orange-800);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
 }
 
 .calendar-day-cell.is-today .calendar-day-weekday-container {
   background-color: var(--gray-100);
   border-radius: 100px;
   color: var(--orange-800);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
 }
 
 .calendar-day-cell.is-today .calendar-day-number {
   color: var(--gray-100);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--fw-semibold);
 }
 
 .calendar-day-cell.is-outside {

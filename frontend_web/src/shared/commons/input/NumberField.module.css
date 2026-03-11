@@ -48,7 +48,7 @@
   user-select: none;
   background: none;
   cursor: pointer;
-  color: black;
+  color: var(--common-1200);
 
   @media (hover: hover) {
     &:hover {
@@ -69,5 +69,5 @@
 
 .unit {
   font-size: 20px;
-  color: #000;
+  color: var(--common-1200);
 }
