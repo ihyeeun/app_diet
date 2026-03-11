@@ -8,21 +8,13 @@ export default function StepSubscribedCode({ data, update }: StepComponentProps)
       <div className="onboarding-title">
         <h2 className="typo-title1-semibold">구독 코드가 있다면 입력해주세요</h2>
       </div>
-      <Field.Root style={{ padding: "0px 5px" }}>
+      <Field.Root className="onboarding-field-padding">
         <Input
           type="text"
           inputMode="text"
           placeholder="구독코드"
           aria-label="구독 코드"
-          style={{
-            fontSize: 40,
-            border: "1px solid #e5e5e5",
-            borderRadius: "8px",
-            width: "100%",
-            padding: "16px 20px",
-            textAlign: "right",
-          }}
-          className="input"
+          className="input onboarding-subscribe-input"
           value={data.subscribedCode ?? ""}
           onChange={(e) => update({ subscribedCode: e.target.value })}
         />

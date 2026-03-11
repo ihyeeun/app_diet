@@ -3,6 +3,7 @@ import type { OnboardingData } from "./onboarding.types";
 import { STEP_COMPONENTS, STEPS } from "./components/steps/steps";
 import { Button } from "@/shared/commons/button/Button";
 import "./css/OnboardingPage.css";
+import "./css/OnboardingSteps.css";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import OnboardingHeader from "@/features/onboarding/components/OnboardingHeader";
 

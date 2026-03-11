@@ -7,7 +7,7 @@ export default function StepGoal({ data, update }: StepComponentProps) {
         <h2 className="typo-title1-semibold">이루고 싶은 목표가 무엇인가요?</h2>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="onboarding-option-list">
         <GoalCard
           selected={data.goal === 1}
           onClick={() => update({ goal: 1 })}
@@ -46,23 +46,12 @@ function GoalCard({
     <button
       type="button"
       onClick={onClick}
-      className={`card ${selected ? "card--active" : ""}`}
+      className={`onboarding-option-card ${selected ? "onboarding-option-card--active" : ""}`}
       aria-pressed={selected}
-      style={{
-        padding: "16px 20px",
-        width: "100%",
-        height: "82px",
-        borderRadius: 8,
-        border: selected ? "1px solid #FD8F2E" : "1px solid #e5e5e5",
-        background: selected ? "#fd8f2e20" : "#fff",
-        textAlign: "left",
-        cursor: "pointer",
-        color: "black",
-      }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <p style={{ fontSize: 17, fontWeight: 600 }}>{title}</p>
-        <p style={{ fontSize: 15, fontWeight: 500, color: "#626262" }}>{description}</p>
+      <div className="onboarding-option-card-content">
+        <p className="onboarding-option-card-title">{title}</p>
+        <p className="onboarding-option-card-description">{description}</p>
       </div>
     </button>
   );

@@ -10,30 +10,18 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
 
   return (
     <section>
-      <div
-        className="onboarding-title"
-        style={{ display: "flex", flexDirection: "column", gap: 4 }}
-      >
+      <div className="onboarding-title onboarding-title-group">
         <h2 className="typo-title1-semibold">목표 몸무게가 몇인가요?</h2>
         {diff !== undefined && (
-          <p style={{ fontSize: 16, fontWeight: 500, color: "#4c4c4c" }}>
+          <p className="onboarding-subtitle">
             현재 몸무게 기준 {diff > 0 ? "+" : ""}
             {diff}kg
           </p>
         )}
       </div>
 
-      <Field.Root style={{ padding: "0px 5px" }}>
-        <div
-          style={{
-            padding: "16px 20px",
-            borderRadius: "8px",
-            border: "1px solid #e5e5e5",
-            background: "#fff",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+      <Field.Root className="onboarding-field-padding">
+        <div className="onboarding-goal-weight-card">
           <NumberInput
             value={data.goalWeightKg}
             onChange={(value) => update({ goalWeightKg: value })}

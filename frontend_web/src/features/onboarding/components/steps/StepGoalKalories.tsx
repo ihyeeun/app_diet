@@ -11,50 +11,31 @@ export default function StepGoalKalories({ data, update }: StepComponentProps) {
 
   return (
     <section>
-      <div
-        className="onboarding-title"
-        style={{ display: "flex", flexDirection: "column", gap: 4 }}
-      >
+      <div className="onboarding-title onboarding-title-group">
         <h2 className="typo-title1-semibold">목표 칼로리를 선택해주세요</h2>
-        <p style={{ fontSize: 16, fontWeight: 500, color: "#4c4c4c" }}>
+        <p className="onboarding-subtitle">
           추천하는 목표 칼로리는 ~~kcal예요
           <br />
           기초대사량을 고려해 최소 섭취량으로 설정했어요
         </p>
       </div>
 
-      <Field.Root style={{ padding: "0px 5px" }}>
+      <Field.Root className="onboarding-field-padding">
         <button
-          style={{
-            width: "100%",
-            padding: "16px 20px",
-            borderRadius: "8px",
-            border: "1px solid #e5e5e5",
-            background: "#fff",
-            display: "flex",
-            flexDirection: "column",
-            textAlign: "end",
-          }}
+          className="onboarding-goal-kcal-trigger"
           type="button"
           onClick={() => setOpen(true)}
         >
-          <p style={{ fontSize: 40 }}>{data.goalKalories} kcal</p>
+          <p className="onboarding-goal-kcal-value">{data.goalKalories} kcal</p>
         </button>
       </Field.Root>
 
-      <p style={{ padding: "16px 5px", textAlign: "center", fontSize: 18, fontWeight: "500" }}>
+      <p className="onboarding-goal-kcal-helper">
         목표 달성까지 약 000주 걸려요
       </p>
 
       <BottomSheet isOpen={open} onClose={() => setOpen(false)}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-            padding: "0px 24px",
-          }}
-        >
+        <div className="onboarding-goal-kcal-sheet">
           <h3>목표 칼로리</h3>
           <EditorInput
             type="number"
@@ -66,7 +47,7 @@ export default function StepGoalKalories({ data, update }: StepComponentProps) {
             unit="kcal"
             onChange={(v) => update({ goalKalories: v })}
           />
-          <div style={{ padding: "12px 0px" }}>
+          <div className="onboarding-goal-kcal-actions">
             <Button onClick={() => setOpen(false)} fullWidth>
               수정하기
             </Button>

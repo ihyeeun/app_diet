@@ -1,0 +1,236 @@
+.onboarding-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-option-list--padded {
+  padding: 0 5px;
+}
+
+.onboarding-option-card {
+  width: 100%;
+  height: 82px;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background: var(--bg-normal-white);
+  text-align: left;
+  cursor: pointer;
+  color: var(--gray-1100);
+}
+
+.onboarding-option-card--active {
+  border-color: var(--border-primary);
+  background: var(--interaction-primary);
+}
+
+.onboarding-option-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.onboarding-option-card-title {
+  margin: 0;
+  font-size: 17px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-semibold);
+}
+
+.onboarding-option-card-description {
+  margin: 0;
+  font-size: 15px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-medium);
+  color: #626262;
+}
+
+.onboarding-body-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 5px;
+}
+
+.onboarding-input-card {
+  display: flex;
+  min-height: 112px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background: var(--bg-normal-white);
+}
+
+.onboarding-input-card-label {
+  font-size: 18px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-medium);
+}
+
+.onboarding-gender-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.onboarding-gender-card {
+  width: 100%;
+  height: 134px;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background: var(--bg-normal-white);
+  text-align: center;
+  cursor: pointer;
+  color: var(--gray-1100);
+}
+
+.onboarding-gender-card--active {
+  border-color: var(--border-primary);
+  background: var(--interaction-primary);
+}
+
+.onboarding-gender-label {
+  font-size: 17px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-semibold);
+}
+
+.onboarding-birth-year-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.onboarding-title-group--compact {
+  gap: 2px;
+}
+
+.onboarding-subtitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-medium);
+  color: #4c4c4c;
+}
+
+.onboarding-field-padding {
+  padding: 0 5px;
+}
+
+.onboarding-goal-kcal-trigger {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background: var(--bg-normal-white);
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.onboarding-goal-kcal-value {
+  margin: 0;
+  font-size: 40px;
+  line-height: var(--line-height-120);
+  color: var(--gray-1100);
+}
+
+.onboarding-goal-kcal-helper {
+  margin: 0;
+  padding: 16px 5px;
+  text-align: center;
+  font-size: 18px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-medium);
+}
+
+.onboarding-goal-kcal-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 24px;
+}
+
+.onboarding-goal-kcal-actions {
+  padding: 12px 0;
+}
+
+.onboarding-goal-weight-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background: var(--bg-normal-white);
+}
+
+.onboarding-nutrient-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--orange-950);
+  padding: 0 5px;
+}
+
+.onboarding-nutrient-goal {
+  margin: 0;
+  text-align: center;
+  font-size: 18px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-medium);
+}
+
+.onboarding-nutrient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-nutrient-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background: var(--bg-normal-white);
+  color: var(--gray-1100);
+}
+
+.onboarding-nutrient-label {
+  font-size: 18px;
+  line-height: var(--line-height-145);
+  font-weight: var(--fw-medium);
+}
+
+.onboarding-nutrient-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: #ddd;
+}
+
+.onboarding-nutrient-meta {
+  display: flex;
+  justify-content: space-around;
+  font-weight: var(--fw-semibold);
+}
+
+.onboarding-subscribe-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  font-size: 40px;
+  text-align: right;
+}
