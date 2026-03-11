@@ -15,7 +15,7 @@ export default function MenuActionSection() {
           description="메뉴를 상황에 맞게 추천해줘요"
           iconSrc="/icons/menu_recommend.svg"
           onClick={() => {
-            navigate(PATH.COMPARE);
+            navigate(PATH.RECOMMEND);
           }}
         />
         <MenuCard
