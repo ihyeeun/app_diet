@@ -42,9 +42,7 @@ export default function TodayScoreSection() {
           <img src="/icons/heart_smile.svg"></img>
         </div>
 
-        <div className={style.score_prograss}>
-          <ScoreProgress value={score} />
-        </div>
+        <ScoreProgress value={score} />
       </div>
       <div className={style.badge_container}>
         <Badge>아직 {total - current}kcal 더 먹을 수 있어요</Badge>
