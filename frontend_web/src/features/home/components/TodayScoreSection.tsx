@@ -35,7 +35,7 @@ export default function TodayScoreSection() {
             </p>
           </div>
 
-          <img src="/icons/heart_smile.svg" className={style.img_container}></img>
+          <img src="/icons/heart_smile.svg" className={style.img_container} aria-hidden="true" />
         </div>
 
         <ScoreProgress value={score} />
