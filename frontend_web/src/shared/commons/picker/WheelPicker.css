@@ -45,7 +45,7 @@
   font-size: 28px;
 }
 
-.wheelPicker__item--far {
+.wheelPicker__item--farthest {
   color: var(--gray-400);
   font-size: 24px;
 }
