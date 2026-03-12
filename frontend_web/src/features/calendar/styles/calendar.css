@@ -104,9 +104,6 @@
   justify-content: center;
   cursor: pointer;
   color: var(--static-white);
-  /* font-size: var(--fs-body2);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--fw-medium); */
 }
 
 .calendar-day-cell.is-compact {
