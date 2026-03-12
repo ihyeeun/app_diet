@@ -18,7 +18,7 @@ export default function StepBirthYear({ data, update }: StepComponentProps) {
   }, [data.birthYear, selectedYear, update]);
 
   return (
-    <section style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <section className="onboarding-birth-year-section">
       <div className="onboarding-title">
         <h2 className="typo-title1-semibold">출생 연도를 알려주세요</h2>
       </div>

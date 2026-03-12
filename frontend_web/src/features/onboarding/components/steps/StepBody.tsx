@@ -9,7 +9,7 @@ export default function StepBody({ data, update }: StepComponentProps) {
         <h2 className="typo-title1-semibold">키 / 몸무게가 몇인가요?</h2>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0px 5px" }}>
+      <div className="onboarding-body-list">
         <InputCard
           label="키"
           value={data.heightCm}
@@ -59,19 +59,8 @@ export function InputCard({
   unit,
 }: InputCardProps) {
   return (
-    <Field.Root
-      style={{
-        padding: "16px 20px",
-        borderRadius: "8px",
-        border: "1px solid #e5e5e5",
-        background: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        height: "112px",
-      }}
-    >
-      <Field.Label style={{ fontSize: 18, fontWeight: 500 }}>{label}</Field.Label>
+    <Field.Root className="onboarding-input-card">
+      <Field.Label className="onboarding-input-card-label">{label}</Field.Label>
 
       <NumberInput
         value={value}

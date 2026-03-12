@@ -7,7 +7,7 @@
 }
 
 .homeContainer {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-normal-primary2);
   flex: 1;
   width: 100%;
   display: flex;

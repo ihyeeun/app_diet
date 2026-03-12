@@ -13,7 +13,7 @@
 
   width: calc(100% - 40px);
   outline: none;
-  background: #fff;
+  background: var(--bg-normal-white);
 
   border-radius: 16px;
   padding: 20px;

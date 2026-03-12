@@ -16,7 +16,8 @@ const getToneClassName = (distance: number) => {
   if (distance === 0) return "wheelPicker__item--active";
   if (distance === 1) return "wheelPicker__item--near";
   if (distance === 2) return "wheelPicker__item--mid";
-  return "wheelPicker__item--far";
+  if (distance === 3) return "wheelPicker__item--far";
+  return "wheelPicker__item--farthest";
 };
 
 export default function WheelPicker({
@@ -70,8 +71,7 @@ export default function WheelPicker({
             return (
               <Picker.Item key={opt} value={opt}>
                 <div className={`wheelPicker__item ${toneClassName}`}>
-                  {opt}
-                  {suffix ?? ""}
+                  {opt} {suffix ?? ""}
                 </div>
               </Picker.Item>
             );

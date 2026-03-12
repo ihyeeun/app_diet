@@ -16,71 +16,49 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gray-1100);
-  font-size: var(--wheel-far-font-size, 28px);
-  font-weight: var(--font-weight-medium);
+  color: var(--text-normal);
+  font-size: 40px;
+  font-weight: var(--fw-medium);
+  line-height: var(--line-height-120);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.wheelPicker__item--active {
+  font-size: 40px;
+  font-weight: var(--fw-medium);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
 }
 
 .wheelPicker__item--near {
   color: var(--gray-600);
-  font-size: 32px;
+  font-size: 40px;
 }
 
 .wheelPicker__item--mid {
+  color: var(--gray-600);
+  font-size: 32px;
+}
+
+.wheelPicker__item--far {
   color: var(--gray-500);
   font-size: 28px;
 }
 
-.wheelPicker__item--far {
+.wheelPicker__item--farthest {
   color: var(--gray-400);
   font-size: 24px;
 }
 
-/* 선택된 영역 */
 .wheelPicker__highlight {
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 12.5px;
+  right: 12.5px;
   top: 50%;
   transform: translateY(-50%);
   height: var(--wheel-highlight-height, 80px);
   border-radius: 8px;
-  border: 1px solid #fd8f2e;
-  background: #fd8f2e1a;
+  border: 1px solid var(--border-primary);
+  background: var(--interaction-primary);
   pointer-events: none;
-}
-
-/* 위 fade */
-.wheelPicker::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 60px;
-  background: linear-gradient(to bottom, white 0%, rgba(255, 255, 255, 0) 100%);
-  pointer-events: none;
-}
-
-/* 아래 fade */
-.wheelPicker::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 60px;
-  background: linear-gradient(to top, white 0%, rgba(255, 255, 255, 0) 100%);
-  pointer-events: none;
-}
-
-.wheelPicker__item--active {
-  font-size: 40px;
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
-  color: var(--gray-1100);
-  opacity: 1;
 }
