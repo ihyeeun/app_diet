@@ -27,10 +27,14 @@ export default function MenuActionSection() {
           }}
         />
       </div>
-      <div className={style.record_container}>
-        <ActionCard>
-          <p className="typo-title4-semibold">식단 기록</p>
-          <p className={style.description}>오늘 드신 식단을 기록해주세요</p>
+      <ActionCard>
+        <div className={style.record_container}>
+          <div className={style.record_title_container}>
+            <p className="typo-title4-semibold">식단 기록</p>
+            <p className={`${style.description} typo-label3-medium`}>
+              오늘 드신 식단을 기록해주세요
+            </p>
+          </div>
           <div className={style.meal_card_list}>
             <MealTimeCard label="아침" iconSrc="/icons/breakfast.svg" value="" onClick={() => {}} />
             <MealTimeCard
@@ -43,8 +47,8 @@ export default function MenuActionSection() {
             <MealTimeCard label="저녁" iconSrc="/icons/dinner.svg" value="" onClick={() => {}} />
             <MealTimeCard label="간식" iconSrc="/icons/snack.svg" value="" onClick={() => {}} />
           </div>
-        </ActionCard>
-      </div>
+        </div>
+      </ActionCard>
       <div className={style.today_container}>
         <TodayCard onClick={() => {}} title="오늘의 체중" value={42.2} unit="kg" />
         <TodayCard onClick={() => {}} title="오늘의 걸음 수" value={30000} unit="걸음" />
@@ -66,10 +70,12 @@ function MenuCard({
 }) {
   return (
     <ActionCard onClick={onClick}>
-      <p className="typo-title4-semibold">{title}</p>
-      <p className={style.description}>{description}</p>
-      <div className={style.icon_container}>
-        <img src={iconSrc} alt={`${title} 아이콘`} />
+      <div className={style.menu_card_container}>
+        <p className="typo-title4-semibold">{title}</p>
+        <p className={`${style.description} typo-label3-medium`}>{description}</p>
+        <div className={style.icon_container}>
+          <img src={iconSrc} alt={`${title} 아이콘`} />
+        </div>
       </div>
     </ActionCard>
   );
@@ -96,12 +102,12 @@ function MealTimeCard({
     >
       <div className={style.meal_inner}>
         {value ? (
-          <span className={style.meal_value}>{value}</span>
+          <span className={`${style.meal_value} typo-title3-semibold`}>{value}</span>
         ) : (
           iconSrc && <img src={iconSrc} alt={label} className={style.meal_icon} />
         )}
       </div>
-      <p className={style.meal_label}>{label}</p>
+      <p className={`${style.meal_label} typo-label3-medium`}>{label}</p>
     </button>
   );
 }
@@ -119,16 +125,18 @@ function TodayCard({
 }) {
   return (
     <ActionCard onClick={onClick}>
-      <div className={style.today_title_container}>
-        <p className="typo-title4-semibold">{title}</p>
-        <PlusIcon size={20} />
+      <div className={style.today_card_container}>
+        <div className={style.today_title_container}>
+          <p className="typo-title4-semibold">{title}</p>
+          <PlusIcon size={20} />
+        </div>
+        <p style={{ textAlign: "right" }} className="typo-label1-medium">
+          <span className={`typo-h3-semibold ${style.highlightValue}`}>
+            {typeof value === "number" ? value.toLocaleString() : value}
+          </span>{" "}
+          {unit}
+        </p>
       </div>
-      <p style={{ textAlign: "right" }} className="typo-label1-medium">
-        <span className={`typo-h3-semibold ${style.highlightValue}`}>
-          {typeof value === "number" ? value.toLocaleString() : value}
-        </span>{" "}
-        {unit}
-      </p>
     </ActionCard>
   );
 }

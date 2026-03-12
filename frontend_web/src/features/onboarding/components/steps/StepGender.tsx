@@ -47,7 +47,7 @@ function GenderCard({
       aria-pressed={active}
       className={`onboarding-gender-card ${active ? "onboarding-gender-card--active" : ""}`}
     >
-      <div className="onboarding-gender-label">{label}</div>
+      <p className="typo-title3-semibold">{label}</p>
     </button>
   );
 }

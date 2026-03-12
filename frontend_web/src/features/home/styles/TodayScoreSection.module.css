@@ -34,35 +34,22 @@
 }
 
 .score {
-  color: var(--orange-950);
-  font-size: var(--fs-h2);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
   margin-right: 4px;
 }
 
 .unit {
-  font-size: 20px;
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--fw-medium);
-  color: var(--gray-1100);
+  color: var(--text-normal);
   margin-right: 8px;
 }
 
 .calorie_text {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 3px;
-  font-size: 14px;
-  font-weight: var(--fw-medium);
-  color: #2e2e2e;
+  color: var(--text-assistive);
 }
 
-.current {
-  font-weight: var(--fw-semibold);
-  font-size: 18px;
+.img_container {
+  width: 62px;
+  height: 62px;
 }
 
 .badge_container {
@@ -75,7 +62,8 @@
 
 .badge_content_container {
   padding: 6px 16px;
-  background-color: var(--common-0);
+  background-color: var(--bg-normal-white);
+  color: var(--text-assistive);
   border-radius: 100px;
   width: fit-content;
 }

@@ -22,24 +22,20 @@ export default function TodayScoreSection() {
       <div className={style.score_container}>
         <div className={style.score_title_container}>
           <div className={style.score_title_text_container}>
-            <p className="typo-title2-semibold">오늘의 식사는</p>
+            <h2 className="typo-title2-semibold">오늘의 식사는</h2>
 
             <p className={style.score_text}>
-              <span className={style.score}>{score}</span>
-              <span className={style.unit}>점</span>
+              <span className={`${style.score} typo-h2-semibold`}>{score}</span>
+              <span className={`${style.unit} typo-title2-semibold`}>점</span>
 
-              <span className={style.calorie_text}>
-                <span className={style.calorie_bracket}>(</span>
-                <span className={style.current}>{current.toLocaleString()}</span>
-                <span className={style.slash}> / </span>
-                <span className={style.total}>{total.toLocaleString()}</span>
-                <span className={style.kcal}> kcal</span>
-                <span className={style.calorie_bracket}>)</span>
+              <span className={`${style.calorie_text} typo-title4-semibold`}>
+                (<span className={style.current}>{current.toLocaleString()}</span> /
+                <span className={style.total}> {total.toLocaleString()}</span> kcal)
               </span>
             </p>
           </div>
 
-          <img src="/icons/heart_smile.svg"></img>
+          <img src="/icons/heart_smile.svg" className={style.img_container}></img>
         </div>
 
         <ScoreProgress value={score} />
