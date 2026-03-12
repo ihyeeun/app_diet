@@ -29,8 +29,8 @@ export default function TodayScoreSection() {
               <span className={`${style.unit} typo-title2-semibold`}>점</span>
 
               <span className={`${style.calorie_text} typo-title4-semibold`}>
-                (<span className={style.current}>{current.toLocaleString()}</span> /
-                <span className={style.total}> {total.toLocaleString()}</span> kcal)
+                (<span>{current.toLocaleString()}</span> / <span>{total.toLocaleString()}</span>{" "}
+                kcal)
               </span>
             </p>
           </div>
