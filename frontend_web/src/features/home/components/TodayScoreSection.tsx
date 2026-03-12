@@ -22,7 +22,7 @@ export default function TodayScoreSection() {
       <div className={style.score_container}>
         <div className={style.score_title_container}>
           <div className={style.score_title_text_container}>
-            <h2 className="typo-title2-semibold">오늘의 식사는</h2>
+            <p className="typo-title2-semibold">오늘의 식사는</p>
 
             <p className={style.score_text}>
               <span className={`${style.score} typo-h2-semibold`}>{score}</span>
