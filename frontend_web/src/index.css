@@ -86,3 +86,12 @@ button {
   margin: 0;
   text-align: start;
 }
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-family-base);
+  color: var(--text-normal);
+}
