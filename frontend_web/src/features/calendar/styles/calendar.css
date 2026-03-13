@@ -4,6 +4,7 @@
   flex-direction: column;
   user-select: none;
   background-color: var(--bg-normal-primary1);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .calendar-header {
