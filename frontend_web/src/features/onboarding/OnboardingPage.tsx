@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OnboardingData } from "./onboarding.types";
 import { STEP_COMPONENTS, STEPS } from "./components/steps/steps";
 import { Button } from "@/shared/commons/button/Button";
@@ -6,6 +6,23 @@ import "./css/OnboardingPage.css";
 import "./css/OnboardingSteps.css";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import OnboardingHeader from "@/features/onboarding/components/OnboardingHeader";
+import {
+  ONBOARDING_HEIGHT_RANGE,
+  ONBOARDING_WEIGHT_RANGE,
+  isInRange,
+} from "@/features/onboarding/constants/inputRanges";
+import { toast } from "@/shared/commons/toast/toast";
+
+function isBodyRangeValid(data: OnboardingData) {
+  return (
+    isInRange(data.heightCm, ONBOARDING_HEIGHT_RANGE.min, ONBOARDING_HEIGHT_RANGE.max) &&
+    isInRange(data.weightKg, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max)
+  );
+}
+
+function isGoalWeightRangeValid(data: OnboardingData) {
+  return isInRange(data.goalWeightKg, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max);
+}
 
 export default function OnboardingPage() {
   const [userData, setUserData] = useState<OnboardingData>({});
@@ -16,15 +33,25 @@ export default function OnboardingPage() {
   const step = STEPS[stepIndex];
   const total = STEPS.length;
 
-  const update = (patch: Partial<OnboardingData>) => {
+  const update = useCallback((patch: Partial<OnboardingData>) => {
     setUserData((d) => ({ ...d, ...patch }));
-  };
+  }, []);
 
   const canGoNext = useMemo(() => {
     return step.isValid(userData);
   }, [step, userData]);
 
   const next = () => {
+    if (step.id === "body" && !isBodyRangeValid(userData)) {
+      toast.warning("정확한 값인지 다시 확인해주세요");
+      return;
+    }
+
+    if (step.id === "goalWeight" && !isGoalWeightRangeValid(userData)) {
+      toast.warning("정확한 값인지 다시 확인해주세요");
+      return;
+    }
+
     if (step.id === "nutrient") {
       const carbs = userData.carbs ?? 0;
       const protein = userData.protein ?? 0;
