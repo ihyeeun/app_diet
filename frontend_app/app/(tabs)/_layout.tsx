@@ -1,13 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { House, Star, GitCompareArrows, User } from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#111827",
-        tabBarInactiveTintColor: "#6b7280",
+        tabBarActiveTintColor: "#ff7700",
+        tabBarInactiveTintColor: "#bfbfbf",
       }}
     >
       <Tabs.Screen
@@ -15,7 +15,7 @@ export default function TabsLayout() {
         options={{
           title: "홈",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <House color={color} size={size} fill={color} strokeWidth={1} />
           ),
         }}
       />
@@ -24,7 +24,7 @@ export default function TabsLayout() {
         options={{
           title: "추천",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="star-outline" size={size} color={color} />
+            <Star color={color} size={size} fill={color} strokeWidth={1} />
           ),
         }}
       />
@@ -33,7 +33,7 @@ export default function TabsLayout() {
         options={{
           title: "비교",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="swap-horizontal-outline" size={size} color={color} />
+            <GitCompareArrows color={color} size={size} fill={color} strokeWidth={1} />
           ),
         }}
       />
@@ -42,7 +42,7 @@ export default function TabsLayout() {
         options={{
           title: "프로필",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <User color={color} size={size} fill={color} strokeWidth={1} />
           ),
         }}
       />
