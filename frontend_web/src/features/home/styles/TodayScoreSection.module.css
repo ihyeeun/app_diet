@@ -44,7 +44,7 @@
 }
 
 .calorie_text {
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
 }
 
 .img_container {
@@ -63,7 +63,7 @@
 .badge_content_container {
   padding: 6px 16px;
   background-color: var(--bg-normal-white);
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
   border-radius: 100px;
   width: fit-content;
 }

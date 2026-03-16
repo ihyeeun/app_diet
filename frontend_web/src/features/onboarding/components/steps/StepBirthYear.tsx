@@ -20,7 +20,7 @@ export default function StepBirthYear({ data, update }: StepComponentProps) {
   return (
     <section className="onboarding-birth-year-section">
       <div className="onboarding-title">
-        <h2 className="typo-title1-semibold">출생 연도를 알려주세요</h2>
+        <h2 className="typo-title1">출생 연도를 알려주세요</h2>
       </div>
 
       <WheelPicker

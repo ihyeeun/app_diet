@@ -5,7 +5,7 @@ import styles from "./TermsPage.module.css";
 export default function TermsPage() {
   return (
     <section className={styles.container}>
-      <p className="typo-title3-semibold">약관</p>
+      <p className="typo-title3">약관</p>
 
       <div className={styles.AccordionContainer}>
         <Accordion.Root className={styles.Accordion}>

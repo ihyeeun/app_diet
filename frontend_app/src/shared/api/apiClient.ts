@@ -1,10 +1,10 @@
-// axios 인스턴스 생성
 import {
   clearTokens,
   loadAccessToken,
   loadRefreshToken,
   saveTokens,
 } from "@/features/auth/store/tokenStore";
+import { emitAuthExpired } from "@/src/shared/auth/authSessionEvents";
 import { Tokens } from "@/features/auth/types";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
@@ -29,28 +29,35 @@ async function reissueTokens(): Promise<Tokens> {
     throw new Error("No refresh token available");
   }
 
-  const response = await axios.post(`${BASE_URL}/${"reissueRefreshTokenRequest"}`, {
+  const response = await axios.post(`${BASE_URL}/commonAuth/refresh`, {
     refreshToken,
   });
 
-  if (!response.data.accessToken || !response.data.refreshToken) {
+  const tokenData = response.data?.data ?? response.data;
+
+  if (!tokenData?.accessToken || !tokenData?.refreshToken) {
     throw new Error("토큰 발급 실패: 응답에 accessToken 또는 refreshToken이 없습니다.");
   }
 
   await saveTokens({
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
+    accessToken: tokenData.accessToken,
+    refreshToken: tokenData.refreshToken,
   });
 
   return {
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
+    accessToken: tokenData.accessToken,
+    refreshToken: tokenData.refreshToken,
   };
 }
 
 type RetryConfig = AxiosRequestConfig & { _retry?: boolean };
 
 let tokenRefreshPromise: Promise<Tokens> | null = null;
+
+async function clearSessionAndNotify() {
+  await clearTokens();
+  emitAuthExpired();
+}
 
 apiClient.interceptors.response.use(
   (response) => response,
@@ -63,13 +70,13 @@ apiClient.interceptors.response.use(
 
     if (status !== 401) throw error;
 
-    if (originalRequest.url?.includes(`${"reissueRefreshTokenRequest"}`)) {
-      await clearTokens();
+    if (originalRequest.url?.includes(`${"commonAuth/refresh"}`)) {
+      await clearSessionAndNotify();
       throw new Error("refresh token 재발급 요청 인증 실패", { cause: error });
     }
 
     if (originalRequest._retry) {
-      await clearTokens();
+      await clearSessionAndNotify();
       throw new Error("원래 요청을 새 토큰으로 다시 보냈지만 401 발생", { cause: error });
     }
 
@@ -89,8 +96,7 @@ apiClient.interceptors.response.use(
 
       return apiClient.request(originalRequest);
     } catch (refreshErr) {
-      // TODO refresh 실패 -> 토큰 제거 + (여기서 라우팅/로그아웃 처리 트리거)
-      await clearTokens();
+      await clearSessionAndNotify();
       throw refreshErr;
     }
   },

@@ -20,7 +20,7 @@ export default function CalendarHeader({ viewMode, viewDate, onToggleViewMode }:
           onClick={onToggleViewMode}
           aria-label={viewMode === "week" ? "월 달력 펼치기" : "주 달력 접기"}
         >
-          <span className="calendar-title typo-title3-semibold">
+          <span className="calendar-title typo-title3">
             {formatCalendarHeader(viewDate, viewMode)}
           </span>
           <ChevronDown

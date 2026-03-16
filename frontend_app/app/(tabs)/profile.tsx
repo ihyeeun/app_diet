@@ -1,7 +1,33 @@
-import { Link } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { signOut } from "@/features/auth/api/authTokenApi";
+import { clearTokens, loadRefreshToken } from "@/features/auth/store/tokenStore";
+import { Link, router } from "expo-router";
+import { useCallback, useState } from "react";
+import { Alert, Button, StyleSheet, Text, View } from "react-native";
 
 export default function ProfileScreen() {
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = useCallback(async () => {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+
+    try {
+      const refreshToken = await loadRefreshToken();
+
+      if (refreshToken) {
+        await signOut(refreshToken);
+      }
+
+      await clearTokens();
+      router.replace("/(auth)/login");
+    } catch {
+      Alert.alert("로그아웃 실패", "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSigningOut(false);
+    }
+  }, [isSigningOut]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>프로필</Text>
@@ -9,6 +35,12 @@ export default function ProfileScreen() {
       <Link href="/login" style={styles.loginLink}>
         로그인 화면으로 이동
       </Link>
+
+      <Button
+        title={isSigningOut ? "로그아웃 중..." : "로그아웃"}
+        onPress={handleSignOut}
+        disabled={isSigningOut}
+      />
     </View>
   );
 }

@@ -1,8 +1,8 @@
 import { type Tokens } from "@/features/auth/types";
 import * as SecureStore from "expo-secure-store";
 
-const ACCESS_TOKEN_KEY = "access_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
+const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
 
 // store에 토큰 저장
 export async function saveTokens(tokens: Tokens) {

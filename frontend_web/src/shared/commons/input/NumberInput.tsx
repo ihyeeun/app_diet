@@ -10,6 +10,7 @@ type Props = {
   step?: number;
   unit?: string;
   inputMode?: "numeric" | "decimal";
+  normalizeOnBlur?: boolean;
 };
 
 function clamp(n: number, min?: number, max?: number) {
@@ -28,6 +29,7 @@ export function NumberInput({
   step,
   unit,
   inputMode = "decimal",
+  normalizeOnBlur = true,
 }: Props) {
   return (
     <div className={styles.inputBox}>
@@ -51,6 +53,8 @@ export function NumberInput({
           }
         }}
         onBlur={(e) => {
+          if (!normalizeOnBlur) return;
+
           const raw = e.target.value;
           if (raw === "") return;
 
