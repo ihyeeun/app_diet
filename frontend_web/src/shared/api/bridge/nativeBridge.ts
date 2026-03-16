@@ -45,7 +45,14 @@ export function initNativeBridgeListener() {
       if (parsed.type === "API_RESPONSE") {
         pending.resolve(parsed.payload);
       } else {
-        pending.reject(parsed.payload);
+        const payload = parsed.payload as {
+          message?: string;
+          statusCode?: number;
+          error?: string;
+        };
+        const bridgeError = new Error(payload.message ?? "앱 API 요청 실패");
+        Object.assign(bridgeError, payload);
+        pending.reject(bridgeError);
       }
 
       clearTimeout(pending.timeoutId);
