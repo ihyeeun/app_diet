@@ -16,7 +16,7 @@ export function AppleLoginButton({ onPress }: AppleLoginButtonProps) {
       onPress={onPress}
     >
       <View style={styles.content}>
-        <Image source={AppleLogoImage} resizeMode="contain" />
+        <Image source={AppleLogoImage} resizeMode="contain" style={styles.logo} />
         <Text style={styles.label}>Apple 로그인</Text>
       </View>
     </Pressable>

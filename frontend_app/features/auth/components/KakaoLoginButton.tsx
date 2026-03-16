@@ -16,7 +16,7 @@ export function KakaoLoginButton({ onPress }: KakaoLoginButtonProps) {
       onPress={onPress}
     >
       <View style={styles.content}>
-        <Image source={kakaoLogoImage} resizeMode="contain" />
+        <Image source={kakaoLogoImage} resizeMode="contain" style={styles.logo} />
         <Text style={styles.label}>카카오 로그인</Text>
       </View>
     </Pressable>
