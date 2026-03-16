@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View, Pressable } from "react-native";
 import { KakaoLoginButton } from "@/features/auth/components/KakaoLoginButton";
 import { AppleLoginButton } from "@/features/auth/components/AppleLoginButton";
 import { router } from "expo-router";
@@ -23,9 +23,13 @@ export default function LoginPage() {
 
         <Text style={styles.agreementText}>
           가입하면 Melo의{"\n"}
-          <Text style={styles.linkText} onPress={openTermsPage}>
-            이용약관 및 개인정보 처리방침
-          </Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="이용약관 및 개인정보 처리방침"
+            onPress={openTermsPage}
+          >
+            <Text style={styles.linkText}>이용약관 및 개인정보 처리방침</Text>
+          </Pressable>
           에 동의하게 됩니다.
         </Text>
       </View>
