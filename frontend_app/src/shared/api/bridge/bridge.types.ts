@@ -8,10 +8,6 @@ export type BridgeRequestPayload = {
   params?: Record<string, string | number | boolean | undefined>;
 };
 
-export type BridgePingPayload = {
-  sentAt: number;
-};
-
 export type BridgeApiRequestMessage = {
   id: string;
   type: "API_REQUEST";
