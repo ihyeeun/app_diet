@@ -10,12 +10,10 @@ import { AppToastViewport } from "@/shared/commons/toast/AppToastViewport";
 import { appToastManager } from "@/shared/commons/toast/toastManager";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Toast.Provider toastManager={appToastManager} timeout={2600} limit={2}>
-        <App />
-        <AppToastViewport />
-      </Toast.Provider>
-    </QueryClientProvider>
-  </StrictMode>,
+  <QueryClientProvider client={queryClient}>
+    <Toast.Provider toastManager={appToastManager} timeout={2600} limit={2}>
+      <App />
+      <AppToastViewport />
+    </Toast.Provider>
+  </QueryClientProvider>,
 );
