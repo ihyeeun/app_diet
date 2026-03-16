@@ -6,8 +6,11 @@ import { Field } from "@base-ui/react";
 export default function StepGoalWeight({ data, update }: StepComponentProps) {
   const diff =
     data.goalweight !== undefined && data.weight !== undefined
-      ? data.goalweight - data.weight
+      ? Math.round((data.goalweight - data.weight) * 10) / 10
       : undefined;
+
+  const diffLabel =
+    diff === undefined ? undefined : Number.isInteger(diff) ? diff.toString() : diff.toFixed(1);
 
   return (
     <section>
@@ -16,7 +19,7 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
         {diff !== undefined && (
           <p className="onboarding-subtitle">
             현재 몸무게 기준 {diff > 0 ? "+" : ""}
-            {diff}kg
+            {diffLabel}kg
           </p>
         )}
       </div>
