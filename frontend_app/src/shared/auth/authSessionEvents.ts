@@ -11,5 +11,7 @@ export function subscribeAuthExpired(listener: AuthExpiredListener) {
 }
 
 export function emitAuthExpired() {
-  authExpiredListeners.forEach((listener) => listener());
+  authExpiredListeners.forEach((listener) => {
+    listener();
+  });
 }
