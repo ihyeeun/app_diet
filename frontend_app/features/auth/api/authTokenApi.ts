@@ -5,7 +5,7 @@ import { apiClient } from "@/src/shared/api/apiClient";
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export async function exchangeKakaoCodeForToken(code: string) {
-  const res = await axios.post("https://melo.ai.kr/userAuth/kakao/callback", null, {
+  const res = await axios.post(`${BASE_URL}/userAuth/kakao/callback`, null, {
     params: { code },
     headers: {
       Accept: "application/json",
@@ -23,7 +23,7 @@ export async function exchangeKakaoCodeForToken(code: string) {
 }
 
 export async function signOut(refreshToken: string) {
-  const response = await apiClient.post(`${BASE_URL}/commonAuth/signout`, {
+  const response = await apiClient.post("/commonAuth/signout", {
     refreshToken,
   });
 
