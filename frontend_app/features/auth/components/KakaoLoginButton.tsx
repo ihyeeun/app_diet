@@ -1,11 +1,11 @@
 import React from "react";
-import { Image, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 
 type KakaoLoginButtonProps = {
   onPress: () => void;
 };
 
-const kakaoLoginButtonImage = require("../../../assets/images/kakao_login_large_wide.png");
+const kakaoLogoImage = require("../../../assets/images/kakaoLogo.png");
 
 export function KakaoLoginButton({ onPress }: KakaoLoginButtonProps) {
   return (
@@ -15,20 +15,39 @@ export function KakaoLoginButton({ onPress }: KakaoLoginButtonProps) {
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       onPress={onPress}
     >
-      <Image source={kakaoLoginButtonImage} resizeMode="contain" style={styles.image} />
+      <View style={styles.content}>
+        <Image source={kakaoLogoImage} resizeMode="contain" />
+        <Text style={styles.label}>카카오 로그인</Text>
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
+    width: 300,
+    height: 45,
+    borderRadius: 4,
+    backgroundColor: "#FEE500",
+    justifyContent: "center",
     alignSelf: "center",
   },
   pressed: {
     opacity: 0.7,
   },
-  image: {
-    width: 300,
-    height: 45,
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  logo: {
+    width: 20,
+    height: 20,
+  },
+  label: {
+    color: "#0a0a0a",
+    fontSize: 15,
+    fontWeight: "500",
   },
 });
