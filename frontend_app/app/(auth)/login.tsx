@@ -23,13 +23,15 @@ export default function LoginPage() {
 
         <Text style={styles.agreementText}>
           가입하면 Melo의{"\n"}
-          <Pressable
+          <Text
+            style={styles.linkText}
+            onPress={openTermsPage}
+            accessible={true}
             accessibilityRole="link"
             accessibilityLabel="이용약관 및 개인정보 처리방침"
-            onPress={openTermsPage}
           >
-            <Text style={styles.linkText}>이용약관 및 개인정보 처리방침</Text>
-          </Pressable>
+            이용약관 및 개인정보 처리방침
+          </Text>
           에 동의하게 됩니다.
         </Text>
       </View>
