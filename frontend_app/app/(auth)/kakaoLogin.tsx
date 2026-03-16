@@ -1,7 +1,8 @@
 import { exchangeKakaoCodeForToken } from "@/features/auth/api/authTokenApi";
+import { postHasUserInfo } from "@/features/auth/api/onboardingStatusApi";
 import { parseKakaoRedirectUrl } from "@/features/auth/hooks/parseKakaoCode";
 import { router } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { View } from "react-native";
 import WebView, { WebViewNavigation } from "react-native-webview";
 
@@ -9,21 +10,42 @@ const restApiKey = process.env.EXPO_PUBLIC_KAKAO_REST_API_KEY;
 const redirectUri = process.env.EXPO_PUBLIC_KAKAO_REDIRECT_URI;
 
 export default function KakaoLogin() {
-  const onShouldStartLoadWithRequest = useCallback((request: WebViewNavigation) => {
-    const redirectResult = parseKakaoRedirectUrl(request.url, redirectUri);
-    if (!redirectResult) return true;
-    if (redirectResult.type === "code") {
-      console.log("Kakao authorization code:", redirectResult.code);
-      // TODO(Auth) : 추후 활성화 exchangeKakaoCodeForToken(redirectResult.code);
-      router.replace({
-        pathname: "/(tabs)/home",
-      });
-    } else {
+  const isExchangingRef = useRef(false);
+
+  const onShouldStartLoadWithRequest = useCallback(
+    (request: WebViewNavigation) => {
+      const redirectResult = parseKakaoRedirectUrl(request.url, redirectUri);
+      if (!redirectResult) return true;
+
+      if (redirectResult.type === "code") {
+        if (isExchangingRef.current) return false;
+        isExchangingRef.current = true;
+
+        (async () => {
+          try {
+            await exchangeKakaoCodeForToken(redirectResult.code);
+            const hasUserInfo = await postHasUserInfo();
+
+            if (!hasUserInfo) {
+              router.replace("/(auth)/onboarding");
+              return;
+            }
+
+            router.replace("/(tabs)/home");
+          } catch (error) {
+            console.error("카카오 로그인 실패");
+            isExchangingRef.current = false;
+          }
+        })();
+
+        return false;
+      }
+
       console.error("Kakao login error:", redirectResult.error);
-    }
-    // WebView가 해당 URL을 로드하지 않도록 false 반환
-    return false;
-  }, []);
+      return false;
+    },
+    [redirectUri],
+  );
 
   return (
     <View style={{ flex: 1 }}>

@@ -1,15 +1,31 @@
-// Token 교환 API
-
+import axios from "axios";
 import { saveTokens } from "@/features/auth/store/tokenStore";
 import { apiClient } from "@/src/shared/api/apiClient";
 
-export async function exchangeKakaoCodeForToken(code: string) {
-  // body에 code를 담아서 요청.
-  // TODO(Auth) kakao login endpoint 확인 필요
-  const response = await apiClient.post("", { code });
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-  saveTokens({
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
+export async function exchangeKakaoCodeForToken(code: string) {
+  const res = await axios.post("https://melo.ai.kr/userAuth/kakao/callback", null, {
+    params: { code },
+    headers: {
+      Accept: "application/json",
+    },
   });
+
+  const tokenData = res.data.data;
+
+  await saveTokens({
+    accessToken: tokenData.accessToken,
+    refreshToken: tokenData.refreshToken,
+  });
+
+  return;
+}
+
+export async function signOut(refreshToken: string) {
+  const response = await apiClient.post(`${BASE_URL}/commonAuth/signout`, {
+    refreshToken,
+  });
+
+  return response.data;
 }
