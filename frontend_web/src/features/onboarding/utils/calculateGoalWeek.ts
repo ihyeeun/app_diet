@@ -62,6 +62,14 @@ export function calculateGoalWeeks(
     throw new Error("해당 값으로는 목표 달성이 불가능합니다.");
   }
 
+  if (goal === 0 && targetWeight >= weight) {
+    throw new Error("감량 목표에서는 목표 체중이 현재 체중보다 낮아야 합니다.");
+  }
+
+  if (goal === 2 && targetWeight <= weight) {
+    throw new Error("증량 목표에서는 목표 체중이 현재 체중보다 높아야 합니다.");
+  }
+
   const weightDiff = Math.abs(weight - targetWeight);
   return Math.ceil(weightDiff / ((dailyDeltaCalories * 7) / 7700));
 }

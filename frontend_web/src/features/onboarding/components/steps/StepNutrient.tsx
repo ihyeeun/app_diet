@@ -46,10 +46,11 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
   }, []);
 
   useEffect(() => {
+    if (!nutrient) return;
     update({
-      carbs: nutrient?.carbs,
-      protein: nutrient?.protein,
-      fat: nutrient?.fat,
+      carbs: nutrient.carbs,
+      protein: nutrient.protein,
+      fat: nutrient.fat,
     });
   }, [nutrient]);
 
