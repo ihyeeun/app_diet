@@ -10,7 +10,7 @@ export default function StepBody({ data, update }: StepComponentProps) {
   return (
     <section>
       <div className="onboarding-title">
-        <h2 className="typo-title1-semibold">키 / 몸무게가 몇인가요?</h2>
+        <h2 className="typo-title1">키 / 몸무게가 몇인가요?</h2>
       </div>
 
       <div className="onboarding-body-list">

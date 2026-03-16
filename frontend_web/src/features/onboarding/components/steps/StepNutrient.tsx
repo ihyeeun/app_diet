@@ -57,7 +57,7 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
   return (
     <section>
       <div className="onboarding-title onboarding-title-group onboarding-title-group--compact">
-        <h2 className="typo-title1-semibold">추천하는 탄단지 비율이에요</h2>
+        <h2 className="typo-title1">추천하는 탄단지 비율이에요</h2>
         <p className="onboarding-subtitle">비율을 수정할 수 있어요</p>
       </div>
       <div className="onboarding-nutrient-content">

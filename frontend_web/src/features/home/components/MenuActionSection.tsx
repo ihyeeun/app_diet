@@ -33,10 +33,8 @@ export default function MenuActionSection() {
       <ActionCard>
         <div className={style.record_container}>
           <div className={style.record_title_container}>
-            <p className="typo-title4-semibold">식단 기록</p>
-            <p className={`${style.description} typo-label3-medium`}>
-              오늘 드신 식단을 기록해주세요
-            </p>
+            <p className="typo-title4">식단 기록</p>
+            <p className={`${style.description} typo-body4`}>오늘 드신 식단을 기록해주세요</p>
           </div>
           <div className={style.meal_card_list}>
             <MealTimeCard label="아침" iconSrc="/icons/breakfast.svg" value="" onClick={() => {}} />
@@ -74,8 +72,8 @@ function MenuCard({
   return (
     <ActionCard onClick={onClick}>
       <div className={style.menu_card_container}>
-        <p className="typo-title4-semibold">{title}</p>
-        <p className={`${style.description} typo-label3-medium`}>{description}</p>
+        <p className="typo-title4">{title}</p>
+        <p className={`${style.description} typo-body4`}>{description}</p>
         <div className={style.icon_container}>
           <img src={iconSrc} alt={`${title} 아이콘`} />
         </div>
@@ -105,12 +103,12 @@ function MealTimeCard({
     >
       <div className={style.meal_inner}>
         {value ? (
-          <span className={`${style.meal_value} typo-title3-semibold`}>{value}</span>
+          <span className={`${style.meal_value} typo-title3`}>{value}</span>
         ) : (
           iconSrc && <img src={iconSrc} alt={label} className={style.meal_icon} />
         )}
       </div>
-      <p className={`${style.meal_label} typo-label3-medium`}>{label}</p>
+      <p className={`${style.meal_label} typo-label3`}>{label}</p>
     </button>
   );
 }
@@ -130,11 +128,11 @@ function TodayCard({
     <ActionCard onClick={onClick}>
       <div className={style.today_card_container}>
         <div className={style.today_title_container}>
-          <p className="typo-title4-semibold">{title}</p>
+          <p className="typo-title4">{title}</p>
           <PlusIcon size={20} />
         </div>
-        <p style={{ textAlign: "right" }} className="typo-label1-medium">
-          <span className={`typo-h3-semibold ${style.highlightValue}`}>
+        <p style={{ textAlign: "right" }} className="typo-label1">
+          <span className={`typo-h3 ${style.highlightValue}`}>
             {typeof value === "number" ? value.toLocaleString() : value}
           </span>{" "}
           {unit}

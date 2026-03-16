@@ -4,7 +4,7 @@ export default function StepActivity({ data, update }: StepComponentProps) {
   return (
     <section>
       <div className="onboarding-title">
-        <h2 className="typo-title1-semibold">평소에 얼마나 움직이시나요?</h2>
+        <h2 className="typo-title1">평소에 얼마나 움직이시나요?</h2>
       </div>
 
       <div className="onboarding-option-list onboarding-option-list--padded">

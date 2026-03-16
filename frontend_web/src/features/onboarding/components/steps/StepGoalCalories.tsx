@@ -127,7 +127,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
   return (
     <section>
       <div className="onboarding-title onboarding-title-group">
-        <h2 className="typo-title1-semibold">목표 칼로리를 선택해주세요</h2>
+        <h2 className="typo-title1">목표 칼로리를 선택해주세요</h2>
         <p className="onboarding-subtitle">
           {isPending
             ? "추천 목표 칼로리를 계산하고 있어요"

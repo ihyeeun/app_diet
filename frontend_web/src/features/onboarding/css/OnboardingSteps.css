@@ -43,7 +43,7 @@
   font-size: 15px;
   line-height: var(--line-height-145);
   font-weight: var(--fw-medium);
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
 }
 
 .onboarding-body-list {
@@ -120,7 +120,7 @@
   font-size: 16px;
   line-height: var(--line-height-145);
   font-weight: var(--fw-medium);
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
 }
 
 .onboarding-field-padding {

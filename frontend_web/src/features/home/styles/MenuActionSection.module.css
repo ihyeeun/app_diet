@@ -24,7 +24,7 @@
 }
 
 .description {
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
 }
 
 .icon_container {
@@ -103,7 +103,7 @@
 
 .meal_label {
   text-align: center;
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
 }
 
 .highlightValue {

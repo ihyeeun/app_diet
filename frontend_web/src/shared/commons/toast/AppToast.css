@@ -39,10 +39,10 @@
 
 .app-toast-description {
   margin: 4px 0 0;
-  font-size: var(--fs-title6);
-  line-height: var(--line-height-130);
+  font-size: var(--fs-label6);
+  line-height: var(--line-height-140);
   letter-spacing: var(--letter-spacing-body);
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
   font-weight: var(--fw-medium);
   word-break: keep-all;
 }
@@ -51,10 +51,10 @@
   border-radius: 6px;
   padding: 4px 8px;
   margin-top: 2px;
-  font-size: var(--fs-title6);
-  line-height: var(--line-height-130);
+  font-size: var(--fs-label5);
+  line-height: var(--line-height-140);
   letter-spacing: var(--letter-spacing-body);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
 }
 
@@ -64,7 +64,7 @@
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  color: var(--text-assistive);
+  color: var(--text-assistive1);
   font-size: 16px;
   line-height: 20px;
   text-align: center;

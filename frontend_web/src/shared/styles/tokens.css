@@ -31,13 +31,16 @@
   --fs-title2: 20px;
   --fs-title3: 18px;
   --fs-title4: 16px;
-  --fs-title5: 12px;
-  --fs-title6: 12px;
   --fs-body1: 20px;
-  --fs-body2: 16px;
+  --fs-body2: 18px;
+  --fs-body3: 16px;
+  --fs-body4: 14px;
   --fs-label1: 18px;
-  --fs-label2: 15px;
-  --fs-label3: 14px;
+  --fs-label2: 16px;
+  --fs-label3: 15px;
+  --fs-label4: 14px;
+  --fs-label5: 13px;
+  --fs-label6: 13px;
 
   /* =========================
    * Color - Common
@@ -199,7 +202,9 @@
  * ========================= */
   --text-primary: var(--orange-950);
   --text-normal: var(--gray-1100);
-  --text-assistive: var(--gray-800);
+  --text-assistive1: var(--gray-800);
+  --text-assistive2: var(--gray-600);
+  --text-white: var(--common-0);
 }
 
 /* =========================
@@ -212,106 +217,120 @@ body {
 /* =========================
  * Typography presets (class)
  * ========================= */
-.typo-h1-medium {
+.typo-h1 {
   font-size: var(--fs-h1);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-medium);
 }
 
-.typo-h2-semibold {
+.typo-h2 {
   font-size: var(--fs-h2);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-h3-semibold {
+.typo-h3 {
   font-size: var(--fs-h3);
   line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-title1-semibold {
+.typo-title1 {
   font-size: var(--fs-title1);
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-title2-semibold {
+.typo-title2 {
   font-size: var(--fs-title2);
-  line-height: var(--line-height-140);
+  line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-title3-semibold {
+.typo-title3 {
   font-size: var(--fs-title3);
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-title4-semibold {
+.typo-title4 {
   font-size: var(--fs-title4);
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-title5-bold {
-  font-size: var(--fs-title5);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-normal);
-  font-weight: var(--fw-bold);
-}
-
-.typo-title6-regular {
-  font-size: var(--fs-title6);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-normal);
-  font-weight: var(--fw-regular);
-}
-
-.typo-body1-semibold {
+.typo-body1 {
   font-size: var(--fs-body1);
   line-height: var(--line-height-130);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
 }
 
-.typo-body2-medium {
+.typo-body2 {
   font-size: var(--fs-body2);
+  line-height: var(--line-height-120);
+  letter-spacing: var(--letter-spacing-body);
+  font-weight: var(--fw-semibold);
+}
+
+.typo-body3 {
+  font-size: var(--fs-body3);
   line-height: var(--line-height-145);
   letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-medium);
 }
 
-.typo-label1-medium {
+.typo-body4 {
+  font-size: var(--fs-body4);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-body);
+  font-weight: var(--fw-medium);
+}
+
+.typo-label1 {
   font-size: var(--fs-label1);
   line-height: var(--line-height-140);
   letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
 }
 
-.typo-label2-medium {
+.typo-label2 {
   font-size: var(--fs-label2);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-normal);
+  font-weight: var(--fw-bold);
+}
+
+.typo-label3 {
+  font-size: var(--fs-label3);
   line-height: var(--line-height-140);
   letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
 }
 
-.typo-label3-medium {
-  font-size: var(--fs-label3);
+.typo-label4 {
+  font-size: var(--fs-label4);
   line-height: var(--line-height-140);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-medium);
 }
 
-.typo-label4-medium {
-  font-size: var(--fs-label3);
+.typo-label5 {
+  font-size: var(--fs-label5);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-body);
+  font-weight: var(--fw-bold);
+}
+
+.typo-label6 {
+  font-size: var(--fs-label6);
   line-height: var(--line-height-140);
   letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-medium);

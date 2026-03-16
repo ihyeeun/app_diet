@@ -10,7 +10,7 @@ type Props = {
 
 export default function DayCell({ day, weekdayLabel, onSelect, compact = false }: Props) {
   const classNames = [
-    "calendar-day-cell typo-title4-semibold",
+    "calendar-day-cell typo-title4",
     day.isSelected ? "is-selected" : "",
     day.isToday ? "is-today" : "",
     !day.isCurrentMonth ? "is-outside" : "",

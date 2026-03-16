@@ -22,13 +22,13 @@ export default function TodayScoreSection() {
       <div className={style.score_container}>
         <div className={style.score_title_container}>
           <div className={style.score_title_text_container}>
-            <p className="typo-title2-semibold">오늘의 식사는</p>
+            <p className="typo-title2">오늘의 식사는</p>
 
             <p className={style.score_text}>
-              <span className={`${style.score} typo-h2-semibold`}>{score}</span>
-              <span className={`${style.unit} typo-title2-semibold`}>점</span>
+              <span className={`${style.score} typo-h2`}>{score}</span>
+              <span className={`${style.unit} typo-title2`}>점</span>
 
-              <span className={`${style.calorie_text} typo-title4-semibold`}>
+              <span className={`${style.calorie_text} typo-title4`}>
                 (<span>{current.toLocaleString()}</span> / <span>{total.toLocaleString()}</span>{" "}
                 kcal)
               </span>
@@ -52,7 +52,7 @@ export default function TodayScoreSection() {
 function Badge({ children }: { children: ReactNode }) {
   return (
     <div className={style.badge_content_container}>
-      <p className="typo-label3-medium">{children}</p>
+      <p className="typo-body4">{children}</p>
     </div>
   );
 }
