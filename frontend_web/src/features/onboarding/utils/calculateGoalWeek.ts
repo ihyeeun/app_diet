@@ -1,21 +1,16 @@
 import type { OnboardingData } from "@/features/onboarding/onboarding.types";
 
-function hasRequiredGoalWeekFields(
+function hasRequiredGoalWeekBaseFields(
   data: OnboardingData,
-): data is Required<
-  Pick<
-    OnboardingData,
-    "birthYear" | "weight" | "height" | "gender" | "activity" | "goal" | "goalweight"
-  >
-> {
+): data is OnboardingData &
+  Required<Pick<OnboardingData, "birthYear" | "weight" | "height" | "gender" | "activity" | "goal">> {
   return (
     data.birthYear !== undefined &&
     data.weight !== undefined &&
     data.height !== undefined &&
     data.gender !== undefined &&
     data.activity !== undefined &&
-    data.goal !== undefined &&
-    data.goalweight !== undefined
+    data.goal !== undefined
   );
 }
 
@@ -75,7 +70,15 @@ export function calculateGoalWeeks(
 }
 
 export function calculateGoalWeek(data: OnboardingData, targetCalories: number): number {
-  if (!hasRequiredGoalWeekFields(data)) {
+  if (!hasRequiredGoalWeekBaseFields(data)) {
+    throw new Error("목표 달성 기간 계산에 필요한 값이 부족합니다.");
+  }
+
+  if (data.goal === 1) {
+    return 0;
+  }
+
+  if (data.goalweight === undefined) {
     throw new Error("목표 달성 기간 계산에 필요한 값이 부족합니다.");
   }
 
