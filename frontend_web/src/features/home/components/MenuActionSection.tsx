@@ -1,6 +1,7 @@
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
+import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import { PlusIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +16,7 @@ export default function MenuActionSection() {
           description="메뉴를 상황에 맞게 추천해줘요"
           iconSrc="/icons/menu_recommend.svg"
           onClick={() => {
+            syncAppTab("recommend");
             navigate(PATH.RECOMMEND);
           }}
         />
@@ -23,6 +25,7 @@ export default function MenuActionSection() {
           description="나에게 더 맞는 메뉴를 고르는데 도와줘요"
           iconSrc="/icons/menu_compare.svg"
           onClick={() => {
+            syncAppTab("compare");
             navigate(PATH.COMPARE);
           }}
         />
