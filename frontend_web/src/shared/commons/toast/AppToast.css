@@ -21,6 +21,7 @@
   background: var(--bg-normal-white);
   color: var(--text-normal);
   box-shadow: 0 8px 20px var(--bg-shadow-2);
+  border: 1px solid transparent;
 }
 
 .app-toast-content {
