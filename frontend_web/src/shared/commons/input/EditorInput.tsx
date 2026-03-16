@@ -6,6 +6,8 @@ type Props = Omit<React.ComponentProps<"input">, "onChange" | "value" | "min" | 
   value?: number;
   min?: number;
   max?: number;
+  clampOnChange?: boolean;
+  normalizeOnBlur?: boolean;
   onChange: (v?: number) => void;
 };
 
@@ -16,7 +18,16 @@ function clamp(n: number, min?: number, max?: number) {
   return v;
 }
 
-export function EditorInput({ unit, onChange, value, min, max, ...props }: Props) {
+export function EditorInput({
+  unit,
+  onChange,
+  value,
+  min,
+  max,
+  clampOnChange = true,
+  normalizeOnBlur = true,
+  ...props
+}: Props) {
   return (
     <div className={styles.inputBox}>
       <Input
@@ -36,11 +47,13 @@ export function EditorInput({ unit, onChange, value, min, max, ...props }: Props
           const num = Number(raw);
           if (Number.isNaN(num)) return;
 
-          const fixed = clamp(num, min, max);
+          const fixed = clampOnChange ? clamp(num, min, max) : num;
 
           onChange(fixed);
         }}
         onBlur={() => {
+          if (!normalizeOnBlur) return;
+
           if (value !== undefined) {
             onChange(clamp(value, min, max));
           }
