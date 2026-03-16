@@ -1,14 +1,6 @@
-import {
-  GENDER,
-  type Gender,
-  type StepComponentProps,
-} from "@/features/onboarding/onboarding.types";
+import { type StepComponentProps } from "@/features/onboarding/onboarding.types";
 
 export default function StepGender({ data, update }: StepComponentProps) {
-  const handleSelect = (gender: Gender) => {
-    update({ gender });
-  };
-
   return (
     <section>
       <div className="onboarding-title">
@@ -16,16 +8,8 @@ export default function StepGender({ data, update }: StepComponentProps) {
       </div>
 
       <div className="onboarding-gender-grid">
-        <GenderCard
-          label="남성"
-          active={data.gender === GENDER.male}
-          onClick={() => handleSelect(GENDER.male)}
-        />
-        <GenderCard
-          label="여성"
-          active={data.gender === GENDER.female}
-          onClick={() => handleSelect(GENDER.female)}
-        />
+        <GenderCard label="남성" active={data.gender === 0} onClick={() => update({ gender: 0 })} />
+        <GenderCard label="여성" active={data.gender === 1} onClick={() => update({ gender: 1 })} />
       </div>
     </section>
   );

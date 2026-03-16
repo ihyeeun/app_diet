@@ -7,9 +7,12 @@ import StepGoal from "./StepGoal";
 import StepGoalWeight from "./StepGoalWeight";
 import StepSubscribedCode from "./StepSubscribedCode";
 import type { ComponentType } from "react";
-import StepGoalKalories from "./StepGoalKalories";
+
 import StepNutrient from "./StepNutrient";
 import { isValidBirthYear } from "@/shared/commons/picker/yearOptions";
+import SteptargetCalories from "@/features/onboarding/components/steps/StepGoalCalories";
+
+const hasSelectedValue = (value?: number | null) => value !== undefined && value !== null;
 
 export const STEP_COMPONENTS: Record<StepId, ComponentType<StepComponentProps>> = {
   gender: StepGender,
@@ -18,7 +21,7 @@ export const STEP_COMPONENTS: Record<StepId, ComponentType<StepComponentProps>> 
   activity: StepActivity,
   goal: StepGoal,
   goalWeight: StepGoalWeight,
-  goalKalories: StepGoalKalories,
+  targetCalories: SteptargetCalories,
   nutrient: StepNutrient,
   subscribedCode: StepSubscribedCode,
 };
@@ -27,7 +30,7 @@ export const STEPS: StepMeta[] = [
   {
     id: "gender",
     title: "성별",
-    isValid: (d) => Boolean(d.gender),
+    isValid: (d) => hasSelectedValue(d.gender),
   },
   {
     id: "birthYear",
@@ -37,27 +40,27 @@ export const STEPS: StepMeta[] = [
   {
     id: "body",
     title: "키 / 몸무게",
-    isValid: (d) => !!d.heightCm && !!d.weightKg,
+    isValid: (d) => !!d.height && !!d.weight,
   },
   {
     id: "activity",
     title: "활동량",
-    isValid: (d) => !!d.activityLevel,
+    isValid: (d) => hasSelectedValue(d.activity),
   },
   {
     id: "goal",
     title: "목표",
-    isValid: (d) => !!d.goal,
+    isValid: (d) => hasSelectedValue(d.goal),
   },
   {
     id: "goalWeight",
     title: "목표 체중",
-    isValid: (d) => !!d.goalWeightKg,
+    isValid: (d) => !!d.goalweight,
   },
   {
-    id: "goalKalories",
+    id: "targetCalories",
     title: "목표 칼로리",
-    isValid: (d) => !!d.goalKalories,
+    isValid: () => true,
   },
   {
     id: "nutrient",

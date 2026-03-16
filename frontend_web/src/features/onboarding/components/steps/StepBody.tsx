@@ -1,4 +1,8 @@
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import {
+  ONBOARDING_HEIGHT_RANGE,
+  ONBOARDING_WEIGHT_RANGE,
+} from "@/features/onboarding/constants/inputRanges";
 import { NumberInput } from "@/shared/commons/input/NumberInput";
 import { Field } from "@base-ui/react";
 
@@ -12,24 +16,26 @@ export default function StepBody({ data, update }: StepComponentProps) {
       <div className="onboarding-body-list">
         <InputCard
           label="키"
-          value={data.heightCm}
-          onChange={(v) => update({ heightCm: v })}
+          value={data.height}
+          onChange={(v) => update({ height: v })}
           placeholder="165"
-          min={1}
-          max={250}
+          min={ONBOARDING_HEIGHT_RANGE.min}
+          max={ONBOARDING_HEIGHT_RANGE.max}
           step={1}
           unit="cm"
+          normalizeOnBlur={false}
         />
 
         <InputCard
           label="몸무게"
-          value={data.weightKg}
-          onChange={(v) => update({ weightKg: v })}
+          value={data.weight}
+          onChange={(v) => update({ weight: v })}
           placeholder="55"
-          min={1}
-          max={200}
+          min={ONBOARDING_WEIGHT_RANGE.min}
+          max={ONBOARDING_WEIGHT_RANGE.max}
           step={0.1}
           unit="kg"
+          normalizeOnBlur={false}
         />
       </div>
     </section>
@@ -46,6 +52,7 @@ type InputCardProps = {
   max?: number;
   step?: number;
   unit?: string;
+  normalizeOnBlur?: boolean;
 };
 
 export function InputCard({
@@ -57,6 +64,7 @@ export function InputCard({
   max,
   step,
   unit,
+  normalizeOnBlur,
 }: InputCardProps) {
   return (
     <Field.Root className="onboarding-input-card">
@@ -70,6 +78,7 @@ export function InputCard({
         max={max}
         step={step}
         unit={unit}
+        normalizeOnBlur={normalizeOnBlur}
       />
     </Field.Root>
   );

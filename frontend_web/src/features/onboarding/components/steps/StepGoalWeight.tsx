@@ -1,11 +1,12 @@
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import { ONBOARDING_WEIGHT_RANGE } from "@/features/onboarding/constants/inputRanges";
 import { NumberInput } from "@/shared/commons/input/NumberInput";
 import { Field } from "@base-ui/react";
 
 export default function StepGoalWeight({ data, update }: StepComponentProps) {
   const diff =
-    data.goalWeightKg !== undefined && data.weightKg !== undefined
-      ? data.goalWeightKg - data.weightKg
+    data.goalweight !== undefined && data.weight !== undefined
+      ? data.goalweight - data.weight
       : undefined;
 
   return (
@@ -23,13 +24,14 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
       <Field.Root className="onboarding-field-padding">
         <div className="onboarding-goal-weight-card">
           <NumberInput
-            value={data.goalWeightKg}
-            onChange={(value) => update({ goalWeightKg: value })}
+            value={data.goalweight}
+            onChange={(value) => update({ goalweight: value })}
             placeholder="55"
-            min={1}
-            max={200}
+            min={ONBOARDING_WEIGHT_RANGE.min}
+            max={ONBOARDING_WEIGHT_RANGE.max}
             step={0.1}
             unit="kg"
+            normalizeOnBlur={false}
           />
         </div>
       </Field.Root>

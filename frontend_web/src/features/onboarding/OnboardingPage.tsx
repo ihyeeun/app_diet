@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { OnboardingData } from "./onboarding.types";
 import { STEP_COMPONENTS, STEPS } from "./components/steps/steps";
 import { Button } from "@/shared/commons/button/Button";
@@ -12,16 +12,38 @@ import {
   isInRange,
 } from "@/features/onboarding/constants/inputRanges";
 import { toast } from "@/shared/commons/toast/toast";
+import { useRegisterUserInfoMutation } from "@/features/onboarding/hooks/mutations/useRegisterUserInfoMutation";
+import { useNavigate } from "react-router-dom";
+import { PATH } from "@/router/path";
+import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 
 function isBodyRangeValid(data: OnboardingData) {
   return (
-    isInRange(data.heightCm, ONBOARDING_HEIGHT_RANGE.min, ONBOARDING_HEIGHT_RANGE.max) &&
-    isInRange(data.weightKg, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max)
+    isInRange(data.height, ONBOARDING_HEIGHT_RANGE.min, ONBOARDING_HEIGHT_RANGE.max) &&
+    isInRange(data.weight, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max)
   );
 }
 
 function isGoalWeightRangeValid(data: OnboardingData) {
-  return isInRange(data.goalWeightKg, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max);
+  const isWeightInDefaultRange = isInRange(
+    data.goalweight,
+    ONBOARDING_WEIGHT_RANGE.min,
+    ONBOARDING_WEIGHT_RANGE.max,
+  );
+
+  if (!isWeightInDefaultRange) {
+    return false;
+  }
+
+  if (data.goal === 0 && data.goalweight !== undefined && data.weight !== undefined) {
+    return data.goalweight <= data.weight;
+  }
+
+  if (data.goal === 2 && data.goalweight !== undefined && data.weight !== undefined) {
+    return data.goalweight > data.weight;
+  }
+
+  return true;
 }
 
 export default function OnboardingPage() {
@@ -29,9 +51,20 @@ export default function OnboardingPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [isNutrientTotalModalOpen, setIsNutrientTotalModalOpen] = useState(false);
   const layoutRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const step = STEPS[stepIndex];
   const total = STEPS.length;
+
+  const { mutate } = useRegisterUserInfoMutation({
+    onSuccess: () => {
+      syncAppTab("home");
+      navigate(PATH.HOME);
+    },
+    onError: () => {
+      toast.warning("등록 실패");
+    },
+  });
 
   const update = useCallback((patch: Partial<OnboardingData>) => {
     setUserData((d) => ({ ...d, ...patch }));
@@ -48,7 +81,17 @@ export default function OnboardingPage() {
     }
 
     if (step.id === "goalWeight" && !isGoalWeightRangeValid(userData)) {
-      toast.warning("정확한 값인지 다시 확인해주세요");
+      if (userData.goal === 0 && userData.goalweight !== undefined && userData.weight !== undefined) {
+        toast.warning("다이어트 목표는 현재 몸무게보다 높게 설정할 수 없어요");
+      } else if (
+        userData.goal === 2 &&
+        userData.goalweight !== undefined &&
+        userData.weight !== undefined
+      ) {
+        toast.warning("근육 늘리기 목표는 현재 몸무게보다 높게 설정해야 해요");
+      } else {
+        toast.warning("정확한 값인지 다시 확인해주세요");
+      }
       return;
     }
 
@@ -68,6 +111,23 @@ export default function OnboardingPage() {
     if (stepIndex < total - 1) {
       setStepIndex((s) => s + 1);
     }
+
+    if (step.id === "subscribedCode") {
+      mutate({
+        gender: userData.gender!,
+        birthYear: userData.birthYear!,
+        height: userData.height!,
+        weight: userData.weight!,
+        activity: userData.activity!,
+        goal: userData.goal!,
+        target_weight: userData.goalweight!,
+        target_calories: userData.targetCalories!,
+        target_ratio: [userData.carbs!, userData.protein!, userData.fat!],
+        subCode: userData.subscribedCode ?? "",
+      });
+
+      return;
+    }
   };
 
   const prev = () => {
@@ -78,32 +138,32 @@ export default function OnboardingPage() {
 
   const StepComponent = STEP_COMPONENTS[step.id];
 
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    const layout = layoutRef.current;
-    if (!viewport || !layout) return;
-    let prevOffset = -1;
+  // useEffect(() => {
+  //   const viewport = window.visualViewport;
+  //   const layout = layoutRef.current;
+  //   if (!viewport || !layout) return;
+  //   let prevOffset = -1;
 
-    const updateKeyboardOffset = () => {
-      const overlap = Math.max(0, window.innerHeight - (viewport.height + viewport.offsetTop));
-      const nextOffset = overlap < 8 ? 0 : Math.round(overlap);
-      if (prevOffset === nextOffset) return;
+  //   const updateKeyboardOffset = () => {
+  //     const overlap = Math.max(0, window.innerHeight - (viewport.height + viewport.offsetTop));
+  //     const nextOffset = overlap < 8 ? 0 : Math.round(overlap);
+  //     if (prevOffset === nextOffset) return;
 
-      prevOffset = nextOffset;
-      layout.style.setProperty("--keyboard-offset", `${nextOffset}px`);
-    };
+  //     prevOffset = nextOffset;
+  //     layout.style.setProperty("--keyboard-offset", `${nextOffset}px`);
+  //   };
 
-    updateKeyboardOffset();
-    viewport.addEventListener("resize", updateKeyboardOffset);
-    viewport.addEventListener("scroll", updateKeyboardOffset);
-    window.addEventListener("orientationchange", updateKeyboardOffset);
+  //   updateKeyboardOffset();
+  //   viewport.addEventListener("resize", updateKeyboardOffset);
+  //   viewport.addEventListener("scroll", updateKeyboardOffset);
+  //   window.addEventListener("orientationchange", updateKeyboardOffset);
 
-    return () => {
-      viewport.removeEventListener("resize", updateKeyboardOffset);
-      viewport.removeEventListener("scroll", updateKeyboardOffset);
-      window.removeEventListener("orientationchange", updateKeyboardOffset);
-    };
-  }, []);
+  //   return () => {
+  //     viewport.removeEventListener("resize", updateKeyboardOffset);
+  //     viewport.removeEventListener("scroll", updateKeyboardOffset);
+  //     window.removeEventListener("orientationchange", updateKeyboardOffset);
+  //   };
+  // }, []);
 
   return (
     <div ref={layoutRef} className="onboarding-layout">

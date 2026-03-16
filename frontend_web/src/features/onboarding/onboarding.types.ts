@@ -1,19 +1,12 @@
-export const GENDER = {
-  male: "male",
-  female: "female",
-} as const;
-
-export type Gender = keyof typeof GENDER;
-
 export type OnboardingData = {
-  gender?: Gender;
+  gender?: number;
   birthYear?: number;
-  heightCm?: number;
-  weightKg?: number;
-  activityLevel?: number;
+  height?: number;
+  weight?: number;
+  activity?: number;
   goal?: number;
-  goalWeightKg?: number;
-  goalKalories?: number;
+  goalweight?: number;
+  targetCalories?: number;
   carbs?: number;
   protein?: number;
   fat?: number;
@@ -27,7 +20,7 @@ export type StepId =
   | "activity"
   | "goal"
   | "goalWeight"
-  | "goalKalories"
+  | "targetCalories"
   | "nutrient"
   | "subscribedCode";
 
