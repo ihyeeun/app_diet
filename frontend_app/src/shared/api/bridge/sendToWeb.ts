@@ -7,7 +7,8 @@ export function sendToWeb(webViewRef: RefObject<WebView | null>, message: AppToW
     .replace(/\\/g, "\\\\")
     .replace(/'/g, "\\'")
     .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r");
+    .replace(/\r/g, "\\r")
+    .replace(/`/g, "\\`");
 
   const script = `
     (function() {
