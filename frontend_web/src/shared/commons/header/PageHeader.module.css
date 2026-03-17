@@ -1,0 +1,44 @@
+.root {
+  width: 100%;
+}
+
+.safeAreaTop {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.navBar {
+  height: 56px;
+  display: grid;
+  align-items: center;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--text-normal);
+}
+
+.backButton:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rightSlot {
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
