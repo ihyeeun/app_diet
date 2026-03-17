@@ -38,7 +38,7 @@ export default function TodayScoreSection() {
           <img src="/icons/heart_smile.svg" className={style.img_container} aria-hidden="true" />
         </div>
 
-        <ScoreProgress value={score} />
+        <ScoreProgress value={score} variant="primary-white" />
       </div>
       <div className={style.badge_container}>
         <Badge>아직 {total - current}kcal 더 먹을 수 있어요</Badge>

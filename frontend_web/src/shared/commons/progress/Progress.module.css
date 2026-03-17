@@ -1,9 +1,21 @@
 .Progress {
+  --progress-track-color: var(--bg-normal-white);
+  --progress-indicator-color: var(--primary-normal);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.25rem;
   row-gap: 0.5rem;
   width: 100%;
+}
+
+.Progress[data-variant="primary-gray"] {
+  --progress-track-color: var(--gray-400);
+  --progress-indicator-color: var(--primary-normal);
+}
+
+.Progress[data-variant="black-gray"] {
+  --progress-track-color: var(--gray-400);
+  --progress-indicator-color: var(--etc-1);
 }
 
 .Label {
@@ -25,14 +37,14 @@
 .Track {
   grid-column: 1 / 3;
   overflow: hidden;
-  background-color: var(--bg-normal-white);
+  background-color: var(--progress-track-color);
   height: 12px;
   border-radius: 100px;
 }
 
 .Indicator {
   display: block;
-  background-color: var(--primary-normal);
+  background-color: var(--progress-indicator-color);
   transition: width 500ms;
   border-radius: 100px;
 }
