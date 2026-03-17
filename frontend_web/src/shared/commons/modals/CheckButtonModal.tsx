@@ -29,9 +29,12 @@ export function CheckButtonModal({
       <AlertDialog.Close
         render={(props) => (
           <Button
-            variant="primary"
-            disabled={confirmDisabled}
             {...props}
+            variant="filled"
+            color="primary"
+            size="small"
+            state="default"
+            disabled={confirmDisabled}
             onClick={(e) => {
               onConfirm?.();
               props.onClick?.(e);

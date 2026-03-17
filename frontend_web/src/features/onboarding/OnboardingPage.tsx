@@ -174,7 +174,15 @@ export default function OnboardingPage() {
       </main>
 
       <footer className="onboarding-footer">
-        <Button onClick={next} disabled={!canGoNext} fullWidth>
+        <Button
+          onClick={next}
+          disabled={!canGoNext}
+          fullWidth
+          variant="filled"
+          size="large"
+          color="primary"
+          state={canGoNext ? "default" : "disabled"}
+        >
           {step.nextText ?? "다음"}
         </Button>
       </footer>
