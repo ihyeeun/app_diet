@@ -189,5 +189,5 @@
 
 .footer {
   padding: 0px 20px;
-  padding-bottom: 16px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
