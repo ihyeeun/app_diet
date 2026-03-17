@@ -1,5 +1,12 @@
 import { Tabs } from "expo-router";
-import { House, Star, GitCompareArrows, User } from "lucide-react-native";
+import HomeIcon from "../../assets/images/Icon/Home.svg";
+import HomeFillIcon from "../../assets/images/Icon/HomeFill.svg";
+import StarIcon from "../../assets/images/Icon/Star.svg";
+import StarFillIcon from "../../assets/images/Icon/StarFill.svg";
+import CompareIcon from "../../assets/images/Icon/Compare.svg";
+import CompareFillIcon from "../../assets/images/Icon/CompareFill.svg";
+import UserIcon from "../../assets/images/Icon/User.svg";
+import UserFillIcon from "../../assets/images/Icon/UserFill.svg";
 
 export default function TabsLayout() {
   return (
@@ -14,8 +21,8 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: "홈",
-          tabBarIcon: ({ color, size }) => (
-            <House color={color} size={size} fill={color} strokeWidth={1} />
+          tabBarIcon: ({ focused, size }) => (
+            focused ? <HomeFillIcon width={size} height={size} /> : <HomeIcon width={size} height={size} />
           ),
         }}
       />
@@ -23,8 +30,8 @@ export default function TabsLayout() {
         name="recommend"
         options={{
           title: "추천",
-          tabBarIcon: ({ color, size }) => (
-            <Star color={color} size={size} fill={color} strokeWidth={1} />
+          tabBarIcon: ({ focused, size }) => (
+            focused ? <StarFillIcon width={size} height={size} /> : <StarIcon width={size} height={size} />
           ),
         }}
       />
@@ -32,8 +39,12 @@ export default function TabsLayout() {
         name="compare"
         options={{
           title: "비교",
-          tabBarIcon: ({ color, size }) => (
-            <GitCompareArrows color={color} size={size} fill={color} strokeWidth={1} />
+          tabBarIcon: ({ focused, size }) => (
+            focused ? (
+              <CompareFillIcon width={size} height={size} />
+            ) : (
+              <CompareIcon width={size} height={size} />
+            )
           ),
         }}
       />
@@ -41,8 +52,8 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: "프로필",
-          tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} fill={color} strokeWidth={1} />
+          tabBarIcon: ({ focused, size }) => (
+            focused ? <UserFillIcon width={size} height={size} /> : <UserIcon width={size} height={size} />
           ),
         }}
       />
