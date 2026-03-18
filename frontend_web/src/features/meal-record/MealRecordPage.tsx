@@ -12,7 +12,7 @@ import {
   toMacroRatiosFromGrams,
   type MacroRatios,
 } from "@/shared/utils/nutritionScore";
-import styles from "./MealRecordPage.module.css";
+import styles from "./styles/MealRecordPage.module.css";
 import { PATH } from "@/router/path";
 
 const MEAL_TYPE_OPTIONS = [
@@ -80,6 +80,14 @@ function getMealType(value: string | null): MealType {
   }
 
   return "lunch";
+}
+
+function getMealRecordSearchPath(dateKey: string, mealType: MealType) {
+  const params = new URLSearchParams({
+    date: dateKey,
+    mealType,
+  });
+  return `${PATH.MEAL_RECORD_SEARCH}?${params.toString()}`;
 }
 
 function formatKcal(value: number) {
@@ -359,26 +367,8 @@ export default function MealRecordPage() {
     });
   };
 
-  const handleAddMenu = () => {
-    setMealRecords((prev) => {
-      const record = prev[mealType];
-      if (record.addQueue.length === 0) return prev;
-
-      const [nextMenu, ...nextQueue] = record.addQueue;
-
-      return {
-        ...prev,
-        [mealType]: {
-          ...record,
-          menuItems: [...record.menuItems, nextMenu],
-          addQueue: nextQueue,
-        },
-      };
-    });
-  };
-
   const hasMenus = allMenus.length > 0;
-  const isAddDisabled = currentRecord.addQueue.length === 0;
+  const mealRecordSearchPath = getMealRecordSearchPath(dateKey, mealType);
 
   return (
     <section className={styles.page}>
@@ -505,13 +495,12 @@ export default function MealRecordPage() {
 
       <footer className={styles.footer}>
         <Button
-          onClick={handleAddMenu}
+          onClick={() => navigate(mealRecordSearchPath)}
           variant="outlined"
-          state={isAddDisabled ? "disabled" : "default"}
+          state="default"
           size="medium"
           color="primary"
           fullWidth
-          disabled={isAddDisabled}
         >
           추가하기
         </Button>

@@ -1,0 +1,57 @@
+.page {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-normal-primary1);
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.entrySection {
+  width: 100%;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.entryButton {
+  background-color: var(--bg-normal-white);
+  padding: 16px 20px;
+  border-radius: 8px;
+  color: var(--text-assistive2);
+}
+
+.cameraButton {
+  position: fixed;
+  right: 24px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 78px);
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-normal-white);
+  color: var(--static-black);
+  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.footer {
+  padding: 0px 20px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.buttonTextColor {
+  color: var(--text-white);
+}

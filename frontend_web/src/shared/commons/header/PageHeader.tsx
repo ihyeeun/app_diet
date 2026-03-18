@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import styles from "./PageHeader.module.css";
 
 type Props = {
-  title: string;
+  title?: string;
   onBack?: () => void;
   backButtonAriaLabel?: string;
   showStatusBar?: boolean;

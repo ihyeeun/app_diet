@@ -7,6 +7,7 @@ import ComparePage from "@/features/compare/ComparePage";
 import TermsPage from "@/features/terms/TermsPage";
 import MealDetailPage from "@/features/meal-detail/MealDetailPage";
 import MealRecordPage from "@/features/meal-record/MealRecordPage";
+import MealRecordSearchPage from "@/features/meal-record/MealRecordSearchPage";
 
 export default function AppRouter() {
   return (
@@ -21,6 +22,7 @@ export default function AppRouter() {
         <Route path={PATH.TERMS} element={<TermsPage />} />
         <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
         <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
+        <Route path={PATH.MEAL_RECORD_SEARCH} element={<MealRecordSearchPage />} />
       </Routes>
     </BrowserRouter>
   );
