@@ -1,13 +1,33 @@
 import style from "@/features/home/styles/TodayScoreSection.module.css";
 import { PATH } from "@/router/path";
 import ScoreProgress from "@/shared/commons/progress/Progress";
+import {
+  calculateNutritionScore,
+  getNutritionGradeLabel,
+  toMacroRatiosFromGrams,
+} from "@/shared/utils/nutritionScore";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function TodayScoreSection() {
-  const score = 82;
   const current = 1320;
   const total = 2100;
+  const nutritionScore = calculateNutritionScore({
+    actualCalories: current,
+    targetCalories: total,
+    actualMacroRatios: toMacroRatiosFromGrams({
+      carbohydrate: 165,
+      protein: 86,
+      fat: 43,
+    }),
+    targetMacroRatios: {
+      carbohydrate: 50,
+      protein: 30,
+      fat: 20,
+    },
+  });
+  const score = nutritionScore.totalScore;
+  const balanceLabel = getNutritionGradeLabel(nutritionScore.macroBalanceGrade);
 
   const navigation = useNavigate();
 
@@ -43,7 +63,7 @@ export default function TodayScoreSection() {
       <div className={style.badge_container}>
         <Badge>아직 {total - current}kcal 더 먹을 수 있어요</Badge>
         <Badge>👣 걸음으로 +300kcal</Badge>
-        <Badge>탄단지 균형은 적절해요</Badge>
+        <Badge>탄단지 균형은 {balanceLabel}해요</Badge>
       </div>
     </button>
   );
