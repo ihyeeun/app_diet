@@ -1,0 +1,89 @@
+.card {
+  width: 100%;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background-color: var(--bg-normal-white);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card.clickable {
+  cursor: pointer;
+}
+
+.card.selected {
+  border-color: var(--border-primary);
+  background-color: var(--interaction-primary);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chipList {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  height: 22px;
+  border-radius: 4px;
+  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.chipPrimary {
+  background-color: var(--primary-strong);
+  color: var(--text-white);
+}
+
+.chipNeutral {
+  background-color: var(--gray-900);
+  color: var(--text-white);
+}
+
+.iconButton {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-normal);
+}
+
+.iconButton:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.selected .iconButton {
+  color: var(--primary-strong);
+}
+
+.title {
+  color: var(--text-normal);
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.calories {
+  color: var(--text-normal);
+}
+
+.unitAmount {
+  color: var(--text-assistive1);
+}
