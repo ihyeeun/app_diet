@@ -25,16 +25,16 @@ export default function MealRecordSearchPage() {
         </section>
       </main>
 
-      <button
-        type="button"
-        className={styles.cameraButton}
-        onClick={handleCameraClick}
-        aria-label="사진으로 기록하기"
-      >
-        <Camera size={24} />
-      </button>
-
       <footer className={styles.footer}>
+        <button
+          type="button"
+          className={styles.cameraButton}
+          onClick={handleCameraClick}
+          aria-label="사진으로 기록하기"
+        >
+          <Camera size={24} />
+        </button>
+
         <Button
           onClick={() => {}}
           variant="filled"
