@@ -5,6 +5,22 @@ import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import { PlusIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+function getTodayDateKey() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getMealRecordPath(mealType: "breakfast" | "lunch" | "dinner" | "snack") {
+  const params = new URLSearchParams({
+    date: getTodayDateKey(),
+    mealType,
+  });
+  return `${PATH.MEAL_RECORD}?${params.toString()}`;
+}
+
 export default function MenuActionSection() {
   const navigate = useNavigate();
 
@@ -37,16 +53,31 @@ export default function MenuActionSection() {
             <p className={`${style.description} typo-body4`}>오늘 드신 식단을 기록해주세요</p>
           </div>
           <div className={style.meal_card_list}>
-            <MealTimeCard label="아침" iconSrc="/icons/breakfast.svg" value="" onClick={() => {}} />
+            <MealTimeCard
+              label="아침"
+              iconSrc="/icons/breakfast.svg"
+              value=""
+              onClick={() => navigate(getMealRecordPath("breakfast"))}
+            />
             <MealTimeCard
               label="점심"
               iconSrc="/icons/lunch.svg"
               value="123"
-              onClick={() => {}}
+              onClick={() => navigate(getMealRecordPath("lunch"))}
               selected
             />
-            <MealTimeCard label="저녁" iconSrc="/icons/dinner.svg" value="" onClick={() => {}} />
-            <MealTimeCard label="간식" iconSrc="/icons/snack.svg" value="" onClick={() => {}} />
+            <MealTimeCard
+              label="저녁"
+              iconSrc="/icons/dinner.svg"
+              value=""
+              onClick={() => navigate(getMealRecordPath("dinner"))}
+            />
+            <MealTimeCard
+              label="간식"
+              iconSrc="/icons/snack.svg"
+              value=""
+              onClick={() => navigate(getMealRecordPath("snack"))}
+            />
           </div>
         </div>
       </ActionCard>

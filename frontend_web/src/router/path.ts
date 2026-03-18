@@ -7,4 +7,5 @@ export const PATH = {
   PROFILE: "/profile",
   TERMS: "/terms",
   MEAL_DETAIL: "/meal-detail",
+  MEAL_RECORD: "/meal-record",
 };
