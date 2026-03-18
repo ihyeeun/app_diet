@@ -167,7 +167,7 @@ export default function MealDetailPage() {
                 <article key={item.name} className={styles.nutrient_item}>
                   <div className={styles.nutrient_header}>
                     <p className={styles.nutrient_title}>
-                      <span className="typo-title3">{item.name}</span>
+                      <span className="typo-title4">{item.name}</span>
                       <span className={`${styles.nutrient_amount} typo-label4`}>
                         ({formatNumber(item.current)}g / {formatNumber(item.target)}g)
                       </span>
