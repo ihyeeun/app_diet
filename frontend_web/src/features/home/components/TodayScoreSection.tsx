@@ -1,13 +1,13 @@
 import style from "@/features/home/styles/TodayScoreSection.module.css";
 import { PATH } from "@/router/path";
 import ScoreProgress from "@/shared/commons/progress/Progress";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function TodayScoreSection() {
-  const [score, setScore] = useState(82);
-  const [current, setCurrent] = useState(1320);
-  const [total, setTotal] = useState(2100);
+  const score = 82;
+  const current = 1320;
+  const total = 2100;
 
   const navigation = useNavigate();
 

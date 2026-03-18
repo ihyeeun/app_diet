@@ -1,6 +1,5 @@
 import { Toast } from "@base-ui/react/toast";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./shared/styles/tokens.css";
 import "./index.css";
