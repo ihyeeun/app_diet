@@ -24,14 +24,14 @@
   background-color: var(--status-link);
 }
 
-.normal {
+.slightlyUnbalanced {
   background-color: var(--status-success);
 }
 
-.slightlyUnbalanced {
-  background-color: var(--status-warning);
+.unbalanced {
+  background-color: var(--primary-warning);
 }
 
-.unbalanced {
+.severelyUnbalanced {
   background-color: var(--status-error);
 }
