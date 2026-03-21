@@ -12,4 +12,5 @@ export const PATH = {
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
   NUTRITION_ADD: "/nutrition-add",
   NUTRITION_ADD_DETAIL: "/nutrition-add/detail",
+  BRAND_SEARCH: "/brand-search",
 };

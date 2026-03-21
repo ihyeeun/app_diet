@@ -9,16 +9,23 @@ import type { NutritionAddLocationState } from "./nutritionEntry.types";
 export default function NutritionAddPage() {
   const navigation = useNavigate();
   const location = useLocation();
-  const [brandName, setBrandName] = useState("");
-  const [foodName, setFoodName] = useState("");
   const contextState = (location.state ?? {}) as NutritionAddLocationState;
-
-  const handleBrandNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setBrandName(event.target.value);
-  };
+  const brandName = (contextState.brandName ?? "").trim();
+  const [foodName, setFoodName] = useState((contextState.foodName ?? "").trim());
 
   const handleFoodNameChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setFoodName(event.target.value);
+  };
+
+  const handleOpenBrandSearch = () => {
+    navigation(PATH.BRAND_SEARCH, {
+      replace: true,
+      state: {
+        ...contextState,
+        brandName,
+        foodName,
+      } satisfies NutritionAddLocationState,
+    });
   };
 
   const isNextDisabled = !foodName.trim();
@@ -45,19 +52,22 @@ export default function NutritionAddPage() {
       />
 
       <main className={styles.main}>
-        {/* TODO 인풋이 아니라 검색창으로 넘어가는 버튼으로 만들어야할듯 */}
         <div className={styles.fieldWrap}>
           <label>
             <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>
           </label>
-          <input
-            className={`${styles.inputBrand} typo-body3`}
-            type="text"
-            value={brandName}
-            onChange={handleBrandNameChange}
-            placeholder="등록하고 싶은 브랜드를 입력하세요"
-            aria-label="등록하고 싶은 브랜드를 입력하세요"
-          />
+          <button
+            type="button"
+            className={styles.inputBrandButton}
+            onClick={handleOpenBrandSearch}
+            aria-label="브랜드 검색 화면 열기"
+          >
+            <span
+              className={`typo-body3 ${brandName ? styles.inputBrandValue : styles.inputBrandPlaceholder}`}
+            >
+              {brandName || "등록하고 싶은 브랜드를 검색하세요"}
+            </span>
+          </button>
         </div>
 
         <div className={styles.fieldWrap}>
