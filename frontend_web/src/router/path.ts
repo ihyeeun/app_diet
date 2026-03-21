@@ -10,4 +10,6 @@ export const PATH = {
   MEAL_RECORD: "/meal-record",
   MEAL_RECORD_ADD: "/meal-record/add",
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
+  NUTRITION_ADD: "/nutrition-add",
+  // NUTRITION_DETAIL: "/nutrition-detail",
 };
