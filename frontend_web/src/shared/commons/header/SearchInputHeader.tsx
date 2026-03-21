@@ -66,6 +66,7 @@ export function SearchInputHeader({
             onChange={handleChange}
             placeholder={placeholder}
             aria-label={inputAriaLabel}
+            maxLength={300}
           />
 
           {value && (
