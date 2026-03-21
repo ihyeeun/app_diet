@@ -1,14 +1,19 @@
 import { PATH } from "@/router/path";
+import { getMealRecordPath } from "@/features/meal-record/utils/mealRecord.paths";
+import {
+  DEFAULT_MEAL_TYPE,
+  type MealMenuItem,
+  type MealRecordLocationState,
+  type MealType,
+} from "@/features/meal-record/types/mealRecord.types";
+import { getTodayDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { toast } from "@/shared/commons/toast/toast";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./styles/NutritionAddDetailPage.module.css";
-
-type NutritionAddDetailLocationState = {
-  brandName?: string;
-  foodName?: string;
-};
+import type { NutritionAddLocationState } from "./nutritionEntry.types";
 
 type NutritionDetailForm = {
   calories: string;
@@ -114,6 +119,19 @@ const INITIAL_FORM: NutritionDetailForm = {
 const MIN_NUTRITION_VALUE = 0;
 const MAX_NUTRITION_VALUE = 9999.9;
 const SINGLE_DECIMAL_STEP = 0.1;
+const MAX_MEAL_RECORD_MENUS = 100;
+const MAX_COMPARE_MENUS = 20;
+
+const NUTRIENT_CHILD_RULES = [
+  {
+    parent: "carbohydrate",
+    children: ["sugar", "sugarAlcohol", "dietaryFiber"],
+  },
+  {
+    parent: "fat",
+    children: ["saturatedFat", "transFat", "unsaturatedFat"],
+  },
+] as const;
 
 function sanitizeDecimalInput(value: string) {
   const numericOnly = value.replace(/[^0-9.]/g, "");
@@ -151,6 +169,56 @@ function getStepByUnit(unit: DetailFieldConfig["unit"]) {
   return SINGLE_DECIMAL_STEP;
 }
 
+function normalizeNutritionFormValues(form: NutritionDetailForm): NutritionDetailForm {
+  const nextForm = { ...form };
+
+  (Object.keys(form) as Array<keyof NutritionDetailForm>).forEach((key) => {
+    nextForm[key] = normalizeDecimalInput(form[key]);
+  });
+
+  return nextForm;
+}
+
+function toNumber(value: string) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return parsed;
+}
+
+function hasChildNutrientOverflow(form: NutritionDetailForm) {
+  return NUTRIENT_CHILD_RULES.some((rule) => {
+    const parentValue = toNumber(form[rule.parent]);
+    const childrenSum = rule.children.reduce((sum, key) => sum + toNumber(form[key]), 0);
+    return childrenSum > parentValue + 1e-9;
+  });
+}
+
+function buildManualMenuItem({
+  foodName,
+  brandName,
+  form,
+}: {
+  foodName: string;
+  brandName: string;
+  form: NutritionDetailForm;
+}): MealMenuItem {
+  const totalWeight = toNumber(form.totalWeight);
+  const safeWeightText =
+    totalWeight > 0 ? `${totalWeight.toFixed(1)}g` : `${MIN_NUTRITION_VALUE.toFixed(1)}g`;
+
+  return {
+    id: `manual-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    title: foodName,
+    calories: toNumber(form.calories),
+    unitAmountText: `1회 제공량 (${safeWeightText})`,
+    carbohydrateGram: toNumber(form.carbohydrate),
+    proteinGram: toNumber(form.protein),
+    fatGram: toNumber(form.fat),
+    brandChipLabel: brandName || undefined,
+    personalChipLabel: "직접 입력",
+  };
+}
+
 function cx(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");
 }
@@ -158,15 +226,28 @@ function cx(...classes: Array<string | undefined | false>) {
 export default function NutritionAddDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { brandName = "", foodName = "" } = (location.state ??
-    {}) as NutritionAddDetailLocationState;
+  const locationState = (location.state ?? {}) as NutritionAddLocationState;
+  const {
+    source = "general",
+    dateKey,
+    mealType,
+    existingMenuCount = 0,
+    existingCompareCount = 0,
+  } = locationState;
+  const brandName = (locationState.brandName ?? "").trim();
+  const foodName = (locationState.foodName ?? "").trim();
+  const pendingMenus = Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : [];
+  const pendingCompareMenus = Array.isArray(locationState.pendingCompareMenus)
+    ? locationState.pendingCompareMenus
+    : [];
   const [form, setForm] = useState<NutritionDetailForm>(INITIAL_FORM);
 
-  const displayFoodName = foodName.trim() || "음식명을 입력해주세요";
-  const displayBrandName = brandName.trim();
+  const displayFoodName = foodName || "음식명을 입력해주세요";
+  const displayBrandName = brandName;
 
   const isSubmitDisabled = useMemo(
-    () => REQUIRED_FIELDS.some((key) => !form[key].trim()) || !foodName.trim(),
+    () =>
+      REQUIRED_FIELDS.some((key) => normalizeDecimalInput(form[key]) === "") || foodName.length === 0,
     [foodName, form],
   );
 
@@ -196,6 +277,69 @@ export default function NutritionAddDetailPage() {
     setForm({ ...INITIAL_FORM });
   };
 
+  const handleSubmit = () => {
+    const normalizedForm = normalizeNutritionFormValues(form);
+    setForm(normalizedForm);
+
+    if (REQUIRED_FIELDS.some((key) => normalizedForm[key] === "")) {
+      return;
+    }
+
+    if (toNumber(normalizedForm.totalWeight) <= 0) {
+      toast.warning("중량을 다시 확인해주세요");
+      return;
+    }
+
+    if (hasChildNutrientOverflow(normalizedForm)) {
+      toast.warning("하위 항목 합이 상위 항목을 초과했어요");
+      return;
+    }
+
+    const registeredMenu = buildManualMenuItem({
+      foodName: displayFoodName,
+      brandName: displayBrandName,
+      form: normalizedForm,
+    });
+
+    if (source === "meal-record") {
+      const nextPendingMenus = [...pendingMenus, registeredMenu];
+      if (existingMenuCount + nextPendingMenus.length > MAX_MEAL_RECORD_MENUS) {
+        toast.warning("최대 100개까지 기록할 수 있어요");
+        return;
+      }
+
+      const nextDateKey = dateKey ?? getTodayDateKey();
+      const nextMealType: MealType = mealType ?? DEFAULT_MEAL_TYPE;
+
+      toast.success("등록되었어요");
+      navigate(getMealRecordPath(nextDateKey, nextMealType), {
+        state: {
+          pendingMenus: nextPendingMenus,
+        } satisfies MealRecordLocationState,
+      });
+      return;
+    }
+
+    if (source === "menu-compare") {
+      const nextPendingCompareMenus = [...pendingCompareMenus, registeredMenu];
+      if (existingCompareCount + nextPendingCompareMenus.length > MAX_COMPARE_MENUS) {
+        toast.warning("최대 20개까지 비교할 수 있어요");
+        return;
+      }
+
+      toast.success("등록되었어요");
+      navigate(PATH.COMPARE, {
+        state: {
+          pendingMenus: nextPendingCompareMenus,
+        },
+      });
+      return;
+    }
+
+    toast.success("등록되었어요");
+    navigate(-1);
+  };
+
   return (
     <section className={styles.page}>
       <PageHeader title="영양성분 등록" onBack={handleBack} />
@@ -220,7 +364,7 @@ export default function NutritionAddDetailPage() {
                 min={MIN_NUTRITION_VALUE}
                 max={MAX_NUTRITION_VALUE}
                 step={SINGLE_DECIMAL_STEP}
-                placeholder="0"
+                placeholder="0.0"
                 inputMode="decimal"
                 aria-label="칼로리 입력"
               />
@@ -242,7 +386,7 @@ export default function NutritionAddDetailPage() {
                     min={MIN_NUTRITION_VALUE}
                     max={MAX_NUTRITION_VALUE}
                     step={SINGLE_DECIMAL_STEP}
-                    placeholder="0"
+                    placeholder="0.0"
                     inputMode="decimal"
                     aria-label={`${field.label} 입력`}
                   />
@@ -303,7 +447,7 @@ export default function NutritionAddDetailPage() {
                       min={MIN_NUTRITION_VALUE}
                       max={MAX_NUTRITION_VALUE}
                       step={getStepByUnit(field.unit)}
-                      placeholder="0"
+                      placeholder="0.0"
                       inputMode="decimal"
                       aria-label={`${field.label} 입력`}
                     />
@@ -318,6 +462,7 @@ export default function NutritionAddDetailPage() {
 
       <footer className={styles.footer}>
         <Button
+          onClick={handleSubmit}
           variant="filled"
           size="large"
           color="primary"

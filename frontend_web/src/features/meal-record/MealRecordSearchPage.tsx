@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
@@ -8,9 +8,12 @@ import { SEARCH_MENU_ITEMS } from "./utils/mealRecord.mockData";
 import { getMealRecordAddPath, getMealRecordPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
+import { PATH } from "@/router/path";
+import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
 import styles from "./styles/MealRecordSearchPage.module.css";
 
 export default function MealRecordSearchPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -19,6 +22,13 @@ export default function MealRecordSearchPage() {
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const contextFromState = (location.state ?? {}) as NutritionEntryContextState;
+  const baseNutritionEntryContext: NutritionEntryContextState = {
+    source: "meal-record",
+    dateKey,
+    mealType,
+    existingMenuCount: contextFromState.existingMenuCount ?? 0,
+  };
 
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
@@ -79,6 +89,15 @@ export default function MealRecordSearchPage() {
     searchInputRef.current?.focus();
   };
 
+  const handleDirectNutritionEntry = () => {
+    navigate(PATH.NUTRITION_ADD, {
+      state: {
+        ...baseNutritionEntryContext,
+        pendingMenus: selectedMenus,
+      } satisfies NutritionEntryContextState,
+    });
+  };
+
   const selectedCount = selectedMenus.length;
 
   return (
@@ -90,7 +109,11 @@ export default function MealRecordSearchPage() {
         inputRef={searchInputRef}
         placeholder="메뉴를 검색해보세요"
         inputAriaLabel="메뉴 검색"
-        onBack={() => navigate(getMealRecordAddPath(dateKey, mealType))}
+        onBack={() =>
+          navigate(getMealRecordAddPath(dateKey, mealType), {
+            state: baseNutritionEntryContext,
+          })
+        }
       />
 
       <main className={styles.main}>
@@ -124,7 +147,13 @@ export default function MealRecordSearchPage() {
                 비슷한 항목을 선택하거나 직접 등록할 수 있어요
               </p>
               <div className={styles.buttonContainer}>
-                <Button variant="text" state="default" size="small" color="assistive">
+                <Button
+                  variant="text"
+                  state="default"
+                  size="small"
+                  color="assistive"
+                  onClick={handleDirectNutritionEntry}
+                >
                   영양 성분 직접 등록
                 </Button>
                 <Button variant="text" state="default" size="small" color="assistive">
@@ -137,7 +166,13 @@ export default function MealRecordSearchPage() {
           {/* 여기에 비슷한 메뉴 추천이 들어오게 되면 넣으면 될거같다 */}
 
           {filteredMenus.length > 0 && (
-            <Button variant="text" state="default" size="small" color="assistive">
+            <Button
+              variant="text"
+              state="default"
+              size="small"
+              color="assistive"
+              onClick={handleDirectNutritionEntry}
+            >
               <p className={`${styles.directInputText} typo-label3`}>영양 성분 직접 입력</p>
             </Button>
           )}

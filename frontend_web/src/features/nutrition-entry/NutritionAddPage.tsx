@@ -1,14 +1,17 @@
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./styles/NutritionAddPage.module.css";
 import { Button } from "@/shared/commons/button/Button";
 import { useState, type ChangeEvent } from "react";
 import { PATH } from "@/router/path";
+import type { NutritionAddLocationState } from "./nutritionEntry.types";
 
 export default function NutritionAddPage() {
   const navigation = useNavigate();
+  const location = useLocation();
   const [brandName, setBrandName] = useState("");
   const [foodName, setFoodName] = useState("");
+  const contextState = (location.state ?? {}) as NutritionAddLocationState;
 
   const handleBrandNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBrandName(event.target.value);
@@ -25,6 +28,7 @@ export default function NutritionAddPage() {
 
     navigation(PATH.NUTRITION_ADD_DETAIL, {
       state: {
+        ...contextState,
         brandName: brandName.trim(),
         foodName: foodName.trim(),
       },

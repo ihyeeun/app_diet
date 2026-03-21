@@ -23,6 +23,7 @@ import {
   type MealRecordState,
   type MealType,
 } from "./types/mealRecord.types";
+import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
 
 function formatKcal(value: number) {
   return value.toLocaleString("ko-KR", {
@@ -150,6 +151,12 @@ export default function MealRecordPage() {
 
   const hasMenus = allMenus.length > 0;
   const mealRecordAddPath = getMealRecordAddPath(dateKey, mealType);
+  const nutritionEntryContext: NutritionEntryContextState = {
+    source: "meal-record",
+    dateKey,
+    mealType,
+    existingMenuCount: allMenus.length,
+  };
 
   return (
     <section className={styles.page}>
@@ -273,7 +280,7 @@ export default function MealRecordPage() {
 
       <footer className={styles.footer}>
         <Button
-          onClick={() => navigate(mealRecordAddPath)}
+          onClick={() => navigate(mealRecordAddPath, { state: nutritionEntryContext })}
           variant="outlined"
           state="default"
           size="medium"
