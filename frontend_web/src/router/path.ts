@@ -8,5 +8,6 @@ export const PATH = {
   TERMS: "/terms",
   MEAL_DETAIL: "/meal-detail",
   MEAL_RECORD: "/meal-record",
-  MEAL_RECORD_SEARCH: "/meal-record/search",
+  MEAL_RECORD_ADD: "/meal-record/add",
+  MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
 };

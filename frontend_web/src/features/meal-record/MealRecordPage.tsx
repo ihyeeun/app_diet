@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { Button } from "@/shared/commons/button/Button";
 import ScoreProgress from "@/shared/commons/progress/Progress";
@@ -10,85 +10,19 @@ import {
   getCalorieProgressPercent,
   getNutritionGradeLabel,
   toMacroRatiosFromGrams,
-  type MacroRatios,
 } from "@/shared/utils/nutritionScore";
 import styles from "./styles/MealRecordPage.module.css";
 import { PATH } from "@/router/path";
-
-const MEAL_TYPE_OPTIONS = [
-  { key: "breakfast", label: "아침" },
-  { key: "lunch", label: "점심" },
-  { key: "dinner", label: "저녁" },
-  { key: "snack", label: "간식" },
-] as const;
-
-type MealType = (typeof MEAL_TYPE_OPTIONS)[number]["key"];
-
-type MealMenuItem = {
-  id: string;
-  title: string;
-  calories: number;
-  unitAmountText: string;
-  carbohydrateGram: number;
-  proteinGram: number;
-  fatGram: number;
-  brandChipLabel?: string;
-  personalChipLabel?: string;
-};
-
-type MealPhotoGroup = {
-  id: string;
-  imageSrc: string;
-  imageAlt: string;
-  items: MealMenuItem[];
-};
-
-type MealRecordState = {
-  targetCalories: number;
-  targetMacroRatios: MacroRatios;
-  menuItems: MealMenuItem[];
-  photoGroups: MealPhotoGroup[];
-  addQueue: MealMenuItem[];
-};
-
-type MealRecordByType = Record<MealType, MealRecordState>;
-
-const MEAL_TYPE_SET: Set<MealType> = new Set(MEAL_TYPE_OPTIONS.map((option) => option.key));
-const DEFAULT_TARGET_MACRO_RATIOS: MacroRatios = {
-  carbohydrate: 50,
-  protein: 30,
-  fat: 20,
-};
-
-function getTodayDateKey() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getSafeDateKey(value: string | null) {
-  if (!value) return getTodayDateKey();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  return getTodayDateKey();
-}
-
-function getMealType(value: string | null): MealType {
-  if (value && MEAL_TYPE_SET.has(value as MealType)) {
-    return value as MealType;
-  }
-
-  return "lunch";
-}
-
-function getMealRecordSearchPath(dateKey: string, mealType: MealType) {
-  const params = new URLSearchParams({
-    date: dateKey,
-    mealType,
-  });
-  return `${PATH.MEAL_RECORD_SEARCH}?${params.toString()}`;
-}
+import { getInitialMealRecords } from "./utils/mealRecord.mockData";
+import { getPendingMenusFromState } from "./utils/mealRecord.navigation";
+import { getMealRecordAddPath } from "./utils/mealRecord.paths";
+import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
+import {
+  MEAL_TYPE_OPTIONS,
+  type MealRecordByType,
+  type MealRecordState,
+  type MealType,
+} from "./types/mealRecord.types";
 
 function formatKcal(value: number) {
   return value.toLocaleString("ko-KR", {
@@ -105,186 +39,33 @@ function flattenMenus(record: MealRecordState) {
   return [...record.menuItems, ...record.photoGroups.flatMap((group) => group.items)];
 }
 
-function getInitialMealRecords(): MealRecordByType {
-  return {
-    breakfast: {
-      targetCalories: 2100,
-      targetMacroRatios: { ...DEFAULT_TARGET_MACRO_RATIOS },
-      menuItems: [
-        {
-          id: "bf-1",
-          title: "그릭요거트볼",
-          calories: 285,
-          unitAmountText: "1그릇 (190g)",
-          carbohydrateGram: 29,
-          proteinGram: 18,
-          fatGram: 11,
-          brandChipLabel: "아침한끼",
-        },
-        {
-          id: "bf-2",
-          title: "바나나",
-          calories: 93,
-          unitAmountText: "1개 (100g)",
-          carbohydrateGram: 24,
-          proteinGram: 1,
-          fatGram: 0,
-        },
-      ],
-      photoGroups: [],
-      addQueue: [
-        {
-          id: "bf-add-1",
-          title: "삶은 달걀",
-          calories: 77,
-          unitAmountText: "1개 (50g)",
-          carbohydrateGram: 1,
-          proteinGram: 6,
-          fatGram: 5,
-          personalChipLabel: "기본식",
-        },
-      ],
-    },
-    lunch: {
-      targetCalories: 2100,
-      targetMacroRatios: { ...DEFAULT_TARGET_MACRO_RATIOS },
-      menuItems: [
-        {
-          id: "lu-1",
-          title: "상하이버거",
-          calories: 501,
-          unitAmountText: "1단품 (246g)",
-          carbohydrateGram: 46,
-          proteinGram: 27,
-          fatGram: 24,
-          brandChipLabel: "맥도날드",
-        },
-        {
-          id: "lu-2",
-          title: "곤약김밥",
-          calories: 262.5,
-          unitAmountText: "1줄 (220g)",
-          carbohydrateGram: 38,
-          proteinGram: 12,
-          fatGram: 8,
-          brandChipLabel: "헬스고메",
-        },
-      ],
-      photoGroups: [
-        {
-          id: "lu-photo-1",
-          imageSrc: "/icons/Food.svg",
-          imageAlt: "점심으로 찍은 음식 사진",
-          items: [
-            {
-              id: "lu-3",
-              title: "토마토 파스타",
-              calories: 355,
-              unitAmountText: "1접시 (210g)",
-              carbohydrateGram: 56,
-              proteinGram: 14,
-              fatGram: 9,
-            },
-            {
-              id: "lu-4",
-              title: "치킨 샐러드",
-              calories: 202,
-              unitAmountText: "1볼 (180g)",
-              carbohydrateGram: 16,
-              proteinGram: 22,
-              fatGram: 7,
-            },
-          ],
-        },
-      ],
-      addQueue: [
-        {
-          id: "lu-add-1",
-          title: "아메리카노",
-          calories: 12,
-          unitAmountText: "1잔 (355ml)",
-          carbohydrateGram: 2,
-          proteinGram: 1,
-          fatGram: 0,
-          personalChipLabel: "카페",
-        },
-      ],
-    },
-    dinner: {
-      targetCalories: 2100,
-      targetMacroRatios: { ...DEFAULT_TARGET_MACRO_RATIOS },
-      menuItems: [
-        {
-          id: "dn-1",
-          title: "현미밥",
-          calories: 301,
-          unitAmountText: "1공기 (210g)",
-          carbohydrateGram: 64,
-          proteinGram: 7,
-          fatGram: 2,
-        },
-        {
-          id: "dn-2",
-          title: "연어구이",
-          calories: 296,
-          unitAmountText: "1토막 (160g)",
-          carbohydrateGram: 0,
-          proteinGram: 33,
-          fatGram: 18,
-          personalChipLabel: "홈메이드",
-        },
-      ],
-      photoGroups: [],
-      addQueue: [
-        {
-          id: "dn-add-1",
-          title: "된장국",
-          calories: 98,
-          unitAmountText: "1그릇 (250g)",
-          carbohydrateGram: 11,
-          proteinGram: 8,
-          fatGram: 3,
-        },
-      ],
-    },
-    snack: {
-      targetCalories: 2100,
-      targetMacroRatios: { ...DEFAULT_TARGET_MACRO_RATIOS },
-      menuItems: [
-        {
-          id: "sn-1",
-          title: "단백질바",
-          calories: 187,
-          unitAmountText: "1개 (55g)",
-          carbohydrateGram: 20,
-          proteinGram: 16,
-          fatGram: 4,
-          brandChipLabel: "운동간식",
-        },
-      ],
-      photoGroups: [],
-      addQueue: [
-        {
-          id: "sn-add-1",
-          title: "아몬드",
-          calories: 87,
-          unitAmountText: "10알 (15g)",
-          carbohydrateGram: 3,
-          proteinGram: 3,
-          fatGram: 8,
-        },
-      ],
-    },
-  };
-}
-
 export default function MealRecordPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [mealRecords, setMealRecords] = useState<MealRecordByType>(() => getInitialMealRecords());
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const pendingMenusFromNavigation = getPendingMenusFromState(location.state);
+  const [mealRecords, setMealRecords] = useState<MealRecordByType>(() => {
+    const initialRecords = getInitialMealRecords();
+    if (pendingMenusFromNavigation.length === 0) return initialRecords;
+
+    const targetRecord = initialRecords[mealType];
+    const existingMenuIds = new Set(flattenMenus(targetRecord).map((menu) => menu.id));
+    const menusToAppend = pendingMenusFromNavigation.filter(
+      (menu) => !existingMenuIds.has(menu.id),
+    );
+    if (menusToAppend.length === 0) return initialRecords;
+
+    return {
+      ...initialRecords,
+      [mealType]: {
+        ...targetRecord,
+        menuItems: [...targetRecord.menuItems, ...menusToAppend],
+      },
+    };
+  });
   const currentRecord = mealRecords[mealType];
 
   const allMenus = useMemo(() => flattenMenus(currentRecord), [currentRecord]);
@@ -328,9 +109,9 @@ export default function MealRecordPage() {
     ],
   );
 
-  const carbohydratePercent = Math.round(nutritionScore.macro.carbohydrate.actualRatio);
-  const proteinPercent = Math.round(nutritionScore.macro.protein.actualRatio);
-  const fatPercent = Math.round(nutritionScore.macro.fat.actualRatio);
+  // const carbohydratePercent = Math.round(nutritionScore.macro.carbohydrate.actualRatio);
+  // const proteinPercent = Math.round(nutritionScore.macro.protein.actualRatio);
+  // const fatPercent = Math.round(nutritionScore.macro.fat.actualRatio);
 
   const isMacroBalanced = nutritionScore.macroBalanceGrade === "appropriate";
   const balanceLabel = getNutritionGradeLabel(nutritionScore.macroBalanceGrade);
@@ -368,7 +149,7 @@ export default function MealRecordPage() {
   };
 
   const hasMenus = allMenus.length > 0;
-  const mealRecordSearchPath = getMealRecordSearchPath(dateKey, mealType);
+  const mealRecordAddPath = getMealRecordAddPath(dateKey, mealType);
 
   return (
     <section className={styles.page}>
@@ -412,11 +193,8 @@ export default function MealRecordPage() {
                 }`}
                 aria-hidden="true"
               />
-              탄단지 균형 {balanceLabel} ({carbohydratePercent}% / {proteinPercent}% / {fatPercent}
-              %)
+              탄단지 균형 {balanceLabel}
             </p>
-
-            <p></p>
           </article>
         </section>
 
@@ -495,7 +273,7 @@ export default function MealRecordPage() {
 
       <footer className={styles.footer}>
         <Button
-          onClick={() => navigate(mealRecordSearchPath)}
+          onClick={() => navigate(mealRecordAddPath)}
           variant="outlined"
           state="default"
           size="medium"

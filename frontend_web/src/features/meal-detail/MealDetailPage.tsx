@@ -6,6 +6,7 @@ import ScoreProgress from "@/shared/commons/progress/Progress";
 import { StatusBadge, type NutritionStatus } from "@/shared/commons/badge/StatusBadge";
 import {
   calculateNutritionScore,
+  clamp,
   getCalorieProgressPercent,
   toMacroRatiosFromGrams,
   type MacroKey,
@@ -27,35 +28,27 @@ type NutrientMetricItem = NutrientBalanceItem & {
 const nutrientDataFromServer: NutrientBalanceItem[] = [
   { key: "carbohydrate", name: "탄수화물", current: 210, target: 250 },
   { key: "protein", name: "단백질", current: 110, target: 130 },
-  { key: "fat", name: "지방", current: 40, target: 60 },
+  { key: "fat", name: "지방", current: 8, target: 60 },
 ];
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function roundToInt(value: number) {
-  return Math.round(value);
-}
 
 function getPercent(current: number, target: number, max = 200) {
   if (target <= 0) return 0;
 
   const percent = (current / target) * 100;
-  return roundToInt(clamp(percent, 0, max));
+  return Math.round(clamp(percent, 0, max));
 }
 
 function getProgressPercent(percent: number) {
-  return roundToInt(clamp(percent, 0, 100));
+  return Math.round(clamp(percent, 0, 100));
 }
 
 function getChartHeights(percent: number) {
-  const safePercent = roundToInt(clamp(percent, 0, 200));
+  const safePercent = Math.round(clamp(percent, 0, 200));
   const maxPercent = Math.max(100, safePercent, 1);
 
   return {
-    targetHeight: roundToInt((100 / maxPercent) * 100),
-    currentHeight: roundToInt((safePercent / maxPercent) * 100),
+    targetHeight: Math.round((100 / maxPercent) * 100),
+    currentHeight: Math.round((safePercent / maxPercent) * 100),
   };
 }
 
@@ -91,7 +84,7 @@ function toNutrientMetrics(
 export default function MealDetailPage() {
   const navigate = useNavigate();
 
-  const currentKcal = 18000;
+  const currentKcal = 1800;
   const targetKcal = 2100;
   const currentMacroGrams = toMacroGrams(nutrientDataFromServer, "current");
   const targetMacroGrams = toMacroGrams(nutrientDataFromServer, "target");

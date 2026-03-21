@@ -79,21 +79,20 @@
 .mealTypeButtonGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .mealTypeButton {
   border: 1px solid var(--border-normal);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 6px 14px;
   background-color: var(--bg-normal-white);
-  color: var(--text-assistive1);
+  color: var(--text-normal);
 }
 
 .mealTypeActive {
-  border-color: var(--border-primary);
-  background-color: var(--interaction-primary);
-  color: var(--text-primary);
+  background-color: var(--primary-strong);
+  color: var(--text-white);
 }
 
 .menuSection {

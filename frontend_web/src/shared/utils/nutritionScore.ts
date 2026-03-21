@@ -41,7 +41,8 @@ const MACRO_MAX_SCORE: Record<MacroKey, number> = {
   fat: 16,
 };
 
-function clamp(value: number, min: number, max: number) {
+// 값의 집합이나 범위를 한정하는 연산
+export function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
@@ -50,6 +51,7 @@ function roundTo(value: number, digits = 1) {
   return Math.round(value * factor) / factor;
 }
 
+// 탄단지의 점수를 퍼센트로 보여주는 값
 function normalizeRatios(ratios: MacroRatios): MacroRatios {
   const total = ratios.carbohydrate + ratios.protein + ratios.fat;
   if (total <= 0) {
@@ -63,6 +65,7 @@ function normalizeRatios(ratios: MacroRatios): MacroRatios {
   };
 }
 
+// 매크로별 등급
 function getGradeByDeviation(deviation: number): NutritionGrade {
   if (deviation <= 5) return "appropriate";
   if (deviation <= 10) return "slightlyUnbalanced";
@@ -70,6 +73,7 @@ function getGradeByDeviation(deviation: number): NutritionGrade {
   return "severelyUnbalanced";
 }
 
+// 매크로 비율 균형 점수
 function getMacroItemScore(key: MacroKey, deviation: number) {
   const maxScore = MACRO_MAX_SCORE[key];
   if (deviation <= 5) return maxScore;
@@ -78,6 +82,7 @@ function getMacroItemScore(key: MacroKey, deviation: number) {
   return key === "fat" ? 4 : 5;
 }
 
+// 총 섭취 열량 점수
 function getCalorieScoreByDiff(calorieDiffPercent: number) {
   if (calorieDiffPercent <= 5) return 50;
   if (calorieDiffPercent <= 10) return 40;
@@ -113,11 +118,13 @@ export function getNutritionGradeByScore(score: number): NutritionGrade {
   return "severelyUnbalanced";
 }
 
+// 열량 차이율
 export function calculateCalorieDiffPercent(actualCalories: number, targetCalories: number) {
   if (targetCalories <= 0) return 0;
   return Math.abs((actualCalories - targetCalories) / targetCalories) * 100;
 }
 
+// 섭취한 열량 비율
 export function calculateCalorieIntakePercent(actualCalories: number, targetCalories: number) {
   if (targetCalories <= 0) return 0;
   return Math.round((actualCalories / targetCalories) * 100);

@@ -1,0 +1,22 @@
+import { PATH } from "@/router/path";
+import type { MealType } from "../types/mealRecord.types";
+
+function buildMealRecordQuery(dateKey: string, mealType: MealType) {
+  const params = new URLSearchParams({
+    date: dateKey,
+    mealType,
+  });
+  return params.toString();
+}
+
+export function getMealRecordPath(dateKey: string, mealType: MealType) {
+  return `${PATH.MEAL_RECORD}?${buildMealRecordQuery(dateKey, mealType)}`;
+}
+
+export function getMealRecordAddPath(dateKey: string, mealType: MealType) {
+  return `${PATH.MEAL_RECORD_ADD}?${buildMealRecordQuery(dateKey, mealType)}`;
+}
+
+export function getMealRecordAddSearchPath(dateKey: string, mealType: MealType) {
+  return `${PATH.MEAL_RECORD_ADD_SEARCH}?${buildMealRecordQuery(dateKey, mealType)}`;
+}

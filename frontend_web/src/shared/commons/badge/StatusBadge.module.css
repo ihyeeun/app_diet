@@ -29,7 +29,7 @@
 }
 
 .unbalanced {
-  background-color: var(--primary-warning);
+  background-color: var(--status-warning);
 }
 
 .severelyUnbalanced {

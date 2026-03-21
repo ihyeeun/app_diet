@@ -1,0 +1,22 @@
+.button {
+  position: fixed;
+  right: 24px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.primary {
+  background-color: var(--primary-normal);
+  color: var(--text-white);
+}
+
+.light {
+  background-color: var(--bg-normal-white);
+  color: var(--static-black);
+}
