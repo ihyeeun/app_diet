@@ -50,12 +50,12 @@
 }
 
 .inputBrand::placeholder,
-textArea::placeholder {
+.textArea::placeholder {
   color: var(--text-assistive2);
 }
 
 .inputBrand:focus,
-textArea:focus {
+.textArea:focus {
   outline: none;
 }
 

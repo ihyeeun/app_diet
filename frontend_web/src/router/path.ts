@@ -11,5 +11,5 @@ export const PATH = {
   MEAL_RECORD_ADD: "/meal-record/add",
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
   NUTRITION_ADD: "/nutrition-add",
-  // NUTRITION_DETAIL: "/nutrition-detail",
+  NUTRITION_ADD_DETAIL: "/nutrition-add/detail",
 };

@@ -10,6 +10,7 @@ import MealRecordPage from "@/features/meal-record/MealRecordPage";
 import MealRecordAddPage from "@/features/meal-record/MealRecordAddPage";
 import MealRecordSearchPage from "@/features/meal-record/MealRecordSearchPage";
 import NutritionAddPage from "@/features/nutrition-entry/NutritionAddPage";
+import NutritionAddDetailPage from "@/features/nutrition-entry/NutritionAddDetailPage";
 
 export default function AppRouter() {
   return (
@@ -27,6 +28,7 @@ export default function AppRouter() {
         <Route path={PATH.MEAL_RECORD_ADD} element={<MealRecordAddPage />} />
         <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealRecordSearchPage />} />
         <Route path={PATH.NUTRITION_ADD} element={<NutritionAddPage />} />
+        <Route path={PATH.NUTRITION_ADD_DETAIL} element={<NutritionAddDetailPage />} />
       </Routes>
     </BrowserRouter>
   );
