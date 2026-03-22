@@ -9,7 +9,7 @@ type BottomSheetProps = {
 
 export default function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
   return (
-    <Sheet isOpen={isOpen} onClose={onClose} snapPoints={[0, 400]} initialSnap={1}>
+    <Sheet isOpen={isOpen} onClose={onClose} detent="content">
       <Sheet.Container
         style={{
           paddingBottom: "env(safe-area-inset-bottom)",

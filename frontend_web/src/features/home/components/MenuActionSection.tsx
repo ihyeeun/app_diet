@@ -1,8 +1,8 @@
 import ActionCard from "@/features/home/components/cards/ActionCard";
+import TodayBodyLogSection from "@/features/home/components/today/TodayBodyLogSection";
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
-import { PlusIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function getTodayDateKey() {
@@ -81,10 +81,8 @@ export default function MenuActionSection() {
           </div>
         </div>
       </ActionCard>
-      <div className={style.today_container}>
-        <TodayCard onClick={() => {}} title="오늘의 체중" value={42.2} unit="kg" />
-        <TodayCard onClick={() => {}} title="오늘의 걸음 수" value={30000} unit="걸음" />
-      </div>
+
+      <TodayBodyLogSection />
     </div>
   );
 }
@@ -141,34 +139,5 @@ function MealTimeCard({
       </div>
       <p className={`${style.meal_label} typo-label3`}>{label}</p>
     </button>
-  );
-}
-
-function TodayCard({
-  title,
-  value,
-  unit,
-  onClick,
-}: {
-  title: string;
-  value: number | string;
-  unit: string;
-  onClick: () => void;
-}) {
-  return (
-    <ActionCard onClick={onClick}>
-      <div className={style.today_card_container}>
-        <div className={style.today_title_container}>
-          <p className="typo-title4">{title}</p>
-          <PlusIcon size={20} />
-        </div>
-        <p style={{ textAlign: "right" }} className="typo-label1">
-          <span className={`typo-h3 ${style.highlightValue}`}>
-            {typeof value === "number" ? value.toLocaleString() : value}
-          </span>{" "}
-          {unit}
-        </p>
-      </div>
-    </ActionCard>
   );
 }

@@ -32,7 +32,7 @@ export function EditorInput({
     <div className={styles.inputBox}>
       <Input
         {...props}
-        className={styles.input}
+        className={`typo-body3 ${styles.input}`}
         value={value ?? ""}
         min={min}
         max={max}
@@ -59,7 +59,7 @@ export function EditorInput({
           }
         }}
       />
-      {unit && <span className={styles.unit}>{unit}</span>}
+      {unit && <span className={`typo-title2 ${styles.unit}`}>{unit}</span>}
     </div>
   );
 }

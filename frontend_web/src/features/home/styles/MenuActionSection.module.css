@@ -10,8 +10,7 @@
   gap: 12px;
 }
 
-.menu_container,
-.today_container {
+.menu_container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
@@ -31,20 +30,6 @@
   display: flex;
   justify-content: end;
   align-items: center;
-}
-
-.today_title_container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.today_card_container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 
 .record_container {
@@ -104,8 +89,4 @@
 .meal_label {
   text-align: center;
   color: var(--text-assistive1);
-}
-
-.highlightValue {
-  color: var(--text-primary);
 }
