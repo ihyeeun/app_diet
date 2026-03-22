@@ -20,3 +20,7 @@ export function getMealRecordAddPath(dateKey: string, mealType: MealType) {
 export function getMealRecordAddSearchPath(dateKey: string, mealType: MealType) {
   return `${PATH.MEAL_RECORD_ADD_SEARCH}?${buildMealRecordQuery(dateKey, mealType)}`;
 }
+
+export function getMealRecordAddSearchDetailPath(dateKey: string, mealType: MealType) {
+  return `${PATH.MEAL_RECORD_ADD_SEARCH_DETAIL}?${buildMealRecordQuery(dateKey, mealType)}`;
+}

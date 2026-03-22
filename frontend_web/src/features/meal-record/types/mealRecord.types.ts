@@ -17,6 +17,18 @@ export type MealMenuItem = {
   carbohydrateGram: number;
   proteinGram: number;
   fatGram: number;
+  totalWeightGram?: number | null;
+  sugarGram?: number | null;
+  sugarAlcoholGram?: number | null;
+  dietaryFiberGram?: number | null;
+  transFatGram?: number | null;
+  saturatedFatGram?: number | null;
+  unsaturatedFatGram?: number | null;
+  sodiumMg?: number | null;
+  caffeineMg?: number | null;
+  potassiumMg?: number | null;
+  cholesterolMg?: number | null;
+  alcoholGram?: number | null;
   brandChipLabel?: string;
   personalChipLabel?: string;
 };

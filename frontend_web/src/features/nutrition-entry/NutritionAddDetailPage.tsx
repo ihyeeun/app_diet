@@ -10,10 +10,10 @@ import { getTodayDateKey } from "@/features/meal-record/utils/mealRecord.queryPa
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./styles/NutritionAddDetailPage.module.css";
-import type { NutritionAddLocationState } from "./nutritionEntry.types";
+import type { NutritionAddLocationState, NutritionInitialFormState } from "./nutritionEntry.types";
 
 type NutritionDetailForm = {
   calories: string;
@@ -116,6 +116,8 @@ const INITIAL_FORM: NutritionDetailForm = {
   alcohol: "",
 };
 
+const NUTRITION_FORM_KEYS = Object.keys(INITIAL_FORM) as Array<keyof NutritionDetailForm>;
+
 const MIN_NUTRITION_VALUE = 0;
 const MAX_NUTRITION_VALUE = 9999.9;
 const SINGLE_DECIMAL_STEP = 0.1;
@@ -161,6 +163,19 @@ function normalizeDecimalInput(value: string) {
   return clamped.toFixed(1);
 }
 
+function buildInitialForm(initialNutrition?: NutritionInitialFormState): NutritionDetailForm {
+  const nextForm = { ...INITIAL_FORM };
+  if (!initialNutrition) return nextForm;
+
+  NUTRITION_FORM_KEYS.forEach((key) => {
+    const value = initialNutrition[key];
+    if (typeof value !== "number" || !Number.isFinite(value)) return;
+    nextForm[key] = normalizeDecimalInput(String(value));
+  });
+
+  return nextForm;
+}
+
 function getStepByUnit(unit: DetailFieldConfig["unit"]) {
   if (unit === "g" || unit === "ml") {
     return SINGLE_DECIMAL_STEP;
@@ -182,6 +197,15 @@ function normalizeNutritionFormValues(form: NutritionDetailForm): NutritionDetai
 function toNumber(value: string) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 0;
+  return parsed;
+}
+
+function toNullableNumber(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === ".") return null;
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed)) return null;
   return parsed;
 }
 
@@ -214,6 +238,18 @@ function buildManualMenuItem({
     carbohydrateGram: toNumber(form.carbohydrate),
     proteinGram: toNumber(form.protein),
     fatGram: toNumber(form.fat),
+    totalWeightGram: totalWeight > 0 ? totalWeight : null,
+    sugarGram: toNullableNumber(form.sugar),
+    sugarAlcoholGram: toNullableNumber(form.sugarAlcohol),
+    dietaryFiberGram: toNullableNumber(form.dietaryFiber),
+    transFatGram: toNullableNumber(form.transFat),
+    saturatedFatGram: toNullableNumber(form.saturatedFat),
+    unsaturatedFatGram: toNullableNumber(form.unsaturatedFat),
+    sodiumMg: toNullableNumber(form.sodium),
+    caffeineMg: toNullableNumber(form.caffeine),
+    potassiumMg: toNullableNumber(form.potassium),
+    cholesterolMg: toNullableNumber(form.cholesterol),
+    alcoholGram: toNullableNumber(form.alcohol),
     brandChipLabel: brandName || undefined,
     personalChipLabel: "직접 입력",
   };
@@ -234,13 +270,20 @@ export default function NutritionAddDetailPage() {
     existingMenuCount = 0,
     existingCompareCount = 0,
   } = locationState;
+  const initialNutrition = locationState.initialNutrition;
   const brandName = (locationState.brandName ?? "").trim();
   const foodName = (locationState.foodName ?? "").trim();
   const pendingMenus = Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : [];
   const pendingCompareMenus = Array.isArray(locationState.pendingCompareMenus)
     ? locationState.pendingCompareMenus
     : [];
-  const [form, setForm] = useState<NutritionDetailForm>(INITIAL_FORM);
+  const [form, setForm] = useState<NutritionDetailForm>(() => buildInitialForm(initialNutrition));
+  const pageTitle = initialNutrition ? "영양성분 수정" : "영양성분 등록";
+  const submitButtonLabel = initialNutrition ? "수정해서 담기" : "등록하기";
+
+  useEffect(() => {
+    setForm(buildInitialForm(initialNutrition));
+  }, [initialNutrition, location.key]);
 
   const displayFoodName = foodName || "음식명을 입력해주세요";
   const displayBrandName = brandName;
@@ -342,7 +385,7 @@ export default function NutritionAddDetailPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="영양성분 등록" onBack={handleBack} />
+      <PageHeader title={pageTitle} onBack={handleBack} />
 
       <main className={styles.main}>
         <section className={styles.summarySection}>
@@ -470,7 +513,7 @@ export default function NutritionAddDetailPage() {
           state={isSubmitDisabled ? "disabled" : "default"}
           disabled={isSubmitDisabled}
         >
-          등록하기
+          {submitButtonLabel}
         </Button>
       </footer>
     </section>

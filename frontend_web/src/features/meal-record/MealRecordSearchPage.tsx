@@ -5,24 +5,38 @@ import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingCameraButton";
 import { SEARCH_MENU_ITEMS } from "./utils/mealRecord.mockData";
-import { getMealRecordAddPath, getMealRecordPath } from "./utils/mealRecord.paths";
+import {
+  getMealRecordAddPath,
+  getMealRecordAddSearchDetailPath,
+  getMealRecordPath,
+} from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
 import { PATH } from "@/router/path";
 import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
 import styles from "./styles/MealRecordSearchPage.module.css";
 
+type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
+  menu: MealMenuItem;
+};
+
 export default function MealRecordSearchPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>([]);
+  const contextFromState = (location.state ?? {}) as NutritionEntryContextState;
+  const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
+    const pendingMenus = Array.isArray(contextFromState.pendingMenus)
+      ? contextFromState.pendingMenus
+      : [];
+    const uniqueMenus = new Map(pendingMenus.map((menu) => [menu.id, menu]));
+    return Array.from(uniqueMenus.values());
+  });
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
-  const contextFromState = (location.state ?? {}) as NutritionEntryContextState;
   const baseNutritionEntryContext: NutritionEntryContextState = {
     source: "meal-record",
     dateKey,
@@ -71,6 +85,16 @@ export default function MealRecordSearchPage() {
       }
 
       return [...prev, targetMenu];
+    });
+  };
+
+  const handleOpenMenuDetail = (menu: MealMenuItem) => {
+    navigate(getMealRecordAddSearchDetailPath(dateKey, mealType), {
+      state: {
+        ...baseNutritionEntryContext,
+        pendingMenus: selectedMenus,
+        menu,
+      } satisfies MealRecordSearchDetailNavigationState,
     });
   };
 
@@ -133,7 +157,7 @@ export default function MealRecordSearchPage() {
                     personalChipLabel={menu.personalChipLabel}
                     icon={isSelected ? "check" : "add"}
                     state={isSelected ? "select" : "default"}
-                    onClick={() => handleToggleMenuSelection(menu)}
+                    onClick={() => handleOpenMenuDetail(menu)}
                     onIconClick={() => handleToggleMenuSelection(menu)}
                   />
                 );

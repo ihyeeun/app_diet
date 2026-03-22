@@ -11,8 +11,11 @@ export const SEARCH_MENU_ITEMS: MealMenuItem[] = [
     calories: 501,
     unitAmountText: "1단품 (246g)",
     carbohydrateGram: 46,
+    sugarGram: 18,
+    sugarAlcoholGram: 27.3,
     proteinGram: 27,
     fatGram: 24,
+    cholesterolMg: 17,
     brandChipLabel: "맥도날드",
   },
   {
