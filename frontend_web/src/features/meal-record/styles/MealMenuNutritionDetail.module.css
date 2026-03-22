@@ -1,0 +1,138 @@
+.summarySection {
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--bg-normal-primary2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.foodName {
+  color: var(--text-normal);
+}
+
+.calorieText {
+  color: var(--text-normal);
+  white-space: nowrap;
+  gap: 4px;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.macroRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.macroItem {
+  padding: 16px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background-color: var(--bg-normal-white);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.macroLabel {
+  color: var(--text-assistive1);
+}
+
+.macroValue {
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 3px;
+  color: var(--text-primary);
+}
+
+.macroUnit {
+  color: var(--text-primary);
+}
+
+.detailSection {
+  overflow: hidden;
+  padding: 20px 0;
+}
+
+.detailToggleButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-normal);
+}
+
+.detailList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 20px;
+}
+
+.detailGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.groupDivider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--gray-400);
+  margin: 12px 0;
+}
+
+.detailGroupRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  color: var(--text-normal);
+}
+
+.detailLabelMain {
+  color: var(--text-normal);
+}
+
+.detailLabelSub {
+  color: var(--text-assistive1);
+  padding-left: 4px;
+}
+
+.detailValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.detailUnit {
+  color: var(--text-assistive1);
+}
+
+.editSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-normal-white);
+  padding: 10px 14px;
+  border-radius: 6px;
+}
+
+.editDescription {
+  color: var(--text-assistive1);
+}

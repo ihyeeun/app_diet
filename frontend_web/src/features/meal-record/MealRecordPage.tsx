@@ -5,7 +5,6 @@ import { Button } from "@/shared/commons/button/Button";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import {
-  calculateCalorieIntakePercent,
   calculateNutritionScore,
   getCalorieProgressPercent,
   getNutritionGradeLabel,
@@ -116,7 +115,6 @@ export default function MealRecordPage() {
 
   const isMacroBalanced = nutritionScore.macroBalanceGrade === "appropriate";
   const balanceLabel = getNutritionGradeLabel(nutritionScore.macroBalanceGrade);
-  const caloriePercent = calculateCalorieIntakePercent(totalCalories, currentRecord.targetCalories);
   const progressValue = getCalorieProgressPercent(totalCalories, currentRecord.targetCalories);
 
   const handleChangeMealType = (nextMealType: MealType) => {
@@ -190,7 +188,6 @@ export default function MealRecordPage() {
               <div className={styles.progressContainer}>
                 <ScoreProgress value={progressValue} variant="primary-white" />
               </div>
-              <p className={`${styles.progressText} typo-title4`}>{caloriePercent}%</p>
             </div>
 
             <p className={`${styles.balanceText} typo-label4`}>

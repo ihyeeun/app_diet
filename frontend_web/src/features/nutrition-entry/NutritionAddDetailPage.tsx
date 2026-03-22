@@ -2,10 +2,11 @@ import { PATH } from "@/router/path";
 import { getMealRecordPath } from "@/features/meal-record/utils/mealRecord.paths";
 import {
   DEFAULT_MEAL_TYPE,
+  MAX_MEAL_RECORD_MENUS,
   type MealMenuItem,
   type MealRecordLocationState,
   type MealType,
-} from "@/features/meal-record/types/mealRecord.types";
+} from "@/features/meal-record";
 import { getTodayDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
@@ -121,7 +122,6 @@ const NUTRITION_FORM_KEYS = Object.keys(INITIAL_FORM) as Array<keyof NutritionDe
 const MIN_NUTRITION_VALUE = 0;
 const MAX_NUTRITION_VALUE = 9999.9;
 const SINGLE_DECIMAL_STEP = 0.1;
-const MAX_MEAL_RECORD_MENUS = 100;
 const MAX_COMPARE_MENUS = 20;
 
 const NUTRIENT_CHILD_RULES = [
