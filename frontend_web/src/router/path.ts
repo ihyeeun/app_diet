@@ -11,7 +11,9 @@ export const PATH = {
   MEAL_RECORD_ADD: "/meal-record/add",
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
   MEAL_RECORD_ADD_SEARCH_DETAIL: "/meal-record/add/search/detail",
+  MEAL_CAMERA: "/meal-record/add/camera",
   NUTRITION_ADD: "/nutrition-add",
+  NUTRITION_CAMERA: "/nutrition-camera",
   NUTRITION_ADD_DETAIL: "/nutrition-add/detail",
   BRAND_SEARCH: "/brand-search",
 };

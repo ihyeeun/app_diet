@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingCameraButton";
 import { getMealRecordPath, getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
@@ -12,6 +14,7 @@ export default function MealRecordAddPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
@@ -27,6 +30,20 @@ export default function MealRecordAddPage() {
   const handleBack = () => {
     navigate(getMealRecordPath(dateKey, mealType));
   };
+  const handleOpenDirectInputSheet = () => {
+    setIsDirectInputSheetOpen(true);
+  };
+  const handleCloseDirectInputSheet = () => {
+    setIsDirectInputSheetOpen(false);
+  };
+  const handleNavigateNutritionAdd = () => {
+    setIsDirectInputSheetOpen(false);
+    navigate(PATH.NUTRITION_ADD, { state: nutritionEntryContext });
+  };
+  const handleNavigateNutritionCamera = () => {
+    setIsDirectInputSheetOpen(false);
+    navigate(PATH.NUTRITION_CAMERA, { state: nutritionEntryContext });
+  };
 
   return (
     <section className={styles.page}>
@@ -38,7 +55,9 @@ export default function MealRecordAddPage() {
             type="button"
             className={styles.entryButton}
             onClick={() =>
-              navigate(getMealRecordAddSearchPath(dateKey, mealType), { state: nutritionEntryContext })
+              navigate(getMealRecordAddSearchPath(dateKey, mealType), {
+                state: nutritionEntryContext,
+              })
             }
           >
             <p className="typo-label4">메뉴를 검색하거나 음식 사진을 찍어 기록해보세요</p>
@@ -48,9 +67,9 @@ export default function MealRecordAddPage() {
             state="default"
             size="small"
             color="assistive"
-            onClick={() => navigate(PATH.NUTRITION_ADD, { state: nutritionEntryContext })}
+            onClick={handleOpenDirectInputSheet}
           >
-            <p className={`${styles.directInputText} typo-label3`}>영양 성분 직접 입력</p>
+            <p className={`${styles.directInputText} typo-label3`}>영양성분 직접 등록</p>
           </Button>
         </section>
       </main>
@@ -66,6 +85,35 @@ export default function MealRecordAddPage() {
           0개 담겼어요
         </Button>
       </footer>
+
+      <BottomSheet isOpen={isDirectInputSheetOpen} onClose={handleCloseDirectInputSheet}>
+        <div className={styles.sheetContainer}>
+          <h2 className={`${styles.sheetTitle} typo-title2`}>등록 방법을 골라주세요</h2>
+          <div className={styles.sheetActions}>
+            <Button
+              variant="text"
+              state="default"
+              size="large"
+              color="assistive"
+              fullWidth
+              onClick={handleNavigateNutritionAdd}
+            >
+              숫자입력하기
+            </Button>
+            <div className="divider dividerMargin20" />
+            <Button
+              variant="text"
+              state="default"
+              size="large"
+              color="assistive"
+              fullWidth
+              onClick={handleNavigateNutritionCamera}
+            >
+              촬영하기
+            </Button>
+          </div>
+        </div>
+      </BottomSheet>
     </section>
   );
 }

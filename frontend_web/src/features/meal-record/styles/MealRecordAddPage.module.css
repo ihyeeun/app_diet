@@ -40,3 +40,21 @@
 .directInputText {
   color: var(--text-white);
 }
+
+.sheetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 24px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.sheetTitle {
+  color: var(--text-normal);
+}
+
+.sheetActions {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 30px;
+}
