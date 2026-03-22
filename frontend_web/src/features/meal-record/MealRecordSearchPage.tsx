@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { toast } from "@/shared/commons/toast/toast";
 import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingCameraButton";
+import { postMealRecordBrandRequest } from "./api/brandRequest";
 import { SEARCH_MENU_ITEMS } from "./utils/mealRecord.mockData";
 import {
   getMealRecordAddPath,
@@ -25,6 +28,9 @@ export default function MealRecordSearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [isBrandRequestSheetOpen, setIsBrandRequestSheetOpen] = useState(false);
+  const [brandRequestKeyword, setBrandRequestKeyword] = useState("");
+  const [isBrandRequestSubmitting, setIsBrandRequestSubmitting] = useState(false);
   const contextFromState = (location.state ?? {}) as NutritionEntryContextState;
   const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
     const pendingMenus = Array.isArray(contextFromState.pendingMenus)
@@ -122,6 +128,43 @@ export default function MealRecordSearchPage() {
     });
   };
 
+  const handleOpenBrandRequestSheet = () => {
+    setBrandRequestKeyword(searchKeyword.trim());
+    setIsBrandRequestSheetOpen(true);
+  };
+
+  const handleCloseBrandRequestSheet = () => {
+    if (isBrandRequestSubmitting) return;
+
+    setIsBrandRequestSheetOpen(false);
+    setBrandRequestKeyword("");
+  };
+
+  const handleSubmitBrandRequest = async () => {
+    const normalizedBrandKeyword = brandRequestKeyword.trim();
+    if (!normalizedBrandKeyword) {
+      toast.warning("브랜드명을 입력해주세요");
+      return;
+    }
+
+    if (isBrandRequestSubmitting) return;
+
+    try {
+      setIsBrandRequestSubmitting(true);
+      await postMealRecordBrandRequest(normalizedBrandKeyword);
+      toast.success("브랜드 요청을 보냈어요");
+      setIsBrandRequestSheetOpen(false);
+      setBrandRequestKeyword("");
+    } catch {
+      toast.warning("브랜드 요청 전송에 실패했어요");
+    } finally {
+      setIsBrandRequestSubmitting(false);
+    }
+  };
+
+  const isBrandRequestSubmitDisabled =
+    isBrandRequestSubmitting || brandRequestKeyword.trim().length === 0;
+
   const selectedCount = selectedMenus.length;
 
   return (
@@ -180,14 +223,18 @@ export default function MealRecordSearchPage() {
                 >
                   영양 성분 직접 등록
                 </Button>
-                <Button variant="text" state="default" size="small" color="assistive">
+                <Button
+                  variant="text"
+                  state="default"
+                  size="small"
+                  color="assistive"
+                  onClick={handleOpenBrandRequestSheet}
+                >
                   브랜드 추가 요청
                 </Button>
               </div>
             </div>
           )}
-
-          {/* 여기에 비슷한 메뉴 추천이 들어오게 되면 넣으면 될거같다 */}
 
           {filteredMenus.length > 0 && (
             <Button
@@ -218,6 +265,48 @@ export default function MealRecordSearchPage() {
           {selectedCount}개 담겼어요
         </Button>
       </footer>
+
+      <BottomSheet isOpen={isBrandRequestSheetOpen} onClose={handleCloseBrandRequestSheet}>
+        <div className={styles.brandRequestSheetContainer}>
+          <div className={styles.brandRequestSheetContent}>
+            <div className={styles.brandRequestSheetTitleContainer}>
+              <p className="typo-title2">브랜드 추가 요청</p>
+              <p className={`${styles.brandRequestSheetDescription} typo-body3`}>
+                요청하신 브랜드는 검토 후 순차적으로 추가돼요
+              </p>
+            </div>
+
+            <input
+              className={`${styles.brandRequestInput} typo-body3`}
+              value={brandRequestKeyword}
+              onChange={(event) => setBrandRequestKeyword(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                void handleSubmitBrandRequest();
+              }}
+              placeholder="브랜드명"
+              aria-label="브랜드 요청 입력"
+              maxLength={300}
+              disabled={isBrandRequestSubmitting}
+            />
+          </div>
+
+          <Button
+            variant="filled"
+            size="large"
+            color="primary"
+            fullWidth
+            state={isBrandRequestSubmitDisabled ? "disabled" : "default"}
+            disabled={isBrandRequestSubmitDisabled}
+            onClick={() => {
+              void handleSubmitBrandRequest();
+            }}
+          >
+            {isBrandRequestSubmitting ? "요청 중..." : "요청하기"}
+          </Button>
+        </div>
+      </BottomSheet>
     </section>
   );
 }

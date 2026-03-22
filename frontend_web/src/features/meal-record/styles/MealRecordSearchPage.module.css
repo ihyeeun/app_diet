@@ -55,3 +55,48 @@
 .directInputText {
   color: var(--text-assistive2);
 }
+
+.brandRequestSheetContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+  gap: 40px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+.brandRequestSheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brandRequestSheetTitleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brandRequestSheetDescription {
+  color: var(--text-assistive1);
+}
+
+.brandRequestInputLabel {
+  color: var(--text-assistive1);
+}
+
+.brandRequestInput {
+  width: 100%;
+  border: 1px solid var(--border-normal);
+  border-radius: 6px;
+  background-color: var(--bg-normal-white);
+  color: var(--text-normal);
+  padding: 14px 12px;
+}
+
+.brandRequestInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.brandRequestInput:focus {
+  outline: none;
+}
