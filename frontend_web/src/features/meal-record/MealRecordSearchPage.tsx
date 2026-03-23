@@ -130,6 +130,15 @@ export default function MealRecordSearchPage() {
     });
   };
 
+  const handleToggleMenuSelection = (targetMenu: MealMenuItem) => {
+    if (selectedMenuIdSet.has(targetMenu.id)) {
+      setSelectedMenus((prev) => prev.filter((menu) => menu.id !== targetMenu.id));
+      return;
+    }
+
+    handleOpenServingSheet(targetMenu);
+  };
+
   const handleOpenMenuDetail = (menu: MealMenuItem) => {
     navigate(getMealRecordAddSearchDetailPath(dateKey, mealType), {
       state: {
@@ -237,7 +246,7 @@ export default function MealRecordSearchPage() {
                     icon={isSelected ? "check" : "add"}
                     state={isSelected ? "select" : "default"}
                     onClick={() => handleOpenMenuDetail(menu)}
-                    onIconClick={() => handleOpenServingSheet(menu)}
+                    onIconClick={() => handleToggleMenuSelection(menu)}
                   />
                 );
               })}
