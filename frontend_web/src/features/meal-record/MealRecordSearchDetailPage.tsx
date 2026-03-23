@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { PATH } from "@/router/path";
 import { toast } from "@/shared/commons/toast/toast";
@@ -8,9 +9,14 @@ import type {
   NutritionAddLocationState,
   NutritionEntryContextState,
 } from "@/features/nutrition-entry/nutritionEntry.types";
-import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
+import type {
+  MealMenuItem,
+  MealRecordLocationState,
+} from "./types/mealRecord.types";
 import type { MealServingAmount } from "./types/mealMenuNutrition.types";
 import { MealMenuNutritionDetail } from "./components/MealMenuNutritionDetail";
+import { ServingAmountSheetContent } from "./components/ServingAmountSheetContent";
+import { useServingAmountSheet } from "./hooks/useServingAmountSheet";
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
 import {
@@ -68,7 +74,10 @@ export default function MealRecordSearchDetailPage() {
   const mealType = getMealType(searchParams.get("mealType"));
   const locationState = (location.state ?? {}) as MealRecordSearchDetailLocationState;
   const menu = locationState.menu;
-  const pendingMenus = Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : [];
+  const pendingMenus = useMemo(
+    () => (Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : []),
+    [locationState.pendingMenus],
+  );
   const existingMenuCount = locationState.existingMenuCount ?? 0;
   const baseNutritionEntryContext: NutritionEntryContextState = useMemo(
     () => ({
@@ -99,6 +108,40 @@ export default function MealRecordSearchDetailPage() {
     [menu, servingAmount],
   );
   const detailGroups = useMemo(() => buildMealMenuDetailGroups(detailRows), [detailRows]);
+  const selectedMenu = useMemo(
+    () => (menu ? pendingMenus.find((item) => item.id === menu.id) ?? null : null),
+    [menu, pendingMenus],
+  );
+
+  const servingSheet = useServingAmountSheet({
+    onSubmitMenu: (nextMenu) => {
+      if (!menu) {
+        return false;
+      }
+
+      const isAlreadyQueued = pendingMenus.some((item) => item.id === menu.id);
+      if (
+        !isAlreadyQueued &&
+        (baseNutritionEntryContext.existingMenuCount ?? 0) + pendingMenus.length + 1 > MAX_MEAL_RECORD_MENUS
+      ) {
+        toast.warning("최대 100개까지 기록할 수 있어요");
+        return false;
+      }
+
+      const existingIndex = pendingMenus.findIndex((item) => item.id === nextMenu.id);
+      const nextPendingMenus =
+        existingIndex < 0
+          ? [...pendingMenus, nextMenu]
+          : pendingMenus.map((item, index) => (index === existingIndex ? nextMenu : item));
+
+      navigate(getMealRecordPath(dateKey, mealType), {
+        state: {
+          pendingMenus: nextPendingMenus,
+        } satisfies MealRecordLocationState,
+      });
+      return true;
+    },
+  });
 
   if (!menu) {
     return null;
@@ -113,22 +156,10 @@ export default function MealRecordSearchDetailPage() {
     });
   };
 
-  const handleAddMenu = () => {
-    const isAlreadyQueued = pendingMenus.some((item) => item.id === menu.id);
-    const nextPendingMenus = isAlreadyQueued ? pendingMenus : [...pendingMenus, menu];
-
-    if (
-      (baseNutritionEntryContext.existingMenuCount ?? 0) + nextPendingMenus.length >
-      MAX_MEAL_RECORD_MENUS
-    ) {
-      toast.warning("최대 100개까지 기록할 수 있어요");
-      return;
-    }
-
-    navigate(getMealRecordPath(dateKey, mealType), {
-      state: {
-        pendingMenus: nextPendingMenus,
-      } satisfies MealRecordLocationState,
+  const handleOpenServingSheet = () => {
+    servingSheet.open({
+      menu,
+      selectedMenu,
     });
   };
 
@@ -162,11 +193,29 @@ export default function MealRecordSearchDetailPage() {
       </main>
 
       <footer className={styles.footer}>
-        <Button variant="filled" size="large" color="primary" fullWidth onClick={handleAddMenu}>
+        <Button variant="filled" size="large" color="primary" fullWidth onClick={handleOpenServingSheet}>
           {/* TODO 이미 담긴 메뉴라면 수정해서 담기로 변경해야함 */}
           담기
         </Button>
       </footer>
+
+      <BottomSheet isOpen={servingSheet.isOpen} onClose={servingSheet.close}>
+        {servingSheet.menu && servingSheet.serving && (
+          <ServingAmountSheetContent
+            menu={servingSheet.menu}
+            serving={servingSheet.serving}
+            previewMenu={servingSheet.previewMenu ?? servingSheet.menu}
+            inputMode={servingSheet.inputMode}
+            inputValue={servingSheet.inputValue}
+            onModeChange={servingSheet.onModeChange}
+            onInputChange={servingSheet.onInputChange}
+            onInputBlur={servingSheet.onInputBlur}
+            onDecrease={servingSheet.onDecrease}
+            onIncrease={servingSheet.onIncrease}
+            onSubmit={servingSheet.onSubmit}
+          />
+        )}
+      </BottomSheet>
     </section>
   );
 }
