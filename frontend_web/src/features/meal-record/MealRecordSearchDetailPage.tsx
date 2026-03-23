@@ -189,18 +189,20 @@ export default function MealRecordSearchDetailPage() {
       />
 
       <main className={styles.main}>
-        <MealMenuNutritionDetail
-          menuTitle={menu.title}
-          calories={menu.calories}
-          carbohydrateGram={menu.carbohydrateGram}
-          proteinGram={menu.proteinGram}
-          fatGram={menu.fatGram}
-          detailGroups={detailGroups}
-          isDetailOpen={isDetailOpen}
-          onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
-          onEditAndAdd={handleEditAndAdd}
-          showEditSection={!isPersonalMenuData}
-        />
+        <div className={styles.content}>
+          <MealMenuNutritionDetail
+            menuTitle={menu.title}
+            calories={menu.calories}
+            carbohydrateGram={menu.carbohydrateGram}
+            proteinGram={menu.proteinGram}
+            fatGram={menu.fatGram}
+            detailGroups={detailGroups}
+            isDetailOpen={isDetailOpen}
+            onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
+            onEditAndAdd={handleEditAndAdd}
+            showEditSection={!isPersonalMenuData}
+          />
+        </div>
       </main>
 
       <footer className={styles.footer}>

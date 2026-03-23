@@ -446,176 +446,41 @@ export default function NutritionAddDetailPage() {
       <PageHeader title={pageTitle} onBack={handleBack} />
 
       <main className={styles.main}>
-        <section className={styles.summarySection}>
-          <div className={styles.foodInfoRow}>
-            <div className={styles.foodTextWrap}>
-              {displayBrandName && (
-                <p className={`typo-title3 ${styles.brandText}`}>{displayBrandName}</p>
-              )}
-              <p className={`typo-title2 ${styles.foodNameText}`}>{displayFoodName}</p>
+        <div className={styles.content}>
+          <section className={styles.summarySection}>
+            <div className={styles.foodInfoRow}>
+              <div className={styles.foodTextWrap}>
+                {displayBrandName && (
+                  <p className={`typo-title3 ${styles.brandText}`}>{displayBrandName}</p>
+                )}
+                <p className={`typo-title2 ${styles.foodNameText}`}>{displayFoodName}</p>
+              </div>
+
+              <div className={styles.calorieInputWrap}>
+                <input
+                  className={`${styles.calorieInput} typo-h2`}
+                  type="text"
+                  value={form.calories}
+                  onChange={handleNumericChange("calories")}
+                  onBlur={handleNumericBlur("calories")}
+                  min={MIN_NUTRITION_VALUE}
+                  max={MAX_NUTRITION_VALUE}
+                  step={SINGLE_DECIMAL_STEP}
+                  placeholder="0"
+                  inputMode="decimal"
+                  aria-label="칼로리 입력"
+                />
+                <span className={`typo-title2 ${styles.calorieUnit}`}>kcal</span>
+              </div>
             </div>
 
-            <div className={styles.calorieInputWrap}>
-              <input
-                className={`${styles.calorieInput} typo-h2`}
-                type="text"
-                value={form.calories}
-                onChange={handleNumericChange("calories")}
-                onBlur={handleNumericBlur("calories")}
-                min={MIN_NUTRITION_VALUE}
-                max={MAX_NUTRITION_VALUE}
-                step={SINGLE_DECIMAL_STEP}
-                placeholder="0"
-                inputMode="decimal"
-                aria-label="칼로리 입력"
-              />
-              <span className={`typo-title2 ${styles.calorieUnit}`}>kcal</span>
-            </div>
-          </div>
-
-          <div className={styles.macroRow}>
-            {MACRO_FIELD_CONFIG.map((field) => (
-              <article key={field.key} className={styles.macroItem}>
-                <p className={`typo-title4 ${styles.macroLabel}`}>{field.label}</p>
-                <div className={styles.macroInputWrap}>
-                  <input
-                    className={`${styles.macroInput} typo-body1`}
-                    type="text"
-                    value={form[field.key]}
-                    onChange={handleNumericChange(field.key)}
-                    onBlur={handleNumericBlur(field.key)}
-                    min={MIN_NUTRITION_VALUE}
-                    max={MAX_NUTRITION_VALUE}
-                    step={SINGLE_DECIMAL_STEP}
-                    placeholder="0"
-                    inputMode="decimal"
-                    aria-label={`${field.label} 입력`}
-                  />
-                  <span className={`typo-body1 ${styles.macroUnitText}`}>g</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <Tabs.Root
-          className={styles.TabsRoot}
-          value={servingUnit}
-          onValueChange={(nextValue) => {
-            setServingUnit(nextValue === "ml" ? "ml" : "g");
-          }}
-        >
-          <Tabs.List className={styles.TabsList}>
-            <Tabs.Tab value="g" className={styles.TabsTab}>
-              g
-            </Tabs.Tab>
-            <Tabs.Tab value="ml" className={styles.TabsTab}>
-              ml
-            </Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="g" className={styles.TabsPanel}>
-            <NumberField.Root>
-              <NumberField.Group className={styles.FieldGroup}>
-                <NumberField.Decrement
-                  className={styles.Decrement}
-                  aria-label="입력값 감소"
-                  onClick={() => updateTotalWeightByStep(-SINGLE_DECIMAL_STEP)}
-                >
-                  <MinusIcon size={24} />
-                </NumberField.Decrement>
-                <NumberField.Input
-                  className={`typo-body1 ${styles.FieldInput}`}
-                  inputMode="decimal"
-                  value={form.totalWeight}
-                  onChange={handleNumericChange("totalWeight")}
-                  onBlur={handleNumericBlur("totalWeight")}
-                  aria-label="단위량 또는 중량 입력"
-                />
-                <NumberField.Increment
-                  className={styles.Increment}
-                  aria-label="입력값 증가"
-                  onClick={() => updateTotalWeightByStep(SINGLE_DECIMAL_STEP)}
-                >
-                  <PlusIcon size={24} />
-                </NumberField.Increment>
-              </NumberField.Group>
-            </NumberField.Root>
-          </Tabs.Panel>
-
-          <Tabs.Panel value="ml">
-            <NumberField.Root>
-              <NumberField.Group className={styles.FieldGroup}>
-                <NumberField.Decrement
-                  className={styles.Decrement}
-                  aria-label="입력값 감소"
-                  onClick={() => updateTotalWeightByStep(-SINGLE_DECIMAL_STEP)}
-                >
-                  <MinusIcon size={24} />
-                </NumberField.Decrement>
-                <NumberField.Input
-                  className={`typo-body1 ${styles.FieldInput}`}
-                  inputMode="decimal"
-                  value={form.totalWeight}
-                  onChange={handleNumericChange("totalWeight")}
-                  onBlur={handleNumericBlur("totalWeight")}
-                  aria-label="단위량 또는 중량 입력"
-                />
-                <NumberField.Increment
-                  className={styles.Increment}
-                  aria-label="입력값 증가"
-                  onClick={() => updateTotalWeightByStep(SINGLE_DECIMAL_STEP)}
-                >
-                  <PlusIcon size={24} />
-                </NumberField.Increment>
-              </NumberField.Group>
-            </NumberField.Root>
-          </Tabs.Panel>
-        </Tabs.Root>
-
-        <section className={styles.detailSection}>
-          <header className={styles.detailHeader}>
-            <p className="typo-title3">영양정보</p>
-            <Button
-              variant="text"
-              state="default"
-              size="small"
-              color="assistive"
-              onClick={handleResetForm}
-              aria-label="영양정보 전체 삭제"
-            >
-              전체 삭제
-            </Button>
-          </header>
-          <div className="divider dividerMargin20" />
-
-          {DETAIL_FIELD_CONFIG.map((field, index) => {
-            const previousField = DETAIL_FIELD_CONFIG[index - 1];
-            const isGroupStart = index > 0 && previousField.group !== field.group;
-            const isMainField = field.variant === "main";
-
-            return (
-              <div key={field.key}>
-                {isGroupStart && <div className="divider dividerMargin16" />}
-                <article
-                  className={cx(
-                    styles.detailRow,
-                    isMainField ? styles.detailRowMain : styles.detailRowSub,
-                  )}
-                >
-                  <p
-                    className={cx(
-                      isMainField ? "typo-title4" : "typo-body4",
-                      styles.detailLabel,
-                      isMainField ? styles.detailLabelMain : styles.detailLabelSub,
-                    )}
-                  >
-                    {field.group === "serving" ? servingLabel : field.label}
-                  </p>
-
-                  <div className={styles.detailInputWrap}>
+            <div className={styles.macroRow}>
+              {MACRO_FIELD_CONFIG.map((field) => (
+                <article key={field.key} className={styles.macroItem}>
+                  <p className={`typo-title4 ${styles.macroLabel}`}>{field.label}</p>
+                  <div className={styles.macroInputWrap}>
                     <input
-                      className={`typo-body2 ${styles.detailInput}`}
+                      className={`${styles.macroInput} typo-body1`}
                       type="text"
                       value={form[field.key]}
                       onChange={handleNumericChange(field.key)}
@@ -627,13 +492,150 @@ export default function NutritionAddDetailPage() {
                       inputMode="decimal"
                       aria-label={`${field.label} 입력`}
                     />
-                    <span className={`typo-label2 ${styles.unitText}`}>{field.unit}</span>
+                    <span className={`typo-body1 ${styles.macroUnitText}`}>g</span>
                   </div>
                 </article>
-              </div>
-            );
-          })}
-        </section>
+              ))}
+            </div>
+          </section>
+
+          <Tabs.Root
+            className={styles.TabsRoot}
+            value={servingUnit}
+            onValueChange={(nextValue) => {
+              setServingUnit(nextValue === "ml" ? "ml" : "g");
+            }}
+          >
+            <Tabs.List className={styles.TabsList}>
+              <Tabs.Tab value="g" className={styles.TabsTab}>
+                g
+              </Tabs.Tab>
+              <Tabs.Tab value="ml" className={styles.TabsTab}>
+                ml
+              </Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="g" className={styles.TabsPanel}>
+              <NumberField.Root>
+                <NumberField.Group className={styles.FieldGroup}>
+                  <NumberField.Decrement
+                    className={styles.Decrement}
+                    aria-label="입력값 감소"
+                    onClick={() => updateTotalWeightByStep(-SINGLE_DECIMAL_STEP)}
+                  >
+                    <MinusIcon size={24} />
+                  </NumberField.Decrement>
+                  <NumberField.Input
+                    className={`typo-body1 ${styles.FieldInput}`}
+                    inputMode="decimal"
+                    value={form.totalWeight}
+                    onChange={handleNumericChange("totalWeight")}
+                    onBlur={handleNumericBlur("totalWeight")}
+                    aria-label="단위량 또는 중량 입력"
+                  />
+                  <NumberField.Increment
+                    className={styles.Increment}
+                    aria-label="입력값 증가"
+                    onClick={() => updateTotalWeightByStep(SINGLE_DECIMAL_STEP)}
+                  >
+                    <PlusIcon size={24} />
+                  </NumberField.Increment>
+                </NumberField.Group>
+              </NumberField.Root>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="ml">
+              <NumberField.Root>
+                <NumberField.Group className={styles.FieldGroup}>
+                  <NumberField.Decrement
+                    className={styles.Decrement}
+                    aria-label="입력값 감소"
+                    onClick={() => updateTotalWeightByStep(-SINGLE_DECIMAL_STEP)}
+                  >
+                    <MinusIcon size={24} />
+                  </NumberField.Decrement>
+                  <NumberField.Input
+                    className={`typo-body1 ${styles.FieldInput}`}
+                    inputMode="decimal"
+                    value={form.totalWeight}
+                    onChange={handleNumericChange("totalWeight")}
+                    onBlur={handleNumericBlur("totalWeight")}
+                    aria-label="단위량 또는 중량 입력"
+                  />
+                  <NumberField.Increment
+                    className={styles.Increment}
+                    aria-label="입력값 증가"
+                    onClick={() => updateTotalWeightByStep(SINGLE_DECIMAL_STEP)}
+                  >
+                    <PlusIcon size={24} />
+                  </NumberField.Increment>
+                </NumberField.Group>
+              </NumberField.Root>
+            </Tabs.Panel>
+          </Tabs.Root>
+
+          <section className={styles.detailSection}>
+            <header className={styles.detailHeader}>
+              <p className="typo-title3">영양정보</p>
+              <Button
+                variant="text"
+                state="default"
+                size="small"
+                color="assistive"
+                onClick={handleResetForm}
+                aria-label="영양정보 전체 삭제"
+              >
+                전체 삭제
+              </Button>
+            </header>
+            <div className="divider dividerMargin20" />
+
+            {DETAIL_FIELD_CONFIG.map((field, index) => {
+              const previousField = DETAIL_FIELD_CONFIG[index - 1];
+              const isGroupStart = index > 0 && previousField.group !== field.group;
+              const isMainField = field.variant === "main";
+
+              return (
+                <div key={field.key}>
+                  {isGroupStart && <div className="divider dividerMargin16" />}
+                  <article
+                    className={cx(
+                      styles.detailRow,
+                      isMainField ? styles.detailRowMain : styles.detailRowSub,
+                    )}
+                  >
+                    <p
+                      className={cx(
+                        isMainField ? "typo-title4" : "typo-body4",
+                        styles.detailLabel,
+                        isMainField ? styles.detailLabelMain : styles.detailLabelSub,
+                      )}
+                    >
+                      {field.group === "serving" ? servingLabel : field.label}
+                    </p>
+
+                    <div className={styles.detailInputWrap}>
+                      <input
+                        className={`typo-body2 ${styles.detailInput}`}
+                        type="text"
+                        value={form[field.key]}
+                        onChange={handleNumericChange(field.key)}
+                        onBlur={handleNumericBlur(field.key)}
+                        min={MIN_NUTRITION_VALUE}
+                        max={MAX_NUTRITION_VALUE}
+                        step={SINGLE_DECIMAL_STEP}
+                        placeholder="0"
+                        inputMode="decimal"
+                        aria-label={`${field.label} 입력`}
+                      />
+                      <span className={`typo-label2 ${styles.unitText}`}>{field.unit}</span>
+                    </div>
+                  </article>
+                </div>
+              );
+            })}
+          </section>
+        </div>
       </main>
 
       <footer className={styles.footer}>
