@@ -14,6 +14,7 @@ type MealMenuNutritionDetailProps = {
   isDetailOpen: boolean;
   onToggleDetail: () => void;
   onEditAndAdd?: () => void;
+  showEditSection?: boolean;
   detailListId?: string;
 };
 
@@ -27,6 +28,7 @@ export function MealMenuNutritionDetail({
   isDetailOpen,
   onToggleDetail,
   onEditAndAdd,
+  showEditSection = true,
   detailListId = "meal-record-detail-list",
 }: MealMenuNutritionDetailProps) {
   return (
@@ -83,7 +85,7 @@ export function MealMenuNutritionDetail({
           <>
             <div className="divider dividerMargin20" />
 
-            {onEditAndAdd && (
+            {showEditSection && onEditAndAdd && (
               <section className={styles.editSection}>
                 <p className={`typo-label3 ${styles.editDescription}`}>영양성분이 잘못되었나요?</p>
                 <Button

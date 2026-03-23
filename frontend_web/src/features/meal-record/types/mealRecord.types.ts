@@ -9,11 +9,13 @@ export const MEAL_TYPE_OPTIONS = [
 
 export type MealType = (typeof MEAL_TYPE_OPTIONS)[number]["key"];
 export type MealServingInputMode = "unit" | "weight";
+export type MealMenuDataType = "public" | "personal";
 
 export type MealMenuItem = {
   id: string;
   title: string;
   calories: number;
+  dataSource: MealMenuDataType;
   unitAmountText: string;
   carbohydrateGram: number;
   proteinGram: number;

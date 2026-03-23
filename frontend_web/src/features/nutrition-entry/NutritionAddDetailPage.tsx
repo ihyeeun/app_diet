@@ -237,6 +237,7 @@ function buildManualMenuItem({
     id: `manual-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     title: foodName,
     calories: toNumber(form.calories),
+    dataSource: "personal",
     unitAmountText: `1회 제공량 (${safeWeightText})`,
     carbohydrateGram: toNumber(form.carbohydrate),
     proteinGram: toNumber(form.protein),
@@ -289,7 +290,8 @@ export default function NutritionAddDetailPage() {
 
   const isSubmitDisabled = useMemo(
     () =>
-      REQUIRED_FIELDS.some((key) => normalizeDecimalInput(form[key]) === "") || foodName.length === 0,
+      REQUIRED_FIELDS.some((key) => normalizeDecimalInput(form[key]) === "") ||
+      foodName.length === 0,
     [foodName, form],
   );
 

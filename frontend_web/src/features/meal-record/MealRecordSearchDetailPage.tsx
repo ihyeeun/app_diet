@@ -9,10 +9,7 @@ import type {
   NutritionAddLocationState,
   NutritionEntryContextState,
 } from "@/features/nutrition-entry/nutritionEntry.types";
-import type {
-  MealMenuItem,
-  MealRecordLocationState,
-} from "./types/mealRecord.types";
+import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
 import type { MealServingAmount } from "./types/mealMenuNutrition.types";
 import { MealMenuNutritionDetail } from "./components/MealMenuNutritionDetail";
 import { ServingAmountSheetContent } from "./components/ServingAmountSheetContent";
@@ -29,7 +26,7 @@ import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import styles from "./styles/MealRecordSearchDetailPage.module.css";
 
 type MealRecordSearchDetailLocationState = NutritionEntryContextState & {
-  menu?: MealMenuItem;
+  menu: MealMenuItem;
 };
 
 function buildNutritionEditState({
@@ -109,9 +106,10 @@ export default function MealRecordSearchDetailPage() {
   );
   const detailGroups = useMemo(() => buildMealMenuDetailGroups(detailRows), [detailRows]);
   const selectedMenu = useMemo(
-    () => (menu ? pendingMenus.find((item) => item.id === menu.id) ?? null : null),
+    () => (menu ? (pendingMenus.find((item) => item.id === menu.id) ?? null) : null),
     [menu, pendingMenus],
   );
+  const isPersonalMenuData = menu.dataSource === "personal" || Boolean(menu?.personalChipLabel);
 
   const servingSheet = useServingAmountSheet({
     onSubmitMenu: (nextMenu) => {
@@ -122,7 +120,8 @@ export default function MealRecordSearchDetailPage() {
       const isAlreadyQueued = pendingMenus.some((item) => item.id === menu.id);
       if (
         !isAlreadyQueued &&
-        (baseNutritionEntryContext.existingMenuCount ?? 0) + pendingMenus.length + 1 > MAX_MEAL_RECORD_MENUS
+        (baseNutritionEntryContext.existingMenuCount ?? 0) + pendingMenus.length + 1 >
+          MAX_MEAL_RECORD_MENUS
       ) {
         toast.warning("최대 100개까지 기록할 수 있어요");
         return false;
@@ -176,7 +175,17 @@ export default function MealRecordSearchDetailPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="영양성분 상세" onBack={handleBack} />
+      <PageHeader
+        title="영양성분 상세"
+        onBack={handleBack}
+        rightSlot={
+          menu.dataSource === "personal" && (
+            <Button variant="text" state="default" size="small" color="assistive">
+              삭제
+            </Button>
+          )
+        }
+      />
 
       <main className={styles.main}>
         <MealMenuNutritionDetail
@@ -189,11 +198,18 @@ export default function MealRecordSearchDetailPage() {
           isDetailOpen={isDetailOpen}
           onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
           onEditAndAdd={handleEditAndAdd}
+          showEditSection={!isPersonalMenuData}
         />
       </main>
 
       <footer className={styles.footer}>
-        <Button variant="filled" size="large" color="primary" fullWidth onClick={handleOpenServingSheet}>
+        <Button
+          variant="filled"
+          size="large"
+          color="primary"
+          fullWidth
+          onClick={handleOpenServingSheet}
+        >
           {/* TODO 이미 담긴 메뉴라면 수정해서 담기로 변경해야함 */}
           담기
         </Button>
