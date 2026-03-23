@@ -40,7 +40,7 @@ export function ServingAmountSheetContent({
           <div className={styles.servingSummaryHead}>
             <p className={`typo-title2 ${styles.servingMenuTitle}`}>{menu.title}</p>
             <p className={`typo-title2 ${styles.servingCalorieText}`}>
-              <span className="typo-h3">{formatNutritionValue(menu.calories)}</span> kcal
+              <span className="typo-h3">{formatNutritionValue(previewMenu.calories)}</span> kcal
             </p>
           </div>
 

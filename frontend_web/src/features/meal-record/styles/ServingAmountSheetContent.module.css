@@ -210,6 +210,7 @@
   text-align: center;
   border: 0;
   background-color: transparent;
+  width: 100%;
 }
 
 .FieldInput::placeholder {
