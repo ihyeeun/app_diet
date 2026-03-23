@@ -1,0 +1,221 @@
+.servingSheetContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+.servingSheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+.servingSummaryCard {
+  border-radius: 8px;
+  background-color: var(--bg-normal-primary2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servingSummaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.servingMenuTitle {
+  color: var(--text-normal);
+}
+
+.servingCalorieText {
+  color: var(--text-normal);
+  white-space: nowrap;
+}
+
+.servingMacroRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.servingMacroItem {
+  border-radius: 8px;
+  border: 1px solid var(--border-normal);
+  background-color: var(--bg-normal-white);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.servingMacroLabel {
+  color: var(--text-assistive1);
+}
+
+.servingMacroValue {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 3px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.servingMacroUnit {
+  color: var(--text-primary);
+}
+
+.servingInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.servingModeSelector {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.servingModeButton {
+  height: 40px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  color: var(--text-assistive1);
+  background-color: var(--bg-normal-white);
+  font-size: var(--fs-label3);
+  line-height: var(--line-height-140);
+  letter-spacing: var(--letter-spacing-label);
+  font-weight: var(--fw-medium);
+}
+
+.servingModeButtonActive {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+  background-color: var(--interaction-primary);
+}
+
+.servingGuideText {
+  color: var(--text-assistive1);
+}
+
+.servingInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background-color: var(--bg-normal-white);
+  padding: 10px 12px;
+}
+
+.servingInput {
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  padding: 0;
+  color: var(--text-normal);
+}
+
+.servingInput:focus {
+  outline: none;
+}
+
+.servingInput::-webkit-inner-spin-button,
+.servingInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.servingInputUnit {
+  flex-shrink: 0;
+  color: var(--text-assistive1);
+}
+
+.servingStepperRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.servingStepperButton {
+  height: 40px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background-color: var(--bg-normal-white);
+  color: var(--text-normal);
+  font-size: var(--fs-title2);
+  line-height: var(--line-height-140);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+
+.TabsRoot {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.TabsList {
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  padding: 4px;
+  background-color: var(--bg-normal-white);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: auto;
+}
+
+.TabsTab {
+  background: var(--bg-normal-white);
+  padding: 14px 8px;
+  color: var(--text-normal);
+  border-radius: 6px;
+  text-align: center;
+  font-size: var(--fs-title4);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--fw-semibold);
+
+  &[data-active] {
+    background: var(--interaction-primary);
+    color: var(--text-primary);
+  }
+}
+
+.TabsPanel {
+  width: 100%;
+}
+
+.FieldGroup {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.FieldInput {
+  flex: 1;
+  text-align: center;
+  border: 0;
+  background-color: transparent;
+}
+
+.FieldInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.FieldInput:focus {
+  outline: none;
+}

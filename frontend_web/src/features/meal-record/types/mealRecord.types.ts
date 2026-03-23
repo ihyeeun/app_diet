@@ -8,6 +8,7 @@ export const MEAL_TYPE_OPTIONS = [
 ] as const;
 
 export type MealType = (typeof MEAL_TYPE_OPTIONS)[number]["key"];
+export type MealServingInputMode = "unit" | "weight";
 
 export type MealMenuItem = {
   id: string;
@@ -29,6 +30,8 @@ export type MealMenuItem = {
   potassiumMg?: number | null;
   cholesterolMg?: number | null;
   alcoholGram?: number | null;
+  servingInputMode?: MealServingInputMode;
+  servingInputValue?: number;
   brandChipLabel?: string;
   personalChipLabel?: string;
 };

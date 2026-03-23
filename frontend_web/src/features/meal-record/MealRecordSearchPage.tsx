@@ -5,18 +5,35 @@ import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { PATH } from "@/router/path";
+import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
+import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingCameraButton";
+import { ServingAmountSheetContent } from "./components/ServingAmountSheetContent";
+import { BrandRequestSheetContent } from "./components/BrandRequestSheetContent";
 import { postMealRecordBrandRequest } from "./api/brandRequest";
-import { SEARCH_MENU_ITEMS } from "./utils/mealRecord.mockData";
+import type {
+  MealMenuItem,
+  MealRecordLocationState,
+  MealServingInputMode,
+} from "./types/mealRecord.types";
 import {
   getMealRecordAddPath,
   getMealRecordAddSearchDetailPath,
   getMealRecordPath,
 } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
-import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
-import { PATH } from "@/router/path";
-import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
+import {
+  SERVING_INPUT_STEP,
+  buildScaledMenu,
+  formatCompactDecimal,
+  getServingDefaultValue,
+  normalizeServingInput,
+  parseMenuServing,
+  resolveServingValues,
+  sanitizeServingInput,
+} from "./utils/mealRecordServing";
+import { SEARCH_MENU_ITEMS } from "./utils/mealRecord.mockData";
 import styles from "./styles/MealRecordSearchPage.module.css";
 
 type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
@@ -31,6 +48,10 @@ export default function MealRecordSearchPage() {
   const [isBrandRequestSheetOpen, setIsBrandRequestSheetOpen] = useState(false);
   const [brandRequestKeyword, setBrandRequestKeyword] = useState("");
   const [isBrandRequestSubmitting, setIsBrandRequestSubmitting] = useState(false);
+  const [isServingSheetOpen, setIsServingSheetOpen] = useState(false);
+  const [servingSheetMenuId, setServingSheetMenuId] = useState<string | null>(null);
+  const [servingInputMode, setServingInputMode] = useState<MealServingInputMode>("unit");
+  const [servingInputValue, setServingInputValue] = useState("");
   const contextFromState = (location.state ?? {}) as NutritionEntryContextState;
   const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
     const pendingMenus = Array.isArray(contextFromState.pendingMenus)
@@ -49,6 +70,11 @@ export default function MealRecordSearchPage() {
     mealType,
     existingMenuCount: contextFromState.existingMenuCount ?? 0,
   };
+
+  const selectedMenuMap = useMemo(
+    () => new Map(selectedMenus.map((menu) => [menu.id, menu])),
+    [selectedMenus],
+  );
 
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
@@ -71,6 +97,65 @@ export default function MealRecordSearchPage() {
     });
   }, [searchKeyword]);
 
+  const servingSheetBaseMenu = useMemo(() => {
+    if (!servingSheetMenuId) {
+      return null;
+    }
+
+    return SEARCH_MENU_ITEMS.find((menu) => menu.id === servingSheetMenuId) ?? null;
+  }, [servingSheetMenuId]);
+
+  const servingSheetSelectedMenu = useMemo(() => {
+    if (!servingSheetMenuId) {
+      return null;
+    }
+
+    return selectedMenuMap.get(servingSheetMenuId) ?? null;
+  }, [selectedMenuMap, servingSheetMenuId]);
+
+  const servingSheetMenu = servingSheetBaseMenu ?? servingSheetSelectedMenu;
+
+  const servingInfo = useMemo(
+    () => (servingSheetMenu ? parseMenuServing(servingSheetMenu) : null),
+    [servingSheetMenu],
+  );
+
+  const parsedServingInputValue = useMemo(() => {
+    const parsedValue = Number(servingInputValue);
+    if (!Number.isFinite(parsedValue)) {
+      return null;
+    }
+
+    return parsedValue;
+  }, [servingInputValue]);
+
+  const servingPreviewMenu = useMemo(() => {
+    if (!servingSheetMenu || !servingInfo || parsedServingInputValue === null) {
+      return servingSheetMenu;
+    }
+
+    if (parsedServingInputValue <= 0) {
+      return servingSheetMenu;
+    }
+
+    const resolvedServing = resolveServingValues(
+      servingInfo,
+      servingInputMode,
+      parsedServingInputValue,
+    );
+    if (!Number.isFinite(resolvedServing.scaleFactor) || resolvedServing.scaleFactor <= 0) {
+      return servingSheetMenu;
+    }
+
+    return buildScaledMenu({
+      menu: servingSheetMenu,
+      serving: servingInfo,
+      resolved: resolvedServing,
+      mode: servingInputMode,
+      inputValue: parsedServingInputValue,
+    });
+  }, [parsedServingInputValue, servingInfo, servingInputMode, servingSheetMenu]);
+
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
       searchInputRef.current?.focus();
@@ -83,15 +168,153 @@ export default function MealRecordSearchPage() {
 
   const handleCameraClick = () => {};
 
-  const handleToggleMenuSelection = (targetMenu: MealMenuItem) => {
+  const resetServingSheetState = () => {
+    setIsServingSheetOpen(false);
+    setServingSheetMenuId(null);
+    setServingInputMode("unit");
+    setServingInputValue("");
+  };
+
+  const handleOpenServingSheet = (targetMenu: MealMenuItem) => {
+    const selectedMenu = selectedMenuMap.get(targetMenu.id);
+    const baseMenu = SEARCH_MENU_ITEMS.find((menu) => menu.id === targetMenu.id) ?? targetMenu;
+    const parsedServing = parseMenuServing(baseMenu);
+    const initialMode = selectedMenu?.servingInputMode ?? "unit";
+    const initialInput =
+      selectedMenu?.servingInputValue ?? getServingDefaultValue(parsedServing, initialMode);
+
+    setServingSheetMenuId(baseMenu.id);
+    setServingInputMode(initialMode);
+    setServingInputValue(formatCompactDecimal(normalizeServingInput(initialInput)));
+    setIsServingSheetOpen(true);
+  };
+
+  const handleServingModeChange = (nextMode: MealServingInputMode) => {
+    if (!servingInfo || nextMode === servingInputMode) {
+      return;
+    }
+
+    setServingInputMode(nextMode);
+
+    const parsedCurrentValue = Number(servingInputValue);
+    if (!Number.isFinite(parsedCurrentValue) || parsedCurrentValue <= 0) {
+      const fallbackValue = getServingDefaultValue(servingInfo, nextMode);
+      setServingInputValue(formatCompactDecimal(normalizeServingInput(fallbackValue)));
+      return;
+    }
+
+    const resolvedCurrent = resolveServingValues(servingInfo, servingInputMode, parsedCurrentValue);
+    if (!Number.isFinite(resolvedCurrent.scaleFactor) || resolvedCurrent.scaleFactor <= 0) {
+      const fallbackValue = getServingDefaultValue(servingInfo, nextMode);
+      setServingInputValue(formatCompactDecimal(normalizeServingInput(fallbackValue)));
+      return;
+    }
+
+    const convertedValue =
+      nextMode === "weight" ? resolvedCurrent.totalWeight : resolvedCurrent.unitCount;
+
+    setServingInputValue(formatCompactDecimal(normalizeServingInput(convertedValue)));
+  };
+
+  const handleServingInputStep = (delta: number) => {
+    if (!servingInfo) {
+      return;
+    }
+
+    const currentValue = Number(servingInputValue);
+    const baseValue = Number.isFinite(currentValue)
+      ? currentValue
+      : getServingDefaultValue(servingInfo, servingInputMode);
+    const nextValue = normalizeServingInput(baseValue + delta);
+
+    setServingInputValue(formatCompactDecimal(nextValue));
+  };
+
+  const handleServingInputChange = (nextValue: string) => {
+    setServingInputValue(sanitizeServingInput(nextValue));
+  };
+
+  const handleServingInputBlur = () => {
+    if (!servingInfo) {
+      setServingInputValue("");
+      return;
+    }
+
+    const trimmedValue = servingInputValue.trim();
+
+    if (!trimmedValue || trimmedValue === ".") {
+      setServingInputValue(
+        formatCompactDecimal(
+          normalizeServingInput(getServingDefaultValue(servingInfo, servingInputMode)),
+        ),
+      );
+      return;
+    }
+
+    const parsedValue = Number(trimmedValue);
+    if (!Number.isFinite(parsedValue)) {
+      setServingInputValue(
+        formatCompactDecimal(
+          normalizeServingInput(getServingDefaultValue(servingInfo, servingInputMode)),
+        ),
+      );
+      return;
+    }
+
+    setServingInputValue(formatCompactDecimal(normalizeServingInput(parsedValue)));
+  };
+
+  const handleSubmitServingSheet = () => {
+    if (!servingSheetMenu || !servingInfo) {
+      return;
+    }
+
+    const inputValue = Number(servingInputValue);
+    if (!Number.isFinite(inputValue) || inputValue <= 0) {
+      toast.warning("입력값을 다시 확인해주세요");
+      return;
+    }
+
+    const normalizedInput = normalizeServingInput(inputValue);
+    setServingInputValue(formatCompactDecimal(normalizedInput));
+    const resolvedServing = resolveServingValues(servingInfo, servingInputMode, normalizedInput);
+
+    if (!Number.isFinite(resolvedServing.scaleFactor) || resolvedServing.scaleFactor <= 0) {
+      toast.warning("입력값을 다시 확인해주세요");
+      return;
+    }
+
+    const isAlreadySelected = selectedMenuIdSet.has(servingSheetMenu.id);
+    if (
+      !isAlreadySelected &&
+      (baseNutritionEntryContext.existingMenuCount ?? 0) + selectedMenus.length + 1 >
+        MAX_MEAL_RECORD_MENUS
+    ) {
+      toast.warning("최대 100개까지 기록할 수 있어요");
+      return;
+    }
+
+    const nextMenu = buildScaledMenu({
+      menu: servingSheetMenu,
+      serving: servingInfo,
+      resolved: resolvedServing,
+      mode: servingInputMode,
+      inputValue: normalizedInput,
+    });
+
     setSelectedMenus((prev) => {
-      const isSelected = prev.some((menu) => menu.id === targetMenu.id);
-      if (isSelected) {
-        return prev.filter((menu) => menu.id !== targetMenu.id);
+      const existingIndex = prev.findIndex((menu) => menu.id === nextMenu.id);
+
+      if (existingIndex < 0) {
+        return [...prev, nextMenu];
       }
 
-      return [...prev, targetMenu];
+      const next = [...prev];
+      next[existingIndex] = nextMenu;
+      return next;
     });
+
+    resetServingSheetState();
   };
 
   const handleOpenMenuDetail = (menu: MealMenuItem) => {
@@ -201,7 +424,7 @@ export default function MealRecordSearchPage() {
                     icon={isSelected ? "check" : "add"}
                     state={isSelected ? "select" : "default"}
                     onClick={() => handleOpenMenuDetail(menu)}
-                    onIconClick={() => handleToggleMenuSelection(menu)}
+                    onIconClick={() => handleOpenServingSheet(menu)}
                   />
                 );
               })}
@@ -266,46 +489,34 @@ export default function MealRecordSearchPage() {
         </Button>
       </footer>
 
+      <BottomSheet isOpen={isServingSheetOpen} onClose={resetServingSheetState}>
+        {servingSheetMenu && servingInfo && (
+          <ServingAmountSheetContent
+            menu={servingSheetMenu}
+            serving={servingInfo}
+            previewMenu={servingPreviewMenu ?? servingSheetMenu}
+            inputMode={servingInputMode}
+            inputValue={servingInputValue}
+            onModeChange={handleServingModeChange}
+            onInputChange={handleServingInputChange}
+            onInputBlur={handleServingInputBlur}
+            onDecrease={() => handleServingInputStep(-SERVING_INPUT_STEP)}
+            onIncrease={() => handleServingInputStep(SERVING_INPUT_STEP)}
+            onSubmit={handleSubmitServingSheet}
+          />
+        )}
+      </BottomSheet>
+
       <BottomSheet isOpen={isBrandRequestSheetOpen} onClose={handleCloseBrandRequestSheet}>
-        <div className={styles.brandRequestSheetContainer}>
-          <div className={styles.brandRequestSheetContent}>
-            <div className={styles.brandRequestSheetTitleContainer}>
-              <p className="typo-title2">브랜드 추가 요청</p>
-              <p className={`${styles.brandRequestSheetDescription} typo-body3`}>
-                요청하신 브랜드는 검토 후 순차적으로 추가돼요
-              </p>
-            </div>
-
-            <input
-              className={`${styles.brandRequestInput} typo-body3`}
-              value={brandRequestKeyword}
-              onChange={(event) => setBrandRequestKeyword(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                void handleSubmitBrandRequest();
-              }}
-              placeholder="브랜드명"
-              aria-label="브랜드 요청 입력"
-              maxLength={300}
-              disabled={isBrandRequestSubmitting}
-            />
-          </div>
-
-          <Button
-            variant="filled"
-            size="large"
-            color="primary"
-            fullWidth
-            state={isBrandRequestSubmitDisabled ? "disabled" : "default"}
-            disabled={isBrandRequestSubmitDisabled}
-            onClick={() => {
-              void handleSubmitBrandRequest();
-            }}
-          >
-            {isBrandRequestSubmitting ? "요청 중..." : "요청하기"}
-          </Button>
-        </div>
+        <BrandRequestSheetContent
+          value={brandRequestKeyword}
+          isSubmitting={isBrandRequestSubmitting}
+          isSubmitDisabled={isBrandRequestSubmitDisabled}
+          onValueChange={setBrandRequestKeyword}
+          onSubmit={() => {
+            void handleSubmitBrandRequest();
+          }}
+        />
       </BottomSheet>
     </section>
   );
