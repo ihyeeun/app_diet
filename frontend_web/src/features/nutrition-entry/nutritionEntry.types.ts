@@ -1,6 +1,7 @@
 import type { MealMenuItem, MealType } from "@/features/meal-record/types/mealRecord.types";
 
 export type NutritionEntrySource = "meal-record" | "menu-compare" | "general";
+export type NutritionServingUnit = "g" | "ml";
 
 export type NutritionInitialFormState = Partial<{
   calories: number;
@@ -35,4 +36,5 @@ export type NutritionAddLocationState = NutritionEntryContextState & {
   brandName?: string;
   foodName?: string;
   initialNutrition?: NutritionInitialFormState;
+  servingUnit?: NutritionServingUnit;
 };

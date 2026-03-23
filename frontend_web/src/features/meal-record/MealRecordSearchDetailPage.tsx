@@ -58,6 +58,7 @@ function buildNutritionEditState({
     brandName: menu.brandChipLabel ?? "",
     foodName: menu.title,
     initialNutrition,
+    servingUnit: servingAmount.unit,
   };
 }
 

@@ -17,7 +17,14 @@ import { toast } from "@/shared/commons/toast/toast";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./styles/NutritionAddDetailPage.module.css";
-import type { NutritionAddLocationState, NutritionInitialFormState } from "./nutritionEntry.types";
+import type {
+  NutritionAddLocationState,
+  NutritionInitialFormState,
+  NutritionServingUnit,
+} from "./nutritionEntry.types";
+import { Tabs } from "@base-ui/react/tabs";
+import { NumberField } from "@base-ui/react/number-field";
+import { MinusIcon, PlusIcon } from "lucide-react";
 
 type NutritionDetailForm = {
   calories: string;
@@ -41,7 +48,7 @@ type NutritionDetailForm = {
 type DetailFieldConfig = {
   key: keyof NutritionDetailForm;
   label: string;
-  unit: "g" | "mg" | "ml";
+  unit: "g" | "mg" | "ml" | "kcal";
   variant: "main" | "sub";
   group:
     | "serving"
@@ -64,9 +71,9 @@ const MACRO_FIELD_CONFIG: Array<{ key: "carbohydrate" | "protein" | "fat"; label
 
 const DETAIL_FIELD_CONFIG: DetailFieldConfig[] = [
   {
-    key: "totalWeight",
+    key: "calories",
     label: "총 용량",
-    unit: "g",
+    unit: "kcal",
     variant: "main",
     group: "serving",
     required: true,
@@ -126,6 +133,7 @@ const MIN_NUTRITION_VALUE = 0;
 const MAX_NUTRITION_VALUE = 9999.9;
 const SINGLE_DECIMAL_STEP = 0.1;
 const MAX_COMPARE_MENUS = 20;
+const DEFAULT_SERVING_UNIT: NutritionServingUnit = "g";
 
 const NUTRIENT_CHILD_RULES = [
   {
@@ -179,14 +187,6 @@ function buildInitialForm(initialNutrition?: NutritionInitialFormState): Nutriti
   return nextForm;
 }
 
-function getStepByUnit(unit: DetailFieldConfig["unit"]) {
-  if (unit === "g" || unit === "ml") {
-    return SINGLE_DECIMAL_STEP;
-  }
-
-  return SINGLE_DECIMAL_STEP;
-}
-
 function normalizeNutritionFormValues(form: NutritionDetailForm): NutritionDetailForm {
   const nextForm = { ...form };
 
@@ -212,6 +212,25 @@ function toNullableNumber(value: string) {
   return parsed;
 }
 
+function formatCompactDecimal(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function buildServingLabel(totalWeight: string, unit: NutritionServingUnit) {
+  const normalizedWeight = normalizeDecimalInput(totalWeight);
+  if (!normalizedWeight) {
+    return "총 용량";
+  }
+
+  const numericWeight = Number(normalizedWeight);
+  if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
+    return "총 용량";
+  }
+
+  return `총 용량  ${formatCompactDecimal(numericWeight)}${unit}`;
+}
+
 function hasChildNutrientOverflow(form: NutritionDetailForm) {
   return NUTRIENT_CHILD_RULES.some((rule) => {
     const parentValue = toNumber(form[rule.parent]);
@@ -224,14 +243,18 @@ function buildManualMenuItem({
   foodName,
   brandName,
   form,
+  totalWeightUnit,
 }: {
   foodName: string;
   brandName: string;
   form: NutritionDetailForm;
+  totalWeightUnit: NutritionServingUnit;
 }): MealMenuItem {
   const totalWeight = toNumber(form.totalWeight);
   const safeWeightText =
-    totalWeight > 0 ? `${totalWeight.toFixed(1)}g` : `${MIN_NUTRITION_VALUE.toFixed(1)}g`;
+    totalWeight > 0
+      ? `${formatCompactDecimal(totalWeight)}${totalWeightUnit}`
+      : `${MIN_NUTRITION_VALUE.toFixed(1)}${totalWeightUnit}`;
 
   return {
     id: `manual-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -281,9 +304,15 @@ export default function NutritionAddDetailPage() {
   const pendingCompareMenus = Array.isArray(locationState.pendingCompareMenus)
     ? locationState.pendingCompareMenus
     : [];
+  const initialServingUnit = locationState.servingUnit === "ml" ? "ml" : DEFAULT_SERVING_UNIT;
   const [form, setForm] = useState<NutritionDetailForm>(() => buildInitialForm(initialNutrition));
+  const [servingUnit, setServingUnit] = useState<NutritionServingUnit>(initialServingUnit);
   const pageTitle = initialNutrition ? "영양성분 수정" : "영양성분 등록";
   const submitButtonLabel = initialNutrition ? "수정해서 담기" : "등록하기";
+  const servingLabel = useMemo(
+    () => buildServingLabel(form.totalWeight, servingUnit),
+    [form.totalWeight, servingUnit],
+  );
 
   const displayFoodName = foodName || "음식명을 입력해주세요";
   const displayBrandName = brandName;
@@ -340,6 +369,26 @@ export default function NutritionAddDetailPage() {
 
   const handleResetForm = () => {
     setForm({ ...INITIAL_FORM });
+    setServingUnit(DEFAULT_SERVING_UNIT);
+  };
+
+  const updateTotalWeightByStep = (delta: number) => {
+    setForm((prev) => {
+      const parsedCurrentValue = Number(prev.totalWeight);
+      const baseValue = Number.isFinite(parsedCurrentValue)
+        ? parsedCurrentValue
+        : MIN_NUTRITION_VALUE;
+      const steppedValue = baseValue + delta;
+      const clampedValue = Math.min(
+        MAX_NUTRITION_VALUE,
+        Math.max(MIN_NUTRITION_VALUE, steppedValue),
+      );
+
+      return {
+        ...prev,
+        totalWeight: normalizeDecimalInput(String(clampedValue)),
+      };
+    });
   };
 
   const handleSubmit = () => {
@@ -364,6 +413,7 @@ export default function NutritionAddDetailPage() {
       foodName: displayFoodName,
       brandName: displayBrandName,
       form: normalizedForm,
+      totalWeightUnit: servingUnit,
     });
 
     if (source === "meal-record") {
@@ -415,7 +465,7 @@ export default function NutritionAddDetailPage() {
                 min={MIN_NUTRITION_VALUE}
                 max={MAX_NUTRITION_VALUE}
                 step={SINGLE_DECIMAL_STEP}
-                placeholder="0.0"
+                placeholder="0"
                 inputMode="decimal"
                 aria-label="칼로리 입력"
               />
@@ -437,7 +487,7 @@ export default function NutritionAddDetailPage() {
                     min={MIN_NUTRITION_VALUE}
                     max={MAX_NUTRITION_VALUE}
                     step={SINGLE_DECIMAL_STEP}
-                    placeholder="0.0"
+                    placeholder="0"
                     inputMode="decimal"
                     aria-label={`${field.label} 입력`}
                   />
@@ -447,6 +497,81 @@ export default function NutritionAddDetailPage() {
             ))}
           </div>
         </section>
+
+        <Tabs.Root
+          className={styles.TabsRoot}
+          value={servingUnit}
+          onValueChange={(nextValue) => {
+            setServingUnit(nextValue === "ml" ? "ml" : "g");
+          }}
+        >
+          <Tabs.List className={styles.TabsList}>
+            <Tabs.Tab value="g" className={styles.TabsTab}>
+              g
+            </Tabs.Tab>
+            <Tabs.Tab value="ml" className={styles.TabsTab}>
+              ml
+            </Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="g" className={styles.TabsPanel}>
+            <NumberField.Root>
+              <NumberField.Group className={styles.FieldGroup}>
+                <NumberField.Decrement
+                  className={styles.Decrement}
+                  aria-label="입력값 감소"
+                  onClick={() => updateTotalWeightByStep(-SINGLE_DECIMAL_STEP)}
+                >
+                  <MinusIcon size={24} />
+                </NumberField.Decrement>
+                <NumberField.Input
+                  className={`typo-body1 ${styles.FieldInput}`}
+                  inputMode="decimal"
+                  value={form.totalWeight}
+                  onChange={handleNumericChange("totalWeight")}
+                  onBlur={handleNumericBlur("totalWeight")}
+                  aria-label="단위량 또는 중량 입력"
+                />
+                <NumberField.Increment
+                  className={styles.Increment}
+                  aria-label="입력값 증가"
+                  onClick={() => updateTotalWeightByStep(SINGLE_DECIMAL_STEP)}
+                >
+                  <PlusIcon size={24} />
+                </NumberField.Increment>
+              </NumberField.Group>
+            </NumberField.Root>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="ml">
+            <NumberField.Root>
+              <NumberField.Group className={styles.FieldGroup}>
+                <NumberField.Decrement
+                  className={styles.Decrement}
+                  aria-label="입력값 감소"
+                  onClick={() => updateTotalWeightByStep(-SINGLE_DECIMAL_STEP)}
+                >
+                  <MinusIcon size={24} />
+                </NumberField.Decrement>
+                <NumberField.Input
+                  className={`typo-body1 ${styles.FieldInput}`}
+                  inputMode="decimal"
+                  value={form.totalWeight}
+                  onChange={handleNumericChange("totalWeight")}
+                  onBlur={handleNumericBlur("totalWeight")}
+                  aria-label="단위량 또는 중량 입력"
+                />
+                <NumberField.Increment
+                  className={styles.Increment}
+                  aria-label="입력값 증가"
+                  onClick={() => updateTotalWeightByStep(SINGLE_DECIMAL_STEP)}
+                >
+                  <PlusIcon size={24} />
+                </NumberField.Increment>
+              </NumberField.Group>
+            </NumberField.Root>
+          </Tabs.Panel>
+        </Tabs.Root>
 
         <section className={styles.detailSection}>
           <header className={styles.detailHeader}>
@@ -485,7 +610,7 @@ export default function NutritionAddDetailPage() {
                       isMainField ? styles.detailLabelMain : styles.detailLabelSub,
                     )}
                   >
-                    {field.label}
+                    {field.group === "serving" ? servingLabel : field.label}
                   </p>
 
                   <div className={styles.detailInputWrap}>
@@ -497,8 +622,8 @@ export default function NutritionAddDetailPage() {
                       onBlur={handleNumericBlur(field.key)}
                       min={MIN_NUTRITION_VALUE}
                       max={MAX_NUTRITION_VALUE}
-                      step={getStepByUnit(field.unit)}
-                      placeholder="0.0"
+                      step={SINGLE_DECIMAL_STEP}
+                      placeholder="0"
                       inputMode="decimal"
                       aria-label={`${field.label} 입력`}
                     />
