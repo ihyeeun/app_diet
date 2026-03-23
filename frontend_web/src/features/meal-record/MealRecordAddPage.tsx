@@ -98,9 +98,9 @@ export default function MealRecordAddPage() {
               fullWidth
               onClick={handleNavigateNutritionAdd}
             >
-              숫자입력하기
+              <p className={`typo-title4 ${styles.sheetButtonText}`}>숫자 입력하기</p>
             </Button>
-            <div className="divider dividerMargin20" />
+            <div className="divider dividerMargin16" />
             <Button
               variant="text"
               state="default"
@@ -109,7 +109,7 @@ export default function MealRecordAddPage() {
               fullWidth
               onClick={handleNavigateNutritionCamera}
             >
-              촬영하기
+              <p className={`typo-title4 ${styles.sheetButtonText}`}>영양성분표 촬영하기</p>
             </Button>
           </div>
         </div>
