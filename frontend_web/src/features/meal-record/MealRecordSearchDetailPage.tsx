@@ -38,6 +38,11 @@ import styles from "./styles/MealRecordSearchDetailPage.module.css";
 
 type MealRecordSearchDetailLocationState = NutritionEntryContextState & {
   menu: MealMenuItem;
+  searchReturnPath?: string;
+  searchReturnState?: NutritionEntryContextState & {
+    brandName?: string;
+    returnPath?: string;
+  };
 };
 
 function buildNutritionEditState({
@@ -83,6 +88,7 @@ export default function MealRecordSearchDetailPage() {
   const mealType = getMealType(searchParams.get("mealType"));
   const locationState = (location.state ?? {}) as MealRecordSearchDetailLocationState;
   const menu = locationState.menu;
+  const searchReturnPath = (locationState.searchReturnPath ?? "").trim();
   const pendingMenus = useMemo(
     () => (Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : []),
     [locationState.pendingMenus],
@@ -101,11 +107,31 @@ export default function MealRecordSearchDetailPage() {
   useEffect(() => {
     if (menu) return;
 
+    if (searchReturnPath) {
+      navigate(searchReturnPath, {
+        replace: true,
+        state: {
+          ...(locationState.searchReturnState ?? baseNutritionEntryContext),
+          pendingMenus,
+        },
+      });
+      return;
+    }
+
     navigate(getMealRecordAddSearchPath(dateKey, mealType), {
       replace: true,
       state: baseNutritionEntryContext,
     });
-  }, [baseNutritionEntryContext, dateKey, mealType, menu, navigate]);
+  }, [
+    baseNutritionEntryContext,
+    dateKey,
+    locationState.searchReturnState,
+    mealType,
+    menu,
+    navigate,
+    pendingMenus,
+    searchReturnPath,
+  ]);
 
   const serving = useMemo(() => (menu ? parseMenuServing(menu) : null), [menu]);
   const selectedMenu = useMemo(
@@ -178,6 +204,16 @@ export default function MealRecordSearchDetailPage() {
   }
 
   const handleBack = () => {
+    if (searchReturnPath) {
+      navigate(searchReturnPath, {
+        state: {
+          ...(locationState.searchReturnState ?? baseNutritionEntryContext),
+          pendingMenus,
+        },
+      });
+      return;
+    }
+
     navigate(getMealRecordAddSearchPath(dateKey, mealType), {
       state: {
         ...baseNutritionEntryContext,

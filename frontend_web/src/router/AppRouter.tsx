@@ -15,6 +15,7 @@ import NutritionCameraPage from "@/features/nutrition-entry/NutritionCameraPage"
 import NutritionAddDetailPage from "@/features/nutrition-entry/NutritionAddDetailPage";
 import BrandSearch from "@/features/nutrition-entry/BrandSearch";
 import MealCameraPage from "@/features/meal-record/MealCameraPage";
+import BrandMenuSearch from "@/features/search/brand/BrandMenuSearch";
 
 export default function AppRouter() {
   return (
@@ -37,6 +38,7 @@ export default function AppRouter() {
         <Route path={PATH.NUTRITION_CAMERA} element={<NutritionCameraPage />} />
         <Route path={PATH.NUTRITION_ADD_DETAIL} element={<NutritionAddDetailPage />} />
         <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
+        <Route path={PATH.BRAND_MENU_SEARCH} element={<BrandMenuSearch />} />
       </Routes>
     </BrowserRouter>
   );

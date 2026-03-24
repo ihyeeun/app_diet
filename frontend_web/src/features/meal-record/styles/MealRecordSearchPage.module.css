@@ -28,6 +28,27 @@
   gap: 10px;
 }
 
+.brandItem {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  background-color: var(--bg-normal-white);
+  padding: 16px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.brandName {
+  color: var(--text-normal);
+}
+
+.brandItemChevron {
+  color: var(--static-black);
+}
+
 .emptyResult {
   border: 1px solid var(--border-normal);
   border-radius: 12px;

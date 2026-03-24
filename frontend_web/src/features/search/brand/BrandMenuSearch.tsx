@@ -1,0 +1,605 @@
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
+import { MealRecordFloatingCameraButton } from "@/features/meal-record/components/MealRecordFloatingCameraButton";
+import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
+import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
+import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
+import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import {
+  getMealRecordAddSearchDetailPath,
+  getMealRecordPath,
+} from "@/features/meal-record/utils/mealRecord.paths";
+import {
+  fetchBrandSearchResults,
+  type BrandSearchResult,
+} from "@/features/nutrition-entry/api/brandSearch";
+import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
+import { PATH } from "@/router/path";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
+import { Button } from "@/shared/commons/button/Button";
+import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { toast } from "@/shared/commons/toast/toast";
+import {
+  BRAND_MENU_CATEGORY_OPTIONS,
+  fetchBrandMenuSearchResults,
+  fetchSimilarMenuSuggestions,
+  type BrandMenuCategory,
+} from "./api/brandMenuSearch";
+import styles from "./styles/BrandMenuSearch.module.css";
+
+const SEARCH_DEBOUNCE_MS = 250;
+
+type BrandMenuSearchLocationState = NutritionEntryContextState & {
+  brandName?: string;
+  returnPath?: string;
+};
+
+type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
+  menu: MealMenuItem;
+  searchReturnPath?: string;
+  searchReturnState?: BrandMenuSearchLocationState;
+};
+
+function useDebouncedKeyword(keyword: string) {
+  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [keyword]);
+
+  return debouncedKeyword;
+}
+
+function dedupeMenus(menus: MealMenuItem[]) {
+  const uniqueMenus = new Map(menus.map((menu) => [menu.id, menu]));
+  return Array.from(uniqueMenus.values());
+}
+
+export default function BrandMenuSearch() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = (location.state ?? {}) as BrandMenuSearchLocationState;
+  const defaultBrandName = (locationState.brandName ?? "").trim();
+  const returnPath = (locationState.returnPath ?? "").trim();
+
+  const dateKey = getSafeDateKey(locationState.dateKey ?? null);
+  const mealType = getMealType(locationState.mealType ?? null);
+  const baseNutritionEntryContext: NutritionEntryContextState = {
+    source: "meal-record",
+    dateKey,
+    mealType,
+    existingMenuCount: locationState.existingMenuCount ?? 0,
+  };
+
+  const [selectedBrand, setSelectedBrand] = useState<BrandSearchResult | null>(
+    defaultBrandName
+      ? {
+          id: defaultBrandName,
+          name: defaultBrandName,
+        }
+      : null,
+  );
+  const [brandKeyword, setBrandKeyword] = useState(defaultBrandName);
+  const [menuKeyword, setMenuKeyword] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<BrandMenuCategory>("all");
+  const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
+    const pendingMenus = Array.isArray(locationState.pendingMenus)
+      ? locationState.pendingMenus
+      : [];
+    return dedupeMenus(pendingMenus);
+  });
+
+  const brandInputRef = useRef<HTMLInputElement>(null);
+  const menuInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedMenuMap = useMemo(
+    () => new Map(selectedMenus.map((menu) => [menu.id, menu])),
+    [selectedMenus],
+  );
+  const selectedMenuIdSet = useMemo(
+    () => new Set(selectedMenus.map((menu) => menu.id)),
+    [selectedMenus],
+  );
+
+  const debouncedBrandKeyword = useDebouncedKeyword(brandKeyword);
+  const debouncedMenuKeyword = useDebouncedKeyword(menuKeyword);
+
+  const normalizedBrandKeyword = debouncedBrandKeyword.trim();
+  const normalizedMenuKeyword = debouncedMenuKeyword.trim();
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      if (selectedBrand) {
+        menuInputRef.current?.focus();
+        return;
+      }
+
+      brandInputRef.current?.focus();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [selectedBrand]);
+
+  const { data: brandResults = [], isFetching: isBrandFetching } = useQuery({
+    queryKey: ["brand-search-page", "brand", normalizedBrandKeyword],
+    queryFn: () => fetchBrandSearchResults(normalizedBrandKeyword),
+    enabled: !selectedBrand && normalizedBrandKeyword.length > 0,
+  });
+
+  const { data: brandMenuResults = [], isFetching: isBrandMenuFetching } = useQuery({
+    queryKey: [
+      "brand-search-page",
+      "brand-menu",
+      selectedBrand?.id ?? "",
+      selectedCategory,
+      normalizedMenuKeyword,
+    ],
+    queryFn: async () => {
+      if (!selectedBrand) {
+        return [];
+      }
+
+      return fetchBrandMenuSearchResults({
+        brandName: selectedBrand.name,
+        keyword: normalizedMenuKeyword,
+        category: selectedCategory,
+      });
+    },
+    enabled: selectedBrand !== null,
+  });
+
+  const shouldFetchSimilarMenus =
+    selectedBrand !== null &&
+    normalizedMenuKeyword.length > 0 &&
+    !isBrandMenuFetching &&
+    brandMenuResults.length === 0;
+
+  const { data: similarMenuResults = [] } = useQuery({
+    queryKey: [
+      "brand-search-page",
+      "similar-menus",
+      selectedBrand?.id ?? "",
+      normalizedMenuKeyword,
+    ],
+    queryFn: async () => {
+      if (!selectedBrand) {
+        return [];
+      }
+
+      return fetchSimilarMenuSuggestions({
+        brandName: selectedBrand.name,
+        keyword: normalizedMenuKeyword,
+      });
+    },
+    enabled: shouldFetchSimilarMenus,
+  });
+
+  const activeMenuResults = useMemo(() => {
+    if (brandMenuResults.length > 0) {
+      return brandMenuResults;
+    }
+
+    return similarMenuResults;
+  }, [brandMenuResults, similarMenuResults]);
+
+  const servingSheet = useServingAmountSheet({
+    onSubmitMenu: (nextMenu) => {
+      const isAlreadySelected = selectedMenuIdSet.has(nextMenu.id);
+      if (
+        !isAlreadySelected &&
+        (baseNutritionEntryContext.existingMenuCount ?? 0) + selectedMenus.length + 1 >
+          MAX_MEAL_RECORD_MENUS
+      ) {
+        toast.warning("최대 100개까지 기록할 수 있어요");
+        return false;
+      }
+
+      setSelectedMenus((prev) => {
+        const existingIndex = prev.findIndex((menu) => menu.id === nextMenu.id);
+
+        if (existingIndex < 0) {
+          return [...prev, nextMenu];
+        }
+
+        const next = [...prev];
+        next[existingIndex] = nextMenu;
+        return next;
+      });
+
+      return true;
+    },
+  });
+
+  const selectedCount = selectedMenus.length;
+  const hasBrandKeyword = normalizedBrandKeyword.length > 0;
+  const hasBrandResults = brandResults.length > 0;
+  const isBrandInitialSearching = isBrandFetching && hasBrandKeyword && !hasBrandResults;
+
+  const hasMenuResults = brandMenuResults.length > 0;
+  const hasSimilarMenus = similarMenuResults.length > 0;
+
+  const handleOpenServingSheet = (targetMenu: MealMenuItem) => {
+    const selectedMenu = selectedMenuMap.get(targetMenu.id) ?? null;
+    const baseMenu = activeMenuResults.find((menu) => menu.id === targetMenu.id) ?? targetMenu;
+
+    servingSheet.open({
+      menu: baseMenu,
+      selectedMenu,
+    });
+  };
+
+  const handleToggleMenuSelection = (targetMenu: MealMenuItem) => {
+    if (selectedMenuIdSet.has(targetMenu.id)) {
+      setSelectedMenus((prev) => prev.filter((menu) => menu.id !== targetMenu.id));
+      return;
+    }
+
+    handleOpenServingSheet(targetMenu);
+  };
+
+  const handleOpenMenuDetail = (menu: MealMenuItem) => {
+    if (!selectedBrand) {
+      return;
+    }
+
+    navigate(getMealRecordAddSearchDetailPath(dateKey, mealType), {
+      state: {
+        ...baseNutritionEntryContext,
+        pendingMenus: selectedMenus,
+        menu,
+        searchReturnPath: PATH.BRAND_MENU_SEARCH,
+        searchReturnState: {
+          ...locationState,
+          ...baseNutritionEntryContext,
+          pendingMenus: selectedMenus,
+          brandName: selectedBrand.name,
+          returnPath,
+        } satisfies BrandMenuSearchLocationState,
+      } satisfies MealRecordSearchDetailNavigationState,
+    });
+  };
+
+  const handleBack = () => {
+    if (selectedBrand && defaultBrandName.length === 0) {
+      setSelectedBrand(null);
+      setMenuKeyword("");
+      setSelectedCategory("all");
+      return;
+    }
+
+    if (returnPath) {
+      navigate(returnPath, {
+        replace: true,
+        state: {
+          ...locationState,
+          ...baseNutritionEntryContext,
+          pendingMenus: selectedMenus,
+        } satisfies BrandMenuSearchLocationState,
+      });
+      return;
+    }
+
+    navigate(-1);
+  };
+
+  const handleClearBrandKeyword = () => {
+    setBrandKeyword("");
+    brandInputRef.current?.focus();
+  };
+
+  const handleSelectBrand = (brand: BrandSearchResult) => {
+    setSelectedBrand(brand);
+    setMenuKeyword("");
+    setSelectedCategory("all");
+  };
+
+  const handleClearMenuKeyword = () => {
+    setMenuKeyword("");
+    menuInputRef.current?.focus();
+  };
+
+  const handleDirectBrandRegister = () => {
+    const normalizedKeyword = brandKeyword.trim();
+    if (!normalizedKeyword) return;
+
+    navigate(PATH.NUTRITION_ADD, {
+      state: {
+        ...locationState,
+        ...baseNutritionEntryContext,
+        brandName: normalizedKeyword,
+      } satisfies BrandMenuSearchLocationState,
+    });
+  };
+
+  const handleDirectNutritionEntry = () => {
+    navigate(PATH.NUTRITION_ADD, {
+      state: {
+        ...locationState,
+        ...baseNutritionEntryContext,
+        pendingMenus: selectedMenus,
+        brandName: selectedBrand?.name,
+      } satisfies BrandMenuSearchLocationState,
+    });
+  };
+
+  const handleApplySelectedMenus = () => {
+    if (selectedCount === 0) return;
+
+    navigate(getMealRecordPath(dateKey, mealType), {
+      state: {
+        pendingMenus: selectedMenus,
+      },
+    });
+  };
+
+  const handleCameraClick = () => {};
+
+  return (
+    <section className={styles.page}>
+      {selectedBrand ? (
+        <>
+          <PageHeader title={selectedBrand.name} onBack={handleBack} />
+
+          <main className={styles.main}>
+            <div className={styles.content}>
+              <section className={styles.topContainer}>
+                <div className={styles.searchFieldWrap}>
+                  <input
+                    ref={menuInputRef}
+                    className={`${styles.searchInput} typo-body3`}
+                    type="text"
+                    value={menuKeyword}
+                    onChange={(event) => setMenuKeyword(event.target.value)}
+                    placeholder="브랜드 내 메뉴 검색"
+                    aria-label="브랜드 내 메뉴 검색"
+                    maxLength={300}
+                  />
+
+                  {menuKeyword && (
+                    <button
+                      type="button"
+                      className={styles.clearButton}
+                      onClick={handleClearMenuKeyword}
+                      aria-label="검색어 지우기"
+                    >
+                      <img src="/icons/CircleClose.svg" alt="검색어 지우기" />
+                    </button>
+                  )}
+                </div>
+
+                <div className={styles.categoryList}>
+                  {BRAND_MENU_CATEGORY_OPTIONS.map((option) => {
+                    const isSelected = selectedCategory === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`${styles.categoryChip} ${isSelected ? styles.categoryChipSelected : ""}`}
+                        onClick={() => setSelectedCategory(option.value)}
+                        aria-pressed={isSelected}
+                      >
+                        <span className="typo-label3">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <section className={styles.bottomContainer}>
+                {hasMenuResults ? (
+                  <div className={styles.resultList}>
+                    {brandMenuResults.map((menu) => {
+                      const isSelected = selectedMenuIdSet.has(menu.id);
+
+                      return (
+                        <MealMenuCard
+                          key={menu.id}
+                          title={menu.title}
+                          calories={menu.calories}
+                          unitAmountText={menu.unitAmountText}
+                          brand={menu.brand}
+                          personalChipLabel={menu.personalChipLabel}
+                          icon={isSelected ? "check" : "add"}
+                          state={isSelected ? "select" : "default"}
+                          onClick={() => handleOpenMenuDetail(menu)}
+                          onIconClick={() => handleToggleMenuSelection(menu)}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={styles.emptyResult}>
+                    {isBrandMenuFetching ? (
+                      <p className="typo-label4">메뉴를 찾고 있어요</p>
+                    ) : (
+                      <>
+                        <p className={`typo-label4 ${styles.emptyResultText}`}>
+                          일치하는 메뉴가 없어요
+                          <br />
+                          영양 성분은 직접 등록할 수 있어요
+                        </p>
+                        <Button
+                          variant="text"
+                          state="default"
+                          size="small"
+                          color="assistive"
+                          onClick={handleDirectNutritionEntry}
+                        >
+                          영양 성분 직접 등록
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {!isBrandMenuFetching && !hasMenuResults && hasSimilarMenus && (
+                  <section className={styles.similarSection}>
+                    <h2 className={`${styles.similarSectionTitle} typo-title3`}>
+                      비슷한 메뉴 / 브랜드는 어때요?
+                    </h2>
+                    <div className={styles.resultList}>
+                      {similarMenuResults.map((menu) => {
+                        const isSelected = selectedMenuIdSet.has(menu.id);
+
+                        return (
+                          <MealMenuCard
+                            key={menu.id}
+                            title={menu.title}
+                            calories={menu.calories}
+                            unitAmountText={menu.unitAmountText}
+                            brand={menu.brand}
+                            personalChipLabel={menu.personalChipLabel}
+                            icon={isSelected ? "check" : "add"}
+                            state={isSelected ? "select" : "default"}
+                            onClick={() => handleOpenMenuDetail(menu)}
+                            onIconClick={() => handleToggleMenuSelection(menu)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {hasMenuResults && (
+                  <Button
+                    variant="text"
+                    state="default"
+                    size="small"
+                    color="assistive"
+                    onClick={handleDirectNutritionEntry}
+                  >
+                    영양 성분 직접 등록
+                  </Button>
+                )}
+              </section>
+            </div>
+          </main>
+        </>
+      ) : (
+        <>
+          <SearchInputHeader
+            value={brandKeyword}
+            onValueChange={setBrandKeyword}
+            onClear={handleClearBrandKeyword}
+            inputRef={brandInputRef}
+            placeholder="브랜드명 입력"
+            inputAriaLabel="브랜드명 입력"
+            onBack={handleBack}
+          />
+
+          <main className={styles.main}>
+            <section className={styles.searchSection}>
+              {hasBrandKeyword ? (
+                hasBrandResults ? (
+                  <ul className={styles.brandList}>
+                    {brandResults.map((brand) => (
+                      <li key={brand.id}>
+                        <button
+                          type="button"
+                          className={styles.brandItem}
+                          onClick={() => handleSelectBrand(brand)}
+                        >
+                          <span className={`typo-title2 ${styles.brandName}`}>{brand.name}</span>
+                          <ChevronRight size={24} className={styles.brandItemChevron} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className={styles.emptyResult}>
+                    {isBrandInitialSearching ? (
+                      <p className="typo-label4">브랜드를 찾고 있어요</p>
+                    ) : (
+                      <>
+                        <p className={`typo-label4 ${styles.emptyResultText}`}>
+                          일치하는 브랜드가 없어요
+                          <br />
+                          브랜드를 직접 등록할 수 있어요
+                        </p>
+                        <Button
+                          variant="text"
+                          state="default"
+                          size="small"
+                          color="assistive"
+                          onClick={handleDirectBrandRegister}
+                        >
+                          브랜드 직접 등록
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div className={styles.placeholder}>
+                  <p className={`typo-label4 ${styles.placeholderText}`}>
+                    브랜드명을 검색하면 결과를 바로 확인할 수 있어요
+                  </p>
+                </div>
+              )}
+
+              {hasBrandKeyword && hasBrandResults && (
+                <Button
+                  variant="text"
+                  state="default"
+                  size="small"
+                  color="assistive"
+                  onClick={handleDirectBrandRegister}
+                >
+                  브랜드 직접 등록
+                </Button>
+              )}
+            </section>
+          </main>
+        </>
+      )}
+
+      <footer className={styles.footer}>
+        <MealRecordFloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
+
+        <Button
+          onClick={handleApplySelectedMenus}
+          variant="filled"
+          state={selectedCount > 0 ? "default" : "disabled"}
+          size="large"
+          color="primary"
+          fullWidth
+          disabled={selectedCount === 0}
+        >
+          {selectedCount}개 담겼어요
+        </Button>
+      </footer>
+
+      <BottomSheet isOpen={servingSheet.isOpen} onClose={servingSheet.close}>
+        {servingSheet.menu && servingSheet.serving && (
+          <ServingAmountSheetContent
+            menu={servingSheet.menu}
+            serving={servingSheet.serving}
+            previewMenu={servingSheet.previewMenu ?? servingSheet.menu}
+            inputMode={servingSheet.inputMode}
+            inputValue={servingSheet.inputValue}
+            onModeChange={servingSheet.onModeChange}
+            onInputChange={servingSheet.onInputChange}
+            onInputBlur={servingSheet.onInputBlur}
+            onDecrease={servingSheet.onDecrease}
+            onIncrease={servingSheet.onIncrease}
+            onSubmit={servingSheet.onSubmit}
+          />
+        )}
+      </BottomSheet>
+    </section>
+  );
+}

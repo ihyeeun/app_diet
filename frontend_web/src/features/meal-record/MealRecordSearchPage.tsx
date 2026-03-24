@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
@@ -17,6 +18,7 @@ import { fetchMealMenuSearchResults } from "./api/menuSearch";
 import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
 import {
   getMealRecordAddPath,
+  getMealRecordAddSearchPath,
   getMealRecordAddSearchDetailPath,
   getMealRecordPath,
 } from "./utils/mealRecord.paths";
@@ -92,6 +94,22 @@ export default function MealRecordSearchPage() {
     enabled: normalizedKeyword.length > 0,
   });
 
+  const menuResultBrands = useMemo(() => {
+    const uniqueBrands = new Map<string, string>();
+
+    menuSearchResults.forEach((menu) => {
+      const normalizedBrandName = (menu.brand ?? "").trim();
+      if (!normalizedBrandName) return;
+
+      const key = normalizedBrandName.toLowerCase();
+      if (uniqueBrands.has(key)) return;
+
+      uniqueBrands.set(key, normalizedBrandName);
+    });
+
+    return Array.from(uniqueBrands.entries()).map(([id, name]) => ({ id, name }));
+  }, [menuSearchResults]);
+
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
       searchInputRef.current?.focus();
@@ -158,6 +176,20 @@ export default function MealRecordSearchPage() {
         pendingMenus: selectedMenus,
         menu,
       } satisfies MealRecordSearchDetailNavigationState,
+    });
+  };
+
+  const handleNavigateBrandMenuSearch = (brandName: string | undefined) => {
+    const normalizedBrandName = (brandName ?? "").trim();
+    if (!normalizedBrandName) return;
+
+    navigate(PATH.BRAND_MENU_SEARCH, {
+      state: {
+        ...baseNutritionEntryContext,
+        pendingMenus: selectedMenus,
+        brandName: normalizedBrandName,
+        returnPath: getMealRecordAddSearchPath(dateKey, mealType),
+      },
     });
   };
 
@@ -266,6 +298,18 @@ export default function MealRecordSearchPage() {
                     />
                   );
                 })}
+
+                {menuResultBrands.map((brand) => (
+                  <button
+                    key={brand.id}
+                    type="button"
+                    className={styles.brandItem}
+                    onClick={() => handleNavigateBrandMenuSearch(brand.name)}
+                  >
+                    <span className={`typo-title2 ${styles.brandName}`}>{brand.name}</span>
+                    <ChevronRight size={24} className={styles.brandItemChevron} />
+                  </button>
+                ))}
               </div>
             ) : (
               <div className={styles.emptyResult}>
