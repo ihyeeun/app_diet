@@ -7,9 +7,11 @@ export type MealMenuCardState = "default" | "select";
 
 type MealMenuCardProps = {
   title: string;
+  description?: string;
   calories: number;
   unitAmountText: string;
-  brandChipLabel?: string;
+  brand?: string;
+  suggestionChipLabel?: string;
   personalChipLabel?: string;
   icon?: MealMenuCardIcon;
   state?: MealMenuCardState;
@@ -36,10 +38,12 @@ function ActionIcon({ icon }: { icon: MealMenuCardIcon }) {
 
 export function MealMenuCard({
   title,
+  description,
   calories,
   unitAmountText,
-  brandChipLabel,
+  brand,
   personalChipLabel,
+  suggestionChipLabel,
   icon = "delete",
   state = "default",
   className,
@@ -77,41 +81,49 @@ export function MealMenuCard({
       onKeyDown={handleCardKeyDown}
     >
       <div className={styles.content}>
-        {(brandChipLabel || personalChipLabel) && (
-          <div className={styles.chipList}>
-            {personalChipLabel && (
-              <span className={`${styles.chip} ${styles.chipPrimary} typo-label6`}>
-                {personalChipLabel}
-              </span>
-            )}
-            {brandChipLabel && (
-              <span className={`${styles.chip} ${styles.chipNeutral} typo-label6`}>
-                {brandChipLabel}
-              </span>
-            )}
-          </div>
-        )}
-        <div>
-          <p className={`${styles.title} typo-title2 ellipsis`}>{title}</p>
+        <section className={styles.header}>
+          <div className={styles.titleSection}>
+            <p className={`${styles.title} typo-title2 ellipsis`}>{title}</p>
 
-          <p className={styles.meta}>
-            <span className={`${styles.calories} typo-title2`}>
-              {formatCalories(calories)} kcal
-            </span>
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={handleIconClick}
+              disabled={!onIconClick}
+              aria-label={getActionAriaLabel(icon)}
+            >
+              <ActionIcon icon={icon} />
+            </button>
+          </div>
+          {description && (
+            <p className={`typo-label4 ${styles.description} ellipsis`}>{description}</p>
+          )}
+        </section>
+
+        <section className={styles.meta}>
+          <p className={styles.prouductInfo}>
+            {brand && <span className={`${styles.brand} typo-label4`}>{brand}</span>}
             <span className={`${styles.unitAmount} typo-label4`}>{unitAmountText}</span>
           </p>
-        </div>
+
+          <span className={`${styles.calories} typo-title2`}>{formatCalories(calories)} kcal</span>
+        </section>
       </div>
 
-      <button
-        type="button"
-        className={styles.iconButton}
-        onClick={handleIconClick}
-        disabled={!onIconClick}
-        aria-label={getActionAriaLabel(icon)}
-      >
-        <ActionIcon icon={icon} />
-      </button>
+      {(suggestionChipLabel || personalChipLabel) && (
+        <div className={styles.chipList}>
+          {personalChipLabel && (
+            <span className={`${styles.chip} ${styles.personalChipLabel} typo-label6`}>
+              {personalChipLabel}
+            </span>
+          )}
+          {suggestionChipLabel && (
+            <span className={`${styles.chip} ${styles.suggestionChipLabel} typo-label6`}>
+              {suggestionChipLabel}
+            </span>
+          )}
+        </div>
+      )}
     </article>
   );
 }

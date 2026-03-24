@@ -34,7 +34,7 @@ export type MealMenuItem = {
   alcoholGram?: number | null;
   servingInputMode?: MealServingInputMode;
   servingInputValue?: number;
-  brandChipLabel?: string;
+  brand?: string;
   personalChipLabel?: string;
 };
 

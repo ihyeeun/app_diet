@@ -343,7 +343,7 @@ export default function MealRecordSearchDetailPage() {
             servingInput={{
               inputMode,
               inputValue,
-              unitLabel: serving?.unitLabel ?? "회분",
+              unitLabel: serving?.unitLabel ?? "인분",
               weightUnit: serving?.weightUnit ?? "g",
               onModeChange: handleModeChange,
               onInputChange: handleInputChange,

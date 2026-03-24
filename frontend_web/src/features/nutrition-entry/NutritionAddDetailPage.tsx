@@ -275,7 +275,7 @@ function buildManualMenuItem({
     cholesterolMg: toNullableNumber(form.cholesterol),
     alcoholGram: toNullableNumber(form.alcohol),
     brandChipLabel: brandName || undefined,
-    personalChipLabel: "직접 입력",
+    personalChipLabel: "개인용",
   };
 }
 

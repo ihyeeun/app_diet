@@ -17,7 +17,7 @@ export const SEARCH_MENU_ITEMS: MealMenuItem[] = [
     proteinGram: 27,
     fatGram: 24,
     cholesterolMg: 17,
-    brandChipLabel: "맥도날드",
+    brand: "맥도날드",
   },
   {
     id: "search-2",
@@ -28,7 +28,7 @@ export const SEARCH_MENU_ITEMS: MealMenuItem[] = [
     carbohydrateGram: 47,
     proteinGram: 30,
     fatGram: 30,
-    brandChipLabel: "맥도날드",
+    brand: "맥도날드",
   },
   {
     id: "search-3",
@@ -50,7 +50,7 @@ export const SEARCH_MENU_ITEMS: MealMenuItem[] = [
     carbohydrateGram: 38,
     proteinGram: 12,
     fatGram: 8,
-    brandChipLabel: "헬스고메",
+    brand: "헬스고메",
   },
   {
     id: "search-5",

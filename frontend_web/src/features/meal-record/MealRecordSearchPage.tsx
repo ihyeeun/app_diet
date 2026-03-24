@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
@@ -12,6 +13,7 @@ import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingC
 import { ServingAmountSheetContent } from "./components/ServingAmountSheetContent";
 import { BrandRequestSheetContent } from "./components/BrandRequestSheetContent";
 import { postMealRecordBrandRequest } from "./api/brandRequest";
+import { fetchMealMenuSearchResults } from "./api/menuSearch";
 import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
 import {
   getMealRecordAddPath,
@@ -20,12 +22,29 @@ import {
 } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import { useServingAmountSheet } from "./hooks/useServingAmountSheet";
-import { SEARCH_MENU_ITEMS } from "./utils/mealRecord.mockData";
 import styles from "./styles/MealRecordSearchPage.module.css";
 
 type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
   menu: MealMenuItem;
 };
+
+const SEARCH_DEBOUNCE_MS = 250;
+
+function useDebouncedKeyword(keyword: string) {
+  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [keyword]);
+
+  return debouncedKeyword;
+}
 
 export default function MealRecordSearchPage() {
   const location = useLocation();
@@ -64,21 +83,14 @@ export default function MealRecordSearchPage() {
     [selectedMenus],
   );
 
-  const filteredMenus = useMemo(() => {
-    const normalizedKeyword = searchKeyword.trim().toLowerCase();
-    if (!normalizedKeyword) return SEARCH_MENU_ITEMS;
+  const debouncedKeyword = useDebouncedKeyword(searchKeyword);
+  const normalizedKeyword = debouncedKeyword.trim();
 
-    return SEARCH_MENU_ITEMS.filter((menu) => {
-      const title = menu.title.toLowerCase();
-      const brand = menu.brandChipLabel?.toLowerCase() ?? "";
-      const personal = menu.personalChipLabel?.toLowerCase() ?? "";
-      return (
-        title.includes(normalizedKeyword) ||
-        brand.includes(normalizedKeyword) ||
-        personal.includes(normalizedKeyword)
-      );
-    });
-  }, [searchKeyword]);
+  const { data: menuSearchResults = [], isFetching } = useQuery({
+    queryKey: ["meal-menu-search", normalizedKeyword],
+    queryFn: () => fetchMealMenuSearchResults(normalizedKeyword),
+    enabled: normalizedKeyword.length > 0,
+  });
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -122,7 +134,7 @@ export default function MealRecordSearchPage() {
 
   const handleOpenServingSheet = (targetMenu: MealMenuItem) => {
     const selectedMenu = selectedMenuMap.get(targetMenu.id) ?? null;
-    const baseMenu = SEARCH_MENU_ITEMS.find((menu) => menu.id === targetMenu.id) ?? targetMenu;
+    const baseMenu = menuSearchResults.find((menu) => menu.id === targetMenu.id) ?? targetMenu;
 
     servingSheet.open({
       menu: baseMenu,
@@ -211,6 +223,9 @@ export default function MealRecordSearchPage() {
     isBrandRequestSubmitting || brandRequestKeyword.trim().length === 0;
 
   const selectedCount = selectedMenus.length;
+  const hasKeyword = normalizedKeyword.length > 0;
+  const hasResults = menuSearchResults.length > 0;
+  const isInitialSearching = isFetching && hasKeyword && !hasResults;
 
   return (
     <section className={styles.page}>
@@ -230,58 +245,72 @@ export default function MealRecordSearchPage() {
 
       <main className={styles.main}>
         <section className={styles.searchSection}>
-          {filteredMenus.length > 0 ? (
-            <div className={styles.resultList}>
-              {filteredMenus.map((menu) => {
-                const isSelected = selectedMenuIdSet.has(menu.id);
+          {hasKeyword ? (
+            hasResults ? (
+              <div className={styles.resultList}>
+                {menuSearchResults.map((menu) => {
+                  const isSelected = selectedMenuIdSet.has(menu.id);
 
-                return (
-                  <MealMenuCard
-                    key={menu.id}
-                    title={menu.title}
-                    calories={menu.calories}
-                    unitAmountText={menu.unitAmountText}
-                    brandChipLabel={menu.brandChipLabel}
-                    personalChipLabel={menu.personalChipLabel}
-                    icon={isSelected ? "check" : "add"}
-                    state={isSelected ? "select" : "default"}
-                    onClick={() => handleOpenMenuDetail(menu)}
-                    onIconClick={() => handleToggleMenuSelection(menu)}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className={styles.emptyResult}>
-              <p className="typo-label4">
-                일치하는 메뉴나 브랜드가 없어요
-                <br />
-                비슷한 항목을 선택하거나 직접 등록할 수 있어요
-              </p>
-              <div className={styles.buttonContainer}>
-                <Button
-                  variant="text"
-                  state="default"
-                  size="small"
-                  color="assistive"
-                  onClick={handleDirectNutritionEntry}
-                >
-                  영양 성분 직접 등록
-                </Button>
-                <Button
-                  variant="text"
-                  state="default"
-                  size="small"
-                  color="assistive"
-                  onClick={handleOpenBrandRequestSheet}
-                >
-                  브랜드 추가 요청
-                </Button>
+                  return (
+                    <MealMenuCard
+                      key={menu.id}
+                      title={menu.title}
+                      calories={menu.calories}
+                      unitAmountText={menu.unitAmountText}
+                      brand={menu.brand}
+                      personalChipLabel={menu.personalChipLabel}
+                      icon={isSelected ? "check" : "add"}
+                      state={isSelected ? "select" : "default"}
+                      onClick={() => handleOpenMenuDetail(menu)}
+                      onIconClick={() => handleToggleMenuSelection(menu)}
+                    />
+                  );
+                })}
               </div>
+            ) : (
+              <div className={styles.emptyResult}>
+                {isInitialSearching ? (
+                  <p className="typo-label4">메뉴를 찾고 있어요</p>
+                ) : (
+                  <>
+                    <p className="typo-label4">
+                      일치하는 메뉴나 브랜드가 없어요
+                      <br />
+                      비슷한 항목을 선택하거나 직접 등록할 수 있어요
+                    </p>
+                    <div className={styles.buttonContainer}>
+                      <Button
+                        variant="text"
+                        state="default"
+                        size="small"
+                        color="assistive"
+                        onClick={handleDirectNutritionEntry}
+                      >
+                        영양 성분 직접 등록
+                      </Button>
+                      <Button
+                        variant="text"
+                        state="default"
+                        size="small"
+                        color="assistive"
+                        onClick={handleOpenBrandRequestSheet}
+                      >
+                        브랜드 추가 요청
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )
+          ) : (
+            <div className={styles.placeholder}>
+              <p className={`typo-label4 ${styles.placeholderText}`}>
+                메뉴를 검색하거나 음식 사진을 찍어 기록해보세요
+              </p>
             </div>
           )}
 
-          {filteredMenus.length > 0 && (
+          {hasKeyword && hasResults && (
             <Button
               variant="text"
               state="default"

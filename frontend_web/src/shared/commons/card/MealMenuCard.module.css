@@ -5,8 +5,9 @@
   background-color: var(--bg-normal-white);
   padding: 16px 20px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .card.clickable {
@@ -21,32 +22,47 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.titleSection {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.description {
+  color: var(--text-assistive2);
 }
 
 .chipList {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .chip {
-  height: 22px;
   border-radius: 4px;
   padding: 2px 6px;
   display: inline-flex;
   align-items: center;
 }
 
-.chipPrimary {
-  background-color: var(--primary-strong);
-  color: var(--text-white);
+.personalChipLabel {
+  background-color: var(--bg-normal-normal);
+  color: var(--text-assistive2);
 }
 
-.chipNeutral {
-  background-color: var(--gray-900);
-  color: var(--text-white);
+.suggestionChipLabel {
+  background-color: var(--interaction-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
 }
 
 .iconButton {
@@ -76,12 +92,22 @@
 .meta {
   display: flex;
   align-items: baseline;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 6px;
+}
+
+.prouductInfo {
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
 .calories {
   color: var(--text-normal);
+}
+
+.brand {
+  color: var(--text-assistive2);
 }
 
 .unitAmount {
