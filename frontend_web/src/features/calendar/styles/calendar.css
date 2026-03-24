@@ -14,20 +14,24 @@
   padding: 10px 20px;
 }
 
-.calendar-header-left,
+.calendar-header-left {
+  display: flex;
+  align-items: center;
+}
+
 .calendar-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
 }
 
 .calendar-title-button {
   border: 0;
   background: transparent;
   padding: 0;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 4px;
   cursor: pointer;
 }
 
@@ -44,9 +48,23 @@
   transform: rotate(180deg);
 }
 
+.calendar-nav-button {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  color: var(--static-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-nav-button:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .calendar-body {
   width: 100%;
-  height: fit-content;
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -56,49 +74,46 @@
 .weekly-calendar {
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(7, 1fr);
+  height: 100%;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 9px;
   touch-action: pan-y;
-  padding: 0px 21px 16px 20px;
   justify-items: center;
   align-items: center;
+  padding-bottom: 16px;
 }
 
 .monthly-calendar {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   touch-action: pan-y;
+  padding-bottom: 16px;
 }
 
 .monthly-calendar-weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  width: 100%;
 }
 
 .monthly-calendar-weekday {
   text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8a8a8a;
+  color: var(--text-white);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .monthly-calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  place-items: center;
 }
 
 .calendar-day-cell {
-  border: 0;
-  background: transparent;
   border-radius: 100px;
-  height: fit-content;
-  min-height: 72px;
-  width: 40px;
-  min-width: 40px;
-  padding: 4px 0px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -107,31 +122,64 @@
   color: var(--static-white);
 }
 
-.calendar-day-cell.is-compact {
+.calendar-day-cell--week {
+  width: 40px;
+  min-width: 40px;
   min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.calendar-day-cell.is-selected {
+.calendar-day-cell--month {
+  width: 48px;
+  min-height: 48px;
+}
+
+.calendar-day-cell.is-outside {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.calendar-day-cell--week.is-selected {
   background: rgba(255, 255, 255, 0.5);
+}
+
+.calendar-day-cell--month.is-selected .calendar-day-number-container {
+  background-color: var(--bg-normal-white);
+  padding: 0 5px;
+}
+
+.calendar-day-cell--month.is-selected .calendar-day-number {
+  color: var(--text-primary);
+}
+
+.calendar-day-cell--week.is-selected .calendar-day-weekday,
+.calendar-day-cell--week.is-selected .calendar-day-number {
   color: var(--text-primary);
 }
 
 .calendar-day-cell.is-today .calendar-day-weekday-container {
   background-color: var(--bg-normal-white);
-  border-radius: 100px;
+}
+
+.calendar-day-cell.is-today .calendar-day-weekday {
   color: var(--text-primary);
 }
 
-.calendar-day-cell.is-selected .calendar-day-weekday,
-.calendar-day-cell.is-selected .calendar-day-number {
-  color: var(--text-primary);
-}
-
-.calendar-day-weekday-container,
-.calendar-day-number-container {
+.calendar-day-cell--week .calendar-day-weekday-container {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
+  border-radius: 100px;
+}
+
+.calendar-day-cell--month .calendar-day-number-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
 }

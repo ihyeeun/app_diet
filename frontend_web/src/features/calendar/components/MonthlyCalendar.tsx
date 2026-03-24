@@ -20,7 +20,7 @@ export default function MonthlyCalendar({ days, onSelectDate, onSwipePrev, onSwi
     <div className="monthly-calendar" {...swipeHandlers}>
       <div className="monthly-calendar-weekdays">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="monthly-calendar-weekday">
+          <div key={label} className="monthly-calendar-weekday typo-label4">
             {label}
           </div>
         ))}
@@ -28,7 +28,7 @@ export default function MonthlyCalendar({ days, onSelectDate, onSwipePrev, onSwi
 
       <div className="monthly-calendar-grid">
         {days.map((day) => (
-          <DayCell key={day.date.toISOString()} day={day} onSelect={onSelectDate} compact />
+          <DayCell key={day.date.toISOString()} day={day} onSelect={onSelectDate} variant="month" />
         ))}
       </div>
     </div>

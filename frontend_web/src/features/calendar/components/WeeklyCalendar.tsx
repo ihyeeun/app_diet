@@ -24,6 +24,7 @@ export default function WeeklyCalendar({ days, onSelectDate, onSwipePrev, onSwip
           day={day}
           weekdayLabel={WEEKDAY_LABELS[index]}
           onSelect={onSelectDate}
+          variant="week"
         />
       ))}
     </div>

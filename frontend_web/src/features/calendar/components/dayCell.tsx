@@ -1,20 +1,22 @@
 import { formatDayNumber } from "../utils/format";
 import type { CalendarDay } from "../types/calendar.types";
 
+type DayCellVariant = "week" | "month";
+
 type Props = {
   day: CalendarDay;
   weekdayLabel?: string;
   onSelect: (date: Date) => void;
-  compact?: boolean;
+  variant?: DayCellVariant;
 };
 
-export default function DayCell({ day, weekdayLabel, onSelect, compact = false }: Props) {
+export default function DayCell({ day, weekdayLabel, onSelect, variant = "week" }: Props) {
   const classNames = [
-    "calendar-day-cell typo-title4",
+    "calendar-day-cell",
+    `calendar-day-cell--${variant}`,
     day.isSelected ? "is-selected" : "",
     day.isToday ? "is-today" : "",
     !day.isCurrentMonth ? "is-outside" : "",
-    compact ? "is-compact" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -31,13 +33,13 @@ export default function DayCell({ day, weekdayLabel, onSelect, compact = false }
         weekday: "long",
       })}${day.isToday ? ", 오늘" : ""}${!day.isCurrentMonth ? ", 이번 달 아님" : ""}`}
     >
-      {weekdayLabel && (
+      {variant === "week" && weekdayLabel && (
         <div className="calendar-day-weekday-container">
-          <span className="calendar-day-weekday">{weekdayLabel}</span>
+          <span className="calendar-day-weekday typo-title4">{weekdayLabel}</span>
         </div>
       )}
       <div className="calendar-day-number-container">
-        <span className="calendar-day-number">{formatDayNumber(day.date)}</span>
+        <span className="calendar-day-number typo-title4">{formatDayNumber(day.date)}</span>
       </div>
     </button>
   );
