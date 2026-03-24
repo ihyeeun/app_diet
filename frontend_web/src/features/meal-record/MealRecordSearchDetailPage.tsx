@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { PATH } from "@/router/path";
 import { toast } from "@/shared/commons/toast/toast";
@@ -9,11 +8,13 @@ import type {
   NutritionAddLocationState,
   NutritionEntryContextState,
 } from "@/features/nutrition-entry/nutritionEntry.types";
-import type { MealMenuItem, MealRecordLocationState } from "./types/mealRecord.types";
+import type {
+  MealMenuItem,
+  MealRecordLocationState,
+  MealServingInputMode,
+} from "./types/mealRecord.types";
 import type { MealServingAmount } from "./types/mealMenuNutrition.types";
 import { MealMenuNutritionDetail } from "./components/MealMenuNutritionDetail";
-import { ServingAmountSheetContent } from "./components/ServingAmountSheetContent";
-import { useServingAmountSheet } from "./hooks/useServingAmountSheet";
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
 import {
@@ -22,6 +23,16 @@ import {
   getMealMenuTotalWeight,
   parseServingAmount,
 } from "./utils/mealMenuNutrition";
+import {
+  SERVING_INPUT_STEP,
+  buildScaledMenu,
+  formatCompactDecimal,
+  getServingDefaultValue,
+  normalizeServingInput,
+  parseMenuServing,
+  resolveServingValues,
+  sanitizeServingInput,
+} from "./utils/mealRecordServing";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import styles from "./styles/MealRecordSearchDetailPage.module.css";
 
@@ -96,52 +107,71 @@ export default function MealRecordSearchDetailPage() {
     });
   }, [baseNutritionEntryContext, dateKey, mealType, menu, navigate]);
 
-  const servingAmount = useMemo(
-    () => (menu ? parseServingAmount(menu.unitAmountText) : parseServingAmount("")),
-    [menu],
-  );
-
-  const detailRows = useMemo(
-    () => (menu ? buildMealMenuDetailRows(menu, servingAmount) : []),
-    [menu, servingAmount],
-  );
-  const detailGroups = useMemo(() => buildMealMenuDetailGroups(detailRows), [detailRows]);
+  const serving = useMemo(() => (menu ? parseMenuServing(menu) : null), [menu]);
   const selectedMenu = useMemo(
     () => (menu ? (pendingMenus.find((item) => item.id === menu.id) ?? null) : null),
     [menu, pendingMenus],
   );
-  const isPersonalMenuData = menu.dataSource === "personal" || Boolean(menu?.personalChipLabel);
+  const initialServingInput = useMemo(() => {
+    if (!serving) {
+      return {
+        mode: "unit" as MealServingInputMode,
+        value: "",
+      };
+    }
 
-  const servingSheet = useServingAmountSheet({
-    onSubmitMenu: (nextMenu) => {
-      if (!menu) {
-        return false;
-      }
+    const mode = selectedMenu?.servingInputMode ?? "unit";
+    const initialValue = selectedMenu?.servingInputValue ?? getServingDefaultValue(serving, mode);
 
-      const isAlreadyQueued = pendingMenus.some((item) => item.id === menu.id);
-      if (
-        !isAlreadyQueued &&
-        (baseNutritionEntryContext.existingMenuCount ?? 0) + pendingMenus.length + 1 >
-          MAX_MEAL_RECORD_MENUS
-      ) {
-        toast.warning("최대 100개까지 기록할 수 있어요");
-        return false;
-      }
+    return {
+      mode,
+      value: formatCompactDecimal(normalizeServingInput(initialValue)),
+    };
+  }, [selectedMenu?.servingInputMode, selectedMenu?.servingInputValue, serving]);
+  const [inputMode, setInputMode] = useState<MealServingInputMode>(initialServingInput.mode);
+  const [inputValue, setInputValue] = useState(initialServingInput.value);
 
-      const existingIndex = pendingMenus.findIndex((item) => item.id === nextMenu.id);
-      const nextPendingMenus =
-        existingIndex < 0
-          ? [...pendingMenus, nextMenu]
-          : pendingMenus.map((item, index) => (index === existingIndex ? nextMenu : item));
+  const parsedInputValue = useMemo(() => {
+    const parsedValue = Number(inputValue);
+    if (!Number.isFinite(parsedValue)) {
+      return null;
+    }
 
-      navigate(getMealRecordPath(dateKey, mealType), {
-        state: {
-          pendingMenus: nextPendingMenus,
-        } satisfies MealRecordLocationState,
-      });
-      return true;
-    },
-  });
+    return parsedValue;
+  }, [inputValue]);
+
+  const previewMenu = useMemo(() => {
+    if (!menu || !serving || parsedInputValue === null || parsedInputValue <= 0) {
+      return menu;
+    }
+
+    const resolvedServing = resolveServingValues(serving, inputMode, parsedInputValue);
+    if (!Number.isFinite(resolvedServing.scaleFactor) || resolvedServing.scaleFactor <= 0) {
+      return menu;
+    }
+
+    return buildScaledMenu({
+      menu,
+      serving,
+      resolved: resolvedServing,
+      mode: inputMode,
+      inputValue: parsedInputValue,
+    });
+  }, [inputMode, menu, parsedInputValue, serving]);
+
+  const currentMenu = previewMenu ?? menu;
+  const currentServingAmount = useMemo(
+    () => parseServingAmount(currentMenu?.unitAmountText ?? ""),
+    [currentMenu],
+  );
+  const detailRows = useMemo(
+    () => (currentMenu ? buildMealMenuDetailRows(currentMenu, currentServingAmount) : []),
+    [currentMenu, currentServingAmount],
+  );
+  const detailGroups = useMemo(() => buildMealMenuDetailGroups(detailRows), [detailRows]);
+  const isAlreadyQueued = selectedMenu !== null;
+  const isPersonalMenuData =
+    (currentMenu?.dataSource ?? "public") === "personal" || Boolean(currentMenu?.personalChipLabel);
 
   if (!menu) {
     return null;
@@ -156,10 +186,119 @@ export default function MealRecordSearchDetailPage() {
     });
   };
 
-  const handleOpenServingSheet = () => {
-    servingSheet.open({
+  const handleModeChange = (nextMode: MealServingInputMode) => {
+    if (!serving || nextMode === inputMode) {
+      return;
+    }
+
+    setInputMode(nextMode);
+
+    const parsedCurrentValue = Number(inputValue);
+    if (!Number.isFinite(parsedCurrentValue) || parsedCurrentValue <= 0) {
+      const fallbackValue = getServingDefaultValue(serving, nextMode);
+      setInputValue(formatCompactDecimal(normalizeServingInput(fallbackValue)));
+      return;
+    }
+
+    const resolvedCurrent = resolveServingValues(serving, inputMode, parsedCurrentValue);
+    if (!Number.isFinite(resolvedCurrent.scaleFactor) || resolvedCurrent.scaleFactor <= 0) {
+      const fallbackValue = getServingDefaultValue(serving, nextMode);
+      setInputValue(formatCompactDecimal(normalizeServingInput(fallbackValue)));
+      return;
+    }
+
+    const convertedValue =
+      nextMode === "weight" ? resolvedCurrent.totalWeight : resolvedCurrent.unitCount;
+    setInputValue(formatCompactDecimal(normalizeServingInput(convertedValue)));
+  };
+
+  const handleInputStep = (delta: number) => {
+    if (!serving) return;
+
+    const currentValue = Number(inputValue);
+    const baseValue = Number.isFinite(currentValue)
+      ? currentValue
+      : getServingDefaultValue(serving, inputMode);
+    const nextValue = normalizeServingInput(baseValue + delta);
+    setInputValue(formatCompactDecimal(nextValue));
+  };
+
+  const handleInputBlur = () => {
+    if (!serving) {
+      setInputValue("");
+      return;
+    }
+
+    const trimmedValue = inputValue.trim();
+    if (!trimmedValue || trimmedValue === ".") {
+      setInputValue(
+        formatCompactDecimal(normalizeServingInput(getServingDefaultValue(serving, inputMode))),
+      );
+      return;
+    }
+
+    const parsedValue = Number(trimmedValue);
+    if (!Number.isFinite(parsedValue)) {
+      setInputValue(
+        formatCompactDecimal(normalizeServingInput(getServingDefaultValue(serving, inputMode))),
+      );
+      return;
+    }
+
+    setInputValue(formatCompactDecimal(normalizeServingInput(parsedValue)));
+  };
+
+  const handleInputChange = (nextValue: string) => {
+    setInputValue(sanitizeServingInput(nextValue));
+  };
+
+  const handleAddMenu = () => {
+    if (!menu || !serving) {
+      return;
+    }
+
+    const nextInputValue = Number(inputValue);
+    if (!Number.isFinite(nextInputValue) || nextInputValue <= 0) {
+      toast.warning("입력값을 다시 확인해주세요");
+      return;
+    }
+
+    const normalizedInput = normalizeServingInput(nextInputValue);
+    setInputValue(formatCompactDecimal(normalizedInput));
+
+    const resolvedServing = resolveServingValues(serving, inputMode, normalizedInput);
+    if (!Number.isFinite(resolvedServing.scaleFactor) || resolvedServing.scaleFactor <= 0) {
+      toast.warning("입력값을 다시 확인해주세요");
+      return;
+    }
+
+    const nextMenu = buildScaledMenu({
       menu,
-      selectedMenu,
+      serving,
+      resolved: resolvedServing,
+      mode: inputMode,
+      inputValue: normalizedInput,
+    });
+
+    if (
+      !isAlreadyQueued &&
+      (baseNutritionEntryContext.existingMenuCount ?? 0) + pendingMenus.length + 1 >
+        MAX_MEAL_RECORD_MENUS
+    ) {
+      toast.warning("최대 100개까지 기록할 수 있어요");
+      return;
+    }
+
+    const existingIndex = pendingMenus.findIndex((item) => item.id === nextMenu.id);
+    const nextPendingMenus =
+      existingIndex < 0
+        ? [...pendingMenus, nextMenu]
+        : pendingMenus.map((item, index) => (index === existingIndex ? nextMenu : item));
+
+    navigate(getMealRecordPath(dateKey, mealType), {
+      state: {
+        pendingMenus: nextPendingMenus,
+      } satisfies MealRecordLocationState,
     });
   };
 
@@ -167,9 +306,9 @@ export default function MealRecordSearchDetailPage() {
     navigate(PATH.NUTRITION_ADD_DETAIL, {
       state: buildNutritionEditState({
         baseContext: baseNutritionEntryContext,
-        menu,
+        menu: currentMenu,
         pendingMenus,
-        servingAmount,
+        servingAmount: currentServingAmount,
       }),
     });
   };
@@ -180,7 +319,7 @@ export default function MealRecordSearchDetailPage() {
         title="영양성분 상세"
         onBack={handleBack}
         rightSlot={
-          menu.dataSource === "personal" && (
+          currentMenu.dataSource === "personal" && (
             <Button variant="text" state="default" size="small" color="assistive">
               삭제
             </Button>
@@ -191,50 +330,36 @@ export default function MealRecordSearchDetailPage() {
       <main className={styles.main}>
         <div className={styles.content}>
           <MealMenuNutritionDetail
-            menuTitle={menu.title}
-            calories={menu.calories}
-            carbohydrateGram={menu.carbohydrateGram}
-            proteinGram={menu.proteinGram}
-            fatGram={menu.fatGram}
+            menuTitle={currentMenu.title}
+            calories={currentMenu.calories}
+            carbohydrateGram={currentMenu.carbohydrateGram}
+            proteinGram={currentMenu.proteinGram}
+            fatGram={currentMenu.fatGram}
             detailGroups={detailGroups}
             isDetailOpen={isDetailOpen}
             onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
             onEditAndAdd={handleEditAndAdd}
             showEditSection={!isPersonalMenuData}
+            servingInput={{
+              inputMode,
+              inputValue,
+              unitLabel: serving?.unitLabel ?? "회분",
+              weightUnit: serving?.weightUnit ?? "g",
+              onModeChange: handleModeChange,
+              onInputChange: handleInputChange,
+              onInputBlur: handleInputBlur,
+              onDecrease: () => handleInputStep(-SERVING_INPUT_STEP),
+              onIncrease: () => handleInputStep(SERVING_INPUT_STEP),
+            }}
           />
         </div>
       </main>
 
       <footer className={styles.footer}>
-        <Button
-          variant="filled"
-          size="large"
-          color="primary"
-          fullWidth
-          onClick={handleOpenServingSheet}
-        >
-          {/* TODO 이미 담긴 메뉴라면 수정해서 담기로 변경해야함 */}
-          담기
+        <Button variant="filled" size="large" color="primary" fullWidth onClick={handleAddMenu}>
+          {isAlreadyQueued ? "수정해서 담기" : "담기"}
         </Button>
       </footer>
-
-      <BottomSheet isOpen={servingSheet.isOpen} onClose={servingSheet.close}>
-        {servingSheet.menu && servingSheet.serving && (
-          <ServingAmountSheetContent
-            menu={servingSheet.menu}
-            serving={servingSheet.serving}
-            previewMenu={servingSheet.previewMenu ?? servingSheet.menu}
-            inputMode={servingSheet.inputMode}
-            inputValue={servingSheet.inputValue}
-            onModeChange={servingSheet.onModeChange}
-            onInputChange={servingSheet.onInputChange}
-            onInputBlur={servingSheet.onInputBlur}
-            onDecrease={servingSheet.onDecrease}
-            onIncrease={servingSheet.onIncrease}
-            onSubmit={servingSheet.onSubmit}
-          />
-        )}
-      </BottomSheet>
     </section>
   );
 }

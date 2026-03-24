@@ -1,8 +1,22 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { NumberField, Tabs } from "@base-ui/react";
+import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/shared/commons/button/Button";
 import { formatNutritionValue } from "@/features/meal-record/utils/mealMenuNutrition";
 import type { MealMenuNutrientGroupSection } from "@/features/meal-record/types/mealMenuNutrition.types";
+import type { MealServingInputMode } from "@/features/meal-record/types/mealRecord.types";
 import styles from "../styles/MealMenuNutritionDetail.module.css";
+
+type MealMenuServingInputProps = {
+  inputMode: MealServingInputMode;
+  inputValue: string;
+  unitLabel: string;
+  weightUnit: string;
+  onModeChange: (nextMode: MealServingInputMode) => void;
+  onInputChange: (nextValue: string) => void;
+  onInputBlur: () => void;
+  onDecrease: () => void;
+  onIncrease: () => void;
+};
 
 type MealMenuNutritionDetailProps = {
   menuTitle: string;
@@ -16,6 +30,7 @@ type MealMenuNutritionDetailProps = {
   onEditAndAdd?: () => void;
   showEditSection?: boolean;
   detailListId?: string;
+  servingInput?: MealMenuServingInputProps;
 };
 
 export function MealMenuNutritionDetail({
@@ -30,6 +45,7 @@ export function MealMenuNutritionDetail({
   onEditAndAdd,
   showEditSection = true,
   detailListId = "meal-record-detail-list",
+  servingInput,
 }: MealMenuNutritionDetailProps) {
   return (
     <>
@@ -68,6 +84,73 @@ export function MealMenuNutritionDetail({
           </article>
         </div>
       </section>
+
+      {servingInput && (
+        <section className={styles.servingInputSection}>
+          <Tabs.Root
+            className={styles.TabsRoot}
+            value={servingInput.inputMode}
+            onValueChange={(nextValue) => {
+              servingInput.onModeChange(nextValue === "weight" ? "weight" : "unit");
+            }}
+          >
+            <Tabs.List className={styles.TabsList}>
+              <Tabs.Tab value="unit" className={styles.TabsTab}>
+                {servingInput.unitLabel}
+              </Tabs.Tab>
+              <Tabs.Tab value="weight" className={styles.TabsTab}>
+                {servingInput.weightUnit}
+              </Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="unit" className={styles.TabsPanel}>
+              <NumberField.Root>
+                <NumberField.Group className={styles.FieldGroup}>
+                  <NumberField.Decrement aria-label="입력값 감소" onClick={servingInput.onDecrease}>
+                    <MinusIcon size={24} />
+                  </NumberField.Decrement>
+                  <NumberField.Input
+                    className={`typo-body1 ${styles.FieldInput}`}
+                    inputMode="decimal"
+                    value={servingInput.inputValue}
+                    onChange={(event) => {
+                      servingInput.onInputChange(event.target.value);
+                    }}
+                    onBlur={servingInput.onInputBlur}
+                    aria-label="단위량 또는 중량 입력"
+                  />
+                  <NumberField.Increment aria-label="입력값 증가" onClick={servingInput.onIncrease}>
+                    <PlusIcon size={24} />
+                  </NumberField.Increment>
+                </NumberField.Group>
+              </NumberField.Root>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="weight" className={styles.TabsPanel}>
+              <NumberField.Root>
+                <NumberField.Group className={styles.FieldGroup}>
+                  <NumberField.Decrement aria-label="입력값 감소" onClick={servingInput.onDecrease}>
+                    <MinusIcon size={24} />
+                  </NumberField.Decrement>
+                  <NumberField.Input
+                    className={`typo-body1 ${styles.FieldInput}`}
+                    inputMode="decimal"
+                    value={servingInput.inputValue}
+                    onChange={(event) => {
+                      servingInput.onInputChange(event.target.value);
+                    }}
+                    onBlur={servingInput.onInputBlur}
+                    aria-label="단위량 또는 중량 입력"
+                  />
+                  <NumberField.Increment aria-label="입력값 증가" onClick={servingInput.onIncrease}>
+                    <PlusIcon size={24} />
+                  </NumberField.Increment>
+                </NumberField.Group>
+              </NumberField.Root>
+            </Tabs.Panel>
+          </Tabs.Root>
+        </section>
+      )}
 
       <section className={styles.detailSection}>
         <button
@@ -118,7 +201,9 @@ export function MealMenuNutritionDetail({
                             {row.label}
                           </p>
                           <div className={styles.detailValue}>
-                            <span className={`${row.variant === "sub" ? "typo-body4" : "typo-body2"}`}>
+                            <span
+                              className={`${row.variant === "sub" ? "typo-body4" : "typo-body2"}`}
+                            >
                               {formatNutritionValue(row.value ?? 0)}
                             </span>
                             <span className={`${styles.detailUnit} typo-label2`}>{row.unit}</span>
