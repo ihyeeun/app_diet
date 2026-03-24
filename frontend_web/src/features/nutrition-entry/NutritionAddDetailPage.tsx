@@ -8,9 +8,6 @@ import {
   type MealType,
 } from "@/features/meal-record";
 import { getTodayDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
-import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
-import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
@@ -324,27 +321,6 @@ export default function NutritionAddDetailPage() {
     [foodName, form],
   );
 
-  const servingSheet = useServingAmountSheet({
-    onSubmitMenu: (nextMenu) => {
-      const nextPendingMenus = [...pendingMenus, nextMenu];
-      if (existingMenuCount + nextPendingMenus.length > MAX_MEAL_RECORD_MENUS) {
-        toast.warning("최대 100개까지 기록할 수 있어요");
-        return false;
-      }
-
-      const nextDateKey = dateKey ?? getTodayDateKey();
-      const nextMealType: MealType = mealType ?? DEFAULT_MEAL_TYPE;
-
-      toast.success("등록되었어요");
-      navigate(getMealRecordPath(nextDateKey, nextMealType), {
-        state: {
-          pendingMenus: nextPendingMenus,
-        } satisfies MealRecordLocationState,
-      });
-      return true;
-    },
-  });
-
   const handleNumericChange = (key: keyof NutritionDetailForm) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
       const nextValue = sanitizeDecimalInput(event.target.value);
@@ -417,7 +393,21 @@ export default function NutritionAddDetailPage() {
     });
 
     if (source === "meal-record") {
-      servingSheet.open({ menu: registeredMenu });
+      const nextPendingMenus = [...pendingMenus, registeredMenu];
+      if (existingMenuCount + nextPendingMenus.length > MAX_MEAL_RECORD_MENUS) {
+        toast.warning("최대 100개까지 기록할 수 있어요");
+        return;
+      }
+
+      const nextDateKey = dateKey ?? getTodayDateKey();
+      const nextMealType: MealType = mealType ?? DEFAULT_MEAL_TYPE;
+
+      toast.success("등록되었어요");
+      navigate(getMealRecordPath(nextDateKey, nextMealType), {
+        state: {
+          pendingMenus: nextPendingMenus,
+        } satisfies MealRecordLocationState,
+      });
       return;
     }
 
@@ -651,24 +641,6 @@ export default function NutritionAddDetailPage() {
           {submitButtonLabel}
         </Button>
       </footer>
-
-      <BottomSheet isOpen={servingSheet.isOpen} onClose={servingSheet.close}>
-        {servingSheet.menu && servingSheet.serving && (
-          <ServingAmountSheetContent
-            menu={servingSheet.menu}
-            serving={servingSheet.serving}
-            previewMenu={servingSheet.previewMenu ?? servingSheet.menu}
-            inputMode={servingSheet.inputMode}
-            inputValue={servingSheet.inputValue}
-            onModeChange={servingSheet.onModeChange}
-            onInputChange={servingSheet.onInputChange}
-            onInputBlur={servingSheet.onInputBlur}
-            onDecrease={servingSheet.onDecrease}
-            onIncrease={servingSheet.onIncrease}
-            onSubmit={servingSheet.onSubmit}
-          />
-        )}
-      </BottomSheet>
     </section>
   );
 }

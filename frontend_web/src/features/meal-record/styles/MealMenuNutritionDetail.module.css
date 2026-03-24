@@ -59,6 +59,80 @@
   color: var(--text-primary);
 }
 
+.servingInputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servingInputTitle {
+  color: var(--text-normal);
+}
+
+.TabsRoot {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.TabsList {
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  padding: 4px;
+  background-color: var(--bg-normal-white);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.TabsTab {
+  background: var(--bg-normal-white);
+  padding: 14px 8px;
+  color: var(--text-assistive2);
+  border-radius: 6px;
+  text-align: center;
+  font-size: var(--fs-title4);
+  line-height: var(--line-height-145);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--fw-semibold);
+
+  &[data-active] {
+    background: var(--interaction-primary);
+    color: var(--text-primary);
+  }
+}
+
+.TabsPanel {
+  width: 100%;
+}
+
+.FieldGroup {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background-color: var(--bg-normal-white);
+}
+
+.FieldInput {
+  flex: 1;
+  text-align: center;
+  border: 0;
+  background-color: transparent;
+  width: 100%;
+}
+
+.FieldInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.FieldInput:focus {
+  outline: none;
+}
+
 .detailSection {
   overflow: hidden;
   padding: 20px 0;
