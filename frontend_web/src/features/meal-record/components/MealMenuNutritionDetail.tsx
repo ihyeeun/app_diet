@@ -43,7 +43,6 @@ export function MealMenuNutritionDetail({
   isDetailOpen,
   onToggleDetail,
   onEditAndAdd,
-  showEditSection = true,
   detailListId = "meal-record-detail-list",
   servingInput,
 }: MealMenuNutritionDetailProps) {
@@ -168,20 +167,18 @@ export function MealMenuNutritionDetail({
           <>
             <div className="divider dividerMargin20" />
 
-            {showEditSection && onEditAndAdd && (
-              <section className={styles.editSection}>
-                <p className={`typo-label3 ${styles.editDescription}`}>영양성분이 잘못되었나요?</p>
-                <Button
-                  variant="text"
-                  state="default"
-                  size="small"
-                  color="assistive"
-                  onClick={onEditAndAdd}
-                >
-                  수정해서 담기
-                </Button>
-              </section>
-            )}
+            <section className={styles.editSection}>
+              <p className={`typo-label3 ${styles.editDescription}`}>영양성분이 잘못되었나요?</p>
+              <Button
+                variant="text"
+                state="default"
+                size="small"
+                color="assistive"
+                onClick={onEditAndAdd}
+              >
+                수정해서 담기
+              </Button>
+            </section>
 
             <div id={detailListId} className={styles.detailList}>
               {detailGroups.map((group, groupIndex) => (
