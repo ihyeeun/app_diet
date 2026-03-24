@@ -450,10 +450,10 @@ export default function NutritionAddDetailPage() {
           <section className={styles.summarySection}>
             <div className={styles.foodInfoRow}>
               <div className={styles.foodTextWrap}>
-                {displayBrandName && (
-                  <p className={`typo-title3 ${styles.brandText}`}>{displayBrandName}</p>
-                )}
                 <p className={`typo-title2 ${styles.foodNameText}`}>{displayFoodName}</p>
+                {displayBrandName && (
+                  <p className={`typo-label4 ${styles.brandText}`}>{displayBrandName}</p>
+                )}
               </div>
 
               <div className={styles.calorieInputWrap}>
@@ -628,7 +628,7 @@ export default function NutritionAddDetailPage() {
                         inputMode="decimal"
                         aria-label={`${field.label} 입력`}
                       />
-                      <span className={`typo-label2 ${styles.unitText}`}>{field.unit}</span>
+                      <span className={`typo-label3 ${styles.unitText}`}>{field.unit}</span>
                     </div>
                   </article>
                 </div>

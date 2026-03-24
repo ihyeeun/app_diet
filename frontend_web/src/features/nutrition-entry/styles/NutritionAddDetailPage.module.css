@@ -39,8 +39,8 @@
 .foodTextWrap {
   display: flex;
   min-width: 0;
-  flex-direction: column;
-  gap: 2px;
+  gap: 8px;
+  align-items: center;
 }
 
 .brandText {
@@ -165,7 +165,7 @@
   display: inline-flex;
   align-items: baseline;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
   background-color: var(--bg-normal-white);
   border-radius: 8px;
   border: 1px solid var(--border-normal);
