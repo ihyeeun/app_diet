@@ -66,7 +66,7 @@ function buildNutritionEditState({
   return {
     ...baseContext,
     pendingMenus,
-    brandName: menu.brandChipLabel ?? "",
+    brandName: menu.brand ?? "",
     foodName: menu.title,
     initialNutrition,
     servingUnit: servingAmount.unit,
@@ -331,6 +331,7 @@ export default function MealRecordSearchDetailPage() {
         <div className={styles.content}>
           <MealMenuNutritionDetail
             menuTitle={currentMenu.title}
+            brand={currentMenu.brand}
             calories={currentMenu.calories}
             carbohydrateGram={currentMenu.carbohydrateGram}
             proteinGram={currentMenu.proteinGram}

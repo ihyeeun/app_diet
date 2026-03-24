@@ -233,7 +233,7 @@ export default function MealRecordPage() {
                   title={menu.title}
                   calories={menu.calories}
                   unitAmountText={menu.unitAmountText}
-                  brandChipLabel={menu.brandChipLabel}
+                  brand={menu.brand}
                   personalChipLabel={menu.personalChipLabel}
                   icon="delete"
                   onIconClick={() => handleRemoveMenu(menu.id)}
@@ -255,7 +255,7 @@ export default function MealRecordPage() {
                         title={menu.title}
                         calories={menu.calories}
                         unitAmountText={menu.unitAmountText}
-                        brandChipLabel={menu.brandChipLabel}
+                        brand={menu.brand}
                         personalChipLabel={menu.personalChipLabel}
                         icon="delete"
                         onIconClick={() => handleRemoveMenu(menu.id)}

@@ -19,6 +19,10 @@
   color: var(--text-normal);
 }
 
+.brandName {
+  color: var(--text-assistive1);
+}
+
 .calorieText {
   color: var(--text-normal);
   white-space: nowrap;

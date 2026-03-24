@@ -274,7 +274,7 @@ function buildManualMenuItem({
     potassiumMg: toNullableNumber(form.potassium),
     cholesterolMg: toNullableNumber(form.cholesterol),
     alcoholGram: toNullableNumber(form.alcohol),
-    brandChipLabel: brandName || undefined,
+    brand: brandName || undefined,
     personalChipLabel: "개인용",
   };
 }
@@ -439,7 +439,7 @@ export default function NutritionAddDetailPage() {
         <div className={styles.content}>
           <section className={styles.summarySection}>
             <div className={styles.foodInfoRow}>
-              <div className={styles.foodTextWrap}>
+              <div>
                 <p className={`typo-title2 ${styles.foodNameText}`}>{displayFoodName}</p>
                 {displayBrandName && (
                   <p className={`typo-label4 ${styles.brandText}`}>{displayBrandName}</p>

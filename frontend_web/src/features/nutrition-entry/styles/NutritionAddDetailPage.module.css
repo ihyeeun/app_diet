@@ -36,13 +36,6 @@
   gap: 8px;
 }
 
-.foodTextWrap {
-  display: flex;
-  min-width: 0;
-  gap: 8px;
-  align-items: center;
-}
-
 .brandText {
   color: var(--text-assistive1);
 }

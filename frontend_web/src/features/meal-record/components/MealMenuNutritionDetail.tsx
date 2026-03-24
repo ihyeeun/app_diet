@@ -20,6 +20,7 @@ type MealMenuServingInputProps = {
 
 type MealMenuNutritionDetailProps = {
   menuTitle: string;
+  brand?: string;
   calories: number;
   carbohydrateGram: number;
   proteinGram: number;
@@ -35,6 +36,7 @@ type MealMenuNutritionDetailProps = {
 
 export function MealMenuNutritionDetail({
   menuTitle,
+  brand,
   calories,
   carbohydrateGram,
   proteinGram,
@@ -50,7 +52,10 @@ export function MealMenuNutritionDetail({
     <>
       <section className={styles.summarySection}>
         <div className={styles.summaryHead}>
-          <p className={`typo-title2 ${styles.foodName}`}>{menuTitle}</p>
+          <div>
+            <p className={`typo-title2 ${styles.foodName}`}>{menuTitle}</p>
+            {brand && <p className={`typo-label4 ${styles.brandName}`}>{brand}</p>}
+          </div>
           <div className={styles.calorieText}>
             <span className="typo-h2">{formatNutritionValue(calories)}</span>
             <span className="typo-title2">kcal</span>
