@@ -30,7 +30,7 @@ import {
   fetchSimilarMenuSuggestions,
   type BrandMenuCategory,
 } from "./api/brandMenuSearch";
-import styles from "./styles/BrandMenuSearch.module.css";
+import styles from "../styles/MealSearch.module.css";
 
 const SEARCH_DEBOUNCE_MS = 250;
 

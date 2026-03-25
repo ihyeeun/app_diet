@@ -17,4 +17,5 @@ export const PATH = {
   NUTRITION_ADD_DETAIL: "/nutrition-add/detail",
   BRAND_SEARCH: "/brand-search",
   BRAND_MENU_SEARCH: "/brand-search/menu",
+  COMPARE_MENU_SEARCH: "/compare/menu-search",
 };

@@ -26,28 +26,11 @@ import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import { useServingAmountSheet } from "./hooks/useServingAmountSheet";
 import styles from "./styles/MealRecordSearchPage.module.css";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
+import { useDebouncedKeyword } from "@/features/search/utils/useDebounedKeyword";
 
 type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
   menu: MealMenuItem;
 };
-
-const SEARCH_DEBOUNCE_MS = 250;
-
-function useDebouncedKeyword(keyword: string) {
-  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedKeyword(keyword);
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [keyword]);
-
-  return debouncedKeyword;
-}
 
 export default function MealRecordSearchPage() {
   const location = useLocation();
@@ -277,7 +260,7 @@ export default function MealRecordSearchPage() {
       />
 
       <main className={styles.main}>
-        <section className={styles.searchSection}>
+        <section className={styles.content}>
           {hasKeyword ? (
             hasResults ? (
               <div className={styles.resultList}>

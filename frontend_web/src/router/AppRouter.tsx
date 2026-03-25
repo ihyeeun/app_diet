@@ -16,6 +16,7 @@ import NutritionAddDetailPage from "@/features/nutrition-entry/NutritionAddDetai
 import BrandSearch from "@/features/nutrition-entry/BrandSearch";
 import MealCameraPage from "@/features/meal-record/MealCameraPage";
 import BrandMenuSearch from "@/features/search/brand/BrandMenuSearch";
+import MenuComPareSearchPage from "@/features/search/menu-compare/MenuCompareSearchPage";
 
 export default function AppRouter() {
   return (
@@ -39,6 +40,7 @@ export default function AppRouter() {
         <Route path={PATH.NUTRITION_ADD_DETAIL} element={<NutritionAddDetailPage />} />
         <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
         <Route path={PATH.BRAND_MENU_SEARCH} element={<BrandMenuSearch />} />
+        <Route path={PATH.COMPARE_MENU_SEARCH} element={<MenuComPareSearchPage />} />
       </Routes>
     </BrowserRouter>
   );
