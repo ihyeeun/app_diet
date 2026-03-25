@@ -8,8 +8,8 @@ export type MealMenuCardState = "default" | "select";
 type MealMenuCardProps = {
   title: string;
   description?: string;
-  calories: number;
-  unitAmountText: string;
+  calories?: number;
+  unitAmountText?: string;
   brand?: string;
   suggestionChipLabel?: string;
   personalChipLabel?: string;
@@ -105,8 +105,11 @@ export function MealMenuCard({
             {brand && <span className={`${styles.brand} typo-label4`}>{brand}</span>}
             <span className={`${styles.unitAmount} typo-label4`}>{unitAmountText}</span>
           </p>
-
-          <span className={`${styles.calories} typo-title2`}>{formatCalories(calories)} kcal</span>
+          {calories && (
+            <span className={`${styles.calories} typo-title2`}>
+              {formatCalories(calories)} kcal
+            </span>
+          )}
         </section>
       </div>
 

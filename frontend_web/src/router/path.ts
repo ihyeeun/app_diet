@@ -18,4 +18,5 @@ export const PATH = {
   BRAND_SEARCH: "/brand-search",
   BRAND_MENU_SEARCH: "/brand-search/menu",
   COMPARE_MENU_SEARCH: "/compare/menu-search",
+  COMPARE_SELECT_MENU: "/compare/select-menu",
 };

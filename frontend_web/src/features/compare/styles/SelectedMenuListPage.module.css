@@ -1,0 +1,60 @@
+.page {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-normal-normal);
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.menuListSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.menuList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.emptyState {
+  border: 1px solid var(--border-normal);
+  border-radius: 12px;
+  background-color: var(--bg-normal-white);
+  color: var(--text-normal);
+  padding: 26px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyText {
+  color: var(--text-assistive2);
+}
+
+.footer {
+  padding: 0 20px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+}
+
+.footerActions {
+  display: flex;
+  gap: 8px;
+}

@@ -4,36 +4,36 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { Button } from "@/shared/commons/button/Button";
 import { useMemo, useState } from "react";
-import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
 import { useDebouncedKeyword } from "@/features/search/utils/useDebounedKeyword";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
-import { ChevronRight } from "lucide-react";
 import { PATH } from "@/router/path";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
 import { toast } from "@/shared/commons/toast/toast";
 import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
 import { useQuery } from "@tanstack/react-query";
-import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
+import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
+import { MAX_COMPARE_MENUS } from "@/features/search/search.constants";
+
+type CompareMenuSearchLocationState = {
+  selectedMenus?: MealMenuItem[];
+};
+
+function dedupeMenusById(menus: MealMenuItem[]) {
+  const uniqueMenus = new Map(menus.map((menu) => [menu.id, menu]));
+  return Array.from(uniqueMenus.values());
+}
 
 export default function MenuComPareSearchPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const locationState = (location.state ?? {}) as CompareMenuSearchLocationState;
 
-  const contextFromState = (location.state ?? {}) as NutritionEntryContextState;
   const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
-    const pendingMenus = Array.isArray(contextFromState.pendingMenus)
-      ? contextFromState.pendingMenus
-      : [];
-    const uniqueMenus = new Map(pendingMenus.map((menu) => [menu.id, menu]));
-    return Array.from(uniqueMenus.values());
+    const pendingMenus = Array.isArray(locationState.selectedMenus) ? locationState.selectedMenus : [];
+    return dedupeMenusById(pendingMenus);
   });
-
-  const selectedMenuMap = useMemo(
-    () => new Map(selectedMenus.map((menu) => [menu.id, menu])),
-    [selectedMenus],
-  );
-
+  const selectedIdSet = useMemo(() => new Set(selectedMenus.map((menu) => menu.id)), [selectedMenus]);
   const selectedCount = selectedMenus.length;
 
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -94,10 +94,36 @@ export default function MenuComPareSearchPage() {
 
   const hasResults = menuSearchResults.length > 0;
   const isInitialSearching = isFetching && hasKeyword && !hasResults;
-  const selectedMenuIdSet = useMemo(
-    () => new Set(selectedMenus.map((menu) => menu.id)),
-    [selectedMenus],
-  );
+
+  const handleToggleMenuSelection = (targetMenu: MealMenuItem) => {
+    setSelectedMenus((prev) => {
+      const isSelected = prev.some((menu) => menu.id === targetMenu.id);
+      if (isSelected) {
+        return prev.filter((menu) => menu.id !== targetMenu.id);
+      }
+
+      if (prev.length >= MAX_COMPARE_MENUS) {
+        toast.warning(`최대 ${MAX_COMPARE_MENUS}개까지 비교할 수 있어요`);
+        return prev;
+      }
+
+      toast.success("비교할 메뉴를 담았어요");
+
+      return [...prev, targetMenu];
+    });
+  };
+
+  const handleOpenSelectedMenuList = () => {
+    if (selectedCount === 0) {
+      return;
+    }
+
+    navigate(PATH.COMPARE_SELECT_MENU, {
+      state: {
+        selectedMenus,
+      } satisfies CompareMenuSearchLocationState,
+    });
+  };
 
   return (
     <section className={styles.page}>
@@ -117,7 +143,7 @@ export default function MenuComPareSearchPage() {
             hasResults ? (
               <div className={styles.resultList}>
                 {menuSearchResults.map((menu) => {
-                  const isSelected = selectedMenuIdSet.has(menu.id);
+                  const isSelected = selectedIdSet.has(menu.id);
 
                   return (
                     <MealMenuCard
@@ -129,8 +155,7 @@ export default function MenuComPareSearchPage() {
                       personalChipLabel={menu.personalChipLabel}
                       icon={isSelected ? "check" : "add"}
                       state={isSelected ? "select" : "default"}
-                      // onClick={() => handleOpenMenuDetail(menu)}
-                      // onIconClick={() => handleToggleMenuSelection(menu)}
+                      onIconClick={() => handleToggleMenuSelection(menu)}
                     />
                   );
                 })}
@@ -216,7 +241,7 @@ export default function MenuComPareSearchPage() {
             세트 편집
           </Button>
           <Button
-            onClick={() => {}}
+            onClick={handleOpenSelectedMenuList}
             variant="filled"
             state={selectedCount > 0 ? "default" : "disabled"}
             size="medium"
