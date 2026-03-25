@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
-import { MealRecordFloatingCameraButton } from "@/features/meal-record/components/MealRecordFloatingCameraButton";
+import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
 import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
@@ -568,7 +568,7 @@ export default function BrandMenuSearch() {
       )}
 
       <footer className={styles.footer}>
-        <MealRecordFloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
+        <FloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
 
         <Button
           onClick={handleApplySelectedMenus}

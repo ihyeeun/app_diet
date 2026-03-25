@@ -1,7 +1,6 @@
 .button {
   position: fixed;
   right: 24px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
   width: 56px;
   height: 56px;
   border-radius: 999px;

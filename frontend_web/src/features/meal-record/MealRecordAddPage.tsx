@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
-import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingCameraButton";
+import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { getMealRecordPath, getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import { PATH } from "@/router/path";
@@ -75,7 +75,7 @@ export default function MealRecordAddPage() {
       </main>
 
       <footer className={styles.footer}>
-        <MealRecordFloatingCameraButton
+        <FloatingCameraButton
           onClick={handleCameraClick}
           ariaLabel="사진으로 기록하기"
           tone="light"

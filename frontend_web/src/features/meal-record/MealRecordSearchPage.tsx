@@ -10,7 +10,7 @@ import { toast } from "@/shared/commons/toast/toast";
 import { PATH } from "@/router/path";
 import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
-import { MealRecordFloatingCameraButton } from "./components/MealRecordFloatingCameraButton";
+
 import { ServingAmountSheetContent } from "./components/ServingAmountSheetContent";
 import { BrandRequestSheetContent } from "./components/BrandRequestSheetContent";
 import { postMealRecordBrandRequest } from "./api/brandRequest";
@@ -25,6 +25,7 @@ import {
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import { useServingAmountSheet } from "./hooks/useServingAmountSheet";
 import styles from "./styles/MealRecordSearchPage.module.css";
+import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 
 type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
   menu: MealMenuItem;
@@ -369,7 +370,7 @@ export default function MealRecordSearchPage() {
       </main>
 
       <footer className={styles.footer}>
-        <MealRecordFloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
+        <FloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
 
         <Button
           onClick={handleApplySelectedMenus}
