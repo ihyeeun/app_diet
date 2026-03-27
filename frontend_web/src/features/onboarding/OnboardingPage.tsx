@@ -81,7 +81,11 @@ export default function OnboardingPage() {
     }
 
     if (step.id === "goalWeight" && !isGoalWeightRangeValid(userData)) {
-      if (userData.goal === 0 && userData.goalweight !== undefined && userData.weight !== undefined) {
+      if (
+        userData.goal === 0 &&
+        userData.goalweight !== undefined &&
+        userData.weight !== undefined
+      ) {
         toast.warning("다이어트 목표는 현재 몸무게보다 높게 설정할 수 없어요");
       } else if (
         userData.goal === 2 &&
