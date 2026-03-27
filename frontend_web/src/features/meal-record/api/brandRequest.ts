@@ -1,8 +1,5 @@
 import { MEAL_RECORD_END_POINT } from "@/features/meal-record/api/endpoints";
 import { appApiData } from "@/shared/api/appApi";
-import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
-
-const WEB_MOCK_REQUEST_DELAY_MS = 350;
 
 type BrandRequestPayload = {
   brandName: string;
@@ -21,14 +18,6 @@ export async function postMealRecordBrandRequest(brandName: string) {
   const requestPayload: BrandRequestPayload = {
     brandName: normalizedBrandName,
   };
-
-  if (!isNativeApp()) {
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, WEB_MOCK_REQUEST_DELAY_MS);
-    });
-
-    return requestPayload;
-  }
 
   return appApiData<BrandRequestResponse>({
     endpoint: MEAL_RECORD_END_POINT.REQUEST_BRAND,

@@ -3,25 +3,25 @@ import TodayBodyLogSection from "@/features/home/components/today/TodayBodyLogSe
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
+import type { MealType } from "@/shared/api/types/nutrition.dto";
 import { useNavigate } from "react-router-dom";
 
-function getTodayDateKey() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
+function toDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
-function getMealRecordPath(mealType: "breakfast" | "lunch" | "dinner" | "snack") {
+function getMealRecordPath(date: Date, mealType: MealType) {
   const params = new URLSearchParams({
-    date: getTodayDateKey(),
+    date: toDateKey(date),
     mealType,
   });
   return `${PATH.MEAL_RECORD}?${params.toString()}`;
 }
 
-export default function MenuActionSection() {
+export default function MenuActionSection({ selectedDate }: { selectedDate: Date }) {
   const navigate = useNavigate();
 
   return (
@@ -57,26 +57,26 @@ export default function MenuActionSection() {
               label="아침"
               iconSrc="/icons/breakfast.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath("breakfast"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "breakfast"))}
             />
             <MealTimeCard
               label="점심"
               iconSrc="/icons/lunch.svg"
               value="123"
-              onClick={() => navigate(getMealRecordPath("lunch"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "lunch"))}
               selected
             />
             <MealTimeCard
               label="저녁"
               iconSrc="/icons/dinner.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath("dinner"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "dinner"))}
             />
             <MealTimeCard
               label="간식"
               iconSrc="/icons/snack.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath("snack"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "snack"))}
             />
           </div>
         </div>

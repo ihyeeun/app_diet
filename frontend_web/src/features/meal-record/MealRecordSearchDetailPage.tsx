@@ -1,361 +1,128 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { PATH } from "@/router/path";
 import { toast } from "@/shared/commons/toast/toast";
-import type {
-  NutritionAddLocationState,
-  NutritionEntryContextState,
-} from "@/features/nutrition-entry/nutritionEntry.types";
-import type {
-  MealMenuItem,
-  MealRecordLocationState,
-  MealServingInputMode,
-} from "./types/mealRecord.types";
-import type { MealServingAmount } from "./types/mealMenuNutrition.types";
-import { MealMenuNutritionDetail } from "./components/MealMenuNutritionDetail";
+import { MENU_DATA_SOURCE } from "@/shared/api/types/nutrition.dto";
+import {
+  MealMenuNutritionDetail,
+  type MealMenuNutritionSelection,
+} from "./components/MealMenuNutritionDetail";
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
-import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
-import {
-  buildMealMenuDetailGroups,
-  buildMealMenuDetailRows,
-  getMealMenuTotalWeight,
-  parseServingAmount,
-} from "./utils/mealMenuNutrition";
-import {
-  SERVING_INPUT_STEP,
-  buildScaledMenu,
-  formatCompactDecimal,
-  getServingDefaultValue,
-  normalizeServingInput,
-  parseMenuServing,
-  resolveServingValues,
-  sanitizeServingInput,
-} from "./utils/mealRecordServing";
+import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import styles from "./styles/MealRecordSearchDetailPage.module.css";
-
-type MealRecordSearchDetailLocationState = NutritionEntryContextState & {
-  menu: MealMenuItem;
-  searchReturnPath?: string;
-  searchReturnState?: NutritionEntryContextState & {
-    brandName?: string;
-    returnPath?: string;
-  };
-};
-
-function buildNutritionEditState({
-  baseContext,
-  menu,
-  pendingMenus,
-  servingAmount,
-}: {
-  baseContext: NutritionEntryContextState;
-  menu: MealMenuItem;
-  pendingMenus: MealMenuItem[];
-  servingAmount: MealServingAmount;
-}): NutritionAddLocationState {
-  const initialNutrition: NutritionAddLocationState["initialNutrition"] = {
-    calories: menu.calories,
-    carbohydrate: menu.carbohydrateGram,
-    protein: menu.proteinGram,
-    fat: menu.fatGram,
-  };
-  const totalWeight = getMealMenuTotalWeight(menu, servingAmount);
-
-  if (totalWeight !== null) {
-    initialNutrition.totalWeight = totalWeight;
-  }
-
-  return {
-    ...baseContext,
-    pendingMenus,
-    brandName: menu.brand ?? "",
-    foodName: menu.title,
-    initialNutrition,
-    servingUnit: servingAmount.unit,
-  };
-}
+import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
+import {
+  buildMealRecordDraftKey,
+  useMealRecordDraftStore,
+} from "@/features/meal-record/stores/mealRecordDraft.store";
 
 export default function MealRecordSearchDetailPage() {
-  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selection, setSelection] = useState<MealMenuNutritionSelection | null>(null);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
-  const locationState = (location.state ?? {}) as MealRecordSearchDetailLocationState;
-  const menu = locationState.menu;
-  const searchReturnPath = (locationState.searchReturnPath ?? "").trim();
-  const pendingMenus = useMemo(
-    () => (Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : []),
-    [locationState.pendingMenus],
-  );
-  const existingMenuCount = locationState.existingMenuCount ?? 0;
-  const baseNutritionEntryContext: NutritionEntryContextState = useMemo(
-    () => ({
-      source: "meal-record",
-      dateKey,
-      mealType,
-      existingMenuCount,
-    }),
-    [dateKey, existingMenuCount, mealType],
-  );
+  const draftKey = buildMealRecordDraftKey(dateKey, mealType);
+
+  const rawMenuId = searchParams.get("menuId");
+  const parsedMenuId = rawMenuId ? Number(rawMenuId) : null;
+  const menuId =
+    parsedMenuId !== null && Number.isInteger(parsedMenuId) && parsedMenuId > 0
+      ? parsedMenuId
+      : null;
+
+  const ensureDraft = useMealRecordDraftStore((state) => state.ensureDraft);
+  const upsertMenuSelection = useMealRecordDraftStore((state) => state.upsertMenuSelection);
+  const draft = useMealRecordDraftStore((state) => state.drafts[draftKey]);
+  const menuSnapshotById = useMealRecordDraftStore((state) => state.menuSnapshotById);
+
+  const { data: meal, isPending, isError } = useMealDetatilQuery(menuId);
 
   useEffect(() => {
-    if (menu) return;
+    ensureDraft({
+      key: draftKey,
+      existingMenuCount: 0,
+    });
+  }, [draftKey, ensureDraft]);
 
-    if (searchReturnPath) {
-      navigate(searchReturnPath, {
-        replace: true,
-        state: {
-          ...(locationState.searchReturnState ?? baseNutritionEntryContext),
-          pendingMenus,
-        },
-      });
+  useEffect(() => {
+    if (menuId !== null) {
       return;
     }
 
-    navigate(getMealRecordAddSearchPath(dateKey, mealType), {
-      replace: true,
-      state: baseNutritionEntryContext,
-    });
-  }, [
-    baseNutritionEntryContext,
-    dateKey,
-    locationState.searchReturnState,
-    mealType,
-    menu,
-    navigate,
-    pendingMenus,
-    searchReturnPath,
-  ]);
+    navigate(getMealRecordAddSearchPath(dateKey, mealType), { replace: true });
+  }, [dateKey, mealType, menuId, navigate]);
 
-  const serving = useMemo(() => (menu ? parseMenuServing(menu) : null), [menu]);
-  const selectedMenu = useMemo(
-    () => (menu ? (pendingMenus.find((item) => item.id === menu.id) ?? null) : null),
-    [menu, pendingMenus],
-  );
-  const initialServingInput = useMemo(() => {
-    if (!serving) {
-      return {
-        mode: "unit" as MealServingInputMode,
-        value: "",
-      };
+  useEffect(() => {
+    if (!isError) {
+      return;
     }
 
-    const mode = selectedMenu?.servingInputMode ?? "unit";
-    const initialValue = selectedMenu?.servingInputValue ?? getServingDefaultValue(serving, mode);
+    toast.warning("메뉴 정보를 불러오지 못했어요");
+    navigate(getMealRecordAddSearchPath(dateKey, mealType), { replace: true });
+  }, [dateKey, isError, mealType, navigate]);
 
-    return {
-      mode,
-      value: formatCompactDecimal(normalizeServingInput(initialValue)),
-    };
-  }, [selectedMenu?.servingInputMode, selectedMenu?.servingInputValue, serving]);
-  const [inputMode, setInputMode] = useState<MealServingInputMode>(initialServingInput.mode);
-  const [inputValue, setInputValue] = useState(initialServingInput.value);
-
-  const parsedInputValue = useMemo(() => {
-    const parsedValue = Number(inputValue);
-    if (!Number.isFinite(parsedValue)) {
+  const existingSelection = useMemo(() => {
+    if (!draft || menuId === null) {
       return null;
     }
 
-    return parsedValue;
-  }, [inputValue]);
+    return draft.selections.find((item) => item.menuId === menuId) ?? null;
+  }, [draft, menuId]);
 
-  const previewMenu = useMemo(() => {
-    if (!menu || !serving || parsedInputValue === null || parsedInputValue <= 0) {
-      return menu;
+  const selectedSnapshot = useMemo(() => {
+    if (menuId === null) {
+      return null;
     }
 
-    const resolvedServing = resolveServingValues(serving, inputMode, parsedInputValue);
-    if (!Number.isFinite(resolvedServing.scaleFactor) || resolvedServing.scaleFactor <= 0) {
-      return menu;
-    }
+    return menuSnapshotById[menuId] ?? null;
+  }, [menuId, menuSnapshotById]);
 
-    return buildScaledMenu({
-      menu,
-      serving,
-      resolved: resolvedServing,
-      mode: inputMode,
-      inputValue: parsedInputValue,
-    });
-  }, [inputMode, menu, parsedInputValue, serving]);
-
-  const currentMenu = previewMenu ?? menu;
-  const currentServingAmount = useMemo(
-    () => parseServingAmount(currentMenu?.unitAmountText ?? ""),
-    [currentMenu],
-  );
-  const detailRows = useMemo(
-    () => (currentMenu ? buildMealMenuDetailRows(currentMenu, currentServingAmount) : []),
-    [currentMenu, currentServingAmount],
-  );
-  const detailGroups = useMemo(() => buildMealMenuDetailGroups(detailRows), [detailRows]);
-  const isAlreadyQueued = selectedMenu !== null;
-  const isPersonalMenuData =
-    (currentMenu?.dataSource ?? "public") === "personal" || Boolean(currentMenu?.personalChipLabel);
-
-  if (!menu) {
-    return null;
-  }
-
-  const handleBack = () => {
-    if (searchReturnPath) {
-      navigate(searchReturnPath, {
-        state: {
-          ...(locationState.searchReturnState ?? baseNutritionEntryContext),
-          pendingMenus,
-        },
-      });
-      return;
-    }
-
-    navigate(getMealRecordAddSearchPath(dateKey, mealType), {
-      state: {
-        ...baseNutritionEntryContext,
-        pendingMenus,
-      } satisfies NutritionEntryContextState,
-    });
-  };
-
-  const handleModeChange = (nextMode: MealServingInputMode) => {
-    if (!serving || nextMode === inputMode) {
-      return;
-    }
-
-    setInputMode(nextMode);
-
-    const parsedCurrentValue = Number(inputValue);
-    if (!Number.isFinite(parsedCurrentValue) || parsedCurrentValue <= 0) {
-      const fallbackValue = getServingDefaultValue(serving, nextMode);
-      setInputValue(formatCompactDecimal(normalizeServingInput(fallbackValue)));
-      return;
-    }
-
-    const resolvedCurrent = resolveServingValues(serving, inputMode, parsedCurrentValue);
-    if (!Number.isFinite(resolvedCurrent.scaleFactor) || resolvedCurrent.scaleFactor <= 0) {
-      const fallbackValue = getServingDefaultValue(serving, nextMode);
-      setInputValue(formatCompactDecimal(normalizeServingInput(fallbackValue)));
-      return;
-    }
-
-    const convertedValue =
-      nextMode === "weight" ? resolvedCurrent.totalWeight : resolvedCurrent.unitCount;
-    setInputValue(formatCompactDecimal(normalizeServingInput(convertedValue)));
-  };
-
-  const handleInputStep = (delta: number) => {
-    if (!serving) return;
-
-    const currentValue = Number(inputValue);
-    const baseValue = Number.isFinite(currentValue)
-      ? currentValue
-      : getServingDefaultValue(serving, inputMode);
-    const nextValue = normalizeServingInput(baseValue + delta);
-    setInputValue(formatCompactDecimal(nextValue));
-  };
-
-  const handleInputBlur = () => {
-    if (!serving) {
-      setInputValue("");
-      return;
-    }
-
-    const trimmedValue = inputValue.trim();
-    if (!trimmedValue || trimmedValue === ".") {
-      setInputValue(
-        formatCompactDecimal(normalizeServingInput(getServingDefaultValue(serving, inputMode))),
-      );
-      return;
-    }
-
-    const parsedValue = Number(trimmedValue);
-    if (!Number.isFinite(parsedValue)) {
-      setInputValue(
-        formatCompactDecimal(normalizeServingInput(getServingDefaultValue(serving, inputMode))),
-      );
-      return;
-    }
-
-    setInputValue(formatCompactDecimal(normalizeServingInput(parsedValue)));
-  };
-
-  const handleInputChange = (nextValue: string) => {
-    setInputValue(sanitizeServingInput(nextValue));
-  };
+  const existingMenuCount = draft?.existingMenuCount ?? 0;
+  const selectedCount = draft?.selections.length ?? 0;
+  const isAlreadyQueued = existingSelection !== null;
+  const initialMode = selectedSnapshot?.serving_input_mode;
 
   const handleAddMenu = () => {
-    if (!menu || !serving) {
-      return;
-    }
-
-    const nextInputValue = Number(inputValue);
-    if (!Number.isFinite(nextInputValue) || nextInputValue <= 0) {
+    if (!meal || !selection) {
       toast.warning("입력값을 다시 확인해주세요");
       return;
     }
 
-    const normalizedInput = normalizeServingInput(nextInputValue);
-    setInputValue(formatCompactDecimal(normalizedInput));
-
-    const resolvedServing = resolveServingValues(serving, inputMode, normalizedInput);
-    if (!Number.isFinite(resolvedServing.scaleFactor) || resolvedServing.scaleFactor <= 0) {
-      toast.warning("입력값을 다시 확인해주세요");
-      return;
-    }
-
-    const nextMenu = buildScaledMenu({
-      menu,
-      serving,
-      resolved: resolvedServing,
-      mode: inputMode,
-      inputValue: normalizedInput,
-    });
-
-    if (
-      !isAlreadyQueued &&
-      (baseNutritionEntryContext.existingMenuCount ?? 0) + pendingMenus.length + 1 >
-        MAX_MEAL_RECORD_MENUS
-    ) {
+    if (!isAlreadyQueued && existingMenuCount + selectedCount + 1 > MAX_MEAL_RECORD_MENUS) {
       toast.warning("최대 100개까지 기록할 수 있어요");
       return;
     }
 
-    const existingIndex = pendingMenus.findIndex((item) => item.id === nextMenu.id);
-    const nextPendingMenus =
-      existingIndex < 0
-        ? [...pendingMenus, nextMenu]
-        : pendingMenus.map((item, index) => (index === existingIndex ? nextMenu : item));
-
-    navigate(getMealRecordPath(dateKey, mealType), {
-      state: {
-        pendingMenus: nextPendingMenus,
-      } satisfies MealRecordLocationState,
+    upsertMenuSelection({
+      key: draftKey,
+      menu: selection.menu,
     });
+
+    navigate(-1);
   };
 
-  const handleEditAndAdd = () => {
-    navigate(PATH.NUTRITION_ADD_DETAIL, {
-      state: buildNutritionEditState({
-        baseContext: baseNutritionEntryContext,
-        menu: currentMenu,
-        pendingMenus,
-        servingAmount: currentServingAmount,
-      }),
-    });
-  };
+  if (isPending) {
+    return <p>로딩 중..</p>;
+  }
+
+  if (!meal || menuId === null) {
+    return null;
+  }
+
+  const isPersonalMenuData = meal.data_source === MENU_DATA_SOURCE.PERSONAL;
 
   return (
     <section className={styles.page}>
       <PageHeader
         title="영양성분 상세"
-        onBack={handleBack}
+        onBack={() => navigate(getMealRecordAddSearchPath(dateKey, mealType))}
         rightSlot={
-          currentMenu.dataSource === "personal" && (
+          isPersonalMenuData && (
             <Button variant="text" state="default" size="small" color="assistive">
               삭제
             </Button>
@@ -366,34 +133,28 @@ export default function MealRecordSearchDetailPage() {
       <main className={styles.main}>
         <div className={styles.content}>
           <MealMenuNutritionDetail
-            menuTitle={currentMenu.title}
-            brand={currentMenu.brand}
-            calories={currentMenu.calories}
-            carbohydrateGram={currentMenu.carbohydrateGram}
-            proteinGram={currentMenu.proteinGram}
-            fatGram={currentMenu.fatGram}
-            detailGroups={detailGroups}
+            menu={meal}
+            initialQuantity={existingSelection?.quantity}
+            initialMode={initialMode}
             isDetailOpen={isDetailOpen}
             onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
-            onEditAndAdd={handleEditAndAdd}
+            onSelectionChange={setSelection}
+            onEditAndAdd={() => {}}
             showEditSection={!isPersonalMenuData}
-            servingInput={{
-              inputMode,
-              inputValue,
-              unitLabel: serving?.unitLabel ?? "인분",
-              weightUnit: serving?.weightUnit ?? "g",
-              onModeChange: handleModeChange,
-              onInputChange: handleInputChange,
-              onInputBlur: handleInputBlur,
-              onDecrease: () => handleInputStep(-SERVING_INPUT_STEP),
-              onIncrease: () => handleInputStep(SERVING_INPUT_STEP),
-            }}
           />
         </div>
       </main>
 
       <footer className={styles.footer}>
-        <Button variant="filled" size="large" color="primary" fullWidth onClick={handleAddMenu}>
+        <Button
+          variant="filled"
+          size="large"
+          color="primary"
+          fullWidth
+          onClick={handleAddMenu}
+          state={selection ? "default" : "disabled"}
+          disabled={!selection}
+        >
           {isAlreadyQueued ? "수정해서 담기" : "담기"}
         </Button>
       </footer>

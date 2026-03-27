@@ -2,7 +2,7 @@ import {
   DEFAULT_MEAL_TYPE,
   MEAL_TYPE_SET,
   type MealType,
-} from "../types/mealRecord.types";
+} from "@/shared/api/types/nutrition.dto";
 
 export function getTodayDateKey() {
   const today = new Date();

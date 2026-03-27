@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/shared/commons/button/Button";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { PATH } from "@/router/path";
-import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
+import type { MealMenuItem } from "@/shared/api/types/nutrition.dto";
 import { toast } from "@/shared/commons/toast/toast";
 import styles from "./styles/SelectedMenuListPage.module.css";
 
@@ -41,7 +41,7 @@ export default function SelectedMenuListPage() {
     });
   };
 
-  const handleRemoveMenu = (menuId: string) => {
+  const handleRemoveMenu = (menuId: number) => {
     setSelectedMenus((prev) => prev.filter((menu) => menu.id !== menuId));
   };
 
@@ -55,7 +55,7 @@ export default function SelectedMenuListPage() {
       <section key="brand" className={styles.menuListSection}>
         <p className="typo-title3">브랜드</p>
         <div className={styles.menuList}>
-          <MealMenuCard title="브랜드명" description={`개 메뉴 포함`} />
+          <MealMenuCard name="브랜드명" description={`개 메뉴 포함`} />
         </div>
       </section>
     ),
@@ -67,11 +67,11 @@ export default function SelectedMenuListPage() {
           {selectedMenus.map((menu) => (
             <MealMenuCard
               key={menu.id}
-              title={menu.title}
+              name={menu.name}
               calories={menu.calories}
-              unitAmountText={menu.unitAmountText}
+              unit_quantity={menu.unit_quantity}
               brand={menu.brand}
-              personalChipLabel={menu.personalChipLabel}
+              data_source={menu.data_source}
               icon="delete"
               onIconClick={() => handleRemoveMenu(menu.id)}
             />

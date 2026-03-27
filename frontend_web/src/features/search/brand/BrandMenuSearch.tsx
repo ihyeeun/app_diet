@@ -6,7 +6,7 @@ import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.con
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
-import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
+import type { MealMenuItem, NutritionEntryContextState } from "@/shared/api/types/nutrition.dto";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
   getMealRecordAddSearchDetailPath,
@@ -16,7 +16,6 @@ import {
   fetchBrandSearchResults,
   type BrandSearchResult,
 } from "@/features/nutrition-entry/api/brandSearch";
-import type { NutritionEntryContextState } from "@/features/nutrition-entry/nutritionEntry.types";
 import { PATH } from "@/router/path";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
@@ -31,6 +30,10 @@ import {
   type BrandMenuCategory,
 } from "./api/brandMenuSearch";
 import styles from "../styles/MealSearch.module.css";
+import {
+  buildMealRecordDraftKey,
+  useMealRecordDraftStore,
+} from "@/features/meal-record/stores/mealRecordDraft.store";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -61,11 +64,6 @@ function useDebouncedKeyword(keyword: string) {
   return debouncedKeyword;
 }
 
-function dedupeMenus(menus: MealMenuItem[]) {
-  const uniqueMenus = new Map(menus.map((menu) => [menu.id, menu]));
-  return Array.from(uniqueMenus.values());
-}
-
 export default function BrandMenuSearch() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,11 +73,50 @@ export default function BrandMenuSearch() {
 
   const dateKey = getSafeDateKey(locationState.dateKey ?? null);
   const mealType = getMealType(locationState.mealType ?? null);
+  const draftKey = buildMealRecordDraftKey(dateKey, mealType);
+
+  const ensureDraft = useMealRecordDraftStore((state) => state.ensureDraft);
+  const upsertMenuSelection = useMealRecordDraftStore((state) => state.upsertMenuSelection);
+  const removeMenuSelection = useMealRecordDraftStore((state) => state.removeMenuSelection);
+  const draft = useMealRecordDraftStore((state) => state.drafts[draftKey]);
+  const menuSnapshotById = useMealRecordDraftStore((state) => state.menuSnapshotById);
+  const selectedMenus = useMemo(
+    () =>
+      (draft?.selections ?? []).reduce<MealMenuItem[]>((menus, selection) => {
+        const snapshot = menuSnapshotById[selection.menuId];
+        if (!snapshot) {
+          return menus;
+        }
+
+        menus.push({
+          ...snapshot,
+          serving_input_value: selection.quantity,
+        });
+
+        return menus;
+      }, []),
+    [draft?.selections, menuSnapshotById],
+  );
+  const existingMenuCount = draft?.existingMenuCount ?? 0;
+
+  const seedMenus = useMemo(
+    () => (Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : []),
+    [locationState.pendingMenus],
+  );
+
+  useEffect(() => {
+    ensureDraft({
+      key: draftKey,
+      existingMenuCount: locationState.existingMenuCount ?? 0,
+      seedMenus,
+    });
+  }, [draftKey, ensureDraft, locationState.existingMenuCount, seedMenus]);
+
   const baseNutritionEntryContext: NutritionEntryContextState = {
     source: "meal-record",
     dateKey,
     mealType,
-    existingMenuCount: locationState.existingMenuCount ?? 0,
+    existingMenuCount,
   };
 
   const [selectedBrand, setSelectedBrand] = useState<BrandSearchResult | null>(
@@ -93,12 +130,6 @@ export default function BrandMenuSearch() {
   const [brandKeyword, setBrandKeyword] = useState(defaultBrandName);
   const [menuKeyword, setMenuKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<BrandMenuCategory>("all");
-  const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
-    const pendingMenus = Array.isArray(locationState.pendingMenus)
-      ? locationState.pendingMenus
-      : [];
-    return dedupeMenus(pendingMenus);
-  });
 
   const brandInputRef = useRef<HTMLInputElement>(null);
   const menuInputRef = useRef<HTMLInputElement>(null);
@@ -200,23 +231,15 @@ export default function BrandMenuSearch() {
       const isAlreadySelected = selectedMenuIdSet.has(nextMenu.id);
       if (
         !isAlreadySelected &&
-        (baseNutritionEntryContext.existingMenuCount ?? 0) + selectedMenus.length + 1 >
-          MAX_MEAL_RECORD_MENUS
+        existingMenuCount + selectedMenus.length + 1 > MAX_MEAL_RECORD_MENUS
       ) {
         toast.warning("최대 100개까지 기록할 수 있어요");
         return false;
       }
 
-      setSelectedMenus((prev) => {
-        const existingIndex = prev.findIndex((menu) => menu.id === nextMenu.id);
-
-        if (existingIndex < 0) {
-          return [...prev, nextMenu];
-        }
-
-        const next = [...prev];
-        next[existingIndex] = nextMenu;
-        return next;
+      upsertMenuSelection({
+        key: draftKey,
+        menu: nextMenu,
       });
 
       return true;
@@ -243,7 +266,7 @@ export default function BrandMenuSearch() {
 
   const handleToggleMenuSelection = (targetMenu: MealMenuItem) => {
     if (selectedMenuIdSet.has(targetMenu.id)) {
-      setSelectedMenus((prev) => prev.filter((menu) => menu.id !== targetMenu.id));
+      removeMenuSelection(draftKey, targetMenu.id);
       return;
     }
 
@@ -255,16 +278,14 @@ export default function BrandMenuSearch() {
       return;
     }
 
-    navigate(getMealRecordAddSearchDetailPath(dateKey, mealType), {
+    navigate(getMealRecordAddSearchDetailPath(dateKey, mealType, menu.id), {
       state: {
         ...baseNutritionEntryContext,
-        pendingMenus: selectedMenus,
         menu,
         searchReturnPath: PATH.BRAND_MENU_SEARCH,
         searchReturnState: {
           ...locationState,
           ...baseNutritionEntryContext,
-          pendingMenus: selectedMenus,
           brandName: selectedBrand.name,
           returnPath,
         } satisfies BrandMenuSearchLocationState,
@@ -286,7 +307,6 @@ export default function BrandMenuSearch() {
         state: {
           ...locationState,
           ...baseNutritionEntryContext,
-          pendingMenus: selectedMenus,
         } satisfies BrandMenuSearchLocationState,
       });
       return;
@@ -338,11 +358,7 @@ export default function BrandMenuSearch() {
   const handleApplySelectedMenus = () => {
     if (selectedCount === 0) return;
 
-    navigate(getMealRecordPath(dateKey, mealType), {
-      state: {
-        pendingMenus: selectedMenus,
-      },
-    });
+    navigate(getMealRecordPath(dateKey, mealType));
   };
 
   const handleCameraClick = () => {};
@@ -408,11 +424,11 @@ export default function BrandMenuSearch() {
                       return (
                         <MealMenuCard
                           key={menu.id}
-                          title={menu.title}
+                          name={menu.name}
                           calories={menu.calories}
-                          unitAmountText={menu.unitAmountText}
+                          unit_quantity={menu.unit_quantity}
                           brand={menu.brand}
-                          personalChipLabel={menu.personalChipLabel}
+                          data_source={menu.data_source}
                           icon={isSelected ? "check" : "add"}
                           state={isSelected ? "select" : "default"}
                           onClick={() => handleOpenMenuDetail(menu)}
@@ -458,11 +474,11 @@ export default function BrandMenuSearch() {
                         return (
                           <MealMenuCard
                             key={menu.id}
-                            title={menu.title}
+                            name={menu.name}
                             calories={menu.calories}
-                            unitAmountText={menu.unitAmountText}
+                            unit_quantity={menu.unit_quantity}
                             brand={menu.brand}
-                            personalChipLabel={menu.personalChipLabel}
+                            data_source={menu.data_source}
                             icon={isSelected ? "check" : "add"}
                             state={isSelected ? "select" : "default"}
                             onClick={() => handleOpenMenuDetail(menu)}

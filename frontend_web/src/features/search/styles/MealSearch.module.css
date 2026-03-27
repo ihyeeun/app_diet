@@ -134,6 +134,12 @@
   gap: 6px;
 }
 
+.emptyResultContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .emptyResult {
   border: 1px solid var(--border-normal);
   border-radius: 12px;
@@ -167,7 +173,7 @@
 .similarSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .similarSectionTitle {

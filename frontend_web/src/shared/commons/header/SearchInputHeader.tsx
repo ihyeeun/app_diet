@@ -1,4 +1,4 @@
-import type { ChangeEvent, RefObject } from "react";
+import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
 import { ChevronLeft } from "lucide-react";
 import styles from "./SearchInputHeader.module.css";
 
@@ -7,6 +7,7 @@ type Props = {
   onValueChange: (value: string) => void;
   onBack?: () => void;
   onClear?: () => void;
+  onEnter?: (value: string) => void;
   placeholder?: string;
   backButtonAriaLabel?: string;
   inputAriaLabel?: string;
@@ -20,6 +21,7 @@ export function SearchInputHeader({
   onValueChange,
   onBack,
   onClear,
+  onEnter,
   placeholder = "검색어를 입력하세요",
   backButtonAriaLabel = "뒤로가기",
   inputAriaLabel = "검색어 입력",
@@ -44,6 +46,14 @@ export function SearchInputHeader({
     onValueChange("");
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!onEnter) return;
+    if (event.nativeEvent.isComposing) return;
+    if (event.key !== "Enter") return;
+
+    onEnter(value);
+  };
+
   return (
     <header className={classes}>
       <div className={styles.navBar}>
@@ -64,6 +74,7 @@ export function SearchInputHeader({
             type="text"
             value={value}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             aria-label={inputAriaLabel}
             maxLength={300}

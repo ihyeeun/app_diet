@@ -1,4 +1,4 @@
-import type { MealMenuItem, MealServingInputMode } from "../types/mealRecord.types";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrition.dto";
 import { parseServingAmount } from "./mealMenuNutrition";
 
 export type ParsedMenuServing = {
@@ -60,8 +60,8 @@ export function sanitizeServingInput(value: string) {
 }
 
 export function parseMenuServing(menu: MealMenuItem): ParsedMenuServing {
-  const unitAmountMatch = menu.unitAmountText.match(UNIT_AMOUNT_PATTERN);
-  const servingAmount = parseServingAmount(menu.unitAmountText);
+  const unitAmountMatch = menu.unit_quantity.match(UNIT_AMOUNT_PATTERN);
+  const servingAmount = parseServingAmount(menu.unit_quantity);
 
   if (unitAmountMatch) {
     const parsedUnitCount = Number(unitAmountMatch[1]);
@@ -141,28 +141,28 @@ export function buildScaledMenu({
   return {
     ...menu,
     calories: roundToSingleDecimal(menu.calories * scaleFactor),
-    carbohydrateGram: roundToSingleDecimal(menu.carbohydrateGram * scaleFactor),
-    proteinGram: roundToSingleDecimal(menu.proteinGram * scaleFactor),
-    fatGram: roundToSingleDecimal(menu.fatGram * scaleFactor),
-    totalWeightGram:
-      menu.totalWeightGram === null || menu.totalWeightGram === undefined
+    carbs: roundToSingleDecimal((menu.carbs ?? 0) * scaleFactor),
+    protein: roundToSingleDecimal((menu.protein ?? 0) * scaleFactor),
+    fat: roundToSingleDecimal((menu.fat ?? 0) * scaleFactor),
+    weight:
+      menu.weight === null || menu.weight === undefined
         ? totalWeight
-        : scaleOptionalNutritionValue(menu.totalWeightGram, scaleFactor),
-    sugarGram: scaleOptionalNutritionValue(menu.sugarGram, scaleFactor),
-    sugarAlcoholGram: scaleOptionalNutritionValue(menu.sugarAlcoholGram, scaleFactor),
-    dietaryFiberGram: scaleOptionalNutritionValue(menu.dietaryFiberGram, scaleFactor),
-    transFatGram: scaleOptionalNutritionValue(menu.transFatGram, scaleFactor),
-    saturatedFatGram: scaleOptionalNutritionValue(menu.saturatedFatGram, scaleFactor),
-    unsaturatedFatGram: scaleOptionalNutritionValue(menu.unsaturatedFatGram, scaleFactor),
-    sodiumMg: scaleOptionalNutritionValue(menu.sodiumMg, scaleFactor),
-    caffeineMg: scaleOptionalNutritionValue(menu.caffeineMg, scaleFactor),
-    potassiumMg: scaleOptionalNutritionValue(menu.potassiumMg, scaleFactor),
-    cholesterolMg: scaleOptionalNutritionValue(menu.cholesterolMg, scaleFactor),
-    alcoholGram: scaleOptionalNutritionValue(menu.alcoholGram, scaleFactor),
-    unitAmountText: `${formatCompactDecimal(unitCount)}${serving.unitLabel} (${formatCompactDecimal(
+        : scaleOptionalNutritionValue(menu.weight, scaleFactor),
+    sugars: scaleOptionalNutritionValue(menu.sugars, scaleFactor),
+    sugar_alchol: scaleOptionalNutritionValue(menu.sugar_alchol, scaleFactor),
+    dietary_fiber: scaleOptionalNutritionValue(menu.dietary_fiber, scaleFactor),
+    trans_fat: scaleOptionalNutritionValue(menu.trans_fat, scaleFactor),
+    sat_fat: scaleOptionalNutritionValue(menu.sat_fat, scaleFactor),
+    un_sat_fat: scaleOptionalNutritionValue(menu.un_sat_fat, scaleFactor),
+    sodium: scaleOptionalNutritionValue(menu.sodium, scaleFactor),
+    caffeine: scaleOptionalNutritionValue(menu.caffeine, scaleFactor),
+    potassium: scaleOptionalNutritionValue(menu.potassium, scaleFactor),
+    cholesterol: scaleOptionalNutritionValue(menu.cholesterol, scaleFactor),
+    alcohol: scaleOptionalNutritionValue(menu.alcohol, scaleFactor),
+    unit_quantity: `${formatCompactDecimal(unitCount)}${serving.unitLabel} (${formatCompactDecimal(
       totalWeight,
     )}${serving.weightUnit})`,
-    servingInputMode: mode,
-    servingInputValue: roundToSingleDecimal(inputValue),
+    serving_input_mode: mode,
+    serving_input_value: roundToSingleDecimal(inputValue),
   } satisfies MealMenuItem;
 }

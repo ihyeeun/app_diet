@@ -4,10 +4,10 @@ import type {
   MealMenuNutrientRow,
   MealServingAmount,
 } from "../types/mealMenuNutrition.types";
-import type { MealMenuItem } from "../types/mealRecord.types";
+import type { MealMenuItem } from "@/shared/api/types/nutrition.dto";
 
-export function parseServingAmount(unitAmountText: string): MealServingAmount {
-  const matched = unitAmountText.match(SERVING_AMOUNT_REGEX);
+export function parseServingAmount(unit_quantity: string): MealServingAmount {
+  const matched = unit_quantity.match(SERVING_AMOUNT_REGEX);
   if (!matched) {
     return {
       amount: 0,
@@ -39,15 +39,15 @@ export function toNullableNutritionNumber(value: number | null | undefined): num
 
 export function getMealMenuTotalWeight(
   menu: MealMenuItem,
-  servingAmount: MealServingAmount = parseServingAmount(menu.unitAmountText),
+  servingAmount: MealServingAmount = parseServingAmount(menu.unit_quantity),
 ) {
   const parsedWeightFromUnitText = servingAmount.amount > 0 ? servingAmount.amount : null;
-  return toNullableNutritionNumber(menu.totalWeightGram) ?? parsedWeightFromUnitText;
+  return toNullableNutritionNumber(menu.weight) ?? parsedWeightFromUnitText;
 }
 
 export function buildMealMenuDetailRows(
   menu: MealMenuItem,
-  servingAmount: MealServingAmount = parseServingAmount(menu.unitAmountText),
+  servingAmount: MealServingAmount = parseServingAmount(menu.unit_quantity),
 ): MealMenuNutrientRow[] {
   const rows: MealMenuNutrientRow[] = [
     {
@@ -61,7 +61,7 @@ export function buildMealMenuDetailRows(
     {
       key: "carbohydrate",
       label: "탄수화물",
-      value: toNullableNutritionNumber(menu.carbohydrateGram),
+      value: toNullableNutritionNumber(menu.carbs),
       unit: "g",
       group: "carbohydrate",
       variant: "main",
@@ -69,7 +69,7 @@ export function buildMealMenuDetailRows(
     {
       key: "sugar",
       label: "당",
-      value: toNullableNutritionNumber(menu.sugarGram),
+      value: toNullableNutritionNumber(menu.sugars),
       unit: "g",
       group: "carbohydrate",
       variant: "sub",
@@ -77,7 +77,7 @@ export function buildMealMenuDetailRows(
     {
       key: "sugarAlcohol",
       label: "당알코올(대체당)",
-      value: toNullableNutritionNumber(menu.sugarAlcoholGram),
+      value: toNullableNutritionNumber(menu.sugar_alchol),
       unit: "g",
       group: "carbohydrate",
       variant: "sub",
@@ -85,7 +85,7 @@ export function buildMealMenuDetailRows(
     {
       key: "dietaryFiber",
       label: "식이섬유",
-      value: toNullableNutritionNumber(menu.dietaryFiberGram),
+      value: toNullableNutritionNumber(menu.dietary_fiber),
       unit: "g",
       group: "carbohydrate",
       variant: "sub",
@@ -93,7 +93,7 @@ export function buildMealMenuDetailRows(
     {
       key: "protein",
       label: "단백질",
-      value: toNullableNutritionNumber(menu.proteinGram),
+      value: toNullableNutritionNumber(menu.protein),
       unit: "g",
       group: "protein",
       variant: "main",
@@ -101,7 +101,7 @@ export function buildMealMenuDetailRows(
     {
       key: "fat",
       label: "지방",
-      value: toNullableNutritionNumber(menu.fatGram),
+      value: toNullableNutritionNumber(menu.fat),
       unit: "g",
       group: "fat",
       variant: "main",
@@ -109,7 +109,7 @@ export function buildMealMenuDetailRows(
     {
       key: "saturatedFat",
       label: "포화지방",
-      value: toNullableNutritionNumber(menu.saturatedFatGram),
+      value: toNullableNutritionNumber(menu.sat_fat),
       unit: "g",
       group: "fat",
       variant: "sub",
@@ -117,7 +117,7 @@ export function buildMealMenuDetailRows(
     {
       key: "transFat",
       label: "트랜스지방",
-      value: toNullableNutritionNumber(menu.transFatGram),
+      value: toNullableNutritionNumber(menu.trans_fat),
       unit: "g",
       group: "fat",
       variant: "sub",
@@ -125,7 +125,7 @@ export function buildMealMenuDetailRows(
     {
       key: "unsaturatedFat",
       label: "불포화지방",
-      value: toNullableNutritionNumber(menu.unsaturatedFatGram),
+      value: toNullableNutritionNumber(menu.un_sat_fat),
       unit: "g",
       group: "fat",
       variant: "sub",
@@ -133,7 +133,7 @@ export function buildMealMenuDetailRows(
     {
       key: "sodium",
       label: "나트륨",
-      value: toNullableNutritionNumber(menu.sodiumMg),
+      value: toNullableNutritionNumber(menu.sodium),
       unit: "mg",
       group: "sodium",
       variant: "main",
@@ -141,7 +141,7 @@ export function buildMealMenuDetailRows(
     {
       key: "caffeine",
       label: "카페인",
-      value: toNullableNutritionNumber(menu.caffeineMg),
+      value: toNullableNutritionNumber(menu.caffeine),
       unit: "mg",
       group: "caffeine",
       variant: "main",
@@ -149,7 +149,7 @@ export function buildMealMenuDetailRows(
     {
       key: "potassium",
       label: "칼륨",
-      value: toNullableNutritionNumber(menu.potassiumMg),
+      value: toNullableNutritionNumber(menu.potassium),
       unit: "mg",
       group: "potassium",
       variant: "main",
@@ -157,7 +157,7 @@ export function buildMealMenuDetailRows(
     {
       key: "cholesterol",
       label: "콜레스테롤",
-      value: toNullableNutritionNumber(menu.cholesterolMg),
+      value: toNullableNutritionNumber(menu.cholesterol),
       unit: "mg",
       group: "cholesterol",
       variant: "main",
@@ -165,7 +165,7 @@ export function buildMealMenuDetailRows(
     {
       key: "alcohol",
       label: "알코올",
-      value: toNullableNutritionNumber(menu.alcoholGram),
+      value: toNullableNutritionNumber(menu.alcohol),
       unit: "g",
       group: "alcohol",
       variant: "main",

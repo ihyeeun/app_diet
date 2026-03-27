@@ -1,17 +1,17 @@
-import type { MealMenuItem, MealRecordLocationState } from "../types/mealRecord.types";
+import type { MealMenuItem, MealRecordLocationState } from "@/shared/api/types/nutrition.dto";
 
 function isMealMenuItem(value: unknown): value is MealMenuItem {
   if (!value || typeof value !== "object") return false;
 
   const menu = value as MealMenuItem;
   return (
-    typeof menu.id === "string" &&
-    typeof menu.title === "string" &&
+    typeof menu.id === "number" &&
+    typeof menu.name === "string" &&
     typeof menu.calories === "number" &&
-    typeof menu.unitAmountText === "string" &&
-    typeof menu.carbohydrateGram === "number" &&
-    typeof menu.proteinGram === "number" &&
-    typeof menu.fatGram === "number"
+    typeof menu.unit_quantity === "string" &&
+    (menu.carbs === undefined || typeof menu.carbs === "number") &&
+    (menu.protein === undefined || typeof menu.protein === "number") &&
+    (menu.fat === undefined || typeof menu.fat === "number")
   );
 }
 

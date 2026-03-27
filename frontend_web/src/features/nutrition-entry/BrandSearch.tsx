@@ -6,7 +6,7 @@ import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { fetchBrandSearchResults, type BrandSearchResult } from "./api/brandSearch";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { NutritionAddLocationState } from "./nutritionEntry.types";
+import type { NutritionAddLocationState } from "@/shared/api/types/nutrition.dto";
 import styles from "./styles/BrandSearch.module.css";
 
 const SEARCH_DEBOUNCE_MS = 250;

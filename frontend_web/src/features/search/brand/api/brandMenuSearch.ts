@@ -1,5 +1,6 @@
 import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
-import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
+import type { MealMenuItem } from "@/shared/api/types/nutrition.dto";
+import { MENU_DATA_SOURCE } from "@/shared/api/types/nutrition.dto";
 
 export type BrandMenuCategory = "all" | "burger" | "drink" | "personal";
 
@@ -22,7 +23,7 @@ function normalizeForSearch(value: string | undefined) {
 }
 
 function uniqueById(menus: MealMenuItem[]) {
-  const unique = new Map<string, MealMenuItem>();
+  const unique = new Map<number, MealMenuItem>();
 
   menus.forEach((menu) => {
     unique.set(menu.id, menu);
@@ -32,11 +33,11 @@ function uniqueById(menus: MealMenuItem[]) {
 }
 
 function inferMenuCategory(menu: MealMenuItem): BrandMenuCategory {
-  if (menu.dataSource === "personal" || Boolean(normalizeText(menu.personalChipLabel))) {
+  if (menu.data_source === MENU_DATA_SOURCE.PERSONAL) {
     return "personal";
   }
 
-  const title = normalizeForSearch(menu.title);
+  const title = normalizeForSearch(menu.name);
 
   if (DRINK_PATTERN.test(title)) return "drink";
   if (BURGER_PATTERN.test(title)) return "burger";
@@ -59,14 +60,14 @@ function filterByKeyword(menus: MealMenuItem[], keyword: string) {
   }
 
   return menus.filter((menu) => {
-    const title = normalizeForSearch(menu.title);
+    const title = normalizeForSearch(menu.name);
     const brand = normalizeForSearch(menu.brand);
-    const personalChip = normalizeForSearch(menu.personalChipLabel);
+    const isPersonal = menu.data_source === MENU_DATA_SOURCE.PERSONAL;
 
     return (
       title.includes(normalizedKeyword) ||
       brand.includes(normalizedKeyword) ||
-      personalChip.includes(normalizedKeyword)
+      (isPersonal && "개인용".includes(normalizedKeyword))
     );
   });
 }

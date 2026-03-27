@@ -1,12 +1,6 @@
 import { PATH } from "@/router/path";
 import { getMealRecordPath } from "@/features/meal-record/utils/mealRecord.paths";
-import {
-  DEFAULT_MEAL_TYPE,
-  MAX_MEAL_RECORD_MENUS,
-  type MealMenuItem,
-  type MealRecordLocationState,
-  type MealType,
-} from "@/features/meal-record";
+import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
 import { getTodayDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
@@ -14,11 +8,19 @@ import { toast } from "@/shared/commons/toast/toast";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./styles/NutritionAddDetailPage.module.css";
+import {
+  DEFAULT_MEAL_TYPE,
+  MENU_DATA_SOURCE,
+  MENU_UNIT,
+} from "@/shared/api/types/nutrition.dto";
 import type {
+  MealMenuItem,
+  MealRecordLocationState,
+  MealType,
   NutritionAddLocationState,
   NutritionInitialFormState,
   NutritionServingUnit,
-} from "./nutritionEntry.types";
+} from "@/shared/api/types/nutrition.dto";
 import { Tabs } from "@base-ui/react/tabs";
 import { NumberField } from "@base-ui/react/number-field";
 import { MinusIcon, PlusIcon } from "lucide-react";
@@ -254,28 +256,29 @@ function buildManualMenuItem({
       : `${MIN_NUTRITION_VALUE.toFixed(1)}${totalWeightUnit}`;
 
   return {
-    id: `manual-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    title: foodName,
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    name: foodName,
     calories: toNumber(form.calories),
-    dataSource: "personal",
-    unitAmountText: `1회 제공량 (${safeWeightText})`,
-    carbohydrateGram: toNumber(form.carbohydrate),
-    proteinGram: toNumber(form.protein),
-    fatGram: toNumber(form.fat),
-    totalWeightGram: totalWeight > 0 ? totalWeight : null,
-    sugarGram: toNullableNumber(form.sugar),
-    sugarAlcoholGram: toNullableNumber(form.sugarAlcohol),
-    dietaryFiberGram: toNullableNumber(form.dietaryFiber),
-    transFatGram: toNullableNumber(form.transFat),
-    saturatedFatGram: toNullableNumber(form.saturatedFat),
-    unsaturatedFatGram: toNullableNumber(form.unsaturatedFat),
-    sodiumMg: toNullableNumber(form.sodium),
-    caffeineMg: toNullableNumber(form.caffeine),
-    potassiumMg: toNullableNumber(form.potassium),
-    cholesterolMg: toNullableNumber(form.cholesterol),
-    alcoholGram: toNullableNumber(form.alcohol),
+    data_source: MENU_DATA_SOURCE.PERSONAL,
+    category: "manual",
+    unit: totalWeightUnit === "ml" ? MENU_UNIT.MILLILITER : MENU_UNIT.GRAM,
+    unit_quantity: `1회 제공량 (${safeWeightText})`,
+    carbs: toNumber(form.carbohydrate),
+    protein: toNumber(form.protein),
+    fat: toNumber(form.fat),
+    weight: totalWeight > 0 ? totalWeight : null,
+    sugars: toNullableNumber(form.sugar),
+    sugar_alchol: toNullableNumber(form.sugarAlcohol),
+    dietary_fiber: toNullableNumber(form.dietaryFiber),
+    trans_fat: toNullableNumber(form.transFat),
+    sat_fat: toNullableNumber(form.saturatedFat),
+    un_sat_fat: toNullableNumber(form.unsaturatedFat),
+    sodium: toNullableNumber(form.sodium),
+    caffeine: toNullableNumber(form.caffeine),
+    potassium: toNullableNumber(form.potassium),
+    cholesterol: toNullableNumber(form.cholesterol),
+    alcohol: toNullableNumber(form.alcohol),
     brand: brandName || undefined,
-    personalChipLabel: "개인용",
   };
 }
 

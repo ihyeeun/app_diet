@@ -6,13 +6,13 @@ export type MealMenuCardIcon = "add" | "check" | "delete";
 export type MealMenuCardState = "default" | "select";
 
 type MealMenuCardProps = {
-  title: string;
+  name: string;
   description?: string;
   calories?: number;
-  unitAmountText?: string;
+  unit_quantity?: string;
   brand?: string;
   suggestionChipLabel?: string;
-  personalChipLabel?: string;
+  data_source?: number;
   icon?: MealMenuCardIcon;
   state?: MealMenuCardState;
   className?: string;
@@ -37,12 +37,12 @@ function ActionIcon({ icon }: { icon: MealMenuCardIcon }) {
 }
 
 export function MealMenuCard({
-  title,
+  name,
   description,
   calories,
-  unitAmountText,
+  unit_quantity,
   brand,
-  personalChipLabel,
+  data_source,
   suggestionChipLabel,
   icon = "delete",
   state = "default",
@@ -72,6 +72,9 @@ export function MealMenuCard({
     onIconClick?.();
   };
 
+  const isPersonalMenu = data_source === 1;
+  const shouldShowChipList = isPersonalMenu || Boolean(suggestionChipLabel);
+
   return (
     <article
       className={classes}
@@ -83,7 +86,7 @@ export function MealMenuCard({
       <div className={styles.content}>
         <section className={styles.header}>
           <div className={styles.titleSection}>
-            <p className={`${styles.title} typo-title2 ellipsis`}>{title}</p>
+            <p className={`${styles.title} typo-title2 ellipsis`}>{name}</p>
 
             <button
               type="button"
@@ -103,7 +106,7 @@ export function MealMenuCard({
         <section className={styles.meta}>
           <p className={styles.prouductInfo}>
             {brand && <span className={`${styles.brand} typo-label4`}>{brand}</span>}
-            <span className={`${styles.unitAmount} typo-label4`}>{unitAmountText}</span>
+            <span className={`${styles.unitAmount} typo-label4`}>{unit_quantity}</span>
           </p>
           {calories && (
             <span className={`${styles.calories} typo-title2`}>
@@ -113,12 +116,10 @@ export function MealMenuCard({
         </section>
       </div>
 
-      {(suggestionChipLabel || personalChipLabel) && (
+      {shouldShowChipList && (
         <div className={styles.chipList}>
-          {personalChipLabel && (
-            <span className={`${styles.chip} ${styles.personalChipLabel} typo-label6`}>
-              {personalChipLabel}
-            </span>
+          {isPersonalMenu && (
+            <span className={`${styles.chip} ${styles.personalChipLabel} typo-label6`}>개인용</span>
           )}
           {suggestionChipLabel && (
             <span className={`${styles.chip} ${styles.suggestionChipLabel} typo-label6`}>

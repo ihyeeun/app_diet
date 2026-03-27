@@ -4,7 +4,7 @@ import styles from "./styles/NutritionAddPage.module.css";
 import { Button } from "@/shared/commons/button/Button";
 import { useState, type ChangeEvent } from "react";
 import { PATH } from "@/router/path";
-import type { NutritionAddLocationState } from "./nutritionEntry.types";
+import type { NutritionAddLocationState } from "@/shared/api/types/nutrition.dto";
 
 export default function NutritionAddPage() {
   const navigation = useNavigate();

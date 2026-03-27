@@ -8,15 +8,21 @@ import WeeklyCalendar from "@/features/calendar/components/WeeklyCalendar";
 type Props = {
   initialDate?: Date;
   summaries?: DayRecordSummary[];
+  onSelectDate?: (date: Date) => void;
 };
 
-export default function Calendar({ initialDate, summaries = [] }: Props) {
+export default function Calendar({ initialDate, summaries = [], onSelectDate }: Props) {
   const { viewMode, viewDate, weekDays, monthDays, toggleViewMode, selectDate, goPrev, goNext } =
     useCalendar({
       initialDate,
       initialViewMode: "week",
       summaries,
     });
+
+  const handleSelectDate = (date: Date) => {
+    selectDate(date);
+    onSelectDate?.(date);
+  };
 
   return (
     <section className="calendar-root">
@@ -32,14 +38,14 @@ export default function Calendar({ initialDate, summaries = [] }: Props) {
         {viewMode === "week" ? (
           <WeeklyCalendar
             days={weekDays}
-            onSelectDate={selectDate}
+            onSelectDate={handleSelectDate}
             onSwipePrev={goPrev}
             onSwipeNext={goNext}
           />
         ) : (
           <MonthlyCalendar
             days={monthDays}
-            onSelectDate={selectDate}
+            onSelectDate={handleSelectDate}
             onSwipePrev={goPrev}
             onSwipeNext={goNext}
           />

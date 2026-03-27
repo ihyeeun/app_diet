@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "@/shared/commons/toast/toast";
-import type { MealMenuItem, MealServingInputMode } from "../types/mealRecord.types";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrition.dto";
 import {
   SERVING_INPUT_STEP,
   buildScaledMenu,
@@ -66,10 +66,10 @@ export function useServingAmountSheet({ onSubmitMenu }: UseServingAmountSheetPar
   };
 
   const open = ({ menu: nextMenu, selectedMenu, initialMode }: OpenServingAmountSheetParams) => {
-    const nextInputMode = initialMode ?? selectedMenu?.servingInputMode ?? "unit";
+    const nextInputMode = initialMode ?? selectedMenu?.serving_input_mode ?? "unit";
     const parsedServing = parseMenuServing(nextMenu);
     const initialInput =
-      selectedMenu?.servingInputValue ?? getServingDefaultValue(parsedServing, nextInputMode);
+      selectedMenu?.serving_input_value ?? getServingDefaultValue(parsedServing, nextInputMode);
 
     setMenu(nextMenu);
     setInputMode(nextInputMode);

@@ -12,7 +12,7 @@ import { BrandRequestSheetContent } from "@/features/meal-record/components/Bran
 import { toast } from "@/shared/commons/toast/toast";
 import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
 import { useQuery } from "@tanstack/react-query";
-import type { MealMenuItem } from "@/features/meal-record/types/mealRecord.types";
+import type { MealMenuItem } from "@/shared/api/types/nutrition.dto";
 import { MAX_COMPARE_MENUS } from "@/features/search/search.constants";
 
 type CompareMenuSearchLocationState = {
@@ -148,11 +148,11 @@ export default function MenuComPareSearchPage() {
                   return (
                     <MealMenuCard
                       key={menu.id}
-                      title={menu.title}
+                      name={menu.name}
                       calories={menu.calories}
-                      unitAmountText={menu.unitAmountText}
+                      unit_quantity={menu.unit_quantity}
                       brand={menu.brand}
-                      personalChipLabel={menu.personalChipLabel}
+                      data_source={menu.data_source}
                       icon={isSelected ? "check" : "add"}
                       state={isSelected ? "select" : "default"}
                       onIconClick={() => handleToggleMenuSelection(menu)}
