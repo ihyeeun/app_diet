@@ -5,7 +5,6 @@ import HomePage from "@/features/home/HomePage";
 import RecommendPage from "@/features/recommend/RecommendPage";
 import ComparePage from "@/features/compare/ComparePage";
 import TermsPage from "@/features/terms/TermsPage";
-import MealDetailPage from "@/features/meal-detail/MealDetailPage";
 import MealRecordPage from "@/features/meal-record/MealRecordPage";
 import MealRecordAddPage from "@/features/meal-record/MealRecordAddPage";
 import MealSearchPage from "@/features/search/menu-record/MealSearchPage";
@@ -18,6 +17,7 @@ import BrandMenuSearch from "@/features/search/brand/BrandMenuSearch";
 import MenuComPareSearchPage from "@/features/search/menu-compare/MenuCompareSearchPage";
 import SelectedMenuListPage from "@/features/compare/SelectedMenuListPage";
 import MealRecordSearchDetailPage from "@/features/meal-record/MealRecordSearchDetailPage";
+import TodayMealScorePage from "@/features/home/TodayMealScorePage";
 
 export default function AppRouter() {
   return (
@@ -30,7 +30,7 @@ export default function AppRouter() {
         <Route path={PATH.COMPARE} element={<ComparePage />} />
         <Route path={PATH.PROFILE} element={<div>Profile</div>} />
         <Route path={PATH.TERMS} element={<TermsPage />} />
-        <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
+        <Route path={PATH.TODAY_MEAL_SCORE} element={<TodayMealScorePage />} />
         <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
         <Route path={PATH.MEAL_RECORD_ADD} element={<MealRecordAddPage />} />
         <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />

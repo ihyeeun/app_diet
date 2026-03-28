@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Calendar from "@/features/calendar/components/Calendar";
 import MenuActionSection from "@/features/home/components/MenuActionSection";
-import TodayScoreSection from "@/features/home/components/TodayScoreSection";
+import PreviewTodayScoreSection from "@/features/home/components/PreviewTodayScoreSection";
 import style from "@/features/home/styles/HomePage.module.css";
 
 export default function HomePage() {
@@ -11,7 +11,7 @@ export default function HomePage() {
     <div className={style.container}>
       <Calendar initialDate={selectedDate} onSelectDate={setSelectedDate} />
       <section className={style.homeContainer}>
-        <TodayScoreSection />
+        <PreviewTodayScoreSection />
         <MenuActionSection selectedDate={selectedDate} />
       </section>
     </div>

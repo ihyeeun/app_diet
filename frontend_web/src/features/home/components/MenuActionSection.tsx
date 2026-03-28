@@ -1,21 +1,15 @@
 import ActionCard from "@/features/home/components/cards/ActionCard";
-import TodayBodyLogSection from "@/features/home/components/today/TodayBodyLogSection";
+import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import type { MealType } from "@/shared/api/types/nutrition.dto";
+import { formatDateKey } from "@/shared/utils/dateFormat";
 import { useNavigate } from "react-router-dom";
-
-function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 function getMealRecordPath(date: Date, mealType: MealType) {
   const params = new URLSearchParams({
-    date: toDateKey(date),
+    date: formatDateKey(date),
     mealType,
   });
   return `${PATH.MEAL_RECORD}?${params.toString()}`;

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-import styles from "./MealDetailPage.module.css";
+import styles from "@/features/home/styles/TodayMealScorePage.module.css";
 import { Button } from "@/shared/commons/button/Button";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { StatusBadge, type NutritionStatus } from "@/shared/commons/badge/StatusBadge";
@@ -81,7 +81,7 @@ function toNutrientMetrics(
   }));
 }
 
-export default function MealDetailPage() {
+export default function TodayMealScorePage() {
   const navigate = useNavigate();
 
   const currentKcal = 1800;

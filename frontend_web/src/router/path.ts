@@ -1,12 +1,12 @@
 export const PATH = {
   ROOT: "/",
   HOME: "/home",
+  TODAY_MEAL_SCORE: "/home/date-meal-score",
   ONBOARDING: "/onboarding",
   RECOMMEND: "/recommend",
   COMPARE: "/compare",
   PROFILE: "/profile",
   TERMS: "/terms",
-  MEAL_DETAIL: "/meal-detail",
   MEAL_RECORD: "/meal-record",
   MEAL_RECORD_ADD: "/meal-record/add",
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",

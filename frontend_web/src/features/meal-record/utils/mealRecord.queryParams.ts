@@ -1,21 +1,10 @@
-import {
-  DEFAULT_MEAL_TYPE,
-  MEAL_TYPE_SET,
-  type MealType,
-} from "@/shared/api/types/nutrition.dto";
-
-export function getTodayDateKey() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+import { DEFAULT_MEAL_TYPE, MEAL_TYPE_SET, type MealType } from "@/shared/api/types/nutrition.dto";
+import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 
 export function getSafeDateKey(value: string | null) {
-  if (!value) return getTodayDateKey();
+  if (!value) return getTodayFormatDateKey();
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  return getTodayDateKey();
+  return getTodayFormatDateKey();
 }
 
 export function getMealType(value: string | null): MealType {
