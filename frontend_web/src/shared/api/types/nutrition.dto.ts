@@ -206,9 +206,20 @@ export type NutritionEntryContextState = {
   pendingCompareMenus?: MealMenuItem[];
 };
 
+export type CapturedImage = {
+  uri: string;
+  width: number;
+  height: number;
+  fileName: string | null;
+  fileSize: number | null;
+  mimeType: string | null;
+};
+
 export type NutritionAddLocationState = NutritionEntryContextState & {
   brandName?: string;
   foodName?: string;
   initialNutrition?: NutritionInitialFormState;
   servingUnit?: NutritionServingUnit;
+  capturedImage?: CapturedImage;
+  uploadedImageUrl?: string;
 };

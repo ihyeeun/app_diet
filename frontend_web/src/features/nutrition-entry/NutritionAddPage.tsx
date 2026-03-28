@@ -6,11 +6,17 @@ import { useState, type ChangeEvent } from "react";
 import { PATH } from "@/router/path";
 import type { NutritionAddLocationState } from "@/shared/api/types/nutrition.dto";
 
+function formatBytesToMb(fileSize: number) {
+  return `${(fileSize / (1024 * 1024)).toFixed(2)}MB`;
+}
+
 export default function NutritionAddPage() {
   const navigation = useNavigate();
   const location = useLocation();
   const contextState = (location.state ?? {}) as NutritionAddLocationState;
   const brandName = (contextState.brandName ?? "").trim();
+  const capturedImage = contextState.capturedImage;
+  const uploadedImageUrl = contextState.uploadedImageUrl;
   const [foodName, setFoodName] = useState((contextState.foodName ?? "").trim());
 
   const handleFoodNameChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -52,6 +58,22 @@ export default function NutritionAddPage() {
       />
 
       <main className={styles.main}>
+        {capturedImage ? (
+          <section className={styles.imageInfoSection} aria-label="선택된 이미지 정보">
+            <p className={`typo-label3 ${styles.imageInfoTitle}`}>선택된 이미지</p>
+            <p className={`typo-label4 ${styles.imageInfoText}`}>
+              {capturedImage.fileName ?? "이름 없는 이미지"}
+            </p>
+            <p className={`typo-label4 ${styles.imageInfoSubText}`}>
+              {capturedImage.mimeType ?? "image/jpeg"} ·{" "}
+              {capturedImage.fileSize !== null ? formatBytesToMb(capturedImage.fileSize) : "용량 미확인"}
+            </p>
+            <p className={`typo-label4 ${styles.imageInfoSubText}`}>
+              {uploadedImageUrl ? "서버 전송 완료" : "서버 전송 URL 미확인"}
+            </p>
+          </section>
+        ) : null}
+
         <div className={styles.fieldWrap}>
           <label>
             <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>

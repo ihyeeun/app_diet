@@ -1,13 +1,313 @@
 import type { RefObject } from "react";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
-import axios from "axios";
+import { isAxiosError } from "axios";
 import { router } from "expo-router";
-import type { WebToAppMessage } from "./bridge.types";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system/legacy";
+import { apiClient } from "@/src/shared/api/apiClient";
+import type {
+  BridgeCameraCaptureRequestPayload,
+  BridgeGalleryPickRequestPayload,
+  BridgeImageUploadRequestPayload,
+  WebToAppMessage,
+} from "./bridge.types";
 import { sendToWeb } from "./sendToWeb";
 import { requestFromWeb } from "./requestFromWeb";
 
+class BridgeHandledError extends Error {
+  statusCode: number;
+  errorCode: string;
+
+  constructor(message: string, statusCode: number, errorCode: string) {
+    super(message);
+    this.name = "BridgeHandledError";
+    this.statusCode = statusCode;
+    this.errorCode = errorCode;
+  }
+}
+
+const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png"]);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const DEFAULT_UPLOAD_FIELD_NAME = "file";
+
+type ImageFileSource = {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  fileSize?: number | null;
+};
+
+function resolveLowerCaseExtension(value: string | null | undefined) {
+  if (!value) return null;
+  const sanitized = value.split("?")[0];
+  const matched = sanitized.match(/\.([a-zA-Z0-9]+)$/);
+  if (!matched) return null;
+
+  return matched[1].toLowerCase();
+}
+
+function resolveImageMimeType(source: ImageFileSource) {
+  const normalizedMime = source.mimeType?.toLowerCase().trim();
+  if (normalizedMime) return normalizedMime;
+
+  const extensionFromName = resolveLowerCaseExtension(source.fileName);
+  if (extensionFromName === "png") return "image/png";
+  if (extensionFromName === "jpg" || extensionFromName === "jpeg") return "image/jpeg";
+
+  const extensionFromUri = resolveLowerCaseExtension(source.uri);
+  if (extensionFromUri === "png") return "image/png";
+  if (extensionFromUri === "jpg" || extensionFromUri === "jpeg") return "image/jpeg";
+
+  return null;
+}
+
+async function resolveImageFileSize(source: ImageFileSource) {
+  if (typeof source.fileSize === "number" && Number.isFinite(source.fileSize) && source.fileSize >= 0) {
+    return source.fileSize;
+  }
+
+  try {
+    const fileInfo = await FileSystem.getInfoAsync(source.uri);
+    if (!fileInfo.exists) return null;
+    if (typeof fileInfo.size !== "number" || !Number.isFinite(fileInfo.size) || fileInfo.size < 0) {
+      return null;
+    }
+
+    return fileInfo.size;
+  } catch {
+    return null;
+  }
+}
+
+async function normalizeImageAsset(asset: ImagePicker.ImagePickerAsset) {
+  const mimeType = resolveImageMimeType(asset);
+  const extensionFromName = resolveLowerCaseExtension(asset.fileName);
+  const extensionFromUri = resolveLowerCaseExtension(asset.uri);
+  const extension = extensionFromName ?? extensionFromUri;
+  const isAllowedMimeType = mimeType ? ALLOWED_IMAGE_MIME_TYPES.has(mimeType) : false;
+  const isAllowedExtension = extension ? ALLOWED_IMAGE_EXTENSIONS.has(extension) : false;
+
+  if (!isAllowedMimeType && !isAllowedExtension) {
+    throw new BridgeHandledError(
+      "JPG 또는 PNG 형식의 이미지만 첨부할 수 있어요.",
+      400,
+      "IMAGE_FORMAT_NOT_ALLOWED",
+    );
+  }
+
+  const fileSize = await resolveImageFileSize(asset);
+  if (fileSize === null) {
+    throw new BridgeHandledError(
+      "이미지 용량을 확인하지 못했어요. 다시 시도해주세요.",
+      400,
+      "IMAGE_SIZE_UNAVAILABLE",
+    );
+  }
+
+  if (fileSize > MAX_IMAGE_SIZE_BYTES) {
+    throw new BridgeHandledError("이미지 용량은 5MB 이하만 첨부할 수 있어요.", 400, "IMAGE_SIZE_EXCEEDED");
+  }
+
+  return {
+    uri: asset.uri,
+    width: asset.width,
+    height: asset.height,
+    fileName: asset.fileName ?? null,
+    fileSize,
+    mimeType: mimeType ?? null,
+    base64: asset.base64 ?? null,
+  };
+}
+
+function assertRelativeEndpoint(endpoint: string) {
+  if (!endpoint.startsWith("/") || endpoint.startsWith("//")) {
+    throw new BridgeHandledError("업로드 endpoint는 상대 경로만 허용해요.", 400, "INVALID_UPLOAD_ENDPOINT");
+  }
+}
+
+function resolveUploadFileName(source: ImageFileSource, mimeType: string) {
+  const trimmedFileName = source.fileName?.trim();
+  if (trimmedFileName) return trimmedFileName;
+
+  const extensionFromUri = resolveLowerCaseExtension(source.uri);
+  if (extensionFromUri) return `upload.${extensionFromUri}`;
+
+  return mimeType === "image/png" ? "upload.png" : "upload.jpg";
+}
+
+async function normalizeUploadImageSource(payload: BridgeImageUploadRequestPayload) {
+  const source: ImageFileSource = {
+    uri: payload.fileUri,
+    fileName: payload.fileName,
+    mimeType: payload.mimeType,
+  };
+
+  const mimeType = resolveImageMimeType(source);
+  const extensionFromName = resolveLowerCaseExtension(source.fileName);
+  const extensionFromUri = resolveLowerCaseExtension(source.uri);
+  const extension = extensionFromName ?? extensionFromUri;
+  const isAllowedMimeType = mimeType ? ALLOWED_IMAGE_MIME_TYPES.has(mimeType) : false;
+  const isAllowedExtension = extension ? ALLOWED_IMAGE_EXTENSIONS.has(extension) : false;
+
+  if (!isAllowedMimeType && !isAllowedExtension) {
+    throw new BridgeHandledError(
+      "JPG 또는 PNG 형식의 이미지만 첨부할 수 있어요.",
+      400,
+      "IMAGE_FORMAT_NOT_ALLOWED",
+    );
+  }
+
+  const fileSize = await resolveImageFileSize(source);
+  if (fileSize === null) {
+    throw new BridgeHandledError(
+      "이미지 용량을 확인하지 못했어요. 다시 시도해주세요.",
+      400,
+      "IMAGE_SIZE_UNAVAILABLE",
+    );
+  }
+
+  if (fileSize > MAX_IMAGE_SIZE_BYTES) {
+    throw new BridgeHandledError("이미지 용량은 5MB 이하만 첨부할 수 있어요.", 400, "IMAGE_SIZE_EXCEEDED");
+  }
+
+  const normalizedMimeType =
+    mimeType ??
+    (extension === "png" ? "image/png" : extension === "jpg" || extension === "jpeg" ? "image/jpeg" : null);
+  if (!normalizedMimeType) {
+    throw new BridgeHandledError("이미지 형식을 확인하지 못했어요.", 400, "IMAGE_FORMAT_UNKNOWN");
+  }
+
+  return {
+    uri: payload.fileUri,
+    fileName: resolveUploadFileName(source, normalizedMimeType),
+    mimeType: normalizedMimeType,
+    fileSize,
+  };
+}
+
+function resolveUploadFieldName(payloadFieldName?: string) {
+  const normalized = payloadFieldName?.trim();
+  if (!normalized) return DEFAULT_UPLOAD_FIELD_NAME;
+  return normalized;
+}
+
+async function uploadImageToServer(payload: BridgeImageUploadRequestPayload) {
+  assertRelativeEndpoint(payload.endpoint);
+  const normalizedImage = await normalizeUploadImageSource(payload);
+  const fieldName = resolveUploadFieldName(payload.fieldName);
+  const method = payload.method ?? "POST";
+
+  const formData = new FormData();
+  formData.append(
+    fieldName,
+    {
+      uri: normalizedImage.uri,
+      name: normalizedImage.fileName,
+      type: normalizedImage.mimeType,
+    } as unknown as Blob,
+  );
+
+  if (payload.body) {
+    Object.entries(payload.body).forEach(([key, value]) => {
+      if (value === undefined) return;
+      formData.append(key, String(value));
+    });
+  }
+
+  const response = await apiClient.request({
+    url: payload.endpoint,
+    method,
+    params: payload.params,
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data;
+}
+
+async function capturePhotoFromCamera(payload?: BridgeCameraCaptureRequestPayload) {
+  const permission = await ImagePicker.requestCameraPermissionsAsync();
+  if (!permission.granted) {
+    throw new BridgeHandledError("카메라 권한이 필요해요.", 403, "CAMERA_PERMISSION_DENIED");
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    quality: payload?.quality ?? 0.8,
+    allowsEditing: false,
+    exif: false,
+    base64: false,
+  });
+
+  if (result.canceled) {
+    throw new BridgeHandledError("촬영이 취소되었어요.", 499, "CAMERA_CAPTURE_CANCELLED");
+  }
+
+  if (result.assets.length !== 1) {
+    throw new BridgeHandledError("이미지는 1장만 첨부할 수 있어요.", 400, "IMAGE_COUNT_EXCEEDED");
+  }
+
+  const asset = result.assets[0];
+  if (!asset) {
+    throw new BridgeHandledError("촬영 결과를 가져오지 못했어요.", 500, "CAMERA_CAPTURE_FAILED");
+  }
+
+  return await normalizeImageAsset(asset);
+}
+
+async function pickPhotoFromGallery(payload?: BridgeGalleryPickRequestPayload) {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) {
+    throw new BridgeHandledError(
+      "갤러리 접근 권한이 필요해요.",
+      403,
+      "GALLERY_PERMISSION_DENIED",
+    );
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    quality: payload?.quality ?? 0.8,
+    allowsEditing: false,
+    allowsMultipleSelection: false,
+    exif: false,
+    base64: false,
+    mediaTypes: "images",
+  });
+
+  if (result.canceled) {
+    throw new BridgeHandledError("사진 선택이 취소되었어요.", 499, "GALLERY_PICK_CANCELLED");
+  }
+
+  if (result.assets.length !== 1) {
+    throw new BridgeHandledError("이미지는 1장만 첨부할 수 있어요.", 400, "IMAGE_COUNT_EXCEEDED");
+  }
+
+  const asset = result.assets[0];
+  if (!asset) {
+    throw new BridgeHandledError("선택한 사진을 가져오지 못했어요.", 500, "GALLERY_PICK_FAILED");
+  }
+
+  return await normalizeImageAsset(asset);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isBridgePrimitiveValue(value: unknown): value is string | number | boolean | undefined {
+  return (
+    value === undefined ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  );
+}
+
+function isBridgePrimitiveRecord(value: unknown): value is Record<string, string | number | boolean | undefined> {
+  if (!isRecord(value)) return false;
+  return Object.values(value).every(isBridgePrimitiveValue);
 }
 
 function isWebToAppMessage(value: unknown): value is WebToAppMessage {
@@ -32,6 +332,57 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
     );
   }
 
+  if (value.type === "CAMERA_CAPTURE_REQUEST") {
+    if (value.payload === undefined) return true;
+    if (!isRecord(value.payload)) return false;
+
+    return value.payload.quality === undefined || typeof value.payload.quality === "number";
+  }
+
+  if (value.type === "GALLERY_PICK_REQUEST") {
+    if (value.payload === undefined) return true;
+    if (!isRecord(value.payload)) return false;
+
+    return value.payload.quality === undefined || typeof value.payload.quality === "number";
+  }
+
+  if (value.type === "IMAGE_UPLOAD_REQUEST") {
+    if (!isRecord(value.payload)) return false;
+    if (typeof value.payload.endpoint !== "string") return false;
+    if (typeof value.payload.fileUri !== "string") return false;
+
+    const isValidFileName =
+      value.payload.fileName === undefined ||
+      value.payload.fileName === null ||
+      typeof value.payload.fileName === "string";
+    if (!isValidFileName) return false;
+
+    const isValidMimeType =
+      value.payload.mimeType === undefined ||
+      value.payload.mimeType === null ||
+      typeof value.payload.mimeType === "string";
+    if (!isValidMimeType) return false;
+
+    const isValidFieldName =
+      value.payload.fieldName === undefined || typeof value.payload.fieldName === "string";
+    if (!isValidFieldName) return false;
+
+    const isValidMethod =
+      value.payload.method === undefined ||
+      value.payload.method === "POST" ||
+      value.payload.method === "PUT";
+    if (!isValidMethod) return false;
+
+    const isValidBody = value.payload.body === undefined || isBridgePrimitiveRecord(value.payload.body);
+    if (!isValidBody) return false;
+
+    const isValidParams =
+      value.payload.params === undefined || isBridgePrimitiveRecord(value.payload.params);
+    if (!isValidParams) return false;
+
+    return true;
+  }
+
   return false;
 }
 
@@ -52,6 +403,39 @@ export async function handleWebMessage(
       return;
     }
 
+    if (message.type === "CAMERA_CAPTURE_REQUEST") {
+      const result = await capturePhotoFromCamera(message.payload);
+
+      sendToWeb(webViewRef, {
+        id: requestId,
+        type: "API_RESPONSE",
+        payload: result,
+      });
+      return;
+    }
+
+    if (message.type === "GALLERY_PICK_REQUEST") {
+      const result = await pickPhotoFromGallery(message.payload);
+
+      sendToWeb(webViewRef, {
+        id: requestId,
+        type: "API_RESPONSE",
+        payload: result,
+      });
+      return;
+    }
+
+    if (message.type === "IMAGE_UPLOAD_REQUEST") {
+      const result = await uploadImageToServer(message.payload);
+
+      sendToWeb(webViewRef, {
+        id: requestId,
+        type: "API_RESPONSE",
+        payload: result,
+      });
+      return;
+    }
+
     const result = await requestFromWeb(message.payload);
 
     sendToWeb(webViewRef, {
@@ -60,7 +444,20 @@ export async function handleWebMessage(
       payload: result,
     });
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (error instanceof BridgeHandledError) {
+      sendToWeb(webViewRef, {
+        id: requestId,
+        type: "API_ERROR",
+        payload: {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error.errorCode,
+        },
+      });
+      return;
+    }
+
+    if (isAxiosError(error)) {
       const serverData = error.response?.data;
 
       sendToWeb(webViewRef, {

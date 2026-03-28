@@ -22,6 +22,28 @@
   gap: 14px;
 }
 
+.imageInfoSection {
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background-color: var(--bg-normal-white);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.imageInfoTitle {
+  color: var(--text-assistive2);
+}
+
+.imageInfoText {
+  color: var(--text-normal);
+}
+
+.imageInfoSubText {
+  color: var(--text-assistive1);
+}
+
 .labelText,
 .limitText {
   color: var(--text-white);
