@@ -1,7 +1,7 @@
 import { handleWebMessage } from "@/src/shared/api/bridge/handleWebMessage";
 import { router } from "expo-router";
 import { useCallback, useEffect, useRef } from "react";
-import { Platform, StyleSheet } from "react-native";
+import { BackHandler, Platform, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
@@ -116,6 +116,7 @@ const pathChangeBridgeScript = `
 
 export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenProps) {
   const webViewRef = useRef<WebView>(null);
+  const canGoBackRef = useRef(false);
   const navigation = useNavigation();
   const targetUrl = buildWebAppUrl(path);
   const webAppOrigin = getWebAppOrigin();
@@ -188,6 +189,29 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     [syncTabBarFromUrl],
   );
 
+  const onNavigationStateChange = useCallback(
+    (navState: WebViewNavigation) => {
+      canGoBackRef.current = navState.canGoBack;
+      syncTabBarFromUrl(navState.url);
+    },
+    [syncTabBarFromUrl],
+  );
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    const backSubscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (!canGoBackRef.current) return false;
+
+      webViewRef.current?.goBack();
+      return true;
+    });
+
+    return () => {
+      backSubscription.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={["left", "right"]}>
       <WebView
@@ -195,7 +219,9 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
         source={{ uri: targetUrl }}
         injectedJavaScriptBeforeContentLoaded={injectedPathScript}
         onMessage={onMessage}
+        onNavigationStateChange={onNavigationStateChange}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+        allowsBackForwardNavigationGestures
         javaScriptEnabled
         domStorageEnabled
         originWhitelist={["*"]}
