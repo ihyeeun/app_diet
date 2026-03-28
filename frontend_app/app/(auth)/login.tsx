@@ -1,12 +1,12 @@
 import React from "react";
-import { Alert, StyleSheet, Text, View, Pressable } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { KakaoLoginButton } from "@/features/auth/components/KakaoLoginButton";
 import { AppleLoginButton } from "@/features/auth/components/AppleLoginButton";
 import { router } from "expo-router";
 
 export default function LoginPage() {
   const startAppleLogin = React.useCallback(() => {
-    Alert.alert("안내", "애플 로그인 연동은 준비 중입니다.");
+    router.push("/appleLogin");
   }, []);
 
   const openTermsPage = React.useCallback(() => {
