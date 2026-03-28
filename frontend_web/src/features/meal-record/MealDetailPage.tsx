@@ -11,14 +11,14 @@ import {
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
-import styles from "./styles/MealRecordSearchDetailPage.module.css";
+import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
 
-export default function MealRecordSearchDetailPage() {
+export default function MealDetailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isDetailOpen, setIsDetailOpen] = useState(false);

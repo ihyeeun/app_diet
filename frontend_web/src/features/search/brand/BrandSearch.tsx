@@ -1,31 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/shared/commons/button/Button";
 import { PATH } from "@/router/path";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
-import { fetchBrandSearchResults, type BrandSearchResult } from "./api/brandSearch";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { NutritionAddLocationState } from "@/shared/api/types/nutrition.dto";
-import styles from "./styles/BrandSearch.module.css";
-
-const SEARCH_DEBOUNCE_MS = 250;
-
-function useDebouncedKeyword(keyword: string) {
-  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedKeyword(keyword);
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [keyword]);
-
-  return debouncedKeyword;
-}
+import styles from "@/features/search/styles/BrandSearch.module.css";
 
 export default function BrandSearch() {
   const navigate = useNavigate();
@@ -34,8 +14,6 @@ export default function BrandSearch() {
   const [searchKeyword, setSearchKeyword] = useState((locationState.brandName ?? "").trim());
   const [selectedBrandId, setSelectedBrandId] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const debouncedKeyword = useDebouncedKeyword(searchKeyword);
-  const normalizedKeyword = debouncedKeyword.trim();
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -47,12 +25,6 @@ export default function BrandSearch() {
     };
   }, []);
 
-  const { data: brandResults = [], isFetching } = useQuery({
-    queryKey: ["brand-search", normalizedKeyword],
-    queryFn: () => fetchBrandSearchResults(normalizedKeyword),
-    enabled: normalizedKeyword.length > 0,
-  });
-
   const handleClearKeyword = () => {
     setSearchKeyword("");
     setSelectedBrandId("");
@@ -63,16 +35,6 @@ export default function BrandSearch() {
     navigate(PATH.NUTRITION_ADD, {
       replace: true,
       state: locationState,
-    });
-  };
-
-  const handleToggleBrandSelection = (brand: BrandSearchResult) => {
-    setSelectedBrandId((prev) => {
-      if (prev === brand.id) {
-        return "";
-      }
-
-      return brand.id;
     });
   };
 
@@ -90,23 +52,14 @@ export default function BrandSearch() {
   };
 
   const handleApplySelectedBrand = () => {
-    const selectedBrand = brandResults.find((brand) => brand.id === selectedBrandId);
-    if (!selectedBrand) return;
-
-    navigate(PATH.NUTRITION_ADD, {
-      replace: true,
-      state: {
-        ...locationState,
-        brandName: selectedBrand.name,
-      } satisfies NutritionAddLocationState,
-    });
+    // navigate(PATH.NUTRITION_ADD, {
+    //   replace: true,
+    //   state: {
+    //     ...locationState,
+    //     brandName: selectedBrand.name,
+    //   } satisfies NutritionAddLocationState,
+    // });
   };
-
-  const hasKeyword = normalizedKeyword.length > 0;
-  const hasResults = brandResults.length > 0;
-  const isInitialSearching = isFetching && hasKeyword && !hasResults;
-  const isSelectDisabled =
-    selectedBrandId.length === 0 || !brandResults.some((brand) => brand.id === selectedBrandId);
   const isDirectRegisterDisabled = searchKeyword.trim().length === 0;
 
   return (

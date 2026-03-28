@@ -11,13 +11,13 @@ import MealSearchPage from "@/features/search/menu-record/MealSearchPage";
 import NutritionAddPage from "@/features/nutrition-entry/NutritionAddPage";
 import NutritionCameraPage from "@/features/nutrition-entry/NutritionCameraPage";
 import NutritionAddDetailPage from "@/features/nutrition-entry/NutritionAddDetailPage";
-import BrandSearch from "@/features/nutrition-entry/BrandSearch";
 import MealCameraPage from "@/features/meal-record/MealCameraPage";
 import BrandMenuSearch from "@/features/search/brand/BrandMenuSearch";
 import MenuComPareSearchPage from "@/features/search/menu-compare/MenuCompareSearchPage";
 import SelectedMenuListPage from "@/features/compare/SelectedMenuListPage";
-import MealRecordSearchDetailPage from "@/features/meal-record/MealRecordSearchDetailPage";
+import MealDetailPage from "@/features/meal-record/MealDetailPage";
 import TodayMealScorePage from "@/features/home/TodayMealScorePage";
+import BrandSearch from "@/features/search/brand/BrandSearch";
 
 export default function AppRouter() {
   return (
@@ -34,7 +34,7 @@ export default function AppRouter() {
         <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
         <Route path={PATH.MEAL_RECORD_ADD} element={<MealRecordAddPage />} />
         <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
-        <Route path={PATH.MEAL_RECORD_ADD_SEARCH_DETAIL} element={<MealRecordSearchDetailPage />} />
+        <Route path={PATH.MEAL_RECORD_ADD_SEARCH_DETAIL} element={<MealDetailPage />} />
         <Route path={PATH.MEAL_CAMERA} element={<MealCameraPage />} />
         <Route path={PATH.NUTRITION_ADD} element={<NutritionAddPage />} />
         <Route path={PATH.NUTRITION_CAMERA} element={<NutritionCameraPage />} />
