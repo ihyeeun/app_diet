@@ -8,7 +8,7 @@ import {
 import { toast } from "@/shared/commons/toast/toast";
 import styles from "@/features/nutrient-entry/styles/NutrientCameraPage.module.css";
 import { PATH } from "@/router/path";
-import type { NutrientAddLocationState } from "@/shared/api/types/nutrient.dto";
+import type { NutrientAddLocationState } from "@/shared/api/types/api.dto";
 import { uploadCapturedImageToServer } from "@/features/nutrient-entry/api/uploadCapturedImage";
 
 type BridgeCameraError = Error & {

@@ -3,7 +3,7 @@ import {
   type MealMenuItem,
   type MealType,
   type RegisterMealRequestDto,
-} from "@/shared/api/types/nutrient.dto";
+} from "@/shared/api/types/api.dto";
 
 const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
   breakfast: MEAL_TIME.BREAKFAST,

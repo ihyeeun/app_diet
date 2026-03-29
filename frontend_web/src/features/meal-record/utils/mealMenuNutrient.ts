@@ -5,7 +5,7 @@ import type {
 } from "@/features/meal-record/types/mealMenuNutrient.types";
 import { MEAL_MENU_NUTRIENT_GROUP_ORDER, SERVING_AMOUNT_REGEX } from "../constants/menu.constants";
 
-import type { MealMenuItem } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem } from "@/shared/api/types/api.dto";
 
 export function parseServingAmount(unit_quantity: string): MealServingAmount {
   const matched = unit_quantity.match(SERVING_AMOUNT_REGEX);

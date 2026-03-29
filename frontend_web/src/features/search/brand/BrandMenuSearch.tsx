@@ -6,7 +6,7 @@ import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.con
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
-import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
   getMealRecordAddSearchDetailPath,

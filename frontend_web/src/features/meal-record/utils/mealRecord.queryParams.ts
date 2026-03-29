@@ -1,4 +1,4 @@
-import { DEFAULT_MEAL_TYPE, MEAL_TYPE_SET, type MealType } from "@/shared/api/types/nutrient.dto";
+import { DEFAULT_MEAL_TYPE, MEAL_TYPE_SET, type MealType } from "@/shared/api/types/api.dto";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 
 export function getSafeDateKey(value: string | null) {

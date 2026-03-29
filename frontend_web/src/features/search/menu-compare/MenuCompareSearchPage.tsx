@@ -12,7 +12,7 @@ import { BrandRequestSheetContent } from "@/features/meal-record/components/Bran
 import { toast } from "@/shared/commons/toast/toast";
 import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
 import { useQuery } from "@tanstack/react-query";
-import type { MealMenuItem } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem } from "@/shared/api/types/api.dto";
 import { MAX_COMPARE_MENUS } from "@/features/search/search.constants";
 
 type CompareMenuSearchLocationState = {

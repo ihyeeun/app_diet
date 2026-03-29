@@ -6,7 +6,7 @@ import {
   type SearchRequestDto,
   type MenuSimpleResponseDto,
   type SearchResponseDto,
-} from "@/shared/api/types/nutrient.dto";
+} from "@/shared/api/types/api.dto";
 
 function normalizeString(value: unknown) {
   if (typeof value !== "string") return "";

@@ -2,7 +2,7 @@ import { NumberField, Tabs } from "@base-ui/react";
 import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/shared/commons/button/Button";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
 import {
   buildMealMenuDetailGroups,
   buildMealMenuDetailRows,

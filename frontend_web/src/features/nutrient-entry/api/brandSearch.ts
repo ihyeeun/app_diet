@@ -1,6 +1,6 @@
 import { NUTRIENT_ENTRY_END_POINT } from "@/features/nutrient-entry/api/endpoints";
 import { appApiData } from "@/shared/api/appApi";
-import type { SearchBrandResponseDto } from "@/shared/api/types/nutrient.dto";
+import type { SearchBrandResponseDto } from "@/shared/api/types/api.dto";
 
 export type BrandSearchResult = {
   id: string;

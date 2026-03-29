@@ -1,5 +1,5 @@
 import { parseServingAmount } from "@/features/meal-record/utils/mealMenuNutrient";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
 
 export type ParsedMenuServing = {
   baseUnitCount: number;

@@ -32,7 +32,7 @@ import {
   type MealTime,
   type MealType,
   type NutrientEntryContextState,
-} from "@/shared/api/types/nutrient.dto";
+} from "@/shared/api/types/api.dto";
 
 function formatKcal(value: number) {
   return value.toLocaleString("ko-KR", {

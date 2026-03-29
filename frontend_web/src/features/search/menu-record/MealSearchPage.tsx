@@ -9,7 +9,7 @@ import { toast } from "@/shared/commons/toast/toast";
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
 import { postMealRecordBrandRequest } from "@/features/meal-record/api/brandRequest";
-import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
 import {
   getMealRecordAddSearchDetailPath,
   getMealRecordAddPath,

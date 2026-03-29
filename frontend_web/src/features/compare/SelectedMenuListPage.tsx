@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/shared/commons/button/Button";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { PATH } from "@/router/path";
-import type { MealMenuItem } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem } from "@/shared/api/types/api.dto";
 import { toast } from "@/shared/commons/toast/toast";
 import styles from "./styles/SelectedMenuListPage.module.css";
 

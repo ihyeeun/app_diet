@@ -4,7 +4,7 @@ import { PATH } from "@/router/path";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { NutrientAddLocationState } from "@/shared/api/types/nutrient.dto";
+import type { NutrientAddLocationState } from "@/shared/api/types/api.dto";
 import styles from "@/features/search/styles/BrandSearch.module.css";
 
 export default function BrandSearch() {

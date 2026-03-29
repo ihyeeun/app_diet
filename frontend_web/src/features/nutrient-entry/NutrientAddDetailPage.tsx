@@ -7,7 +7,7 @@ import { toast } from "@/shared/commons/toast/toast";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./styles/NutrientAddDetailPage.module.css";
-import { DEFAULT_MEAL_TYPE, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/nutrient.dto";
+import { DEFAULT_MEAL_TYPE, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import type {
   MealMenuItem,
   MealRecordLocationState,
@@ -15,7 +15,7 @@ import type {
   NutrientAddLocationState,
   NutrientInitialFormState,
   NutrientServingUnit,
-} from "@/shared/api/types/nutrient.dto";
+} from "@/shared/api/types/api.dto";
 import { Tabs } from "@base-ui/react/tabs";
 import { NumberField } from "@base-ui/react/number-field";
 import { MinusIcon, PlusIcon } from "lucide-react";

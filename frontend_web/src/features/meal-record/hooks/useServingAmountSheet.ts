@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "@/shared/commons/toast/toast";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
 import {
   SERVING_INPUT_STEP,
   buildScaledMenu,

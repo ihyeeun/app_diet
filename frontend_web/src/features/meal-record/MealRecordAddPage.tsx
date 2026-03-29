@@ -7,7 +7,7 @@ import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButt
 import { getMealRecordPath, getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 import { PATH } from "@/router/path";
-import type { NutrientEntryContextState } from "@/shared/api/types/nutrient.dto";
+import type { NutrientEntryContextState } from "@/shared/api/types/api.dto";
 import styles from "./styles/MealRecordAddPage.module.css";
 
 export default function MealRecordAddPage() {

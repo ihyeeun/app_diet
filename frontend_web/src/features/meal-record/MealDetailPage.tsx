@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-import { MENU_DATA_SOURCE } from "@/shared/api/types/nutrient.dto";
+import { MENU_DATA_SOURCE } from "@/shared/api/types/api.dto";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";

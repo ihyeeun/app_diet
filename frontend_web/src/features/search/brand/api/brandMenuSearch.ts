@@ -1,6 +1,6 @@
 import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
-import type { MealMenuItem } from "@/shared/api/types/nutrient.dto";
-import { MENU_DATA_SOURCE } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem } from "@/shared/api/types/api.dto";
+import { MENU_DATA_SOURCE } from "@/shared/api/types/api.dto";
 
 export type BrandMenuCategory = "all" | "burger" | "drink" | "personal";
 

@@ -1,4 +1,4 @@
-import type { MealMenuItem, MealRecordLocationState } from "@/shared/api/types/nutrient.dto";
+import type { MealMenuItem, MealRecordLocationState } from "@/shared/api/types/api.dto";
 
 function isMealMenuItem(value: unknown): value is MealMenuItem {
   if (!value || typeof value !== "object") return false;
