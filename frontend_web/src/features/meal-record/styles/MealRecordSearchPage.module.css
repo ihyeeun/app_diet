@@ -1,25 +1,25 @@
 .page {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 100dvh;
+  background-color: var(--bg-normal-normal);
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-normal-normal);
+  height: 100%;
+  min-height: 100dvh;
+  position: relative;
+  width: 100%;
 }
 
 .main {
+  display: flex;
   flex: 1;
   overflow-y: auto;
-  display: flex;
   padding: 20px;
 }
 
 .content {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
 .resultList {
@@ -29,16 +29,16 @@
 }
 
 .brandItem {
-  width: 100%;
-  min-height: 44px;
+  align-items: center;
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
-  background-color: var(--bg-normal-white);
-  padding: 16px 20px;
   display: inline-flex;
-  align-items: center;
   justify-content: space-between;
+  min-height: 44px;
+  padding: 16px 20px;
   text-align: left;
+  width: 100%;
 }
 
 .brandName {
@@ -50,17 +50,17 @@
 }
 
 .emptyResult {
+  align-items: center;
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 12px;
-  background-color: var(--bg-normal-white);
   color: var(--text-normal);
-  padding: 26px 20px;
-  text-align: center;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  align-items: center;
   justify-content: center;
+  padding: 26px 20px;
+  text-align: center;
 }
 
 .buttonContainer {
@@ -69,9 +69,9 @@
 }
 
 .placeholder {
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 12px;
-  background-color: var(--bg-normal-white);
   padding: 30px 20px;
   text-align: center;
 }
@@ -92,8 +92,8 @@
 .brandRequestSheetContainer {
   display: flex;
   flex-direction: column;
-  padding: 0 24px;
   gap: 40px;
+  padding: 0 24px;
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
 }
 
@@ -118,12 +118,12 @@
 }
 
 .brandRequestInput {
-  width: 100%;
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 6px;
-  background-color: var(--bg-normal-white);
   color: var(--text-normal);
   padding: 14px 12px;
+  width: 100%;
 }
 
 .brandRequestInput::placeholder {

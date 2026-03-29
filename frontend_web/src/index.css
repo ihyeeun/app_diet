@@ -18,28 +18,29 @@ body {
 }
 
 #root {
-  /* width: min(100%, 375px); */
-  min-height: 100dvh;
-  margin: 0 auto;
-  isolation: isolate;
   display: flex;
   flex-direction: column;
-  padding: 0px;
+  isolation: isolate;
+  margin: 0 auto;
+
+  /* width: min(100%, 375px); */
+  min-height: 100dvh;
+  padding: 0;
 }
 
 body {
-  position: relative;
   font-family: var(--font-family-base);
-  line-height: var(--line-height-130);
   letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-130);
+  position: relative;
 }
 
 p {
-  margin: 0;
   font-size: var(--fs-body2);
-  line-height: var(--line-height-130);
-  letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-130);
+  margin: 0;
   word-break: keep-all;
 }
 
@@ -52,38 +53,38 @@ h4 {
 
 h1 {
   font-size: var(--fs-h1);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 h2 {
   font-size: var(--fs-h2);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 h3 {
   font-size: var(--fs-h3);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 h4 {
   font-size: var(--fs-title1);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
 }
 
 button {
-  border: 0;
   background: transparent;
-  padding: 0;
+  border: 0;
   cursor: pointer;
   margin: 0;
+  padding: 0;
   text-align: start;
 }
 
@@ -92,6 +93,6 @@ button,
 input,
 textarea,
 select {
-  font-family: var(--font-family-base);
   color: var(--text-normal);
+  font-family: var(--font-family-base);
 }

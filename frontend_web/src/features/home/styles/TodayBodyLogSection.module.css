@@ -1,26 +1,26 @@
 .todayContainer {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .cardTitleContainer {
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   width: 100%;
 }
 
 .cardContainer {
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: 20px;
+  width: 100%;
 }
 
 .valueText {
-  display: flex;
   align-items: baseline;
+  display: flex;
   gap: 4px;
   justify-content: end;
 }
@@ -34,7 +34,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 0 24px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .sheetTitle {
@@ -42,6 +42,6 @@
 }
 
 .sheetActions {
-  padding-top: 20px;
   padding-bottom: 16px;
+  padding-top: 20px;
 }

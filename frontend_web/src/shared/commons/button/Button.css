@@ -1,17 +1,17 @@
 .btn {
-  display: inline-flex;
   align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  forced-color-adjust: none;
   justify-content: center;
   min-width: fit-content;
-  cursor: pointer;
-  user-select: none;
   text-align: center;
-  forced-color-adjust: none;
   transition:
     background-color 0.14s ease,
     border-color 0.14s ease,
     color 0.14s ease,
     box-shadow 0.14s ease;
+  user-select: none;
 }
 
 .btn:focus-visible {
@@ -21,50 +21,50 @@
 
 .btn:disabled,
 .btn[aria-disabled="true"] {
-  cursor: not-allowed;
   box-shadow: none;
+  cursor: not-allowed;
 }
 
 /* Filled/Outlined size tokens: height + padding */
 .btn--variant-filled.btn--size-small,
 .btn--variant-outlined.btn--size-small {
-  height: 42px;
-  padding: 10px 20px;
   border-radius: 6px;
   font-size: var(--fs-label2);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-normal);
   font-weight: var(--fw-bold);
+  height: 42px;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
+  padding: 10px 20px;
 }
 
 .btn--variant-filled.btn--size-medium,
 .btn--variant-outlined.btn--size-medium {
-  height: 54px;
-  padding: 16px 42px;
   border-radius: 8px;
   font-size: var(--fs-label2);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-normal);
   font-weight: var(--fw-bold);
+  height: 54px;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
+  padding: 16px 42px;
 }
 
 .btn--variant-filled.btn--size-large,
 .btn--variant-outlined.btn--size-large {
-  height: 51px;
-  padding: 16px 42px;
   border-radius: 8px;
   font-size: var(--fs-label2);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-normal);
   font-weight: var(--fw-bold);
+  height: 51px;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
+  padding: 16px 42px;
 }
 
 .btn--variant-filled.btn--state-disabled,
 .btn--variant-outlined.btn--state-disabled {
   font-size: var(--fs-label3);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 /* Filled */
@@ -159,33 +159,33 @@
 
 /* Text */
 .btn--variant-text {
-  width: auto;
-  min-width: 0;
+  border-radius: 0;
   height: auto;
   min-height: 0;
+  min-width: 0;
   padding: 0;
-  border-radius: 0;
+  width: auto;
 }
 
 .btn--variant-text.btn--size-small {
   font-size: var(--fs-label3);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 .btn--variant-text.btn--size-medium {
   font-size: var(--fs-label3);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 .btn--variant-text.btn--size-large {
   font-size: var(--fs-label3);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 .btn--variant-text.btn--color-primary {

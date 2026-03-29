@@ -1,24 +1,24 @@
 .container {
-  width: 100%;
-  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: env(safe-area-inset-top, 0px);
+  padding: 16px 20px;
+  padding-top: env(safe-area-inset-top, 0);
+  width: 100%;
 }
 
 .AccordionContainer {
-  border-radius: 8px;
   background: #ffe9d5;
+  border-radius: 8px;
 }
 
 .Accordion {
   box-sizing: border-box;
+  color: var(--gray-900);
   display: flex;
-  width: 100%;
   flex-direction: column;
   justify-content: center;
-  color: var(--gray-900);
+  width: 100%;
 }
 
 .Item {
@@ -30,19 +30,19 @@
 }
 
 .Trigger {
+  border: none;
   box-sizing: border-box;
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
   color: var(--gray-1100);
-  font-weight: var(--fw-medium);
+  display: flex;
   font-size: 16px;
+  font-weight: var(--fw-medium);
+  justify-content: space-between;
   letter-spacing: var(--letter-spacing-tight);
   line-height: var(--line-height-145);
-  border: none;
   outline: none;
-  text-align: left;
   padding: 16px 20px;
+  text-align: left;
+  width: 100%;
 
   &:focus-visible {
     outline: 2px solid var(--status-link);
@@ -61,9 +61,9 @@
 
 .Panel {
   box-sizing: border-box;
+  color: var(--gray-600);
   height: var(--accordion-panel-height);
   overflow: hidden;
-  color: var(--gray-600);
   transition: height 150ms ease-out;
 
   &[data-starting-style],

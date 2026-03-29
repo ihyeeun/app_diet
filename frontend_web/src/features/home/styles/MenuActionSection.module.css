@@ -1,19 +1,19 @@
 .content {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
   background-color: var(--bg-normal-normal);
-  border-radius: 20px 20px 0px 0px;
-  padding: 20px;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   gap: 12px;
+  height: 100%;
+  padding: 20px;
+  width: 100%;
 }
 
 .menu_container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .menu_card_container {
@@ -27,9 +27,9 @@
 }
 
 .icon_container {
+  align-items: center;
   display: flex;
   justify-content: end;
-  align-items: center;
 }
 
 .record_container {
@@ -46,34 +46,34 @@
 
 .meal_card_list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 5px;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .meal_card {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   border: 0;
-  padding: 0;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+  padding: 0;
 }
 
 .meal_inner {
-  width: 100%;
+  align-items: center;
   aspect-ratio: 1 / 1;
-  border: 1px solid var(--border-normal);
   background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
   border-radius: 8px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 .meal_selected .meal_inner {
-  border: 1px solid var(--border-primary);
   background-color: var(--interaction-primary);
+  border: 1px solid var(--border-primary);
 }
 
 .meal_value {
@@ -81,12 +81,12 @@
 }
 
 .meal_icon {
-  width: 48px;
   height: 48px;
   object-fit: contain;
+  width: 48px;
 }
 
 .meal_label {
-  text-align: center;
   color: var(--text-assistive1);
+  text-align: center;
 }

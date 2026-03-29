@@ -1,15 +1,15 @@
 .inputBox {
-  display: flex;
   align-items: end;
+  display: flex;
 }
 
 .input {
-  flex: 1;
   border: var(--border-normal) 1px solid;
   border-radius: 6px;
+  flex: 1;
   outline: none;
-  width: 100%;
   padding: 14px 12px;
+  width: 100%;
 }
 
 .input::placeholder {
@@ -28,6 +28,6 @@
 
 .input::-webkit-inner-spin-button,
 .input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }

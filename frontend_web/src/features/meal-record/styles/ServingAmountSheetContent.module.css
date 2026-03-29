@@ -13,19 +13,19 @@
 }
 
 .servingSummaryCard {
-  border-radius: 8px;
   background-color: var(--bg-normal-primary2);
-  padding: 20px;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 20px;
 }
 
 .servingSummaryHead {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
+  display: flex;
   gap: 8px;
+  justify-content: space-between;
 }
 
 .servingMenuTitle {
@@ -39,18 +39,18 @@
 
 .servingMacroRow {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .servingMacroItem {
-  border-radius: 8px;
-  border: 1px solid var(--border-normal);
   background-color: var(--bg-normal-white);
-  padding: 16px;
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 16px;
   width: 100%;
 }
 
@@ -59,11 +59,11 @@
 }
 
 .servingMacroValue {
-  display: inline-flex;
   align-items: baseline;
-  justify-content: flex-end;
-  gap: 3px;
   color: var(--text-primary);
+  display: inline-flex;
+  gap: 3px;
+  justify-content: flex-end;
   width: 100%;
 }
 
@@ -78,28 +78,28 @@
 }
 
 .servingModeSelector {
-  width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
 }
 
 .servingModeButton {
-  height: 40px;
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
   color: var(--text-assistive1);
-  background-color: var(--bg-normal-white);
   font-size: var(--fs-label3);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  height: 40px;
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 .servingModeButtonActive {
+  background-color: var(--interaction-primary);
   border-color: var(--border-primary);
   color: var(--text-primary);
-  background-color: var(--interaction-primary);
 }
 
 .servingGuideText {
@@ -107,21 +107,21 @@
 }
 
 .servingInputRow {
-  display: flex;
   align-items: center;
-  gap: 8px;
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
-  background-color: var(--bg-normal-white);
+  display: flex;
+  gap: 8px;
   padding: 10px 12px;
 }
 
 .servingInput {
-  width: 100%;
-  border: 0;
   background-color: transparent;
-  padding: 0;
+  border: 0;
   color: var(--text-normal);
+  padding: 0;
+  width: 100%;
 }
 
 .servingInput:focus {
@@ -130,60 +130,60 @@
 
 .servingInput::-webkit-inner-spin-button,
 .servingInput::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .servingInputUnit {
-  flex-shrink: 0;
   color: var(--text-assistive1);
+  flex-shrink: 0;
 }
 
 .servingStepperRow {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .servingStepperButton {
-  height: 40px;
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
-  background-color: var(--bg-normal-white);
   color: var(--text-normal);
-  font-size: var(--fs-title2);
-  line-height: var(--line-height-140);
-  font-weight: var(--fw-bold);
   cursor: pointer;
+  font-size: var(--fs-title2);
+  font-weight: var(--fw-bold);
+  height: 40px;
+  line-height: var(--line-height-140);
 }
 
 .TabsRoot {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
 .TabsList {
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
-  padding: 4px;
-  background-color: var(--bg-normal-white);
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 4px;
 }
 
 .TabsTab {
   background: var(--bg-normal-white);
-  padding: 14px 8px;
-  color: var(--text-normal);
   border-radius: 6px;
-  text-align: center;
+  color: var(--text-normal);
   font-size: var(--fs-title4);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
+  padding: 14px 8px;
+  text-align: center;
 
   &[data-active] {
     background: var(--interaction-primary);
@@ -196,20 +196,20 @@
 }
 
 .FieldGroup {
-  width: 100%;
-  padding: 16px;
   border: 1px solid var(--border-normal);
   border-radius: 8px;
   display: flex;
-  justify-content: space-between;
   gap: 10px;
+  justify-content: space-between;
+  padding: 16px;
+  width: 100%;
 }
 
 .FieldInput {
+  background-color: transparent;
+  border: 0;
   flex: 1;
   text-align: center;
-  border: 0;
-  background-color: transparent;
   width: 100%;
 }
 

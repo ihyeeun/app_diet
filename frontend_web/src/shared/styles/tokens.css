@@ -6,9 +6,8 @@
    * Typography
    * ========================= */
   --font-family-base:
-    "Pretendard", system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo",
+    "Pretendard", system-ui, -apple-system, segoe ui, roboto, "Noto Sans KR", "Apple SD Gothic Neo",
     "Malgun Gothic", sans-serif;
-
   --line-height-120: 1.2;
   --line-height-130: 1.3;
   --line-height-140: 1.4;
@@ -17,7 +16,6 @@
   --letter-spacing-label: -0.02em;
   --letter-spacing-body: -0.015em;
   --letter-spacing-normal: 0em;
-
   --fw-regular: 300;
   --fw-medium: 400;
   --fw-semibold: 500;
@@ -45,8 +43,8 @@
   /* =========================
    * Color - Common
    * ========================= */
-  --common-0: #ffffff;
-  --common-1200: #000000;
+  --common-0: #fff;
+  --common-1200: #000;
 
   /* =========================
    * Colors - Primary (orange)
@@ -61,7 +59,7 @@
   --orange-700: #ffb26c;
   --orange-800: #ff9f4a;
   --orange-900: #ff8519;
-  --orange-950: #ff7700;
+  --orange-950: #f70;
   --orange-980: #ff6a00;
 
   /* =========================
@@ -77,7 +75,7 @@
   --gray-800: #434343;
   --gray-900: #262626;
   --gray-1000: #1f1f1f;
-  --gray-1100: #111111;
+  --gray-1100: #111;
 
   /* =========================
    * Color - Red
@@ -144,10 +142,10 @@
    * Shadow Opacity
    * ========================= */
 
-  --shadow-1: rgba(0, 0, 0, 0.1);
-  --shadow-2: rgba(0, 0, 0, 0.15);
-  --shadow-3: rgba(0, 0, 0, 0.2);
-  --shadow-4: rgba(0, 0, 0, 0.25);
+  --shadow-1: rgb(0 0 0 / 10%);
+  --shadow-2: rgb(0 0 0 / 15%);
+  --shadow-3: rgb(0 0 0 / 20%);
+  --shadow-4: rgb(0 0 0 / 25%);
 
   /* =========================
  * Semantic - Color / Primary
@@ -219,139 +217,139 @@ body {
  * ========================= */
 .typo-h1 {
   font-size: var(--fs-h1);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 .typo-h2 {
   font-size: var(--fs-h2);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 .typo-h3 {
   font-size: var(--fs-h3);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 .typo-title1 {
   font-size: var(--fs-title1);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
 }
 
 .typo-title2 {
   font-size: var(--fs-title2);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
 }
 
 .typo-title3 {
   font-size: var(--fs-title3);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
 }
 
 .typo-title4 {
   font-size: var(--fs-title4);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
 }
 
 .typo-body1 {
   font-size: var(--fs-body1);
-  line-height: var(--line-height-130);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-130);
 }
 
 .typo-body2 {
   font-size: var(--fs-body2);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-120);
 }
 
 .typo-body3 {
   font-size: var(--fs-body3);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-145);
 }
 
 .typo-body4 {
   font-size: var(--fs-body4);
-  line-height: var(--line-height-145);
-  letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-145);
 }
 
 .typo-label1 {
   font-size: var(--fs-label1);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 .typo-label2 {
   font-size: var(--fs-label2);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-normal);
   font-weight: var(--fw-bold);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
 }
 
 .typo-label3 {
   font-size: var(--fs-label3);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-label);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-label);
+  line-height: var(--line-height-140);
 }
 
 .typo-label4 {
   font-size: var(--fs-label4);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-140);
 }
 
 .typo-label5 {
   font-size: var(--fs-label5);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-bold);
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-140);
 }
 
 .typo-label6 {
   font-size: var(--fs-label6);
-  line-height: var(--line-height-140);
-  letter-spacing: var(--letter-spacing-body);
   font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-140);
 }
 
 .ellipsis {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .divider {
-  width: 100%;
-  height: 1px;
   background-color: var(--gray-400);
+  height: 1px;
+  width: 100%;
 }
 
 .divider-horizontal {
-  width: 1px;
-  height: 100%;
   background-color: var(--gray-400);
+  height: 100%;
+  width: 1px;
 }
 
 .dividerMargin20 {

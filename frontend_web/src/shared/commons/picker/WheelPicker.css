@@ -1,10 +1,10 @@
 .wheelPicker {
-  position: relative;
-  width: 100%;
   flex: 1;
   min-height: 0;
-  touch-action: none;
   overscroll-behavior: contain;
+  position: relative;
+  touch-action: none;
+  width: 100%;
 }
 
 /* react-mobile-picker 기본 선택 라인(상/하 1px) 숨김 */
@@ -13,21 +13,21 @@
 }
 
 .wheelPicker__item {
-  display: flex;
   align-items: center;
-  justify-content: center;
   color: var(--text-normal);
+  display: flex;
   font-size: 40px;
   font-weight: var(--fw-medium);
-  line-height: var(--line-height-120);
+  justify-content: center;
   letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 .wheelPicker__item--active {
   font-size: 40px;
   font-weight: var(--fw-medium);
-  line-height: var(--line-height-120);
   letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
 }
 
 .wheelPicker__item--near {
@@ -51,14 +51,14 @@
 }
 
 .wheelPicker__highlight {
-  position: absolute;
+  background: var(--interaction-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  height: var(--wheel-highlight-height, 80px);
   left: 12.5px;
+  pointer-events: none;
+  position: absolute;
   right: 12.5px;
   top: 50%;
   transform: translateY(-50%);
-  height: var(--wheel-highlight-height, 80px);
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  background: var(--interaction-primary);
-  pointer-events: none;
 }

@@ -1,19 +1,19 @@
 .badge {
-  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  width: fit-content;
-  padding: 5px 10px;
   border: 1px solid var(--gray-400);
   border-radius: 100px;
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px 10px;
   white-space: nowrap;
+  width: fit-content;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
+  height: 10px;
+  width: 10px;
 }
 
 .label {

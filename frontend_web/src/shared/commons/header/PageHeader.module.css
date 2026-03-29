@@ -3,23 +3,23 @@
 }
 
 .safeAreaTop {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: env(safe-area-inset-top, 0);
 }
 
 .navBar {
-  height: 56px;
-  display: grid;
   align-items: center;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  display: grid;
   gap: 8px;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  height: 56px;
   padding: 0 20px;
 }
 
 .backButton {
-  display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
   color: var(--text-normal);
+  display: inline-flex;
+  justify-content: flex-start;
 }
 
 .backButton:disabled {
@@ -28,17 +28,17 @@
 }
 
 .title {
-  margin: 0;
-  text-align: center;
   color: var(--text-normal);
-  white-space: nowrap;
+  margin: 0;
   overflow: hidden;
+  text-align: center;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rightSlot {
-  min-width: 44px;
-  display: inline-flex;
   align-items: center;
+  display: inline-flex;
   justify-content: flex-end;
+  min-width: 44px;
 }

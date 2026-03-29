@@ -1,10 +1,10 @@
 .page {
-  width: 100%;
-  height: 100%;
-  min-height: 100dvh;
+  background-color: var(--bg-normal-normal);
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-normal-normal);
+  height: 100%;
+  min-height: 100dvh;
+  width: 100%;
 }
 
 .content {
@@ -14,26 +14,26 @@
 }
 
 .summaryCard {
-  border-radius: 8px;
   background-color: var(--bg-normal-primary2);
-  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 3px 3px 5px 0 rgb(0 0 0 / 5%);
+  color: var(--text-normal);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.05);
-  color: var(--text-normal);
+  padding: 20px;
 }
 
 .calorieRow {
-  display: flex;
   align-items: flex-end;
+  display: flex;
   gap: 10px;
 }
 
 .dividerContainerHorizontal {
   height: 44px;
-  padding-top: 8px;
   padding-bottom: 5px;
+  padding-top: 8px;
 }
 
 .currentCalorie {
@@ -45,8 +45,8 @@
 }
 
 .progressRow {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 10px;
 }
 
@@ -55,17 +55,17 @@
 }
 
 .balanceText {
+  align-items: center;
   color: var(--text-assistive1);
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
 }
 
 .balanceDot {
-  width: 8px;
-  height: 8px;
   border-radius: 50%;
+  height: 8px;
+  width: 8px;
 }
 
 .balanceDotPositive {
@@ -83,11 +83,11 @@
 }
 
 .mealTypeButton {
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 999px;
-  padding: 6px 14px;
-  background-color: var(--bg-normal-white);
   color: var(--text-normal);
+  padding: 6px 14px;
 }
 
 .mealTypeActive {
@@ -96,11 +96,11 @@
 }
 
 .menuSection {
-  padding-top: 16px;
-  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-bottom: 20px;
+  padding-top: 16px;
 }
 
 .menuList {
@@ -110,13 +110,13 @@
 }
 
 .photoGroupCard {
+  background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 10px;
-  background-color: var(--bg-normal-white);
-  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 14px;
 }
 
 .imgContainer {
@@ -126,10 +126,10 @@
 
 .photoImage {
   aspect-ratio: 1/1;
-  width: 100%;
-  max-width: 300px;
   border-radius: 8px;
+  max-width: 300px;
   object-fit: cover;
+  width: 100%;
 }
 
 .photoGroupMenuList {
@@ -139,9 +139,9 @@
 }
 
 .emptyState {
+  background-color: var(--bg-normal-white);
   border: 1px dashed var(--border-normal);
   border-radius: 10px;
-  background-color: var(--bg-normal-white);
   color: var(--text-assistive1);
   padding: 24px 16px;
   text-align: center;
@@ -149,8 +149,8 @@
 
 .footer {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 0 20px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
