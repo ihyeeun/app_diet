@@ -4,18 +4,17 @@ import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import type { MealType } from "@/shared/api/types/nutrition.dto";
-import { formatDateKey } from "@/shared/utils/dateFormat";
 import { useNavigate } from "react-router-dom";
 
-function getMealRecordPath(date: Date, mealType: MealType) {
+function getMealRecordPath(date: string, mealType: MealType) {
   const params = new URLSearchParams({
-    date: formatDateKey(date),
+    date,
     mealType,
   });
   return `${PATH.MEAL_RECORD}?${params.toString()}`;
 }
 
-export default function MenuActionSection({ selectedDate }: { selectedDate: Date }) {
+export default function MenuActionSection({ selectedDate }: { selectedDate: string }) {
   const navigate = useNavigate();
 
   return (

@@ -1,4 +1,4 @@
-export type MacroKey = "carbohydrate" | "protein" | "fat";
+export type MacroKey = "carbs" | "protein" | "fat";
 export type NutritionGrade =
   | "appropriate"
   | "slightlyUnbalanced"
@@ -36,9 +36,15 @@ type NutritionScoreInput = {
 };
 
 const MACRO_MAX_SCORE: Record<MacroKey, number> = {
-  carbohydrate: 17,
+  carbs: 17,
   protein: 17,
   fat: 16,
+};
+
+const MACRO_KCAL_PER_GRAM: Record<MacroKey, number> = {
+  carbs: 4,
+  protein: 4,
+  fat: 9,
 };
 
 // 값의 집합이나 범위를 한정하는 연산
@@ -53,13 +59,13 @@ function roundTo(value: number, digits = 1) {
 
 // 탄단지의 점수를 퍼센트로 보여주는 값
 function normalizeRatios(ratios: MacroRatios): MacroRatios {
-  const total = ratios.carbohydrate + ratios.protein + ratios.fat;
+  const total = ratios.carbs + ratios.protein + ratios.fat;
   if (total <= 0) {
-    return { carbohydrate: 0, protein: 0, fat: 0 };
+    return { carbs: 0, protein: 0, fat: 0 };
   }
 
   return {
-    carbohydrate: (ratios.carbohydrate / total) * 100,
+    carbs: (ratios.carbs / total) * 100,
     protein: (ratios.protein / total) * 100,
     fat: (ratios.fat / total) * 100,
   };
@@ -148,19 +154,17 @@ export function calculateNutritionScore({
   const normalizedActual = normalizeRatios(actualMacroRatios);
   const normalizedTarget = normalizeRatios(targetMacroRatios);
 
-  const carbohydrateDeviation = Math.abs(
-    normalizedActual.carbohydrate - normalizedTarget.carbohydrate,
-  );
+  const carbsDeviation = Math.abs(normalizedActual.carbs - normalizedTarget.carbs);
   const proteinDeviation = Math.abs(normalizedActual.protein - normalizedTarget.protein);
   const fatDeviation = Math.abs(normalizedActual.fat - normalizedTarget.fat);
 
   const macro: Record<MacroKey, MacroScoreDetail> = {
-    carbohydrate: {
-      actualRatio: roundTo(normalizedActual.carbohydrate),
-      targetRatio: roundTo(normalizedTarget.carbohydrate),
-      deviation: roundTo(carbohydrateDeviation),
-      score: getMacroItemScore("carbohydrate", carbohydrateDeviation),
-      grade: getGradeByDeviation(carbohydrateDeviation),
+    carbs: {
+      actualRatio: roundTo(normalizedActual.carbs),
+      targetRatio: roundTo(normalizedTarget.carbs),
+      deviation: roundTo(carbsDeviation),
+      score: getMacroItemScore("carbs", carbsDeviation),
+      grade: getGradeByDeviation(carbsDeviation),
     },
     protein: {
       actualRatio: roundTo(normalizedActual.protein),
@@ -178,14 +182,12 @@ export function calculateNutritionScore({
     },
   };
 
-  const macroScore = macro.carbohydrate.score + macro.protein.score + macro.fat.score;
+  const macroScore = macro.carbs.score + macro.protein.score + macro.fat.score;
   const calorieDiffPercent = calculateCalorieDiffPercent(actualCalories, targetCalories);
   const calorieScore = getCalorieScoreByDiff(calorieDiffPercent);
   const totalScore = clamp(calorieScore + macroScore, 0, 100);
 
-  const macroAverageDeviation = roundTo(
-    (carbohydrateDeviation + proteinDeviation + fatDeviation) / 3,
-  );
+  const macroAverageDeviation = roundTo((carbsDeviation + proteinDeviation + fatDeviation) / 3);
   const macroBalanceGrade = getGradeByDeviation(macroAverageDeviation);
   const overallGrade = getNutritionGradeByScore(totalScore);
 
@@ -200,4 +202,22 @@ export function calculateNutritionScore({
     macroBalanceGrade,
     macro,
   };
+}
+
+export function calculateMacroPercentToGram({
+  nutrientType,
+  totalCalories,
+  percent,
+}: {
+  nutrientType: MacroKey;
+  totalCalories: number;
+  percent: number;
+}) {
+  if (!Number.isFinite(totalCalories) || !Number.isFinite(percent)) return 0;
+  if (totalCalories <= 0 || percent <= 0) return 0;
+
+  const targetKcal = (totalCalories * percent) / 100;
+  const grams = targetKcal / MACRO_KCAL_PER_GRAM[nutrientType];
+
+  return roundTo(grams, 0);
 }

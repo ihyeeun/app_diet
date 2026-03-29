@@ -1,116 +1,67 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import styles from "@/features/home/styles/TodayMealScorePage.module.css";
 import { Button } from "@/shared/commons/button/Button";
-import ScoreProgress from "@/shared/commons/progress/Progress";
-import { StatusBadge, type NutritionStatus } from "@/shared/commons/badge/StatusBadge";
 import {
-  calculateNutritionScore,
-  clamp,
+  calculateMacroPercentToGram,
   getCalorieProgressPercent,
-  toMacroRatiosFromGrams,
   type MacroKey,
 } from "@/shared/utils/nutritionScore";
+import ScoreProgress from "@/shared/commons/progress/Progress";
 
-type NutrientBalanceItem = {
+type NutrientItem = {
   key: MacroKey;
-  name: string;
+  name: "탄수화물" | "단백질" | "지방";
   current: number;
   target: number;
 };
 
-type NutrientMetricItem = NutrientBalanceItem & {
-  currentPercent: number;
-  grade: NutritionStatus;
-};
-
-// TODO: 서버 응답으로 대체
-const nutrientDataFromServer: NutrientBalanceItem[] = [
-  { key: "carbohydrate", name: "탄수화물", current: 210, target: 250 },
-  { key: "protein", name: "단백질", current: 110, target: 130 },
-  { key: "fat", name: "지방", current: 8, target: 60 },
-];
-
-function getPercent(current: number, target: number, max = 200) {
-  if (target <= 0) return 0;
-
-  const percent = (current / target) * 100;
-  return Math.round(clamp(percent, 0, max));
-}
-
-function getProgressPercent(percent: number) {
-  return Math.round(clamp(percent, 0, 100));
-}
-
-function getChartHeights(percent: number) {
-  const safePercent = Math.round(clamp(percent, 0, 200));
-  const maxPercent = Math.max(100, safePercent, 1);
-
-  return {
-    targetHeight: Math.round((100 / maxPercent) * 100),
-    currentHeight: Math.round((safePercent / maxPercent) * 100),
-  };
-}
-
-function formatNumber(value: number) {
-  return Math.round(value).toLocaleString("ko-KR");
-}
-
-function toMacroGrams(items: NutrientBalanceItem[], key: "current" | "target") {
-  return items.reduce<Record<MacroKey, number>>(
-    (acc, item) => ({
-      ...acc,
-      [item.key]: item[key],
-    }),
-    {
-      carbohydrate: 0,
-      protein: 0,
-      fat: 0,
-    },
-  );
-}
-
-function toNutrientMetrics(
-  items: NutrientBalanceItem[],
-  macroGrades: Record<MacroKey, NutritionStatus>,
-): NutrientMetricItem[] {
-  return items.map((item) => ({
-    ...item,
-    currentPercent: getPercent(item.current, item.target),
-    grade: macroGrades[item.key],
-  }));
-}
-
 export default function TodayMealScorePage() {
   const navigate = useNavigate();
+  const { state } = useLocation();
 
-  const currentKcal = 1800;
-  const targetKcal = 2100;
-  const currentMacroGrams = toMacroGrams(nutrientDataFromServer, "current");
-  const targetMacroGrams = toMacroGrams(nutrientDataFromServer, "target");
+  const [carbsRatio, proteinRatio, fatRatio] = state.targets.target_ratio;
+  const targetCalories = state.targets.target_calories;
+  const nutrientItems = [
+    {
+      key: "carbs",
+      name: "탄수화물",
+      current: state.currents.totalNutrients.carbs,
+      target: Math.round(
+        calculateMacroPercentToGram({
+          nutrientType: "carbs",
+          totalCalories: targetCalories,
+          percent: carbsRatio,
+        }),
+      ),
+    },
+    {
+      key: "protein",
+      name: "단백질",
+      current: state.currents.totalNutrients.protein,
+      target: Math.round(
+        calculateMacroPercentToGram({
+          nutrientType: "protein",
+          totalCalories: targetCalories,
+          percent: proteinRatio,
+        }),
+      ),
+    },
+    {
+      key: "fat",
+      name: "지방",
+      current: state.currents.totalNutrients.fat,
+      target: Math.round(
+        calculateMacroPercentToGram({
+          nutrientType: "fat",
+          totalCalories: targetCalories,
+          percent: fatRatio,
+        }),
+      ),
+    },
+  ] satisfies NutrientItem[];
 
-  const nutritionScore = calculateNutritionScore({
-    actualCalories: currentKcal,
-    targetCalories: targetKcal,
-    actualMacroRatios: toMacroRatiosFromGrams(currentMacroGrams),
-    targetMacroRatios: toMacroRatiosFromGrams(targetMacroGrams),
-  });
-  const score = nutritionScore.totalScore;
-
-  const calorieProgress = getCalorieProgressPercent(currentKcal, targetKcal);
-  const calorieDiff = Math.round(targetKcal - currentKcal);
-  const calorieMessage =
-    calorieDiff > 0
-      ? `아직 ${formatNumber(calorieDiff)}kcal 더 먹을 수 있어요`
-      : calorieDiff < 0
-        ? `${formatNumber(Math.abs(calorieDiff))}kcal 초과했어요`
-        : "오늘 목표 칼로리를 달성했어요";
-
-  const nutrientMetrics = toNutrientMetrics(nutrientDataFromServer, {
-    carbohydrate: nutritionScore.macro.carbohydrate.grade,
-    protein: nutritionScore.macro.protein.grade,
-    fat: nutritionScore.macro.fat.grade,
-  });
+  const calorieProgress = getCalorieProgressPercent(state.currents.totalCalories, targetCalories);
 
   return (
     <section className={styles.page}>
@@ -121,7 +72,7 @@ export default function TodayMealScorePage() {
           <div className={styles.score_card}>
             <p className="typo-title2">오늘의 식사 점수</p>
             <p>
-              <span className={`${styles.score} typo-h2`}>{formatNumber(score)}</span>
+              <span className={`${styles.score} typo-h2`}>{state.score}</span>
               <span className="typo-title2"> 점</span>
             </p>
           </div>
@@ -135,18 +86,23 @@ export default function TodayMealScorePage() {
 
             <div className={styles.calorie_value_container}>
               <p className="typo-title2">
-                <span className={`${styles.score} typo-h2`}>{formatNumber(currentKcal)}</span> kcal
+                <span className={`${styles.score} typo-h2`}>
+                  {state.currents.totalCalories.toLocaleString("ko-KR")}
+                </span>{" "}
+                kcal
               </p>
 
               <div className={styles.divider_container}>
                 <div className="divider-horizontal" />
               </div>
 
-              <p className="typo-title2">{formatNumber(targetKcal)} kcal</p>
+              <p className="typo-title2">
+                {state.targets.target_calories.toLocaleString("ko-KR")} kcal
+              </p>
             </div>
 
             <ScoreProgress value={calorieProgress} variant="primary-gray" />
-            <p className="typo-label4">{calorieMessage}</p>
+            <p className="typo-label4">{state.calorieMessage}</p>
           </div>
         </section>
 
@@ -155,7 +111,6 @@ export default function TodayMealScorePage() {
             <div className={styles.balance_header}>
               <div className={styles.balance_title_container}>
                 <p className="typo-title3">탄단지 균형</p>
-                <StatusBadge status={nutritionScore.macroBalanceGrade} />
               </div>
 
               <div className={styles.legend_container}>
@@ -170,7 +125,7 @@ export default function TodayMealScorePage() {
               </div>
             </div>
 
-            <div className={styles.balance_chart}>
+            {/* <div className={styles.balance_chart}>
               {nutrientMetrics.map((item) => {
                 const { targetHeight, currentHeight } = getChartHeights(item.currentPercent);
 
@@ -190,28 +145,29 @@ export default function TodayMealScorePage() {
                   </div>
                 );
               })}
-            </div>
+            </div> */}
 
             <div className="divider" />
 
             <div className={styles.nutrient_list}>
-              {nutrientMetrics.map((item) => (
+              {nutrientItems.map((item) => (
                 <article key={item.name} className={styles.nutrient_item}>
                   <div className={styles.nutrient_header}>
                     <p className={styles.nutrient_title}>
                       <span className="typo-title4">{item.name}</span>
                       <span className={`${styles.nutrient_amount} typo-label4`}>
-                        ({formatNumber(item.current)}g / {formatNumber(item.target)}g)
+                        {item.current.toLocaleString("ko-KR")}g /{" "}
+                        {item.target.toLocaleString("ko-KR")}g
                       </span>
                     </p>
 
-                    <StatusBadge status={item.grade} />
+                    {/* <StatusBadge status={item.grade} /> */}
                   </div>
 
-                  <ScoreProgress
+                  {/* <ScoreProgress
                     value={getProgressPercent(item.currentPercent)}
                     variant="black-gray"
-                  />
+                  /> */}
                 </article>
               ))}
             </div>
