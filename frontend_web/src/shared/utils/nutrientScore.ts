@@ -1,5 +1,5 @@
 export type MacroKey = "carbs" | "protein" | "fat";
-export type NutritionGrade =
+export type NutrientGrade =
   | "appropriate"
   | "slightlyUnbalanced"
   | "unbalanced"
@@ -13,22 +13,22 @@ export type MacroScoreDetail = {
   targetRatio: number;
   deviation: number;
   score: number;
-  grade: NutritionGrade;
+  grade: NutrientGrade;
 };
 
-export type NutritionScoreResult = {
+export type NutrientScoreResult = {
   totalScore: number;
   calorieScore: number;
   macroScore: number;
   calorieDiffPercent: number;
   macroAverageDeviation: number;
-  overallGrade: NutritionGrade;
+  overallGrade: NutrientGrade;
   overallMessage: string;
-  macroBalanceGrade: NutritionGrade;
+  macroBalanceGrade: NutrientGrade;
   macro: Record<MacroKey, MacroScoreDetail>;
 };
 
-type NutritionScoreInput = {
+type NutrientScoreInput = {
   actualCalories: number;
   targetCalories: number;
   actualMacroRatios: MacroRatios;
@@ -72,7 +72,7 @@ function normalizeRatios(ratios: MacroRatios): MacroRatios {
 }
 
 // 매크로별 등급
-function getGradeByDeviation(deviation: number): NutritionGrade {
+function getGradeByDeviation(deviation: number): NutrientGrade {
   if (deviation <= 5) return "appropriate";
   if (deviation <= 10) return "slightlyUnbalanced";
   if (deviation <= 15) return "unbalanced";
@@ -97,14 +97,14 @@ function getCalorieScoreByDiff(calorieDiffPercent: number) {
   return 10;
 }
 
-export function getNutritionGradeLabel(grade: NutritionGrade) {
+export function getNutrientGradeLabel(grade: NutrientGrade) {
   if (grade === "appropriate") return "적절";
   if (grade === "slightlyUnbalanced") return "약간 불균형";
   if (grade === "unbalanced") return "불균형";
   return "심한 불균형";
 }
 
-export function getNutritionGuideMessageByScore(score: number) {
+export function getNutrientGuideMessageByScore(score: number) {
   if (score >= 85) {
     return "아주 좋아요! 섭취량과 균형이 모두 잘 맞고 있어요 👏";
   }
@@ -117,7 +117,7 @@ export function getNutritionGuideMessageByScore(score: number) {
   return "오늘은 식단 균형이 많이 어긋났어요. 다음 식사에서 천천히 맞춰가면 돼요.";
 }
 
-export function getNutritionGradeByScore(score: number): NutritionGrade {
+export function getNutrientGradeByScore(score: number): NutrientGrade {
   if (score >= 85) return "appropriate";
   if (score >= 70) return "slightlyUnbalanced";
   if (score >= 50) return "unbalanced";
@@ -145,12 +145,12 @@ export function toMacroRatiosFromGrams(grams: MacroGrams): MacroRatios {
   return normalizeRatios(grams);
 }
 
-export function calculateNutritionScore({
+export function calculateNutrientScore({
   actualCalories,
   targetCalories,
   actualMacroRatios,
   targetMacroRatios,
-}: NutritionScoreInput): NutritionScoreResult {
+}: NutrientScoreInput): NutrientScoreResult {
   const normalizedActual = normalizeRatios(actualMacroRatios);
   const normalizedTarget = normalizeRatios(targetMacroRatios);
 
@@ -189,7 +189,7 @@ export function calculateNutritionScore({
 
   const macroAverageDeviation = roundTo((carbsDeviation + proteinDeviation + fatDeviation) / 3);
   const macroBalanceGrade = getGradeByDeviation(macroAverageDeviation);
-  const overallGrade = getNutritionGradeByScore(totalScore);
+  const overallGrade = getNutrientGradeByScore(totalScore);
 
   return {
     totalScore,
@@ -198,7 +198,7 @@ export function calculateNutritionScore({
     calorieDiffPercent: roundTo(calorieDiffPercent),
     macroAverageDeviation,
     overallGrade,
-    overallMessage: getNutritionGuideMessageByScore(totalScore),
+    overallMessage: getNutrientGuideMessageByScore(totalScore),
     macroBalanceGrade,
     macro,
   };

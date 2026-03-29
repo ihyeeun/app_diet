@@ -1,5 +1,5 @@
 import { appApiData } from "@/shared/api/appApi";
-import type { RegisterMealRequestDto } from "@/shared/api/types/nutrition.dto";
+import type { RegisterMealRequestDto } from "@/shared/api/types/nutrient.dto";
 
 const END_POINT = {
   MEAL_REGISTER: "/home/meal/register",

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { MealMenuItem, MealType } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem, MealType } from "@/shared/api/types/nutrient.dto";
 
 export type MealRecordDraftKey = `${string}:${MealType}`;
 
@@ -115,9 +115,9 @@ export const useMealRecordDraftStore = create<MealRecordDraftStoreState>((set, g
             existingMenuCount: Math.max(prevDraft.existingMenuCount, existingMenuCount),
           }
         : {
-          existingMenuCount,
-          selections: [],
-        };
+            existingMenuCount,
+            selections: [],
+          };
 
       if (seedMenus.length === 0 || (prevDraft && prevDraft.selections.length > 0)) {
         return {

@@ -1,5 +1,5 @@
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrition.dto";
-import { parseServingAmount } from "./mealMenuNutrition";
+import { parseServingAmount } from "@/features/meal-record/utils/mealMenuNutrient";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
 
 export type ParsedMenuServing = {
   baseUnitCount: number;
@@ -28,7 +28,7 @@ function clampServingInput(value: number) {
   return Math.min(SERVING_INPUT_MAX, Math.max(SERVING_INPUT_MIN, value));
 }
 
-function scaleOptionalNutritionValue(
+function scaleOptionalNutrientValue(
   value: number | null | undefined,
   scaleFactor: number,
 ): number | null | undefined {
@@ -147,18 +147,18 @@ export function buildScaledMenu({
     weight:
       menu.weight === null || menu.weight === undefined
         ? totalWeight
-        : scaleOptionalNutritionValue(menu.weight, scaleFactor),
-    sugars: scaleOptionalNutritionValue(menu.sugars, scaleFactor),
-    sugar_alchol: scaleOptionalNutritionValue(menu.sugar_alchol, scaleFactor),
-    dietary_fiber: scaleOptionalNutritionValue(menu.dietary_fiber, scaleFactor),
-    trans_fat: scaleOptionalNutritionValue(menu.trans_fat, scaleFactor),
-    sat_fat: scaleOptionalNutritionValue(menu.sat_fat, scaleFactor),
-    un_sat_fat: scaleOptionalNutritionValue(menu.un_sat_fat, scaleFactor),
-    sodium: scaleOptionalNutritionValue(menu.sodium, scaleFactor),
-    caffeine: scaleOptionalNutritionValue(menu.caffeine, scaleFactor),
-    potassium: scaleOptionalNutritionValue(menu.potassium, scaleFactor),
-    cholesterol: scaleOptionalNutritionValue(menu.cholesterol, scaleFactor),
-    alcohol: scaleOptionalNutritionValue(menu.alcohol, scaleFactor),
+        : scaleOptionalNutrientValue(menu.weight, scaleFactor),
+    sugars: scaleOptionalNutrientValue(menu.sugars, scaleFactor),
+    sugar_alchol: scaleOptionalNutrientValue(menu.sugar_alchol, scaleFactor),
+    dietary_fiber: scaleOptionalNutrientValue(menu.dietary_fiber, scaleFactor),
+    trans_fat: scaleOptionalNutrientValue(menu.trans_fat, scaleFactor),
+    sat_fat: scaleOptionalNutrientValue(menu.sat_fat, scaleFactor),
+    un_sat_fat: scaleOptionalNutrientValue(menu.un_sat_fat, scaleFactor),
+    sodium: scaleOptionalNutrientValue(menu.sodium, scaleFactor),
+    caffeine: scaleOptionalNutrientValue(menu.caffeine, scaleFactor),
+    potassium: scaleOptionalNutrientValue(menu.potassium, scaleFactor),
+    cholesterol: scaleOptionalNutrientValue(menu.cholesterol, scaleFactor),
+    alcohol: scaleOptionalNutrientValue(menu.alcohol, scaleFactor),
     unit_quantity: `${formatCompactDecimal(unitCount)}${serving.unitLabel} (${formatCompactDecimal(
       totalWeight,
     )}${serving.weightUnit})`,

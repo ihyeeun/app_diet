@@ -1,10 +1,10 @@
 import { Button } from "@/shared/commons/button/Button";
-import { formatNutritionValue } from "../utils/mealMenuNutrition";
 import { type ParsedMenuServing } from "../utils/mealRecordServing";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
 import styles from "../styles/ServingAmountSheetContent.module.css";
 import { NumberField, Tabs } from "@base-ui/react";
 import { MinusIcon, PlusIcon } from "lucide-react";
+import { formatNutrientValue } from "@/features/meal-record/utils/mealMenuNutrient";
 
 type ServingAmountSheetContentProps = {
   menu: MealMenuItem;
@@ -40,7 +40,7 @@ export function ServingAmountSheetContent({
           <div className={styles.servingSummaryHead}>
             <p className={`typo-title2 ${styles.servingMenuTitle}`}>{menu.name}</p>
             <p className={`typo-title2 ${styles.servingCalorieText}`}>
-              <span className="typo-h3">{formatNutritionValue(previewMenu.calories)}</span> kcal
+              <span className="typo-h3">{formatNutrientValue(previewMenu.calories)}</span> kcal
             </p>
           </div>
 
@@ -48,21 +48,21 @@ export function ServingAmountSheetContent({
             <article className={styles.servingMacroItem}>
               <p className={`typo-title4 ${styles.servingMacroLabel}`}>탄수화물</p>
               <p className={`typo-body1 ${styles.servingMacroValue}`}>
-                {formatNutritionValue(previewMenu.carbs ?? 0)}
+                {formatNutrientValue(previewMenu.carbs ?? 0)}
                 <span className={`typo-body1 ${styles.servingMacroUnit}`}>g</span>
               </p>
             </article>
             <article className={styles.servingMacroItem}>
               <p className={`typo-title4 ${styles.servingMacroLabel}`}>단백질</p>
               <p className={`typo-body1 ${styles.servingMacroValue}`}>
-                {formatNutritionValue(previewMenu.protein ?? 0)}
+                {formatNutrientValue(previewMenu.protein ?? 0)}
                 <span className={`typo-body1 ${styles.servingMacroUnit}`}>g</span>
               </p>
             </article>
             <article className={styles.servingMacroItem}>
               <p className={`typo-title4 ${styles.servingMacroLabel}`}>지방</p>
               <p className={`typo-body1 ${styles.servingMacroValue}`}>
-                {formatNutritionValue(previewMenu.fat ?? 0)}
+                {formatNutrientValue(previewMenu.fat ?? 0)}
                 <span className={`typo-body1 ${styles.servingMacroUnit}`}>g</span>
               </p>
             </article>

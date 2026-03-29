@@ -6,7 +6,7 @@ import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.con
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
-import type { MealMenuItem, NutritionEntryContextState } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/nutrient.dto";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
   getMealRecordAddSearchDetailPath,
@@ -15,7 +15,7 @@ import {
 import {
   fetchBrandSearchResults,
   type BrandSearchResult,
-} from "@/features/nutrition-entry/api/brandSearch";
+} from "@/features/nutrient-entry/api/brandSearch";
 import { PATH } from "@/router/path";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
@@ -37,12 +37,12 @@ import {
 
 const SEARCH_DEBOUNCE_MS = 250;
 
-type BrandMenuSearchLocationState = NutritionEntryContextState & {
+type BrandMenuSearchLocationState = NutrientEntryContextState & {
   brandName?: string;
   returnPath?: string;
 };
 
-type MealRecordSearchDetailNavigationState = NutritionEntryContextState & {
+type MealRecordSearchDetailNavigationState = NutrientEntryContextState & {
   menu: MealMenuItem;
   searchReturnPath?: string;
   searchReturnState?: BrandMenuSearchLocationState;
@@ -112,7 +112,7 @@ export default function BrandMenuSearch() {
     });
   }, [draftKey, ensureDraft, locationState.existingMenuCount, seedMenus]);
 
-  const baseNutritionEntryContext: NutritionEntryContextState = {
+  const baseNutrientEntryContext: NutrientEntryContextState = {
     source: "meal-record",
     dateKey,
     mealType,
@@ -280,12 +280,12 @@ export default function BrandMenuSearch() {
 
     navigate(getMealRecordAddSearchDetailPath(dateKey, mealType, menu.id), {
       state: {
-        ...baseNutritionEntryContext,
+        ...baseNutrientEntryContext,
         menu,
         searchReturnPath: PATH.BRAND_MENU_SEARCH,
         searchReturnState: {
           ...locationState,
-          ...baseNutritionEntryContext,
+          ...baseNutrientEntryContext,
           brandName: selectedBrand.name,
           returnPath,
         } satisfies BrandMenuSearchLocationState,
@@ -306,7 +306,7 @@ export default function BrandMenuSearch() {
         replace: true,
         state: {
           ...locationState,
-          ...baseNutritionEntryContext,
+          ...baseNutrientEntryContext,
         } satisfies BrandMenuSearchLocationState,
       });
       return;
@@ -335,20 +335,20 @@ export default function BrandMenuSearch() {
     const normalizedKeyword = brandKeyword.trim();
     if (!normalizedKeyword) return;
 
-    navigate(PATH.NUTRITION_ADD, {
+    navigate(PATH.NUTRIENT_ADD, {
       state: {
         ...locationState,
-        ...baseNutritionEntryContext,
+        ...baseNutrientEntryContext,
         brandName: normalizedKeyword,
       } satisfies BrandMenuSearchLocationState,
     });
   };
 
-  const handleDirectNutritionEntry = () => {
-    navigate(PATH.NUTRITION_ADD, {
+  const handleDirectNutrientEntry = () => {
+    navigate(PATH.NUTRIENT_ADD, {
       state: {
         ...locationState,
-        ...baseNutritionEntryContext,
+        ...baseNutrientEntryContext,
         pendingMenus: selectedMenus,
         brandName: selectedBrand?.name,
       } satisfies BrandMenuSearchLocationState,
@@ -453,7 +453,7 @@ export default function BrandMenuSearch() {
                           state="default"
                           size="small"
                           color="assistive"
-                          onClick={handleDirectNutritionEntry}
+                          onClick={handleDirectNutrientEntry}
                         >
                           영양 성분 직접 등록
                         </Button>
@@ -496,7 +496,7 @@ export default function BrandMenuSearch() {
                     state="default"
                     size="small"
                     color="assistive"
-                    onClick={handleDirectNutritionEntry}
+                    onClick={handleDirectNutrientEntry}
                   >
                     영양 성분 직접 등록
                   </Button>

@@ -1,17 +1,17 @@
 import styles from "./StatusBadge.module.css";
-import { getNutritionStatusByPercent } from "./StatusBadge.utils";
-import type { NutritionGrade } from "@/shared/utils/nutritionScore";
+import { getNutrientStatusByPercent } from "./StatusBadge.utils";
+import type { NutrientGrade } from "@/shared/utils/nutrientScore";
 
-export type NutritionStatus = NutritionGrade;
+export type NutrientStatus = NutrientGrade;
 
-const STATUS_LABEL: Record<NutritionStatus, string> = {
+const STATUS_LABEL: Record<NutrientStatus, string> = {
   appropriate: "적절",
   slightlyUnbalanced: "보통",
   unbalanced: "약간 불균형",
   severelyUnbalanced: "불균형",
 };
 
-const DOT_CLASS: Record<NutritionStatus, string> = {
+const DOT_CLASS: Record<NutrientStatus, string> = {
   appropriate: styles.appropriate,
   slightlyUnbalanced: styles.slightlyUnbalanced,
   unbalanced: styles.unbalanced,
@@ -19,14 +19,14 @@ const DOT_CLASS: Record<NutritionStatus, string> = {
 };
 
 type StatusBadgeProps = {
-  status?: NutritionStatus;
+  status?: NutrientStatus;
   percent?: number;
   label?: string;
   className?: string;
 };
 
 export function StatusBadge({ status, percent, label, className }: StatusBadgeProps) {
-  const resolvedStatus = status ?? getNutritionStatusByPercent(percent ?? 0);
+  const resolvedStatus = status ?? getNutrientStatusByPercent(percent ?? 0);
   const classes = [styles.badge, className ?? ""].filter(Boolean).join(" ");
 
   return (

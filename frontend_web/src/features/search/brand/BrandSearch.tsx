@@ -4,13 +4,13 @@ import { PATH } from "@/router/path";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { NutritionAddLocationState } from "@/shared/api/types/nutrition.dto";
+import type { NutrientAddLocationState } from "@/shared/api/types/nutrient.dto";
 import styles from "@/features/search/styles/BrandSearch.module.css";
 
 export default function BrandSearch() {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = (location.state ?? {}) as NutritionAddLocationState;
+  const locationState = (location.state ?? {}) as NutrientAddLocationState;
   const [searchKeyword, setSearchKeyword] = useState((locationState.brandName ?? "").trim());
   const [selectedBrandId, setSelectedBrandId] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -32,7 +32,7 @@ export default function BrandSearch() {
   };
 
   const handleBack = () => {
-    navigate(PATH.NUTRITION_ADD, {
+    navigate(PATH.NUTRIENT_ADD, {
       replace: true,
       state: locationState,
     });
@@ -42,22 +42,22 @@ export default function BrandSearch() {
     const brandName = searchKeyword.trim();
     if (!brandName) return;
 
-    navigate(PATH.NUTRITION_ADD, {
+    navigate(PATH.NUTRIENT_ADD, {
       replace: true,
       state: {
         ...locationState,
         brandName,
-      } satisfies NutritionAddLocationState,
+      } satisfies NutrientAddLocationState,
     });
   };
 
   const handleApplySelectedBrand = () => {
-    // navigate(PATH.NUTRITION_ADD, {
+    // navigate(PATH.NUTRIENT_ADD, {
     //   replace: true,
     //   state: {
     //     ...locationState,
     //     brandName: selectedBrand.name,
-    //   } satisfies NutritionAddLocationState,
+    //   } satisfies NutrientAddLocationState,
     // });
   };
   const isDirectRegisterDisabled = searchKeyword.trim().length === 0;

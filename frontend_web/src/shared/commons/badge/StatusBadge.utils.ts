@@ -1,6 +1,6 @@
-import type { NutritionStatus } from "./StatusBadge";
+import type { NutrientStatus } from "./StatusBadge";
 
-export function getNutritionStatusByPercent(percent: number): NutritionStatus {
+export function getNutrientStatusByPercent(percent: number): NutrientStatus {
   if (percent >= 85) {
     return "appropriate";
   }

@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { combine, devtools, persist, createJSONStorage } from "zustand/middleware";
 
-export type TargetsNutritions = {
+export type TargetsNutrients = {
   target_calories: number;
   target_ratio: [carbs: number, protein: number, fat: number];
 };
 
 type State = {
-  targets: TargetsNutritions | null;
+  targets: TargetsNutrients | null;
   hasTargetsLoaded: boolean;
 };
 
@@ -16,7 +16,7 @@ const initialState: State = {
   hasTargetsLoaded: false,
 };
 
-function isSameTargets(a: TargetsNutritions, b: TargetsNutritions) {
+function isSameTargets(a: TargetsNutrients, b: TargetsNutrients) {
   return (
     a.target_calories === b.target_calories &&
     a.target_ratio[0] === b.target_ratio[0] &&
@@ -30,7 +30,7 @@ const useTargetsStore = create(
     persist(
       combine(initialState, (set) => ({
         actions: {
-          setTargets: (next: TargetsNutritions | null) =>
+          setTargets: (next: TargetsNutrients | null) =>
             set(
               (prev) => {
                 if (prev.targets && next && isSameTargets(prev.targets, next)) {
@@ -54,7 +54,7 @@ const useTargetsStore = create(
         },
       },
     ),
-    { name: "TargetsNutritionsStore" },
+    { name: "TargetsNutrientsStore" },
   ),
 );
 

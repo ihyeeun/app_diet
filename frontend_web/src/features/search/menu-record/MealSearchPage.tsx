@@ -9,7 +9,7 @@ import { toast } from "@/shared/commons/toast/toast";
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
 import { postMealRecordBrandRequest } from "@/features/meal-record/api/brandRequest";
-import type { MealMenuItem, NutritionEntryContextState } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/nutrient.dto";
 import {
   getMealRecordAddSearchDetailPath,
   getMealRecordAddPath,
@@ -32,7 +32,7 @@ export default function MealSearchPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const locationState = (location.state ?? {}) as NutritionEntryContextState;
+  const locationState = (location.state ?? {}) as NutrientEntryContextState;
 
   const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [isBrandRequestSheetOpen, setIsBrandRequestSheetOpen] = useState(false);

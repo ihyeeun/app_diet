@@ -1,5 +1,5 @@
 import { PATH } from "@/router/path";
-import type { MealType } from "@/shared/api/types/nutrition.dto";
+import type { MealType } from "@/shared/api/types/nutrient.dto";
 
 function buildMealRecordQuery(dateKey: string, mealType: MealType, menuId?: number) {
   const params = new URLSearchParams({

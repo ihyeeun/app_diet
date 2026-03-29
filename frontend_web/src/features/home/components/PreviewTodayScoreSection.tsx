@@ -1,14 +1,14 @@
 import style from "@/features/home/styles/TodayScoreSection.module.css";
 import { PATH } from "@/router/path";
 import ScoreProgress from "@/shared/commons/progress/Progress";
-import { calculateNutritionScore, toMacroRatiosFromGrams } from "@/shared/utils/nutritionScore";
+import { calculateNutrientScore, toMacroRatiosFromGrams } from "@/shared/utils/nutrientScore";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import { useQueryClient } from "@tanstack/react-query";
 import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
-import { useTargetsState } from "@/shared/stores/targetNutrition.store";
+import { useTargetsState } from "@/shared/stores/targetNutrient.store";
 
 export default function PreviewTodayScoreSection({ selectedDate }: { selectedDate: string }) {
   const navigation = useNavigate();
@@ -25,7 +25,7 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
       return null;
     }
 
-    return calculateNutritionScore({
+    return calculateNutrientScore({
       actualCalories: dayMealSummary?.totalCalories ?? 0,
       targetCalories: targets.target_calories,
       actualMacroRatios: toMacroRatiosFromGrams({

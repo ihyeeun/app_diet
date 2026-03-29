@@ -1,4 +1,4 @@
-import type { MealMenuNutrientGroup } from "../types/mealMenuNutrition.types";
+import type { MealMenuNutrientGroup } from "../types/mealMenuNutrient.types";
 
 export const SERVING_AMOUNT_REGEX = /\(([\d.]+)\s*(g|ml)\)/i;
 export const MAX_MEAL_RECORD_MENUS = 100;

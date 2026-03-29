@@ -1,4 +1,4 @@
-import type { MacroRatios } from "@/shared/utils/nutritionScore";
+import type { MacroRatios } from "@/shared/utils/nutrientScore";
 
 export const MENU_DATA_SOURCE = {
   PUBLIC: 0,
@@ -167,7 +167,7 @@ export type MealRecordLocationState = {
 };
 
 export const DEFAULT_TARGET_MACRO_RATIOS: MacroRatios = {
-  carbohydrate: 50,
+  carbs: 50,
   protein: 30,
   fat: 20,
 };
@@ -177,10 +177,10 @@ export const MEAL_TYPE_SET: ReadonlySet<MealType> = new Set(
   MEAL_TYPE_OPTIONS.map((option) => option.key),
 );
 
-export type NutritionEntrySource = "meal-record" | "menu-compare" | "general";
-export type NutritionServingUnit = "g" | "ml";
+export type NutrientEntrySource = "meal-record" | "menu-compare" | "general";
+export type NutrientServingUnit = "g" | "ml";
 
-export type NutritionInitialFormState = Partial<{
+export type NutrientInitialFormState = Partial<{
   calories: number;
   carbohydrate: number;
   protein: number;
@@ -199,8 +199,8 @@ export type NutritionInitialFormState = Partial<{
   alcohol: number;
 }>;
 
-export type NutritionEntryContextState = {
-  source?: NutritionEntrySource;
+export type NutrientEntryContextState = {
+  source?: NutrientEntrySource;
   dateKey?: string;
   mealType?: MealType;
   existingMenuCount?: number;
@@ -218,11 +218,11 @@ export type CapturedImage = {
   mimeType: string | null;
 };
 
-export type NutritionAddLocationState = NutritionEntryContextState & {
+export type NutrientAddLocationState = NutrientEntryContextState & {
   brandName?: string;
   foodName?: string;
-  initialNutrition?: NutritionInitialFormState;
-  servingUnit?: NutritionServingUnit;
+  initialNutrient?: NutrientInitialFormState;
+  servingUnit?: NutrientServingUnit;
   capturedImage?: CapturedImage;
   uploadedImageUrl?: string;
 };

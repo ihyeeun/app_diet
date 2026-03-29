@@ -6,22 +6,22 @@ import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import styles from "./styles/NutritionAddDetailPage.module.css";
-import { DEFAULT_MEAL_TYPE, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/nutrition.dto";
+import styles from "./styles/NutrientAddDetailPage.module.css";
+import { DEFAULT_MEAL_TYPE, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/nutrient.dto";
 import type {
   MealMenuItem,
   MealRecordLocationState,
   MealType,
-  NutritionAddLocationState,
-  NutritionInitialFormState,
-  NutritionServingUnit,
-} from "@/shared/api/types/nutrition.dto";
+  NutrientAddLocationState,
+  NutrientInitialFormState,
+  NutrientServingUnit,
+} from "@/shared/api/types/nutrient.dto";
 import { Tabs } from "@base-ui/react/tabs";
 import { NumberField } from "@base-ui/react/number-field";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 
-type NutritionDetailForm = {
+type NutrientDetailForm = {
   calories: string;
   carbohydrate: string;
   protein: string;
@@ -41,7 +41,7 @@ type NutritionDetailForm = {
 };
 
 type DetailFieldConfig = {
-  key: keyof NutritionDetailForm;
+  key: keyof NutrientDetailForm;
   label: string;
   unit: "g" | "mg" | "ml" | "kcal";
   variant: "main" | "sub";
@@ -95,7 +95,7 @@ const DETAIL_FIELD_CONFIG: DetailFieldConfig[] = [
   { key: "alcohol", label: "알코올", unit: "g", variant: "main", group: "alcohol" },
 ];
 
-const REQUIRED_FIELDS: Array<keyof NutritionDetailForm> = [
+const REQUIRED_FIELDS: Array<keyof NutrientDetailForm> = [
   "calories",
   "carbohydrate",
   "protein",
@@ -103,7 +103,7 @@ const REQUIRED_FIELDS: Array<keyof NutritionDetailForm> = [
   "totalWeight",
 ];
 
-const INITIAL_FORM: NutritionDetailForm = {
+const INITIAL_FORM: NutrientDetailForm = {
   calories: "",
   carbohydrate: "",
   protein: "",
@@ -122,13 +122,13 @@ const INITIAL_FORM: NutritionDetailForm = {
   alcohol: "",
 };
 
-const NUTRITION_FORM_KEYS = Object.keys(INITIAL_FORM) as Array<keyof NutritionDetailForm>;
+const NUTRIENT_FORM_KEYS = Object.keys(INITIAL_FORM) as Array<keyof NutrientDetailForm>;
 
-const MIN_NUTRITION_VALUE = 0;
-const MAX_NUTRITION_VALUE = 9999.9;
+const MIN_NUTRIENT_VALUE = 0;
+const MAX_NUTRIENT_VALUE = 9999.9;
 const SINGLE_DECIMAL_STEP = 0.1;
 const MAX_COMPARE_MENUS = 20;
-const DEFAULT_SERVING_UNIT: NutritionServingUnit = "g";
+const DEFAULT_SERVING_UNIT: NutrientServingUnit = "g";
 
 const NUTRIENT_CHILD_RULES = [
   {
@@ -165,16 +165,16 @@ function normalizeDecimalInput(value: string) {
     return "";
   }
 
-  const clamped = Math.min(MAX_NUTRITION_VALUE, Math.max(MIN_NUTRITION_VALUE, parsed));
+  const clamped = Math.min(MAX_NUTRIENT_VALUE, Math.max(MIN_NUTRIENT_VALUE, parsed));
   return clamped.toFixed(1);
 }
 
-function buildInitialForm(initialNutrition?: NutritionInitialFormState): NutritionDetailForm {
+function buildInitialForm(initialNutrient?: NutrientInitialFormState): NutrientDetailForm {
   const nextForm = { ...INITIAL_FORM };
-  if (!initialNutrition) return nextForm;
+  if (!initialNutrient) return nextForm;
 
-  NUTRITION_FORM_KEYS.forEach((key) => {
-    const value = initialNutrition[key];
+  NUTRIENT_FORM_KEYS.forEach((key) => {
+    const value = initialNutrient[key];
     if (typeof value !== "number" || !Number.isFinite(value)) return;
     nextForm[key] = normalizeDecimalInput(String(value));
   });
@@ -182,10 +182,10 @@ function buildInitialForm(initialNutrition?: NutritionInitialFormState): Nutriti
   return nextForm;
 }
 
-function normalizeNutritionFormValues(form: NutritionDetailForm): NutritionDetailForm {
+function normalizeNutrientFormValues(form: NutrientDetailForm): NutrientDetailForm {
   const nextForm = { ...form };
 
-  (Object.keys(form) as Array<keyof NutritionDetailForm>).forEach((key) => {
+  (Object.keys(form) as Array<keyof NutrientDetailForm>).forEach((key) => {
     nextForm[key] = normalizeDecimalInput(form[key]);
   });
 
@@ -212,7 +212,7 @@ function formatCompactDecimal(value: number) {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
-function buildServingLabel(totalWeight: string, unit: NutritionServingUnit) {
+function buildServingLabel(totalWeight: string, unit: NutrientServingUnit) {
   const normalizedWeight = normalizeDecimalInput(totalWeight);
   if (!normalizedWeight) {
     return "총 용량";
@@ -226,7 +226,7 @@ function buildServingLabel(totalWeight: string, unit: NutritionServingUnit) {
   return `총 용량  ${formatCompactDecimal(numericWeight)}${unit}`;
 }
 
-function hasChildNutrientOverflow(form: NutritionDetailForm) {
+function hasChildNutrientOverflow(form: NutrientDetailForm) {
   return NUTRIENT_CHILD_RULES.some((rule) => {
     const parentValue = toNumber(form[rule.parent]);
     const childrenSum = rule.children.reduce((sum, key) => sum + toNumber(form[key]), 0);
@@ -242,14 +242,14 @@ function buildManualMenuItem({
 }: {
   foodName: string;
   brandName: string;
-  form: NutritionDetailForm;
-  totalWeightUnit: NutritionServingUnit;
+  form: NutrientDetailForm;
+  totalWeightUnit: NutrientServingUnit;
 }): MealMenuItem {
   const totalWeight = toNumber(form.totalWeight);
   const safeWeightText =
     totalWeight > 0
       ? `${formatCompactDecimal(totalWeight)}${totalWeightUnit}`
-      : `${MIN_NUTRITION_VALUE.toFixed(1)}${totalWeightUnit}`;
+      : `${MIN_NUTRIENT_VALUE.toFixed(1)}${totalWeightUnit}`;
 
   return {
     id: Date.now() + Math.floor(Math.random() * 1000),
@@ -282,10 +282,10 @@ function cx(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function NutritionAddDetailPage() {
+export default function NutrientAddDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = (location.state ?? {}) as NutritionAddLocationState;
+  const locationState = (location.state ?? {}) as NutrientAddLocationState;
   const {
     source = "general",
     dateKey,
@@ -293,7 +293,7 @@ export default function NutritionAddDetailPage() {
     existingMenuCount = 0,
     existingCompareCount = 0,
   } = locationState;
-  const initialNutrition = locationState.initialNutrition;
+  const initialNutrient = locationState.initialNutrient;
   const brandName = (locationState.brandName ?? "").trim();
   const foodName = (locationState.foodName ?? "").trim();
   const pendingMenus = Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : [];
@@ -301,10 +301,10 @@ export default function NutritionAddDetailPage() {
     ? locationState.pendingCompareMenus
     : [];
   const initialServingUnit = locationState.servingUnit === "ml" ? "ml" : DEFAULT_SERVING_UNIT;
-  const [form, setForm] = useState<NutritionDetailForm>(() => buildInitialForm(initialNutrition));
-  const [servingUnit, setServingUnit] = useState<NutritionServingUnit>(initialServingUnit);
-  const pageTitle = initialNutrition ? "영양성분 수정" : "영양성분 등록";
-  const submitButtonLabel = initialNutrition ? "수정해서 담기" : "등록하기";
+  const [form, setForm] = useState<NutrientDetailForm>(() => buildInitialForm(initialNutrient));
+  const [servingUnit, setServingUnit] = useState<NutrientServingUnit>(initialServingUnit);
+  const pageTitle = initialNutrient ? "영양성분 수정" : "영양성분 등록";
+  const submitButtonLabel = initialNutrient ? "수정해서 담기" : "등록하기";
   const servingLabel = useMemo(
     () => buildServingLabel(form.totalWeight, servingUnit),
     [form.totalWeight, servingUnit],
@@ -320,14 +320,14 @@ export default function NutritionAddDetailPage() {
     [foodName, form],
   );
 
-  const handleNumericChange = (key: keyof NutritionDetailForm) => {
+  const handleNumericChange = (key: keyof NutrientDetailForm) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
       const nextValue = sanitizeDecimalInput(event.target.value);
       setForm((prev) => ({ ...prev, [key]: nextValue }));
     };
   };
 
-  const handleNumericBlur = (key: keyof NutritionDetailForm) => {
+  const handleNumericBlur = (key: keyof NutrientDetailForm) => {
     return () => {
       setForm((prev) => ({ ...prev, [key]: normalizeDecimalInput(prev[key]) }));
     };
@@ -339,7 +339,7 @@ export default function NutritionAddDetailPage() {
       return;
     }
 
-    navigate(PATH.NUTRITION_ADD);
+    navigate(PATH.NUTRIENT_ADD);
   };
 
   const handleResetForm = () => {
@@ -352,12 +352,9 @@ export default function NutritionAddDetailPage() {
       const parsedCurrentValue = Number(prev.totalWeight);
       const baseValue = Number.isFinite(parsedCurrentValue)
         ? parsedCurrentValue
-        : MIN_NUTRITION_VALUE;
+        : MIN_NUTRIENT_VALUE;
       const steppedValue = baseValue + delta;
-      const clampedValue = Math.min(
-        MAX_NUTRITION_VALUE,
-        Math.max(MIN_NUTRITION_VALUE, steppedValue),
-      );
+      const clampedValue = Math.min(MAX_NUTRIENT_VALUE, Math.max(MIN_NUTRIENT_VALUE, steppedValue));
 
       return {
         ...prev,
@@ -367,7 +364,7 @@ export default function NutritionAddDetailPage() {
   };
 
   const handleSubmit = () => {
-    const normalizedForm = normalizeNutritionFormValues(form);
+    const normalizedForm = normalizeNutrientFormValues(form);
     setForm(normalizedForm);
 
     if (REQUIRED_FIELDS.some((key) => normalizedForm[key] === "")) {
@@ -452,8 +449,8 @@ export default function NutritionAddDetailPage() {
                   value={form.calories}
                   onChange={handleNumericChange("calories")}
                   onBlur={handleNumericBlur("calories")}
-                  min={MIN_NUTRITION_VALUE}
-                  max={MAX_NUTRITION_VALUE}
+                  min={MIN_NUTRIENT_VALUE}
+                  max={MAX_NUTRIENT_VALUE}
                   step={SINGLE_DECIMAL_STEP}
                   placeholder="0"
                   inputMode="decimal"
@@ -474,8 +471,8 @@ export default function NutritionAddDetailPage() {
                       value={form[field.key]}
                       onChange={handleNumericChange(field.key)}
                       onBlur={handleNumericBlur(field.key)}
-                      min={MIN_NUTRITION_VALUE}
-                      max={MAX_NUTRITION_VALUE}
+                      min={MIN_NUTRIENT_VALUE}
+                      max={MAX_NUTRIENT_VALUE}
                       step={SINGLE_DECIMAL_STEP}
                       placeholder="0"
                       inputMode="decimal"
@@ -610,8 +607,8 @@ export default function NutritionAddDetailPage() {
                         value={form[field.key]}
                         onChange={handleNumericChange(field.key)}
                         onBlur={handleNumericBlur(field.key)}
-                        min={MIN_NUTRITION_VALUE}
-                        max={MAX_NUTRITION_VALUE}
+                        min={MIN_NUTRIENT_VALUE}
+                        max={MAX_NUTRIENT_VALUE}
                         step={SINGLE_DECIMAL_STEP}
                         placeholder="0"
                         inputMode="decimal"

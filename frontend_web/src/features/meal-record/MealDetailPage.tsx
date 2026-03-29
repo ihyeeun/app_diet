@@ -3,11 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-import { MENU_DATA_SOURCE } from "@/shared/api/types/nutrition.dto";
-import {
-  MealMenuNutritionDetail,
-  type MealMenuNutritionSelection,
-} from "./components/MealMenuNutritionDetail";
+import { MENU_DATA_SOURCE } from "@/shared/api/types/nutrient.dto";
+
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
@@ -17,12 +14,16 @@ import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
+import {
+  MealMenuNutrientDetail,
+  type MealMenuNutrientSelection,
+} from "@/features/meal-record/components/MealMenuNutrientDetail";
 
 export default function MealDetailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selection, setSelection] = useState<MealMenuNutritionSelection | null>(null);
+  const [selection, setSelection] = useState<MealMenuNutrientSelection | null>(null);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
@@ -132,7 +133,7 @@ export default function MealDetailPage() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <MealMenuNutritionDetail
+          <MealMenuNutrientDetail
             menu={meal}
             initialQuantity={existingSelection?.quantity}
             initialMode={initialMode}

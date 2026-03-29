@@ -1,4 +1,4 @@
-import type { MealRecordResponseDto } from "@/shared/api/types/nutrition.dto";
+import type { MealRecordResponseDto } from "@/shared/api/types/nutrient.dto";
 
 export type DayMealSummary = {
   totalCalories: number;

@@ -2,12 +2,12 @@ import { NumberField, Tabs } from "@base-ui/react";
 import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/shared/commons/button/Button";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
 import {
   buildMealMenuDetailGroups,
   buildMealMenuDetailRows,
-  formatNutritionValue,
-} from "@/features/meal-record/utils/mealMenuNutrition";
+  formatNutrientValue,
+} from "@/features/meal-record/utils/mealMenuNutrient";
 import {
   SERVING_INPUT_STEP,
   buildScaledMenu,
@@ -18,21 +18,21 @@ import {
   resolveServingValues,
   sanitizeServingInput,
 } from "@/features/meal-record/utils/mealRecordServing";
-import styles from "../styles/MealMenuNutritionDetail.module.css";
+import styles from "../styles/MealMenuNutrientDetail.module.css";
 
-export type MealMenuNutritionSelection = {
+export type MealMenuNutrientSelection = {
   menu: MealMenuItem;
   quantity: number;
   mode: MealServingInputMode;
 };
 
-type MealMenuNutritionDetailProps = {
+type MealMenuNutrientDetailProps = {
   menu: MealMenuItem;
   initialQuantity?: number;
   initialMode?: MealServingInputMode;
   isDetailOpen: boolean;
   onToggleDetail: () => void;
-  onSelectionChange?: (selection: MealMenuNutritionSelection | null) => void;
+  onSelectionChange?: (selection: MealMenuNutrientSelection | null) => void;
   onEditAndAdd?: () => void;
   showEditSection?: boolean;
   detailListId?: string;
@@ -68,7 +68,7 @@ function resolveInitialInputValue({
   return formatCompactDecimal(normalizeServingInput(nextWeight));
 }
 
-export function MealMenuNutritionDetail({
+export function MealMenuNutrientDetail({
   menu,
   initialQuantity,
   initialMode,
@@ -78,7 +78,7 @@ export function MealMenuNutritionDetail({
   onEditAndAdd,
   showEditSection = true,
   detailListId = "meal-record-detail-list",
-}: MealMenuNutritionDetailProps) {
+}: MealMenuNutrientDetailProps) {
   const serving = useMemo(() => parseMenuServing(menu), [menu]);
   const effectiveBaseWeight = toSafeQuantity(menu.weight) ?? serving.baseWeight;
   const resolvedServingConfig = useMemo(
@@ -267,7 +267,7 @@ export function MealMenuNutritionDetail({
             )}
           </div>
           <div className={styles.calorieText}>
-            <span className="typo-h2">{formatNutritionValue(previewMenu.calories)}</span>
+            <span className="typo-h2">{formatNutrientValue(previewMenu.calories)}</span>
             <span className="typo-title2">kcal</span>
           </div>
         </div>
@@ -276,7 +276,7 @@ export function MealMenuNutritionDetail({
           <article className={styles.macroItem}>
             <p className={`typo-title4 ${styles.macroLabel}`}>탄수화물</p>
             <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutritionValue(previewMenu.carbs ?? 0)}
+              {formatNutrientValue(previewMenu.carbs ?? 0)}
               <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
             </p>
           </article>
@@ -284,7 +284,7 @@ export function MealMenuNutritionDetail({
           <article className={styles.macroItem}>
             <p className={`typo-title4 ${styles.macroLabel}`}>단백질</p>
             <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutritionValue(previewMenu.protein ?? 0)}
+              {formatNutrientValue(previewMenu.protein ?? 0)}
               <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
             </p>
           </article>
@@ -292,7 +292,7 @@ export function MealMenuNutritionDetail({
           <article className={styles.macroItem}>
             <p className={`typo-title4 ${styles.macroLabel}`}>지방</p>
             <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutritionValue(previewMenu.fat ?? 0)}
+              {formatNutrientValue(previewMenu.fat ?? 0)}
               <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
             </p>
           </article>
@@ -428,7 +428,7 @@ export function MealMenuNutritionDetail({
                             <span
                               className={`${row.variant === "sub" ? "typo-body4" : "typo-body2"}`}
                             >
-                              {formatNutritionValue(row.value ?? 0)}
+                              {formatNutrientValue(row.value ?? 0)}
                             </span>
                             <span className={`${styles.detailUnit} typo-label2`}>{row.unit}</span>
                           </div>

@@ -5,11 +5,11 @@ import { Button } from "@/shared/commons/button/Button";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import {
-  calculateNutritionScore,
+  calculateNutrientScore,
   getCalorieProgressPercent,
-  getNutritionGradeLabel,
+  getNutrientGradeLabel,
   toMacroRatiosFromGrams,
-} from "@/shared/utils/nutritionScore";
+} from "@/shared/utils/nutrientScore";
 import styles from "./styles/MealRecordPage.module.css";
 import { PATH } from "@/router/path";
 import { getPendingMenusFromState } from "./utils/mealRecord.navigation";
@@ -31,8 +31,8 @@ import {
   type MealRecordState,
   type MealTime,
   type MealType,
-  type NutritionEntryContextState,
-} from "@/shared/api/types/nutrition.dto";
+  type NutrientEntryContextState,
+} from "@/shared/api/types/nutrient.dto";
 
 function formatKcal(value: number) {
   return value.toLocaleString("ko-KR", {
@@ -78,7 +78,9 @@ function createEmptyMealRecords(): MealRecordByType {
   };
 }
 
-function buildMealRecordsFromResponse(response: MealRecordResponseDto | undefined): MealRecordByType {
+function buildMealRecordsFromResponse(
+  response: MealRecordResponseDto | undefined,
+): MealRecordByType {
   const records = createEmptyMealRecords();
   if (!response) {
     return records;
@@ -135,28 +137,23 @@ export default function MealRecordPage() {
   } = useDayMealsQuery(dateKey);
 
   const draft = useMealRecordDraftStore((state) => state.drafts[draftKey]);
-  const menuSnapshotById = useMealRecordDraftStore(
-    (state) => state.menuSnapshotById,
-  );
+  const menuSnapshotById = useMealRecordDraftStore((state) => state.menuSnapshotById);
   const clearDraft = useMealRecordDraftStore((state) => state.clearDraft);
   const pendingMenusFromDraft = useMemo(
     () =>
-      (draft?.selections ?? []).reduce<MealMenuItem[]>(
-        (menus, selection) => {
-          const snapshot = menuSnapshotById[selection.menuId];
-          if (!snapshot) {
-            return menus;
-          }
-
-          menus.push({
-            ...snapshot,
-            serving_input_value: selection.quantity,
-          });
-
+      (draft?.selections ?? []).reduce<MealMenuItem[]>((menus, selection) => {
+        const snapshot = menuSnapshotById[selection.menuId];
+        if (!snapshot) {
           return menus;
-        },
-        [],
-      ),
+        }
+
+        menus.push({
+          ...snapshot,
+          serving_input_value: selection.quantity,
+        });
+
+        return menus;
+      }, []),
     [draft?.selections, menuSnapshotById],
   );
 
@@ -190,7 +187,8 @@ export default function MealRecordPage() {
     const existingMenuIds = new Set(flattenMenus(baseRecord).map((menu) => menu.id));
     const menusToAppend = pendingMenus.filter((menu) => !existingMenuIds.has(menu.id));
 
-    const isRemoved = (menuId: number) => removedMenuMap[`${dateKey}:${mealType}:${menuId}`] === true;
+    const isRemoved = (menuId: number) =>
+      removedMenuMap[`${dateKey}:${mealType}:${menuId}`] === true;
 
     return {
       ...baseRecord,
@@ -221,11 +219,14 @@ export default function MealRecordPage() {
     [allMenus],
   );
 
-  const totalFat = useMemo(() => allMenus.reduce((sum, menu) => sum + (menu.fat ?? 0), 0), [allMenus]);
+  const totalFat = useMemo(
+    () => allMenus.reduce((sum, menu) => sum + (menu.fat ?? 0), 0),
+    [allMenus],
+  );
 
-  const nutritionScore = useMemo(
+  const nutrientScore = useMemo(
     () =>
-      calculateNutritionScore({
+      calculateNutrientScore({
         actualCalories: totalCalories,
         targetCalories: currentRecord.targetCalories,
         actualMacroRatios: toMacroRatiosFromGrams({
@@ -245,12 +246,12 @@ export default function MealRecordPage() {
     ],
   );
 
-  // const carbohydratePercent = Math.round(nutritionScore.macro.carbohydrate.actualRatio);
-  // const proteinPercent = Math.round(nutritionScore.macro.protein.actualRatio);
-  // const fatPercent = Math.round(nutritionScore.macro.fat.actualRatio);
+  // const carbohydratePercent = Math.round(nutrientScore.macro.carbohydrate.actualRatio);
+  // const proteinPercent = Math.round(nutrientScore.macro.protein.actualRatio);
+  // const fatPercent = Math.round(nutrientScore.macro.fat.actualRatio);
 
-  const isMacroBalanced = nutritionScore.macroBalanceGrade === "appropriate";
-  const balanceLabel = getNutritionGradeLabel(nutritionScore.macroBalanceGrade);
+  const isMacroBalanced = nutrientScore.macroBalanceGrade === "appropriate";
+  const balanceLabel = getNutrientGradeLabel(nutrientScore.macroBalanceGrade);
   const progressValue = getCalorieProgressPercent(totalCalories, currentRecord.targetCalories);
 
   const handleChangeMealType = (nextMealType: MealType) => {
@@ -269,7 +270,7 @@ export default function MealRecordPage() {
 
   const hasMenus = allMenus.length > 0;
   const mealRecordAddPath = getMealRecordAddPath(dateKey, mealType);
-  const nutritionEntryContext: NutritionEntryContextState = {
+  const nutrientEntryContext: NutrientEntryContextState = {
     source: "meal-record",
     dateKey,
     mealType,
@@ -417,7 +418,7 @@ export default function MealRecordPage() {
 
       <footer className={styles.footer}>
         <Button
-          onClick={() => navigate(mealRecordAddPath, { state: nutritionEntryContext })}
+          onClick={() => navigate(mealRecordAddPath, { state: nutrientEntryContext })}
           variant="outlined"
           state="default"
           size="medium"

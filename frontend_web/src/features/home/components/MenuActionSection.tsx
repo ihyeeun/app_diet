@@ -3,7 +3,7 @@ import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection"
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
-import type { MealType } from "@/shared/api/types/nutrition.dto";
+import type { MealType } from "@/shared/api/types/nutrient.dto";
 import { useNavigate } from "react-router-dom";
 
 function getMealRecordPath(date: string, mealType: MealType) {

@@ -6,7 +6,7 @@ import {
   calculateMacroPercentToGram,
   getCalorieProgressPercent,
   type MacroKey,
-} from "@/shared/utils/nutritionScore";
+} from "@/shared/utils/nutrientScore";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 
 type NutrientItem = {

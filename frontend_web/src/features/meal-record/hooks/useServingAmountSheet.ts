@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "@/shared/commons/toast/toast";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/nutrient.dto";
 import {
   SERVING_INPUT_STEP,
   buildScaledMenu,
@@ -98,7 +98,8 @@ export function useServingAmountSheet({ onSubmitMenu }: UseServingAmountSheetPar
       return;
     }
 
-    const convertedValue = nextMode === "weight" ? resolvedCurrent.totalWeight : resolvedCurrent.unitCount;
+    const convertedValue =
+      nextMode === "weight" ? resolvedCurrent.totalWeight : resolvedCurrent.unitCount;
     setInputValue(formatCompactDecimal(normalizeServingInput(convertedValue)));
   };
 

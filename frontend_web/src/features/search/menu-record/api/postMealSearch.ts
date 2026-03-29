@@ -1,5 +1,5 @@
 import { appApiData } from "@/shared/api/appApi";
-import type { SearchResponseDto } from "@/shared/api/types/nutrition.dto";
+import type { SearchResponseDto } from "@/shared/api/types/nutrient.dto";
 
 const END_POINT = {
   SEARCH_MENUS: "/home/search",

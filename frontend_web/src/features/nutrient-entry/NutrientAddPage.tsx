@@ -1,19 +1,19 @@
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { useLocation, useNavigate } from "react-router-dom";
-import styles from "./styles/NutritionAddPage.module.css";
+import styles from "./styles/NutrientAddPage.module.css";
 import { Button } from "@/shared/commons/button/Button";
 import { useState, type ChangeEvent } from "react";
 import { PATH } from "@/router/path";
-import type { NutritionAddLocationState } from "@/shared/api/types/nutrition.dto";
+import type { NutrientAddLocationState } from "@/shared/api/types/nutrient.dto";
 
 function formatBytesToMb(fileSize: number) {
   return `${(fileSize / (1024 * 1024)).toFixed(2)}MB`;
 }
 
-export default function NutritionAddPage() {
+export default function NutrientAddPage() {
   const navigation = useNavigate();
   const location = useLocation();
-  const contextState = (location.state ?? {}) as NutritionAddLocationState;
+  const contextState = (location.state ?? {}) as NutrientAddLocationState;
   const brandName = (contextState.brandName ?? "").trim();
   const capturedImage = contextState.capturedImage;
   const uploadedImageUrl = contextState.uploadedImageUrl;
@@ -30,7 +30,7 @@ export default function NutritionAddPage() {
         ...contextState,
         brandName,
         foodName,
-      } satisfies NutritionAddLocationState,
+      } satisfies NutrientAddLocationState,
     });
   };
 
@@ -39,7 +39,7 @@ export default function NutritionAddPage() {
   const handleNext = () => {
     if (isNextDisabled) return;
 
-    navigation(PATH.NUTRITION_ADD_DETAIL, {
+    navigation(PATH.NUTRIENT_ADD_DETAIL, {
       state: {
         ...contextState,
         brandName: brandName.trim(),
@@ -66,7 +66,9 @@ export default function NutritionAddPage() {
             </p>
             <p className={`typo-label4 ${styles.imageInfoSubText}`}>
               {capturedImage.mimeType ?? "image/jpeg"} ·{" "}
-              {capturedImage.fileSize !== null ? formatBytesToMb(capturedImage.fileSize) : "용량 미확인"}
+              {capturedImage.fileSize !== null
+                ? formatBytesToMb(capturedImage.fileSize)
+                : "용량 미확인"}
             </p>
             <p className={`typo-label4 ${styles.imageInfoSubText}`}>
               {uploadedImageUrl ? "서버 전송 완료" : "서버 전송 URL 미확인"}

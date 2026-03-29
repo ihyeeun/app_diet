@@ -12,7 +12,7 @@ import { BrandRequestSheetContent } from "@/features/meal-record/components/Bran
 import { toast } from "@/shared/commons/toast/toast";
 import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
 import { useQuery } from "@tanstack/react-query";
-import type { MealMenuItem } from "@/shared/api/types/nutrition.dto";
+import type { MealMenuItem } from "@/shared/api/types/nutrient.dto";
 import { MAX_COMPARE_MENUS } from "@/features/search/search.constants";
 
 type CompareMenuSearchLocationState = {
@@ -30,10 +30,15 @@ export default function MenuComPareSearchPage() {
   const locationState = (location.state ?? {}) as CompareMenuSearchLocationState;
 
   const [selectedMenus, setSelectedMenus] = useState<MealMenuItem[]>(() => {
-    const pendingMenus = Array.isArray(locationState.selectedMenus) ? locationState.selectedMenus : [];
+    const pendingMenus = Array.isArray(locationState.selectedMenus)
+      ? locationState.selectedMenus
+      : [];
     return dedupeMenusById(pendingMenus);
   });
-  const selectedIdSet = useMemo(() => new Set(selectedMenus.map((menu) => menu.id)), [selectedMenus]);
+  const selectedIdSet = useMemo(
+    () => new Set(selectedMenus.map((menu) => menu.id)),
+    [selectedMenus],
+  );
   const selectedCount = selectedMenus.length;
 
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -47,8 +52,8 @@ export default function MenuComPareSearchPage() {
   const isBrandRequestSubmitDisabled =
     isBrandRequestSubmitting || brandRequestKeyword.trim().length === 0;
 
-  const handleDirectNutritionEntry = () => {
-    navigate(PATH.NUTRITION_ADD);
+  const handleDirectNutrientEntry = () => {
+    navigate(PATH.NUTRIENT_ADD);
   };
 
   const handleOpenBrandRequestSheet = () => {
@@ -189,7 +194,7 @@ export default function MenuComPareSearchPage() {
                         state="default"
                         size="small"
                         color="assistive"
-                        onClick={handleDirectNutritionEntry}
+                        onClick={handleDirectNutrientEntry}
                       >
                         영양 성분 직접 등록
                       </Button>
@@ -219,7 +224,7 @@ export default function MenuComPareSearchPage() {
               state="default"
               size="small"
               color="assistive"
-              onClick={handleDirectNutritionEntry}
+              onClick={handleDirectNutrientEntry}
             >
               <p className={`${styles.directInputText} typo-label3`}>영양 성분 직접 입력</p>
             </Button>
