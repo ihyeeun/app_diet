@@ -12,6 +12,7 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
+
 import type { CalendarDay, DayRecordSummary, ViewMode } from "../types/calendar.types";
 
 export function formatDateKey(date: Date) {

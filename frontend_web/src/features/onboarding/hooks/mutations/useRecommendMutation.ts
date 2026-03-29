@@ -1,9 +1,10 @@
+import { useMutation } from "@tanstack/react-query";
+
 import {
   fetchRecommendtargetCalories,
   postRecommendNutrient,
 } from "@/features/onboarding/api/recommend";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
-import { useMutation } from "@tanstack/react-query";
 
 export function useTargetCaloriesMutation(callbacks?: UseMutationCallback) {
   return useMutation({

@@ -1,8 +1,8 @@
 import { isNativeApp, requestToApp } from "@/shared/api/bridge/nativeBridge";
 import {
-  isApiSuccess,
   type ApiFailResponse,
   type ApiResponse,
+  isApiSuccess,
 } from "@/shared/api/types/apiResponse.types";
 
 export type RequestOptions = {

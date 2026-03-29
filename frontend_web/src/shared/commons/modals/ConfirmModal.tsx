@@ -1,7 +1,9 @@
-import * as React from "react";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
-import { BaseAlertModal } from "./BaseAlertModal";
+import * as React from "react";
+
 import { Button } from "@/shared/commons/button/Button";
+
+import { BaseAlertModal } from "./BaseAlertModal";
 
 type ConfirmModalProps = {
   open: boolean;

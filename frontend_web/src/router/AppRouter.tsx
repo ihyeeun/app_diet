@@ -1,23 +1,25 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { PATH } from "./path";
-import OnboardingPage from "../features/onboarding/OnboardingPage";
-import HomePage from "@/features/home/HomePage";
-import RecommendPage from "@/features/recommend/RecommendPage";
+
 import ComparePage from "@/features/compare/ComparePage";
-import TermsPage from "@/features/terms/TermsPage";
-import MealRecordPage from "@/features/meal-record/MealRecordPage";
+import SelectedMenuListPage from "@/features/compare/SelectedMenuListPage";
+import HomePage from "@/features/home/HomePage";
+import TodayMealScorePage from "@/features/home/TodayMealScorePage";
+import MealCameraPage from "@/features/meal-record/MealCameraPage";
+import MealDetailPage from "@/features/meal-record/MealDetailPage";
 import MealRecordAddPage from "@/features/meal-record/MealRecordAddPage";
-import MealSearchPage from "@/features/search/menu-record/MealSearchPage";
+import MealRecordPage from "@/features/meal-record/MealRecordPage";
+import NutrientAddDetailPage from "@/features/nutrient-entry/NutrientAddDetailPage";
 import NutrientAddPage from "@/features/nutrient-entry/NutrientAddPage";
 import NutrientCameraPage from "@/features/nutrient-entry/NutrientCameraPage";
-import NutrientAddDetailPage from "@/features/nutrient-entry/NutrientAddDetailPage";
-import MealCameraPage from "@/features/meal-record/MealCameraPage";
+import RecommendPage from "@/features/recommend/RecommendPage";
 import BrandMenuSearch from "@/features/search/brand/BrandMenuSearch";
-import MenuComPareSearchPage from "@/features/search/menu-compare/MenuCompareSearchPage";
-import SelectedMenuListPage from "@/features/compare/SelectedMenuListPage";
-import MealDetailPage from "@/features/meal-record/MealDetailPage";
-import TodayMealScorePage from "@/features/home/TodayMealScorePage";
 import BrandSearch from "@/features/search/brand/BrandSearch";
+import MenuComPareSearchPage from "@/features/search/menu-compare/MenuCompareSearchPage";
+import MealSearchPage from "@/features/search/menu-record/MealSearchPage";
+import TermsPage from "@/features/terms/TermsPage";
+
+import OnboardingPage from "../features/onboarding/OnboardingPage";
+import { PATH } from "./path";
 
 export default function AppRouter() {
   return (

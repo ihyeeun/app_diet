@@ -1,5 +1,5 @@
-import { formatDayNumber } from "../utils/format";
 import type { CalendarDay } from "../types/calendar.types";
+import { formatDayNumber } from "../utils/format";
 
 type DayCellVariant = "week" | "month";
 

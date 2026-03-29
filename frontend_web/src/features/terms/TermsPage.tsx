@@ -1,5 +1,6 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { ChevronDown } from "lucide-react";
+
 import styles from "./TermsPage.module.css";
 
 export default function TermsPage() {

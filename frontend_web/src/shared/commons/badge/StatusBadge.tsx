@@ -1,6 +1,7 @@
+import type { NutrientGrade } from "@/shared/utils/nutrientScore";
+
 import styles from "./StatusBadge.module.css";
 import { getNutrientStatusByPercent } from "./StatusBadge.utils";
-import type { NutrientGrade } from "@/shared/utils/nutrientScore";
 
 export type NutrientStatus = NutrientGrade;
 

@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
+import type { ReactNode } from "react";
+
 import styles from "./PageHeader.module.css";
 
 type Props = {

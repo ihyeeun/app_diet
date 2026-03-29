@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { formatCalendarHeader } from "../utils/format";
+
 import type { ViewMode } from "../types/calendar.types";
+import { formatCalendarHeader } from "../utils/format";
 
 type Props = {
   viewMode: ViewMode;

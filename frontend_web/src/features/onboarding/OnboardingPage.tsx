@@ -1,21 +1,24 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { OnboardingData } from "./onboarding.types";
-import { STEP_COMPONENTS, STEPS } from "./components/steps/steps";
-import { Button } from "@/shared/commons/button/Button";
 import "./css/OnboardingPage.css";
 import "./css/OnboardingSteps.css";
-import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
+
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import OnboardingHeader from "@/features/onboarding/components/OnboardingHeader";
 import {
+  isInRange,
   ONBOARDING_HEIGHT_RANGE,
   ONBOARDING_WEIGHT_RANGE,
-  isInRange,
 } from "@/features/onboarding/constants/inputRanges";
-import { toast } from "@/shared/commons/toast/toast";
 import { useRegisterUserInfoMutation } from "@/features/onboarding/hooks/mutations/useRegisterUserInfoMutation";
-import { useNavigate } from "react-router-dom";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
+import { Button } from "@/shared/commons/button/Button";
+import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
+import { toast } from "@/shared/commons/toast/toast";
+
+import { STEP_COMPONENTS, STEPS } from "./components/steps/steps";
+import type { OnboardingData } from "./onboarding.types";
 
 function isBodyRangeValid(data: OnboardingData) {
   return (

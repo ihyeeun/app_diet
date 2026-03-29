@@ -1,15 +1,16 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/shared/commons/button/Button";
-import { PageHeader } from "@/shared/commons/header/PageHeader";
+
+import { uploadCapturedImageToServer } from "@/features/nutrient-entry/api/uploadCapturedImage";
+import styles from "@/features/nutrient-entry/styles/NutrientCameraPage.module.css";
+import { PATH } from "@/router/path";
 import {
   requestNativeCameraCapture,
   requestNativeGalleryPick,
 } from "@/shared/api/bridge/nativeBridge";
-import { toast } from "@/shared/commons/toast/toast";
-import styles from "@/features/nutrient-entry/styles/NutrientCameraPage.module.css";
-import { PATH } from "@/router/path";
 import type { NutrientAddLocationState } from "@/shared/api/types/api.dto";
-import { uploadCapturedImageToServer } from "@/features/nutrient-entry/api/uploadCapturedImage";
+import { Button } from "@/shared/commons/button/Button";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { toast } from "@/shared/commons/toast/toast";
 
 type BridgeCameraError = Error & {
   error?: string;

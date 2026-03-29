@@ -1,26 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { Button } from "@/shared/commons/button/Button";
-import ScoreProgress from "@/shared/commons/progress/Progress";
-import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
-import {
-  calculateNutrientScore,
-  getCalorieProgressPercent,
-  getNutrientGradeLabel,
-  toMacroRatiosFromGrams,
-} from "@/shared/utils/nutrientScore";
-import styles from "./styles/MealRecordPage.module.css";
-import { PATH } from "@/router/path";
-import { getPendingMenusFromState } from "./utils/mealRecord.navigation";
-import { getMealRecordAddPath } from "./utils/mealRecord.paths";
-import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
+
+import { useDayMealsQuery } from "@/features/meal-record/hooks/queries/useDayMealsQuery";
 import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
 import { buildRegisterMealRequest } from "@/features/meal-record/utils/mealRecord.payload";
-import { useDayMealsQuery } from "@/features/meal-record/hooks/queries/useDayMealsQuery";
+import { PATH } from "@/router/path";
 import {
   DEFAULT_TARGET_MACRO_RATIOS,
   MEAL_TIME,
@@ -33,6 +20,21 @@ import {
   type MealType,
   type NutrientEntryContextState,
 } from "@/shared/api/types/api.dto";
+import { Button } from "@/shared/commons/button/Button";
+import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import ScoreProgress from "@/shared/commons/progress/Progress";
+import {
+  calculateNutrientScore,
+  getCalorieProgressPercent,
+  getNutrientGradeLabel,
+  toMacroRatiosFromGrams,
+} from "@/shared/utils/nutrientScore";
+
+import styles from "./styles/MealRecordPage.module.css";
+import { getPendingMenusFromState } from "./utils/mealRecord.navigation";
+import { getMealRecordAddPath } from "./utils/mealRecord.paths";
+import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
 function formatKcal(value: number) {
   return value.toLocaleString("ko-KR", {

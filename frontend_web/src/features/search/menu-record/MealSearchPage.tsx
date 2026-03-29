@@ -1,32 +1,34 @@
 import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/shared/commons/button/Button";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
-import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
-import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
-import { toast } from "@/shared/commons/toast/toast";
-import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
-import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
+
 import { postMealRecordBrandRequest } from "@/features/meal-record/api/brandRequest";
-import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
-import {
-  getMealRecordAddSearchDetailPath,
-  getMealRecordAddPath,
-  getMealRecordPath,
-} from "@/features/meal-record/utils/mealRecord.paths";
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
-import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
-import styles from "../styles/MealSearch.module.css";
-import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
+import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
+import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
-import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
+import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
 import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
+import {
+  getMealRecordAddPath,
+  getMealRecordAddSearchDetailPath,
+  getMealRecordPath,
+} from "@/features/meal-record/utils/mealRecord.paths";
 import { buildRegisterMealRequest } from "@/features/meal-record/utils/mealRecord.payload";
+import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { useTodayMealRecordRegisterMutation } from "@/features/search/menu-record/hooks/mutations/useTodayMealRecordMutation";
+import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
+import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
+import { Button } from "@/shared/commons/button/Button";
+import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
+import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
+import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { toast } from "@/shared/commons/toast/toast";
+
+import styles from "../styles/MealSearch.module.css";
 
 export default function MealSearchPage() {
   const location = useLocation();

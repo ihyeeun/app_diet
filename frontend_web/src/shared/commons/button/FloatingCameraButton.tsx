@@ -1,4 +1,5 @@
 import { Camera } from "lucide-react";
+
 import styles from "./FloatingCameraButton.module.css";
 
 type FloatingCameraButtonProps = {

@@ -1,15 +1,13 @@
 import { NumberField, Tabs } from "@base-ui/react";
 import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/shared/commons/button/Button";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
+
 import {
   buildMealMenuDetailGroups,
   buildMealMenuDetailRows,
   formatNutrientValue,
 } from "@/features/meal-record/utils/mealMenuNutrient";
 import {
-  SERVING_INPUT_STEP,
   buildScaledMenu,
   formatCompactDecimal,
   getServingDefaultValue,
@@ -17,7 +15,11 @@ import {
   parseMenuServing,
   resolveServingValues,
   sanitizeServingInput,
+  SERVING_INPUT_STEP,
 } from "@/features/meal-record/utils/mealRecordServing";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
+import { Button } from "@/shared/commons/button/Button";
+
 import styles from "../styles/MealMenuNutrientDetail.module.css";
 
 export type MealMenuNutrientSelection = {

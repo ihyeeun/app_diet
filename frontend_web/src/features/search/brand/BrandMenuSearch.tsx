@@ -2,38 +2,40 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
-import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
+
 import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
+import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
 import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
-import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
-import {
-  getMealRecordAddSearchDetailPath,
-  getMealRecordPath,
-} from "@/features/meal-record/utils/mealRecord.paths";
-import {
-  fetchBrandSearchResults,
-  type BrandSearchResult,
-} from "@/features/nutrient-entry/api/brandSearch";
-import { PATH } from "@/router/path";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
-import { Button } from "@/shared/commons/button/Button";
-import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
-import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
-import { toast } from "@/shared/commons/toast/toast";
-import {
-  BRAND_MENU_CATEGORY_OPTIONS,
-  fetchBrandMenuSearchResults,
-  fetchSimilarMenuSuggestions,
-  type BrandMenuCategory,
-} from "./api/brandMenuSearch";
-import styles from "../styles/MealSearch.module.css";
 import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
+import {
+  getMealRecordAddSearchDetailPath,
+  getMealRecordPath,
+} from "@/features/meal-record/utils/mealRecord.paths";
+import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import {
+  type BrandSearchResult,
+  fetchBrandSearchResults,
+} from "@/features/nutrient-entry/api/brandSearch";
+import { PATH } from "@/router/path";
+import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
+import { Button } from "@/shared/commons/button/Button";
+import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
+import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { toast } from "@/shared/commons/toast/toast";
+
+import styles from "../styles/MealSearch.module.css";
+import {
+  BRAND_MENU_CATEGORY_OPTIONS,
+  type BrandMenuCategory,
+  fetchBrandMenuSearchResults,
+  fetchSimilarMenuSuggestions,
+} from "./api/brandMenuSearch";
 
 const SEARCH_DEBOUNCE_MS = 250;
 

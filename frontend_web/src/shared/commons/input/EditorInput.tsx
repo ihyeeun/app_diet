@@ -1,4 +1,5 @@
 import { Input } from "@base-ui/react/input";
+
 import styles from "./EditorInput.module.css";
 
 type Props = Omit<React.ComponentProps<"input">, "onChange" | "value" | "min" | "max"> & {

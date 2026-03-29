@@ -1,4 +1,5 @@
 import { create } from "zustand";
+
 import type { MealMenuItem, MealType } from "@/shared/api/types/api.dto";
 
 export type MealRecordDraftKey = `${string}:${MealType}`;

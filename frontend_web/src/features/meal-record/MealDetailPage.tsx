@@ -1,23 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/shared/commons/button/Button";
-import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { toast } from "@/shared/commons/toast/toast";
-import { MENU_DATA_SOURCE } from "@/shared/api/types/api.dto";
 
-import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
-import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
-import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
-import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
+import {
+  MealMenuNutrientDetail,
+  type MealMenuNutrientSelection,
+} from "@/features/meal-record/components/MealMenuNutrientDetail";
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
-import {
-  MealMenuNutrientDetail,
-  type MealMenuNutrientSelection,
-} from "@/features/meal-record/components/MealMenuNutrientDetail";
+import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
+import { MENU_DATA_SOURCE } from "@/shared/api/types/api.dto";
+import { Button } from "@/shared/commons/button/Button";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { toast } from "@/shared/commons/toast/toast";
+
+import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
+import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
+import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
 export default function MealDetailPage() {
   const navigate = useNavigate();

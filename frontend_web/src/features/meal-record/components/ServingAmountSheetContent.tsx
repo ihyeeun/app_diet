@@ -1,10 +1,12 @@
-import { Button } from "@/shared/commons/button/Button";
-import { type ParsedMenuServing } from "../utils/mealRecordServing";
-import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
-import styles from "../styles/ServingAmountSheetContent.module.css";
 import { NumberField, Tabs } from "@base-ui/react";
 import { MinusIcon, PlusIcon } from "lucide-react";
+
 import { formatNutrientValue } from "@/features/meal-record/utils/mealMenuNutrient";
+import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
+import { Button } from "@/shared/commons/button/Button";
+
+import styles from "../styles/ServingAmountSheetContent.module.css";
+import { type ParsedMenuServing } from "../utils/mealRecordServing";
 
 type ServingAmountSheetContentProps = {
   menu: MealMenuItem;

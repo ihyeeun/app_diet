@@ -1,14 +1,15 @@
-import style from "@/features/home/styles/TodayScoreSection.module.css";
-import { PATH } from "@/router/path";
-import ScoreProgress from "@/shared/commons/progress/Progress";
-import { calculateNutrientScore, toMacroRatiosFromGrams } from "@/shared/utils/nutrientScore";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
-import { useQueryClient } from "@tanstack/react-query";
-import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
+
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
+import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
+import style from "@/features/home/styles/TodayScoreSection.module.css";
+import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
+import { PATH } from "@/router/path";
+import ScoreProgress from "@/shared/commons/progress/Progress";
 import { useTargetsState } from "@/shared/stores/targetNutrient.store";
+import { calculateNutrientScore, toMacroRatiosFromGrams } from "@/shared/utils/nutrientScore";
 
 export default function PreviewTodayScoreSection({ selectedDate }: { selectedDate: string }) {
   const navigation = useNavigate();

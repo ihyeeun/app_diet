@@ -1,13 +1,12 @@
-import { PATH } from "@/router/path";
-import { getMealRecordPath } from "@/features/meal-record/utils/mealRecord.paths";
-import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
-import { Button } from "@/shared/commons/button/Button";
-import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { toast } from "@/shared/commons/toast/toast";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { NumberField } from "@base-ui/react/number-field";
+import { Tabs } from "@base-ui/react/tabs";
+import { MinusIcon, PlusIcon } from "lucide-react";
+import { type ChangeEvent,useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import styles from "./styles/NutrientAddDetailPage.module.css";
-import { DEFAULT_MEAL_TYPE, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
+
+import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
+import { getMealRecordPath } from "@/features/meal-record/utils/mealRecord.paths";
+import { PATH } from "@/router/path";
 import type {
   MealMenuItem,
   MealRecordLocationState,
@@ -16,10 +15,13 @@ import type {
   NutrientInitialFormState,
   NutrientServingUnit,
 } from "@/shared/api/types/api.dto";
-import { Tabs } from "@base-ui/react/tabs";
-import { NumberField } from "@base-ui/react/number-field";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { DEFAULT_MEAL_TYPE, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
+import { Button } from "@/shared/commons/button/Button";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { toast } from "@/shared/commons/toast/toast";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
+
+import styles from "./styles/NutrientAddDetailPage.module.css";
 
 type NutrientDetailForm = {
   calories: string;

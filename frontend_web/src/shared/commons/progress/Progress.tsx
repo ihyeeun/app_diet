@@ -1,4 +1,5 @@
 import { Progress } from "@base-ui/react/progress";
+
 import styles from "./Progress.module.css";
 
 export type ProgressVariant = "primary-white" | "primary-gray" | "black-gray";

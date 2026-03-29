@@ -1,13 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { PageHeader } from "@/shared/commons/header/PageHeader";
+
 import styles from "@/features/home/styles/TodayMealScorePage.module.css";
 import { Button } from "@/shared/commons/button/Button";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import ScoreProgress from "@/shared/commons/progress/Progress";
 import {
   calculateMacroPercentToGram,
   getCalorieProgressPercent,
   type MacroKey,
 } from "@/shared/utils/nutrientScore";
-import ScoreProgress from "@/shared/commons/progress/Progress";
 
 type NutrientItem = {
   key: MacroKey;

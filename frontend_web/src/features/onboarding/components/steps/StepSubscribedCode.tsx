@@ -1,6 +1,8 @@
-import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
-import { Field, Input } from "@base-ui/react";
 import "@/shared/commons/input/input.css";
+
+import { Field, Input } from "@base-ui/react";
+
+import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 
 export default function StepSubscribedCode({ data, update }: StepComponentProps) {
   return (

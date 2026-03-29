@@ -1,6 +1,6 @@
 import type {
-  AppTabName,
   ApiRequestPayload,
+  AppTabName,
   AppToWebMessage,
   CameraCaptureRequestPayload,
   CameraCaptureResponsePayload,

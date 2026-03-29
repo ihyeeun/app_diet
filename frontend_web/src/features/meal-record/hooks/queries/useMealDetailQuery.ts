@@ -1,5 +1,6 @@
-import { getMealDetail } from "@/features/meal-record/api/mealDetail";
 import { useQuery } from "@tanstack/react-query";
+
+import { getMealDetail } from "@/features/meal-record/api/mealDetail";
 
 export function useMealDetatilQuery(menuId: number | null) {
   const isValidMenuId = Number.isInteger(menuId) && (menuId as number) > 0;

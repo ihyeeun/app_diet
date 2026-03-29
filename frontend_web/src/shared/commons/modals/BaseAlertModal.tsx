@@ -1,6 +1,7 @@
-import * as React from "react";
-import { AlertDialog } from "@base-ui/react/alert-dialog";
 import "./BaseAlertModal.css";
+
+import { AlertDialog } from "@base-ui/react/alert-dialog";
+import * as React from "react";
 
 type BaseAlertModalProps = {
   open: boolean;

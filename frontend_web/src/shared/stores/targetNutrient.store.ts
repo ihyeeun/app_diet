@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { combine, devtools, persist, createJSONStorage } from "zustand/middleware";
+import { combine, createJSONStorage,devtools, persist } from "zustand/middleware";
 
 export type TargetsNutrients = {
   target_calories: number;

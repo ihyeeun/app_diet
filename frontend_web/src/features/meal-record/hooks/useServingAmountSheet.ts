@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { toast } from "@/shared/commons/toast/toast";
+
 import type { MealMenuItem, MealServingInputMode } from "@/shared/api/types/api.dto";
+import { toast } from "@/shared/commons/toast/toast";
+
 import {
-  SERVING_INPUT_STEP,
   buildScaledMenu,
   formatCompactDecimal,
   getServingDefaultValue,
@@ -10,6 +11,7 @@ import {
   parseMenuServing,
   resolveServingValues,
   sanitizeServingInput,
+  SERVING_INPUT_STEP,
 } from "../utils/mealRecordServing";
 
 type OpenServingAmountSheetParams = {

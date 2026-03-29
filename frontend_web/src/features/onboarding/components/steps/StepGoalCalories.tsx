@@ -1,3 +1,6 @@
+import { Field } from "@base-ui/react/field";
+import { useEffect, useMemo, useState } from "react";
+
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 import { calculateGoalWeek } from "@/features/onboarding/utils/calculateGoalWeek";
@@ -5,8 +8,6 @@ import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { EditorInput } from "@/shared/commons/input/EditorInput";
 import { toast } from "@/shared/commons/toast/toast";
-import { Field } from "@base-ui/react/field";
-import { useEffect, useMemo, useState } from "react";
 
 const GOAL_CALORIES_MIN = 1;
 const GOAL_CALORIES_MAX = 99999;

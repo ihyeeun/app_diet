@@ -1,19 +1,21 @@
-import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
-import styles from "../styles/MealSearch.module.css";
-import { useLocation, useNavigate } from "react-router-dom";
-import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
-import { Button } from "@/shared/commons/button/Button";
-import { useMemo, useState } from "react";
-import { useDebouncedKeyword } from "@/features/search/utils/useDebounedKeyword";
-import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
-import { PATH } from "@/router/path";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
-import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
-import { toast } from "@/shared/commons/toast/toast";
-import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
 import { useQuery } from "@tanstack/react-query";
-import type { MealMenuItem } from "@/shared/api/types/api.dto";
+import { useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { fetchMealMenuSearchResults } from "@/features/meal-record/api/menuSearch";
+import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
 import { MAX_COMPARE_MENUS } from "@/features/search/search.constants";
+import { useDebouncedKeyword } from "@/features/search/utils/useDebounedKeyword";
+import { PATH } from "@/router/path";
+import type { MealMenuItem } from "@/shared/api/types/api.dto";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
+import { Button } from "@/shared/commons/button/Button";
+import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
+import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
+import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { toast } from "@/shared/commons/toast/toast";
+
+import styles from "../styles/MealSearch.module.css";
 
 type CompareMenuSearchLocationState = {
   selectedMenus?: MealMenuItem[];

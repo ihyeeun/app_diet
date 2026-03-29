@@ -1,5 +1,6 @@
-import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
 import { ChevronLeft } from "lucide-react";
+import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
+
 import styles from "./SearchInputHeader.module.css";
 
 type Props = {

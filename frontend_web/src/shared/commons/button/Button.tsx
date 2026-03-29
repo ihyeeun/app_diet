@@ -1,6 +1,7 @@
-import * as React from "react";
-import { Button as BaseButton } from "@base-ui/react/button";
 import "./Button.css";
+
+import { Button as BaseButton } from "@base-ui/react/button";
+import * as React from "react";
 
 const MODERN_VARIANT_CLASS = {
   filled: "btn--variant-filled",

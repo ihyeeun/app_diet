@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 import WheelPicker from "@/shared/commons/picker/WheelPicker";
 import {

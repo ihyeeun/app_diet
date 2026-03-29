@@ -1,7 +1,8 @@
+import DayCell from "@/features/calendar/components/dayCell";
+
+import { useSwipe } from "../hooks/useSwipe";
 import type { CalendarDay } from "../types/calendar.types";
 import { WEEKDAY_LABELS } from "../utils/format";
-import { useSwipe } from "../hooks/useSwipe";
-import DayCell from "@/features/calendar/components/dayCell";
 
 type Props = {
   days: CalendarDay[];

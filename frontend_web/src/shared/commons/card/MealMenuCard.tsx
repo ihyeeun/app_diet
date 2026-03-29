@@ -1,5 +1,6 @@
-import type { KeyboardEvent, MouseEvent } from "react";
 import { Check, Plus, X } from "lucide-react";
+import type { KeyboardEvent, MouseEvent } from "react";
+
 import styles from "./MealMenuCard.module.css";
 
 export type MealMenuCardIcon = "add" | "check" | "delete";

@@ -1,8 +1,11 @@
-import { useEffect } from "react";
 import "./App.css";
-import AppRouter from "./router/AppRouter";
+
+import { useEffect } from "react";
+
 import { initNativeBridgeListener } from "@/shared/api/bridge/nativeBridge";
 import { initInputCharacterRestriction } from "@/shared/utils/inputCharacterRestriction";
+
+import AppRouter from "./router/AppRouter";
 
 export default function App() {
   useEffect(() => {

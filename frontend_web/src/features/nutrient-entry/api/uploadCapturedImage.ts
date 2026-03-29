@@ -1,6 +1,7 @@
 import { requestNativeImageUpload } from "@/shared/api/bridge/nativeBridge";
-import { NUTRIENT_ENTRY_END_POINT } from "./endpoints";
 import type { CapturedImage } from "@/shared/api/types/api.dto";
+
+import { NUTRIENT_ENTRY_END_POINT } from "./endpoints";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

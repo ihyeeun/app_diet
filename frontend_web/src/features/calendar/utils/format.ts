@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+
 import type { ViewMode } from "../types/calendar.types";
 
 export const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];

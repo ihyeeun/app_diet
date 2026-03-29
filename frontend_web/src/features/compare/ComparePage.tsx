@@ -1,10 +1,12 @@
-import { PageHeader } from "@/shared/commons/header/PageHeader";
-import styles from "./styles/ComparePage.module.css";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
-import { useNavigate } from "react-router-dom";
-import { PATH } from "@/router/path";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+
+import styles from "./styles/ComparePage.module.css";
 
 export default function ComparePage() {
   const navigation = useNavigate();

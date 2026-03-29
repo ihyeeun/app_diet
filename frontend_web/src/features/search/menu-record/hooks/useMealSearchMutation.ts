@@ -1,6 +1,7 @@
+import { useMutation } from "@tanstack/react-query";
+
 import { postMealSearch } from "@/features/search/menu-record/api/postMealSearch";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
-import { useMutation } from "@tanstack/react-query";
 
 export function useMealSearchMutation(callbacks?: UseMutationCallback) {
   return useMutation({
