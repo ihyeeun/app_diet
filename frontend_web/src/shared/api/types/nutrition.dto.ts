@@ -49,6 +49,9 @@ export interface MenuBaseFields extends MenuIdField {
   weight: number;
   unit_quantity: string;
   calories: number;
+  carbs: number;
+  protein: number;
+  fat: number;
 }
 
 export interface MenuNutrientFields {
