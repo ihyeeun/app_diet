@@ -10,7 +10,7 @@ import {
 export default function StepBirthYear({ data, update }: StepComponentProps) {
   const { min: minYear, max: maxYear } = getBirthYearRange();
   const years = makeYearOptions({ from: maxYear, count: maxYear - minYear + 1 }).map(String);
-  const selectedYear = isValidBirthYear(data.birthYear) ? data.birthYear : maxYear;
+  const selectedYear = isValidBirthYear(data.birthYear) ? data.birthYear : 2000;
 
   useEffect(() => {
     if (data.birthYear === selectedYear) return;

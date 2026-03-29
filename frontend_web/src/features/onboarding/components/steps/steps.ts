@@ -71,6 +71,6 @@ export const STEPS: StepMeta[] = [
     id: "subscribedCode",
     title: "코드 입력",
     isValid: () => true,
-    nextText: "완료",
+    nextText: "시작",
   },
 ];
