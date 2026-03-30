@@ -1,4 +1,4 @@
-import type { MealRecordResponseDto } from "@/shared/api/types/api.dto";
+import type { MealRecordResponseDto, MealResponseDto } from "@/shared/api/types/api.dto";
 
 export type DayMealSummary = {
   totalCalories: number;
@@ -57,50 +57,58 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     snack: { carbs: 0, protein: 0, fat: 0 },
   };
 
-  meals.meal_list.forEach((meal, index) => {
-    totalCalories += meal.menu_list[index].calories * meal.menu_quantities[index];
-    totalNutrients.carbs += meal.menu_list[index].carbs * meal.menu_quantities[index];
-    totalNutrients.protein += meal.menu_list[index].protein * meal.menu_quantities[index];
-    totalNutrients.fat += meal.menu_list[index].fat * meal.menu_quantities[index];
+  const resolveQuantity = (meal: MealResponseDto, menuIndex: number) => {
+    const quantity = meal.menu_quantities[menuIndex];
+    return typeof quantity === "number" && Number.isFinite(quantity) ? quantity : 1;
+  };
 
-    switch (meal.time) {
-      case 0: {
-        caloriesByTime.breakfast += meal.menu_list[index].calories * meal.menu_quantities[index];
-        nutrientsByTime.breakfast.carbs +=
-          meal.menu_list[index].carbs * meal.menu_quantities[index];
-        nutrientsByTime.breakfast.protein +=
-          meal.menu_list[index].protein * meal.menu_quantities[index];
-        nutrientsByTime.breakfast.fat += meal.menu_list[index].fat * meal.menu_quantities[index];
-        break;
+  meals.meal_list.forEach((meal) => {
+    meal.menu_list.forEach((menu, menuIndex) => {
+      const quantity = resolveQuantity(meal, menuIndex);
+      const calories = menu.calories * quantity;
+      const carbs = menu.carbs * quantity;
+      const protein = menu.protein * quantity;
+      const fat = menu.fat * quantity;
+
+      totalCalories += calories;
+      totalNutrients.carbs += carbs;
+      totalNutrients.protein += protein;
+      totalNutrients.fat += fat;
+
+      switch (meal.time) {
+        case 0: {
+          caloriesByTime.breakfast += calories;
+          nutrientsByTime.breakfast.carbs += carbs;
+          nutrientsByTime.breakfast.protein += protein;
+          nutrientsByTime.breakfast.fat += fat;
+          break;
+        }
+        case 1: {
+          caloriesByTime.lunch += calories;
+          nutrientsByTime.lunch.carbs += carbs;
+          nutrientsByTime.lunch.protein += protein;
+          nutrientsByTime.lunch.fat += fat;
+          break;
+        }
+        case 2: {
+          caloriesByTime.dinner += calories;
+          nutrientsByTime.dinner.carbs += carbs;
+          nutrientsByTime.dinner.protein += protein;
+          nutrientsByTime.dinner.fat += fat;
+          break;
+        }
+        case 3: {
+          caloriesByTime.snack += calories;
+          nutrientsByTime.snack.carbs += carbs;
+          nutrientsByTime.snack.protein += protein;
+          nutrientsByTime.snack.fat += fat;
+          break;
+        }
+        default: {
+          break;
+        }
       }
-      case 1: {
-        caloriesByTime.lunch += meal.menu_list[index].calories * meal.menu_quantities[index];
-        nutrientsByTime.lunch.carbs += meal.menu_list[index].carbs * meal.menu_quantities[index];
-        nutrientsByTime.lunch.protein +=
-          meal.menu_list[index].protein * meal.menu_quantities[index];
-        nutrientsByTime.lunch.fat += meal.menu_list[index].fat * meal.menu_quantities[index];
-        break;
-      }
-      case 2: {
-        caloriesByTime.dinner += meal.menu_list[index].calories * meal.menu_quantities[index];
-        nutrientsByTime.dinner.carbs += meal.menu_list[index].carbs * meal.menu_quantities[index];
-        nutrientsByTime.dinner.protein +=
-          meal.menu_list[index].protein * meal.menu_quantities[index];
-        nutrientsByTime.dinner.fat += meal.menu_list[index].fat * meal.menu_quantities[index];
-        break;
-      }
-      case 3: {
-        caloriesByTime.snack += meal.menu_list[index].calories * meal.menu_quantities[index];
-        nutrientsByTime.snack.carbs += meal.menu_list[index].carbs * meal.menu_quantities[index];
-        nutrientsByTime.snack.protein +=
-          meal.menu_list[index].protein * meal.menu_quantities[index];
-        nutrientsByTime.snack.fat += meal.menu_list[index].fat * meal.menu_quantities[index];
-        break;
-      }
-      default: {
-        break;
-      }
-    }
+    });
   });
 
   return {
