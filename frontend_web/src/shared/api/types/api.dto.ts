@@ -123,6 +123,11 @@ export type RegisterMenuRequestDto = Pick<
 
 export interface ModifyMenuRequestDto extends RegisterMenuRequestDto, MenuIdField {}
 
+export interface WeightStepsResponseDto {
+  weight: number;
+  steps: number;
+}
+
 export const MEAL_TYPE_OPTIONS = [
   { key: "breakfast", label: "아침" },
   { key: "lunch", label: "점심" },

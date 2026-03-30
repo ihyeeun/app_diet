@@ -2,33 +2,57 @@ import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
+import {
+  useRegisterStepsMutation,
+  useRegisterWeightMutation,
+} from "@/features/home/hooks/mutations/useBodyLogMutation";
+import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
 import style from "@/features/home/styles/TodayBodyLogSection.module.css";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { EditorInput } from "@/shared/commons/input/EditorInput";
 import { toast } from "@/shared/commons/toast/toast";
+import { toOneDecimalPlace } from "@/shared/utils/numberFormat";
 
 type TodayMetricType = "weight" | "steps";
-
-function roundToOneDecimal(value: number) {
-  return Math.round(value * 10) / 10;
-}
 
 function toInteger(value: number) {
   return Math.trunc(value);
 }
 
-export default function TodayBodyLogSection() {
-  const [weight, setWeight] = useState(42.2);
-  const [steps, setSteps] = useState(30000);
+export default function TodayBodyLogSection({ date }: { date: string }) {
+  const { data: bodyLog } = useGetBodyLog(date);
+
+  const { mutate: registerWeight } = useRegisterWeightMutation({
+    onSuccess: () => {
+      toast.success("체중이 기록되었어요");
+      closeEditor();
+      // TODO: 등록된 체중 값으로 bodyLog 업데이트
+    },
+    onError: () => {
+      toast.error("체중 기록에 실패했어요");
+    },
+  });
+  const { mutate: registerSteps } = useRegisterStepsMutation({
+    onSuccess: () => {
+      toast.success("걸음 수가 기록되었어요");
+      closeEditor();
+    },
+    onError: () => {
+      toast.error("걸음 수 기록에 실패했어요");
+    },
+  });
+
   const [editingMetric, setEditingMetric] = useState<TodayMetricType | null>(null);
-  const [draftValue, setDraftValue] = useState<number | undefined>(undefined);
+
+  // TODO : 여기서 0 대신에 현재 몸무게 값을 넣도록 해줘야한다.
+  const [draftValue, setDraftValue] = useState<number | undefined>(0);
 
   const isWeightEditing = editingMetric === "weight";
 
   const openEditor = (metricType: TodayMetricType) => {
     setEditingMetric(metricType);
-    setDraftValue(metricType === "weight" ? weight : steps);
+    setDraftValue(metricType === "weight" ? (bodyLog?.weight ?? 0) : (bodyLog?.steps ?? 0));
   };
 
   const closeEditor = () => {
@@ -39,52 +63,48 @@ export default function TodayBodyLogSection() {
   const inputTitle =
     editingMetric === "weight" ? "오늘의 체중" : editingMetric === "steps" ? "오늘의 걸음 수" : "";
 
-  const handleDraftChange = (value?: number) => {
+  const handleDraftChange = (value?: number | undefined) => {
     if (value === undefined) {
       setDraftValue(undefined);
       return;
     }
 
     if (isWeightEditing) {
-      setDraftValue(roundToOneDecimal(value));
+      setDraftValue(toOneDecimalPlace(value));
       return;
     }
 
     setDraftValue(toInteger(value));
   };
 
-  const handleConfirm = () => {
-    if (editingMetric === null) {
-      return;
-    }
-
+  const submitWeight = () => {
     if (draftValue === undefined) {
-      toast.warning(editingMetric === "weight" ? "체중을 입력해주세요" : "걸음 수를 입력해주세요");
+      toast.warning("체중을 입력해주세요");
       return;
     }
 
-    if (editingMetric === "weight") {
-      const nextWeight = roundToOneDecimal(draftValue);
+    const nextWeight = toOneDecimalPlace(draftValue);
+    if (nextWeight < 1 || nextWeight > 999.9) {
+      toast.warning("체중은 1 ~ 999.9kg 사이로 입력해주세요");
+      return;
+    }
 
-      if (nextWeight < 1 || nextWeight > 999.9) {
-        toast.warning("체중은 0 ~ 999.9kg 사이로 입력해주세요");
-        return;
-      }
+    registerWeight({ date, weight: nextWeight });
+  };
 
-      setWeight(nextWeight);
-      closeEditor();
+  const submitSteps = () => {
+    if (draftValue === undefined) {
+      toast.warning("걸음 수를 입력해주세요");
       return;
     }
 
     const nextSteps = toInteger(draftValue);
-
     if (nextSteps < 0 || nextSteps > 999999) {
       toast.warning("걸음 수는 0 ~ 999,999 사이로 입력해주세요");
       return;
     }
 
-    setSteps(nextSteps);
-    closeEditor();
+    registerSteps({ date, steps: nextSteps });
   };
 
   return (
@@ -92,13 +112,13 @@ export default function TodayBodyLogSection() {
       <div className={style.todayContainer}>
         <TodayMetricCard
           title="오늘의 체중"
-          value={weight}
+          value={bodyLog?.weight ?? 0}
           unit="kg"
           onClick={() => openEditor("weight")}
         />
         <TodayMetricCard
           title="오늘의 걸음 수"
-          value={steps}
+          value={bodyLog?.steps ?? 0}
           unit="걸음"
           onClick={() => openEditor("steps")}
         />
@@ -122,7 +142,7 @@ export default function TodayBodyLogSection() {
               onChange={handleDraftChange}
             />
             <div className={style.sheetActions}>
-              <Button onClick={handleConfirm} fullWidth>
+              <Button onClick={isWeightEditing ? submitWeight : submitSteps} fullWidth>
                 기록하기
               </Button>
             </div>

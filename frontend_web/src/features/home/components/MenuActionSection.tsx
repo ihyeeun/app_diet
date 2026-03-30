@@ -76,7 +76,7 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
         </div>
       </ActionCard>
 
-      <TodayBodyLogSection />
+      <TodayBodyLogSection date={selectedDate} />
     </div>
   );
 }
