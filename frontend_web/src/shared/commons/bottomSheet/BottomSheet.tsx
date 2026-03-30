@@ -12,7 +12,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
     <Sheet isOpen={isOpen} onClose={onClose} detent="content">
       <Sheet.Container
         style={{
-          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingBottom: "var(--safe-area-bottom)",
           background: "#fff",
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,

@@ -5,6 +5,11 @@
   box-sizing: border-box;
 }
 
+:root {
+  --safe-area-top: var(--native-safe-area-top, env(safe-area-inset-top, 0px));
+  --safe-area-bottom: var(--native-safe-area-bottom, env(safe-area-inset-bottom, 0px));
+}
+
 html,
 body,
 #root {

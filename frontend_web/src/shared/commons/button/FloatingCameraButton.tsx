@@ -21,7 +21,7 @@ export function FloatingCameraButton({
       className={`${styles.button} ${tone === "primary" ? styles.primary : styles.light}`}
       onClick={onClick}
       aria-label={ariaLabel}
-      style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${bottomOffset}px)` }}
+      style={{ bottom: `calc(var(--safe-area-bottom) + ${bottomOffset}px)` }}
     >
       <Camera size={24} />
     </button>

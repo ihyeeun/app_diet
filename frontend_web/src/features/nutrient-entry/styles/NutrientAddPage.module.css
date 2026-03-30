@@ -103,5 +103,5 @@
 
 .footer {
   padding: 0 20px;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: var(--safe-area-bottom);
 }

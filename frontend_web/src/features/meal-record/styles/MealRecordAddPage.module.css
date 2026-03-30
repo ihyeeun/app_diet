@@ -34,7 +34,7 @@
 
 .footer {
   padding: 0 20px;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: var(--safe-area-bottom);
 }
 
 .directInputText {
@@ -46,7 +46,7 @@
   flex-direction: column;
   gap: 20px;
   padding: 0 24px;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: var(--safe-area-bottom);
 }
 
 .sheetTitle {

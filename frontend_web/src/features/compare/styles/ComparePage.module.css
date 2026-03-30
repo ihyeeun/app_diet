@@ -47,5 +47,5 @@
 }
 
 .footer {
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: var(--safe-area-bottom);
 }

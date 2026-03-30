@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 16px 20px;
-  padding-top: env(safe-area-inset-top, 0);
+  padding-top: var(--safe-area-top);
   width: 100%;
 }
 

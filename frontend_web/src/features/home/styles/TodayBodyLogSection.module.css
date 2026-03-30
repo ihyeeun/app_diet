@@ -34,7 +34,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 0 24px;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: var(--safe-area-bottom);
 }
 
 .sheetTitle {

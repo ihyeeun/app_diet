@@ -2,7 +2,7 @@
   background-color: var(--bg-normal-primary1);
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top, 0);
+  padding-top: var(--safe-area-top);
   user-select: none;
   width: 100%;
 }

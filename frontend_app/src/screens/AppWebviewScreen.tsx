@@ -1,18 +1,20 @@
 import { handleWebMessage } from "@/src/shared/api/bridge/handleWebMessage";
 import { router } from "expo-router";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BackHandler, Platform, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
 
-const defaultWebUrl = Platform.select({
-  ios: "http://localhost:5173",
-  android: "http://10.0.2.2:5173",
-  default: "http://localhost:5173",
-}) ?? "http://localhost:5173";
+const defaultWebUrl =
+  Platform.select({
+    ios: "http://localhost:5173",
+    android: "http://10.0.2.2:5173",
+    default: "http://localhost:5173",
+  }) ?? "http://localhost:5173";
 
 const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL ?? defaultWebUrl;
+const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "10.0.2.2"]);
 
 type AppWebViewScreenProps = {
   path?: string;
@@ -41,12 +43,34 @@ function getWebAppOrigin() {
   }
 }
 
+function resolveUrlPort(url: URL) {
+  if (url.port) return url.port;
+  return url.protocol === "https:" ? "443" : "80";
+}
+
+function isEquivalentLocalOrigin(requestOrigin: string, webAppOrigin: string) {
+  if (requestOrigin === webAppOrigin) return true;
+
+  try {
+    const requestUrl = new URL(requestOrigin);
+    const webUrl = new URL(webAppOrigin);
+
+    const isBothLocalDevHost =
+      LOCAL_DEV_HOSTNAMES.has(requestUrl.hostname) && LOCAL_DEV_HOSTNAMES.has(webUrl.hostname);
+    if (!isBothLocalDevHost) return false;
+
+    return requestUrl.protocol === webUrl.protocol && resolveUrlPort(requestUrl) === resolveUrlPort(webUrl);
+  } catch {
+    return false;
+  }
+}
+
 function resolveWebPath(requestUrl: string, webAppOrigin: string | null) {
   if (!webAppOrigin) return null;
 
   try {
     const parsed = new URL(requestUrl);
-    if (parsed.origin !== webAppOrigin) return null;
+    if (!isEquivalentLocalOrigin(parsed.origin, webAppOrigin)) return null;
 
     return parsed.pathname;
   } catch {
@@ -111,17 +135,42 @@ const pathChangeBridgeScript = `
     window.addEventListener("popstate", emitPath);
     emitPath();
   })();
-  true;
 `;
+
+function normalizeInset(inset: number) {
+  return Math.max(0, Math.round(inset * 100) / 100);
+}
+
+function createSafeAreaSyncScript(topInset: number, bottomInset: number) {
+  const normalizedTopInset = normalizeInset(topInset);
+  const normalizedBottomInset = normalizeInset(bottomInset);
+
+  return `
+    (function () {
+      var root = document.documentElement;
+      if (!root) return;
+      root.style.setProperty("--native-safe-area-top", "${normalizedTopInset}px");
+      root.style.setProperty("--native-safe-area-bottom", "${normalizedBottomInset}px");
+    })();
+  `;
+}
 
 export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenProps) {
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const targetUrl = buildWebAppUrl(path);
   const webAppOrigin = getWebAppOrigin();
   const isTabWebView = Boolean(currentTab);
-  const injectedPathScript = isTabWebView ? pathChangeBridgeScript : undefined;
+  const safeAreaSyncScript = useMemo(
+    () => createSafeAreaSyncScript(insets.top, insets.bottom),
+    [insets.bottom, insets.top],
+  );
+  const injectedScriptBeforeContentLoaded = useMemo(
+    () => `${safeAreaSyncScript}${isTabWebView ? pathChangeBridgeScript : ""}true;`,
+    [isTabWebView, safeAreaSyncScript],
+  );
 
   const syncTabBarVisibility = useCallback(
     (hide: boolean) => {
@@ -143,6 +192,23 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     [isTabWebView, syncTabBarVisibility, webAppOrigin],
   );
 
+  const syncTabStateFromUrl = useCallback(
+    (url: string) => {
+      if (!isTabWebView) return false;
+
+      syncTabBarFromUrl(url);
+
+      if (!currentTab) return false;
+
+      const targetTab = resolveTabFromUrl(url, webAppOrigin);
+      if (!targetTab || targetTab === currentTab) return false;
+
+      router.replace(getTabRoute(targetTab));
+      return true;
+    },
+    [currentTab, isTabWebView, syncTabBarFromUrl, webAppOrigin],
+  );
+
   useEffect(() => {
     if (!isTabWebView) return;
 
@@ -155,17 +221,10 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
 
   const onShouldStartLoadWithRequest = useCallback(
     (request: WebViewNavigation) => {
-      syncTabBarFromUrl(request.url);
-
-      if (!currentTab) return true;
-
-      const targetTab = resolveTabFromUrl(request.url, webAppOrigin);
-      if (!targetTab || targetTab === currentTab) return true;
-
-      router.replace(getTabRoute(targetTab));
-      return false;
+      if (syncTabStateFromUrl(request.url)) return false;
+      return true;
     },
-    [currentTab, syncTabBarFromUrl, webAppOrigin],
+    [syncTabStateFromUrl],
   );
 
   const onMessage = useCallback(
@@ -177,7 +236,7 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
         };
 
         if (rawData.type === "WEB_PATH_CHANGE" && typeof rawData.payload?.href === "string") {
-          syncTabBarFromUrl(rawData.payload.href);
+          syncTabStateFromUrl(rawData.payload.href);
           return;
         }
       } catch {
@@ -186,15 +245,14 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
 
       handleWebMessage(event, webViewRef);
     },
-    [syncTabBarFromUrl],
+    [syncTabStateFromUrl],
   );
 
   const onNavigationStateChange = useCallback(
     (navState: WebViewNavigation) => {
       canGoBackRef.current = navState.canGoBack;
-      syncTabBarFromUrl(navState.url);
     },
-    [syncTabBarFromUrl],
+    [],
   );
 
   useEffect(() => {
@@ -212,13 +270,22 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     };
   }, []);
 
+  useEffect(() => {
+    webViewRef.current?.injectJavaScript(`${safeAreaSyncScript}true;`);
+  }, [safeAreaSyncScript]);
+
+  const onLoadEnd = useCallback(() => {
+    webViewRef.current?.injectJavaScript(`${safeAreaSyncScript}true;`);
+  }, [safeAreaSyncScript]);
+
   return (
     <SafeAreaView style={styles.container} edges={["left", "right"]}>
       <WebView
         ref={webViewRef}
         source={{ uri: targetUrl }}
-        injectedJavaScriptBeforeContentLoaded={injectedPathScript}
+        injectedJavaScriptBeforeContentLoaded={injectedScriptBeforeContentLoaded}
         onMessage={onMessage}
+        onLoadEnd={onLoadEnd}
         onNavigationStateChange={onNavigationStateChange}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         allowsBackForwardNavigationGestures
