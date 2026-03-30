@@ -226,6 +226,7 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
         domStorageEnabled
         originWhitelist={["*"]}
         style={styles.webview}
+        webviewDebuggingEnabled={true}
       />
     </SafeAreaView>
   );
