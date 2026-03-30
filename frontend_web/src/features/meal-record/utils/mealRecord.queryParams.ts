@@ -7,8 +7,8 @@ export function getSafeDateKey(value: string | null) {
   return getTodayFormatDateKey();
 }
 
-export function getMealType(value: string | null): MealType {
-  if (value && MEAL_TYPE_SET.has(value as MealType)) {
+export function getMealType(value: number | null): MealType {
+  if (value !== null && MEAL_TYPE_SET.has(value as MealType)) {
     return value as MealType;
   }
 

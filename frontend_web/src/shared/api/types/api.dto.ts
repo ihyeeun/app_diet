@@ -129,10 +129,11 @@ export interface WeightStepsResponseDto {
 }
 
 export const MEAL_TYPE_OPTIONS = [
-  { key: "breakfast", label: "아침" },
-  { key: "lunch", label: "점심" },
-  { key: "dinner", label: "저녁" },
-  { key: "snack", label: "간식" },
+  { key: "0", label: "아침" },
+  { key: "1", label: "점심" },
+  { key: "2", label: "저녁" },
+  { key: "3", label: "간식" },
+  { key: "4", label: "야식" },
 ] as const;
 
 export type MealType = (typeof MEAL_TYPE_OPTIONS)[number]["key"];
@@ -177,7 +178,7 @@ export const DEFAULT_TARGET_MACRO_RATIOS: MacroRatios = {
   fat: 20,
 };
 
-export const DEFAULT_MEAL_TYPE: MealType = "lunch";
+export const DEFAULT_MEAL_TYPE: MealType = "1";
 export const MEAL_TYPE_SET: ReadonlySet<MealType> = new Set(
   MEAL_TYPE_OPTIONS.map((option) => option.key),
 );

@@ -8,7 +8,7 @@ function isValidDateKey(date: string) {
 
 export function useDayMealsQuery(date: string) {
   return useQuery({
-    queryKey: ["day-meals", date],
+    queryKey: ["lagacy", date],
     queryFn: () => getDayMeals({ date }),
     enabled: isValidDateKey(date),
   });

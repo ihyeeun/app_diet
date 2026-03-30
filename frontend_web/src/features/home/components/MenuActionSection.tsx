@@ -10,7 +10,7 @@ import type { MealType } from "@/shared/api/types/api.dto";
 function getMealRecordPath(date: string, mealType: MealType) {
   const params = new URLSearchParams({
     date,
-    mealType,
+    mealType: String(mealType),
   });
   return `${PATH.MEAL_RECORD}?${params.toString()}`;
 }
@@ -51,26 +51,26 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
               label="아침"
               iconSrc="/icons/breakfast.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath(selectedDate, "breakfast"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, 0))}
             />
             <MealTimeCard
               label="점심"
               iconSrc="/icons/lunch.svg"
               value="123"
-              onClick={() => navigate(getMealRecordPath(selectedDate, "lunch"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, 1))}
               selected
             />
             <MealTimeCard
               label="저녁"
               iconSrc="/icons/dinner.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath(selectedDate, "dinner"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, 2))}
             />
             <MealTimeCard
               label="간식"
               iconSrc="/icons/snack.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath(selectedDate, "snack"))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, 3))}
             />
           </div>
         </div>

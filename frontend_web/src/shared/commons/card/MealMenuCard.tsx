@@ -12,6 +12,8 @@ type MealMenuCardProps = {
   calories?: number;
   unit_quantity?: string;
   brand?: string;
+  unit?: number;
+  weight?: number;
   suggestionChipLabel?: string;
   data_source?: number;
   icon?: MealMenuCardIcon;
@@ -43,6 +45,8 @@ export function MealMenuCard({
   calories,
   unit_quantity,
   brand,
+  unit,
+  weight,
   data_source,
   suggestionChipLabel,
   icon = "delete",
@@ -107,7 +111,10 @@ export function MealMenuCard({
         <section className={styles.meta}>
           <p className={styles.prouductInfo}>
             {brand && <span className={`${styles.brand} typo-label4`}>{brand}</span>}
-            <span className={`${styles.unitAmount} typo-label4`}>{unit_quantity}</span>
+            <span className={`${styles.unitAmount} typo-label4`}>
+              {unit_quantity}{" "}
+              {`(${weight?.toLocaleString("ko-KR") ?? 0} ${unit === 0 ? "g" : "ml"})`}
+            </span>
           </p>
           {calories && (
             <span className={`${styles.calories} typo-title2`}>

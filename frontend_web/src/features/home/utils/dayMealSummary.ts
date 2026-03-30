@@ -1,4 +1,10 @@
-import type { MealRecordResponseDto, MealResponseDto } from "@/shared/api/types/api.dto";
+import type {
+  MealRecordResponseDto,
+  MealResponseDto,
+  MenuSimpleResponseDto,
+} from "@/shared/api/types/api.dto";
+
+type MealTimeKey = 0 | 1 | 2 | 3 | 4;
 
 export type DayMealSummary = {
   totalCalories: number;
@@ -12,6 +18,7 @@ export type DayMealSummary = {
     lunch: number;
     dinner: number;
     snack: number;
+    lateNight: number;
   };
   nutrientsByTime: {
     breakfast: {
@@ -34,6 +41,18 @@ export type DayMealSummary = {
       protein: number;
       fat: number;
     };
+    lateNight: {
+      carbs: number;
+      protein: number;
+      fat: number;
+    };
+  };
+  menusByTime: {
+    0: MenuSimpleResponseDto[];
+    1: MenuSimpleResponseDto[];
+    2: MenuSimpleResponseDto[];
+    3: MenuSimpleResponseDto[];
+    4: MenuSimpleResponseDto[];
   };
 };
 
@@ -49,12 +68,21 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     lunch: 0,
     dinner: 0,
     snack: 0,
+    lateNight: 0,
   };
   const nutrientsByTime = {
     breakfast: { carbs: 0, protein: 0, fat: 0 },
     lunch: { carbs: 0, protein: 0, fat: 0 },
     dinner: { carbs: 0, protein: 0, fat: 0 },
     snack: { carbs: 0, protein: 0, fat: 0 },
+    lateNight: { carbs: 0, protein: 0, fat: 0 },
+  };
+  const menusByTime: Record<MealTimeKey, MenuSimpleResponseDto[]> = {
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+    4: [],
   };
 
   const resolveQuantity = (meal: MealResponseDto, menuIndex: number) => {
@@ -69,6 +97,24 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
       const carbs = menu.carbs * quantity;
       const protein = menu.protein * quantity;
       const fat = menu.fat * quantity;
+
+      const menuItem: MenuSimpleResponseDto & { quantity: number } = {
+        id: menu.id,
+        data_source: menu.data_source,
+        name: menu.name,
+        brand: menu?.brand,
+        category: menu.category,
+        unit: menu.unit,
+        weight: menu.weight,
+        unit_quantity: menu.unit_quantity,
+        calories,
+        carbs,
+        protein,
+        fat,
+        quantity,
+      };
+
+      menusByTime[meal.time].push(menuItem);
 
       totalCalories += calories;
       totalNutrients.carbs += carbs;
@@ -104,6 +150,13 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
           nutrientsByTime.snack.fat += fat;
           break;
         }
+        case 4: {
+          caloriesByTime.lateNight += calories;
+          nutrientsByTime.lateNight.carbs += carbs;
+          nutrientsByTime.lateNight.protein += protein;
+          nutrientsByTime.lateNight.fat += fat;
+          break;
+        }
         default: {
           break;
         }
@@ -116,5 +169,6 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     totalNutrients,
     caloriesByTime,
     nutrientsByTime,
+    menusByTime,
   };
 }
