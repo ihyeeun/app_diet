@@ -1,10 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
-import { type DayMealSummary } from "@/features/home/utils/dayMealSummary";
 import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
 import {
   formatMenuDraftKey,
@@ -43,13 +43,9 @@ const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
   "4": MEAL_TIME.LATE_NIGHT_SNACK,
 };
 
-function roundQuantity(value: number) {
-  return Math.round(value * 10) / 10;
-}
-
 function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
   return menus
-    .map((menu) => [menu.id, roundQuantity(menu.quantity)] as const)
+    .map((menu) => [menu.id, menu.quantity] as const)
     .sort((a, b) => a[0] - b[0])
     .map(([id, quantity]) => `${id}:${quantity}`)
     .join("|");
@@ -65,15 +61,13 @@ export default function MealRecordPage() {
   const mealType = getMealType(searchParams.get("mealType"));
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
-  const { isPending: isSummaryReady } = useDayMealsQuery(dateKey);
+  const { data: currentMenus, isPending: isSummaryReady } = useDayMealsQuery(dateKey);
   const initDraft = useMenuDraftInit();
   const removeMenu = useMenuDraftRemove();
   const clearDraft = useMenuDraftClear();
   const draftMenus = useMenuDraftMenus(dateKey, mealType);
   const allDrafts = useMenuDraftStore((store) => store.drafts);
   const hasCurrentDraft = Boolean(allDrafts[draftKey]);
-
-  const currentMenus = queryClient.getQueryData<DayMealSummary>(queryKeys.dayMeals(dateKey));
 
   const currentMenuItems = (() => {
     if (!currentMenus) return [];
@@ -226,7 +220,7 @@ export default function MealRecordPage() {
 
   const handleExitConfirm = () => {
     clearAllDrafts();
-    navigate(-1);
+    navigate(PATH.HOME, { replace: true });
   };
 
   const handleMealSearchNavigate = () => {
@@ -252,31 +246,13 @@ export default function MealRecordPage() {
       <main className={styles.content}>
         <section className={styles.summarySection}>
           <article className={styles.summaryCard}>
-            <div className={styles.summaryTitleRow}>
-              <p className="typo-title3">칼로리</p>
-            </div>
+            <p className="typo-title3">섭취 칼로리</p>
 
             <div className={styles.calorieRow}>
-              <p className="typo-title2">
-                <span className={`${styles.currentCalorie} typo-h2`}>
-                  {totalCalories.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}
-                </span>{" "}
-                kcal
-              </p>
-
-              <div className={styles.dividerContainerHorizontal}>
-                <div className="divider-horizontal" />
-              </div>
-
-              <p className={`${styles.targetCalorie} typo-title2`}>
-                {/* {formatInt(currentRecord.targetCalories)} kcal */}
-              </p>
-            </div>
-
-            <div className={styles.progressRow}>
-              <div className={styles.progressContainer}>
-                {/* <ScoreProgress value={progressValue} variant="primary-white" /> */}
-              </div>
+              <span className={`${styles.currentCalorie} typo-h2`}>
+                {totalCalories.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}
+              </span>
+              <span className="typo-title2">kcal</span>
             </div>
           </article>
         </section>
@@ -325,9 +301,8 @@ export default function MealRecordPage() {
             </div>
           ) : (
             <button type="button" className={styles.emptyState} onClick={handleMealSearchNavigate}>
-              <p className="typo-body4">
-                아직 기록된 메뉴가 없어요. <br /> 식사 기록을 추가해볼까요?
-              </p>
+              <PlusIcon size={24} />
+              <p className="typo-title2">기록하러 가볼까요?</p>
             </button>
           )}
         </section>

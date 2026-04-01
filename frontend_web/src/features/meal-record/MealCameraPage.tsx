@@ -7,7 +7,6 @@ import {
   requestNativeCameraCapture,
   requestNativeGalleryPick,
 } from "@/shared/api/bridge/nativeBridge";
-import type { NutrientAddLocationState } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
@@ -19,19 +18,19 @@ type BridgeCameraError = Error & {
 export default function MealCameraPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = (location.state ?? {}) as NutrientAddLocationState;
+  // const locationState = (location.state ?? {}) as NutrientAddLocationState;
 
   const handleCameraActions = async () => {
     try {
       const capturedImage = await requestNativeCameraCapture({ quality: 0.8 });
       const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
-      navigate(PATH.NUTRIENT_ADD, {
-        state: {
-          ...locationState,
-          capturedImage,
-          uploadedImageUrl: uploadedImageUrl ?? undefined,
-        } satisfies NutrientAddLocationState,
-      });
+      // navigate(PATH.NUTRIENT_ADD, {
+      //   state: {
+      //     ...locationState,
+      //     capturedImage,
+      //     uploadedImageUrl: uploadedImageUrl ?? undefined,
+      //   } satisfies NutrientAddLocationState,
+      // });
       toast.success("촬영 후 서버 전송이 완료되었어요");
     } catch (error) {
       const bridgeError = error as BridgeCameraError;
@@ -45,13 +44,13 @@ export default function MealCameraPage() {
     try {
       const capturedImage = await requestNativeGalleryPick({ quality: 0.8 });
       const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
-      navigate(PATH.NUTRIENT_ADD, {
-        state: {
-          ...locationState,
-          capturedImage,
-          uploadedImageUrl: uploadedImageUrl ?? undefined,
-        } satisfies NutrientAddLocationState,
-      });
+      // navigate(PATH.NUTRIENT_ADD, {
+      //   state: {
+      //     ...locationState,
+      //     capturedImage,
+      //     uploadedImageUrl: uploadedImageUrl ?? undefined,
+      //   } satisfies NutrientAddLocationState,
+      // });
       toast.success("선택한 사진이 서버에 전송되었어요");
     } catch (error) {
       const bridgeError = error as BridgeCameraError;

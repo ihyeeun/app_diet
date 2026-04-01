@@ -27,10 +27,10 @@ export function BaseAlertModal({
 
         <AlertDialog.Popup className="modal-popup">
           <div className="modal-surface">
-            <AlertDialog.Title className="modal-title">{title}</AlertDialog.Title>
+            <AlertDialog.Title className="typo-title2">{title}</AlertDialog.Title>
 
             {description ? (
-              <AlertDialog.Description className="modal-description">
+              <AlertDialog.Description className="typo-body3">
                 {description}
               </AlertDialog.Description>
             ) : null}

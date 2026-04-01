@@ -1,7 +1,9 @@
 import { requestNativeImageUpload } from "@/shared/api/bridge/nativeBridge";
 import type { CapturedImage } from "@/shared/api/types/api.dto";
 
-import { NUTRIENT_ENTRY_END_POINT } from "./endpoints";
+const END_POINT = {
+  IMAGE_UPLOAD: "",
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -40,7 +42,7 @@ export function resolveUploadedImageUrl(response: unknown) {
 
 export async function uploadCapturedImageToServer(capturedImage: CapturedImage) {
   const response = await requestNativeImageUpload({
-    endpoint: NUTRIENT_ENTRY_END_POINT.IMAGE_UPLOAD,
+    endpoint: END_POINT.IMAGE_UPLOAD,
     fileUri: capturedImage.uri,
     fileName: capturedImage.fileName,
     mimeType: capturedImage.mimeType,

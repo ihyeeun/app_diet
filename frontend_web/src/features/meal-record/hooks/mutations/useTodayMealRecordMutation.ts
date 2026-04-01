@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { postTodayMealRecordRegister } from "@/features/meal-record/api/todayMealRecord";
+import { postTodayMealRecordRegister } from "@/features/meal-record/api/DayMeal";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
 
 export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallback) {

@@ -35,7 +35,12 @@ export function getMealDetailPath(
   dateKey: string,
   mealType: MealType,
   menuId: number,
-  pageKey: PageKey,
+  pageKey?: PageKey,
 ) {
-  return `${PATH.MEAL_RECORD_ADD_SEARCH_DETAIL}?${buildMealRecordQuery(dateKey, mealType, menuId, pageKey)}`;
+  return `${PATH.MEAL_DETAIL}?${buildMealRecordQuery(
+    dateKey,
+    mealType,
+    menuId,
+    pageKey,
+  )}`;
 }

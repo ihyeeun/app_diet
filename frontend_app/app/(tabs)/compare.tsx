@@ -1,5 +1,5 @@
-import AppWebViewScreen from "@/src/screens/AppWebviewScreen";
+import { Redirect } from "expo-router";
 
 export default function CompareScreen() {
-  return <AppWebViewScreen path="/compare" currentTab="compare" />;
+  return <Redirect href="/(tabs)/home" />;
 }

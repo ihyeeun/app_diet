@@ -63,7 +63,11 @@ function resolveImageMimeType(source: ImageFileSource) {
 }
 
 async function resolveImageFileSize(source: ImageFileSource) {
-  if (typeof source.fileSize === "number" && Number.isFinite(source.fileSize) && source.fileSize >= 0) {
+  if (
+    typeof source.fileSize === "number" &&
+    Number.isFinite(source.fileSize) &&
+    source.fileSize >= 0
+  ) {
     return source.fileSize;
   }
 
@@ -106,7 +110,11 @@ async function normalizeImageAsset(asset: ImagePicker.ImagePickerAsset) {
   }
 
   if (fileSize > MAX_IMAGE_SIZE_BYTES) {
-    throw new BridgeHandledError("이미지 용량은 5MB 이하만 첨부할 수 있어요.", 400, "IMAGE_SIZE_EXCEEDED");
+    throw new BridgeHandledError(
+      "이미지 용량은 5MB 이하만 첨부할 수 있어요.",
+      400,
+      "IMAGE_SIZE_EXCEEDED",
+    );
   }
 
   return {
@@ -122,7 +130,11 @@ async function normalizeImageAsset(asset: ImagePicker.ImagePickerAsset) {
 
 function assertRelativeEndpoint(endpoint: string) {
   if (!endpoint.startsWith("/") || endpoint.startsWith("//")) {
-    throw new BridgeHandledError("업로드 endpoint는 상대 경로만 허용해요.", 400, "INVALID_UPLOAD_ENDPOINT");
+    throw new BridgeHandledError(
+      "업로드 endpoint는 상대 경로만 허용해요.",
+      400,
+      "INVALID_UPLOAD_ENDPOINT",
+    );
   }
 }
 
@@ -168,12 +180,20 @@ async function normalizeUploadImageSource(payload: BridgeImageUploadRequestPaylo
   }
 
   if (fileSize > MAX_IMAGE_SIZE_BYTES) {
-    throw new BridgeHandledError("이미지 용량은 5MB 이하만 첨부할 수 있어요.", 400, "IMAGE_SIZE_EXCEEDED");
+    throw new BridgeHandledError(
+      "이미지 용량은 5MB 이하만 첨부할 수 있어요.",
+      400,
+      "IMAGE_SIZE_EXCEEDED",
+    );
   }
 
   const normalizedMimeType =
     mimeType ??
-    (extension === "png" ? "image/png" : extension === "jpg" || extension === "jpeg" ? "image/jpeg" : null);
+    (extension === "png"
+      ? "image/png"
+      : extension === "jpg" || extension === "jpeg"
+        ? "image/jpeg"
+        : null);
   if (!normalizedMimeType) {
     throw new BridgeHandledError("이미지 형식을 확인하지 못했어요.", 400, "IMAGE_FORMAT_UNKNOWN");
   }
@@ -199,14 +219,11 @@ async function uploadImageToServer(payload: BridgeImageUploadRequestPayload) {
   const method = payload.method ?? "POST";
 
   const formData = new FormData();
-  formData.append(
-    fieldName,
-    {
-      uri: normalizedImage.uri,
-      name: normalizedImage.fileName,
-      type: normalizedImage.mimeType,
-    } as unknown as Blob,
-  );
+  formData.append(fieldName, {
+    uri: normalizedImage.uri,
+    name: normalizedImage.fileName,
+    type: normalizedImage.mimeType,
+  } as unknown as Blob);
 
   if (payload.body) {
     Object.entries(payload.body).forEach(([key, value]) => {
@@ -260,11 +277,7 @@ async function capturePhotoFromCamera(payload?: BridgeCameraCaptureRequestPayloa
 async function pickPhotoFromGallery(payload?: BridgeGalleryPickRequestPayload) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) {
-    throw new BridgeHandledError(
-      "갤러리 접근 권한이 필요해요.",
-      403,
-      "GALLERY_PERMISSION_DENIED",
-    );
+    throw new BridgeHandledError("갤러리 접근 권한이 필요해요.", 403, "GALLERY_PERMISSION_DENIED");
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -305,7 +318,9 @@ function isBridgePrimitiveValue(value: unknown): value is string | number | bool
   );
 }
 
-function isBridgePrimitiveRecord(value: unknown): value is Record<string, string | number | boolean | undefined> {
+function isBridgePrimitiveRecord(
+  value: unknown,
+): value is Record<string, string | number | boolean | undefined> {
   if (!isRecord(value)) return false;
   return Object.values(value).every(isBridgePrimitiveValue);
 }
@@ -327,7 +342,6 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
     return (
       value.payload.tab === "home" ||
       value.payload.tab === "recommend" ||
-      value.payload.tab === "compare" ||
       value.payload.tab === "profile"
     );
   }
@@ -373,7 +387,8 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
       value.payload.method === "PUT";
     if (!isValidMethod) return false;
 
-    const isValidBody = value.payload.body === undefined || isBridgePrimitiveRecord(value.payload.body);
+    const isValidBody =
+      value.payload.body === undefined || isBridgePrimitiveRecord(value.payload.body);
     if (!isValidBody) return false;
 
     const isValidParams =

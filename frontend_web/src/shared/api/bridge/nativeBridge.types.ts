@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/shared/api/types/apiResponse.types";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-export type AppTabName = "home" | "recommend" | "compare" | "profile";
+export type AppTabName = "home" | "recommend" | "profile";
 
 export type ApiRequestPayload = {
   endpoint: string;

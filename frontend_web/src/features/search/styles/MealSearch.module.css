@@ -131,7 +131,7 @@
 .resultList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .emptyResultContainer {
@@ -159,15 +159,18 @@
 }
 
 .placeholder {
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
-  border-radius: 12px;
-  padding: 30px 20px;
+  padding-bottom: 76px;
   text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .placeholderText {
-  color: var(--text-assistive2);
+  color: var(--text-normal);
 }
 
 .similarSection {
@@ -185,12 +188,19 @@
   padding-bottom: calc(var(--safe-area-bottom) + 8px);
 }
 
-.menuCompareFooterContainer {
-  display: flex;
-  gap: 8px;
-}
-
 .buttonContainer {
   display: flex;
   gap: 30px;
+}
+
+.bottomTextContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 0;
+}
+
+.bottomText {
+  color: var(--text-normal);
+  padding-right: 10px;
 }

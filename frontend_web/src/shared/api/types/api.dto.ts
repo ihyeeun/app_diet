@@ -1,4 +1,4 @@
-import type { MacroRatios } from "@/shared/utils/nutrientScore";
+// import type { MacroRatios } from "@/shared/utils/nutrientScore";
 
 export const MENU_DATA_SOURCE = {
   PUBLIC: 0,
@@ -70,6 +70,25 @@ export interface MenuNutrientFields {
   cholesterol: number;
   alcohol: number;
 }
+
+export const MENU_NUTRIENT_FIELD_KEYS = [
+  "carbs",
+  "sugars",
+  "sugar_alchol",
+  "dietary_fiber",
+  "protein",
+  "fat",
+  "sat_fat",
+  "trans_fat",
+  "un_sat_fat",
+  "sodium",
+  "caffeine",
+  "potassium",
+  "cholesterol",
+  "alcohol",
+] as const satisfies ReadonlyArray<keyof MenuNutrientFields>;
+
+export type MenuNutrientFieldKey = (typeof MENU_NUTRIENT_FIELD_KEYS)[number];
 
 export type MenuSimpleResponseDto = MenuBaseFields;
 
@@ -158,43 +177,43 @@ export type MealPhotoGroup = {
   items: MealMenuItem[];
 };
 
-export type MealRecordState = {
-  targetCalories: number;
-  targetMacroRatios: MacroRatios;
-  menuItems: MealMenuItem[];
-  photoGroups: MealPhotoGroup[];
-  addQueue: MealMenuItem[];
-};
+// export type MealRecordState = {
+//   targetCalories: number;
+//   targetMacroRatios: MacroRatios;
+//   menuItems: MealMenuItem[];
+//   photoGroups: MealPhotoGroup[];
+//   addQueue: MealMenuItem[];
+// };
 
-export type MealRecordByType = Record<MealType, MealRecordState>;
+// export type MealRecordByType = Record<MealType, MealRecordState>;
 
-export type MealRecordLocationState = {
-  pendingMenus?: MealMenuItem[];
-};
+// export type MealRecordLocationState = {
+//   pendingMenus?: MealMenuItem[];
+// };
 
-export const DEFAULT_TARGET_MACRO_RATIOS: MacroRatios = {
-  carbs: 50,
-  protein: 30,
-  fat: 20,
-};
+// export const DEFAULT_TARGET_MACRO_RATIOS: MacroRatios = {
+//   carbs: 50,
+//   protein: 30,
+//   fat: 20,
+// };
 
 export const DEFAULT_MEAL_TYPE: MealType = "1";
 export const MEAL_TYPE_SET: ReadonlySet<MealType> = new Set(
   MEAL_TYPE_OPTIONS.map((option) => option.key),
 );
 
-export type NutrientEntrySource = "meal-record" | "menu-compare" | "general";
+// export type NutrientEntrySource = "meal-record" | "menu-compare" | "general";
 export type NutrientServingUnit = "g" | "ml";
 
-export type NutrientEntryContextState = {
-  source?: NutrientEntrySource;
-  dateKey?: string;
-  mealType?: MealType;
-  existingMenuCount?: number;
-  pendingMenus?: MealMenuItem[];
-  existingCompareCount?: number;
-  pendingCompareMenus?: MealMenuItem[];
-};
+// export type NutrientEntryContextState = {
+//   source?: NutrientEntrySource;
+//   dateKey?: string;
+//   mealType?: MealType;
+//   existingMenuCount?: number;
+//   pendingMenus?: MealMenuItem[];
+//   existingCompareCount?: number;
+//   pendingCompareMenus?: MealMenuItem[];
+// };
 
 export type CapturedImage = {
   uri: string;
@@ -204,11 +223,3 @@ export type CapturedImage = {
   fileSize: number | null;
   mimeType: string | null;
 };
-
-// export type NutrientAddLocationState = NutrientEntryContextState & {
-//   brandName?: string;
-//   foodName?: string;
-//   servingUnit?: NutrientServingUnit;
-//   capturedImage?: CapturedImage;
-//   uploadedImageUrl?: string;
-// };

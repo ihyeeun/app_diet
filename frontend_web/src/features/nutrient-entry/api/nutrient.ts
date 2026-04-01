@@ -1,5 +1,10 @@
-import type { RegisterManualMenuPayload } from "@/features/nutrient-entry/api/manualMenu";
 import { appApiData } from "@/shared/api/appApi";
+import type { MenuNutrientFieldKey, RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
+
+export type RegisterManualMenuPayload = Omit<RegisterMenuRequestDto, MenuNutrientFieldKey> &
+  NullableNutrientPayload;
+
+type NullableNutrientPayload = Record<MenuNutrientFieldKey, number | null>;
 
 const END_POINT = {
   NUTRIENT_REGISTER: "/home/registerMenu",

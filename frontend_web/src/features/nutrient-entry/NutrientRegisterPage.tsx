@@ -7,9 +7,16 @@ import {
   useMenuDraftUpsert,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { getMealRecordAddSearchPath } from "@/features/meal-record/utils/mealRecord.paths";
-import { type RegisterManualMenuPayload } from "@/features/nutrient-entry/api/manualMenu";
-import { registerMenu } from "@/features/nutrient-entry/api/nutrient";
+import {
+  type RegisterManualMenuPayload,
+  registerMenu,
+} from "@/features/nutrient-entry/api/nutrient";
 import { NutrientDetailForm } from "@/features/nutrient-entry/components/NutrientDetailForm";
+import {
+  buildNullableNutrientFields,
+  buildNutrientFormFields,
+  hasChildNutrientOverflow,
+} from "@/features/nutrient-entry/utils/nutrientFields";
 import { PATH } from "@/router/path";
 import type {
   MealType,
@@ -33,15 +40,7 @@ type NutrientRegisterLocationState = Partial<RegisterMenuRequestDto> &
     brandName?: string;
   };
 
-function toNullableNumber(value: number | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return null;
-  }
-
-  return value;
-}
-
-export function NutrientRegisterPage() {
+export default function NutrientRegisterPage() {
   const navigation = useNavigate();
   const location = useLocation();
   const upsertMenu = useMenuDraftUpsert();
@@ -55,22 +54,7 @@ export function NutrientRegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const brandName = (formState.brand ?? "").trim();
-  const nutrientForm: Partial<MenuNutrientFields> = {
-    carbs: formState.carbs,
-    sugars: formState.sugars,
-    sugar_alchol: formState.sugar_alchol,
-    dietary_fiber: formState.dietary_fiber,
-    protein: formState.protein,
-    fat: formState.fat,
-    sat_fat: formState.sat_fat,
-    trans_fat: formState.trans_fat,
-    un_sat_fat: formState.un_sat_fat,
-    sodium: formState.sodium,
-    caffeine: formState.caffeine,
-    potassium: formState.potassium,
-    cholesterol: formState.cholesterol,
-    alcohol: formState.alcohol,
-  };
+  const nutrientForm = buildNutrientFormFields(formState);
 
   const handleFieldChange = (key: keyof MenuNutrientFields, nextValue: string) => {
     const parsedValue = nextValue === "" ? undefined : Number(nextValue);
@@ -109,6 +93,11 @@ export function NutrientRegisterPage() {
       return;
     }
 
+    if (hasChildNutrientOverflow(formState)) {
+      toast.warning("하위 항목 합이 상위 항목을 초과했어요");
+      return;
+    }
+
     const name = (formState.name ?? "").trim();
     const brand = (formState.brand ?? "").trim();
     const weight = formState.weight ?? 0;
@@ -121,20 +110,7 @@ export function NutrientRegisterPage() {
       unit,
       weight,
       calories,
-      carbs: toNullableNumber(formState.carbs),
-      sugars: toNullableNumber(formState.sugars),
-      sugar_alchol: toNullableNumber(formState.sugar_alchol),
-      dietary_fiber: toNullableNumber(formState.dietary_fiber),
-      protein: toNullableNumber(formState.protein),
-      fat: toNullableNumber(formState.fat),
-      sat_fat: toNullableNumber(formState.sat_fat),
-      trans_fat: toNullableNumber(formState.trans_fat),
-      un_sat_fat: toNullableNumber(formState.un_sat_fat),
-      sodium: toNullableNumber(formState.sodium),
-      caffeine: toNullableNumber(formState.caffeine),
-      potassium: toNullableNumber(formState.potassium),
-      cholesterol: toNullableNumber(formState.cholesterol),
-      alcohol: toNullableNumber(formState.alcohol),
+      ...buildNullableNutrientFields(formState),
     };
 
     try {
@@ -224,18 +200,18 @@ export function NutrientRegisterPage() {
 
             <section className={styles.nutrientFormWrap}>
               <NutrientDetailForm
-                totalWeight={formState.weight ?? 0}
+                totalWeight={formState.weight}
                 onTotalWeightChange={(nextWeight) => {
                   setFormState((prev) => ({
                     ...prev,
-                    weight: Number.isFinite(nextWeight) ? nextWeight : undefined,
+                    weight: nextWeight,
                   }));
                 }}
-                totalCalories={formState.calories ?? 0}
+                totalCalories={formState.calories}
                 onTotalCaloriesChange={(nextCalories) => {
                   setFormState((prev) => ({
                     ...prev,
-                    calories: Number.isFinite(nextCalories) ? nextCalories : undefined,
+                    calories: nextCalories,
                   }));
                 }}
                 form={nutrientForm}

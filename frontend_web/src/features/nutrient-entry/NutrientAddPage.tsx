@@ -1,54 +1,45 @@
-import { type ChangeEvent,useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-import { PATH } from "@/router/path";
-import type { NutrientAddLocationState } from "@/shared/api/types/api.dto";
-import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 
 import styles from "./styles/NutrientAddPage.module.css";
 
-function formatBytesToMb(fileSize: number) {
-  return `${(fileSize / (1024 * 1024)).toFixed(2)}MB`;
-}
+// function formatBytesToMb(fileSize: number) {
+//   return `${(fileSize / (1024 * 1024)).toFixed(2)}MB`;
+// }
 
 export default function NutrientAddPage() {
+  // TODO 추후 카메라 찍기 전 온보딩 페이지로 구현하기
   const navigation = useNavigate();
-  const location = useLocation();
-  const contextState = (location.state ?? {}) as NutrientAddLocationState;
-  const brandName = (contextState.brandName ?? "").trim();
-  const capturedImage = contextState.capturedImage;
-  const uploadedImageUrl = contextState.uploadedImageUrl;
-  const [foodName, setFoodName] = useState((contextState.foodName ?? "").trim());
+  // const location = useLocation();
+  // const brandName = (contextState.brandName ?? "").trim();
+  // const capturedImage = contextState.capturedImage;
+  // const uploadedImageUrl = contextState.uploadedImageUrl;
+  // const [foodName, setFoodName] = useState((contextState.foodName ?? "").trim());
 
-  const handleFoodNameChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setFoodName(event.target.value);
-  };
+  // const handleFoodNameChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  //   setFoodName(event.target.value);
+  // };
 
-  const handleOpenBrandSearch = () => {
-    navigation(PATH.BRAND_SEARCH, {
-      replace: true,
-      state: {
-        ...contextState,
-        brandName,
-        foodName,
-      } satisfies NutrientAddLocationState,
-    });
-  };
+  // const handleOpenBrandSearch = () => {
+  //   navigation(PATH.BRAND_SEARCH, {
+  //     replace: true,
+  //   });
+  // };
 
-  const isNextDisabled = !foodName.trim();
+  // const isNextDisabled = !foodName.trim();
 
-  const handleNext = () => {
-    if (isNextDisabled) return;
+  // const handleNext = () => {
+  //   if (isNextDisabled) return;
 
-    navigation(PATH.NUTRIENT_ADD_DETAIL, {
-      state: {
-        ...contextState,
-        brandName: brandName.trim(),
-        foodName: foodName.trim(),
-      },
-    });
-  };
+  //   navigation(PATH.NUTRIENT_ADD_DETAIL, {
+  //     state: {
+  //       ...contextState,
+  //       brandName: brandName.trim(),
+  //       foodName: foodName.trim(),
+  //     },
+  //   });
+  // };
 
   return (
     <section className={styles.page}>
@@ -60,7 +51,8 @@ export default function NutrientAddPage() {
       />
 
       <main className={styles.main}>
-        {capturedImage ? (
+        <p>추후 사진 찍기 전 메뉴명 등록하는 페이지로 구현</p>
+        {/* {capturedImage ? (
           <section className={styles.imageInfoSection} aria-label="선택된 이미지 정보">
             <p className={`typo-label3 ${styles.imageInfoTitle}`}>선택된 이미지</p>
             <p className={`typo-label4 ${styles.imageInfoText}`}>
@@ -112,10 +104,10 @@ export default function NutrientAddPage() {
           />
 
           <p className={`typo-label4 ${styles.limitText}`}>최대 300자 이내</p>
-        </div>
+        </div> */}
       </main>
 
-      <footer className={styles.footer}>
+      {/* <footer className={styles.footer}>
         <Button
           variant="filled"
           size="large"
@@ -127,7 +119,7 @@ export default function NutrientAddPage() {
         >
           다음
         </Button>
-      </footer>
+      </footer> */}
     </section>
   );
 }

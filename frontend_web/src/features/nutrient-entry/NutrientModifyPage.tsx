@@ -1,22 +1,40 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
-  formatMenuDraftKey,
-  useMenuDraftUpsert,
-} from "@/features/meal-record/stores/menuDraft.store";
-import { getMealRecordPath } from "@/features/meal-record/utils/mealRecord.paths";
-import { NutrientDetailForm } from "@/features/nutrient-entry/components/NutrientDetailForm";
-import { useModifyNutrientMutation } from "@/features/nutrient-entry/hooks/mutations/useNutrientMutation";
-import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
-import { toMenuId } from "@/features/nutrient-entry/utils/nutrientDetail.form";
+  getMealDetailPath,
+  getMealRecordAddSearchPath,
+  getMealRecordPath,
+} from "@/features/meal-record/utils/mealRecord.paths";
 import {
-  MEAL_TYPE_SET,
+  getMealType,
+  getSafeDateKey,
+  getSafeMenuId,
+  getSafePageKey,
+} from "@/features/meal-record/utils/mealRecord.queryParams";
+import { type RegisterManualMenuPayload } from "@/features/nutrient-entry/api/nutrient";
+import { NutrientDetailForm } from "@/features/nutrient-entry/components/NutrientDetailForm";
+import {
+  useModifyNutrientMutation,
+  useRegisterMenuMutation,
+} from "@/features/nutrient-entry/hooks/mutations/useNutrientMutation";
+import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
+import {
+  buildNullableNutrientFields,
+  buildNutrientFormFields,
+  buildNutrientResetPatch,
+  hasChildNutrientOverflow,
+  toFiniteNumberOrUndefined,
+  toNullableFiniteNumber,
+} from "@/features/nutrient-entry/utils/nutrientFields";
+import { PATH } from "@/router/path";
+import {
   type MealMenuItem,
-  type MealType,
+  MENU_DATA_SOURCE,
+  MENU_NUTRIENT_FIELD_KEYS,
   MENU_UNIT,
   type MenuNutrientFields,
   type MenuUnit,
@@ -28,139 +46,39 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "./styles/NutrientModifyPage.module.css";
 
-type DraftTarget = {
-  dateKey: string;
-  mealType: MealType;
-};
-
-function toFiniteNumber(value: unknown): number | undefined {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return undefined;
-  }
-
-  return value;
-}
-
-function toNullableNumber(value: number | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return null;
-  }
-
-  return value;
-}
-
-function toSafeQuantity(value: unknown) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return 1;
-  }
-
-  return Math.round(value * 10) / 10;
-}
-
-function toSafeDateKey(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? trimmed : null;
-}
-
-function toSafeMealType(value: unknown): MealType | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  return MEAL_TYPE_SET.has(value as MealType) ? (value as MealType) : null;
-}
-
-function parseDraftTargetFromReturnPath(returnPath: string): DraftTarget | null {
-  const queryStartIndex = returnPath.indexOf("?");
-  if (queryStartIndex < 0) {
-    return null;
-  }
-
-  const searchParams = new URLSearchParams(returnPath.slice(queryStartIndex + 1));
-  const dateKey = toSafeDateKey(searchParams.get("date"));
-  const mealType = toSafeMealType(searchParams.get("mealType"));
-
-  if (!dateKey || !mealType) {
-    return null;
-  }
-
-  return { dateKey, mealType };
-}
-
-function resolveDraftTarget(
-  dateKey: unknown,
-  mealType: unknown,
-  returnPath: string,
-): DraftTarget | null {
-  const stateDateKey = toSafeDateKey(dateKey);
-  const stateMealType = toSafeMealType(mealType);
-
-  if (stateDateKey && stateMealType) {
-    return {
-      dateKey: stateDateKey,
-      mealType: stateMealType,
-    };
-  }
-
-  if (!returnPath) {
-    return null;
-  }
-
-  return parseDraftTargetFromReturnPath(returnPath);
-}
-
 function buildInitialFormState(
   menu?: Partial<MealMenuItem> | null,
 ): Partial<RegisterMenuRequestDto> {
   return {
     unit: menu?.unit === MENU_UNIT.MILLILITER ? MENU_UNIT.MILLILITER : MENU_UNIT.GRAM,
-    weight: toFiniteNumber(menu?.weight),
-    calories: toFiniteNumber(menu?.calories),
-    carbs: toFiniteNumber(menu?.carbs),
-    sugars: toFiniteNumber(menu?.sugars),
-    sugar_alchol: toFiniteNumber(menu?.sugar_alchol),
-    dietary_fiber: toFiniteNumber(menu?.dietary_fiber),
-    protein: toFiniteNumber(menu?.protein),
-    fat: toFiniteNumber(menu?.fat),
-    sat_fat: toFiniteNumber(menu?.sat_fat),
-    trans_fat: toFiniteNumber(menu?.trans_fat),
-    un_sat_fat: toFiniteNumber(menu?.un_sat_fat),
-    sodium: toFiniteNumber(menu?.sodium),
-    caffeine: toFiniteNumber(menu?.caffeine),
-    potassium: toFiniteNumber(menu?.potassium),
-    cholesterol: toFiniteNumber(menu?.cholesterol),
-    alcohol: toFiniteNumber(menu?.alcohol),
+    weight: toFiniteNumberOrUndefined(menu?.weight),
+    calories: toFiniteNumberOrUndefined(menu?.calories),
+    ...buildNutrientFormFields(menu ?? {}),
   };
 }
+
+const RESET_NUTRIENT_FIELDS = buildNutrientResetPatch();
 
 export default function NutrientModifyPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const locationState = (location.state ?? {}) as NutrientModifyLocationState;
   const menuInState = locationState.menu;
-  const menuId = toMenuId(locationState.menuId) ?? toMenuId(menuInState?.id);
-
-  const returnPath = (locationState.returnPath ?? "").trim();
-  const draftTarget = useMemo(
-    () => resolveDraftTarget(locationState.dateKey, locationState.mealType, returnPath),
-    [locationState.dateKey, locationState.mealType, returnPath],
-  );
-
-  const upsertMenu = useMenuDraftUpsert();
+  const menuId = getSafeMenuId(searchParams.get("menuId"));
+  const dateKey = getSafeDateKey(searchParams.get("date"));
+  const mealType = getMealType(searchParams.get("mealType"));
+  const pageKey = getSafePageKey(searchParams.get("pageKey")) ?? "MEAL_RECORD";
 
   const {
     data: fetchedMenu,
     isPending: isMenuPending,
     isError: isMenuError,
-  } = useMealDetatilQuery(menuInState ? null : menuId);
+  } = useMealDetatilQuery(menuId);
 
-  const resolvedMenu = (menuInState ?? fetchedMenu ?? null) as MealMenuItem | null;
+  const resolvedMenu = (fetchedMenu ?? menuInState ?? null) as MealMenuItem | null;
   const baseFormState = useMemo(() => buildInitialFormState(resolvedMenu), [resolvedMenu]);
   const [editedFormState, setEditedFormState] = useState<Partial<RegisterMenuRequestDto>>({});
   const formState = useMemo(
@@ -191,33 +109,46 @@ export default function NutrientModifyPage() {
 
   const foodName = (locationState.foodName ?? resolvedMenu?.name ?? "").trim();
   const brandName = (locationState.brandName ?? resolvedMenu?.brand ?? "").trim();
-  const quantityInState = toSafeQuantity(locationState.quantity);
+  const dataSource =
+    locationState.dataSource ?? resolvedMenu?.data_source ?? MENU_DATA_SOURCE.PERSONAL;
+  const isPersonalData = dataSource === MENU_DATA_SOURCE.PERSONAL;
   const unit: MenuUnit =
     formState.unit === MENU_UNIT.MILLILITER ? MENU_UNIT.MILLILITER : MENU_UNIT.GRAM;
+  const initialUnit: MenuUnit =
+    baseFormState.unit === MENU_UNIT.MILLILITER ? MENU_UNIT.MILLILITER : MENU_UNIT.GRAM;
 
-  const nutrientForm: Partial<MenuNutrientFields> = {
-    carbs: formState.carbs,
-    sugars: formState.sugars,
-    sugar_alchol: formState.sugar_alchol,
-    dietary_fiber: formState.dietary_fiber,
-    protein: formState.protein,
-    fat: formState.fat,
-    sat_fat: formState.sat_fat,
-    trans_fat: formState.trans_fat,
-    un_sat_fat: formState.un_sat_fat,
-    sodium: formState.sodium,
-    caffeine: formState.caffeine,
-    potassium: formState.potassium,
-    cholesterol: formState.cholesterol,
-    alcohol: formState.alcohol,
-  };
+  const hasFormChanges = useMemo(() => {
+    if (unit !== initialUnit) {
+      return true;
+    }
 
-  const { mutate: modifyMenu, isPending: isSubmitting } = useModifyNutrientMutation();
+    if (toNullableFiniteNumber(formState.weight) !== toNullableFiniteNumber(baseFormState.weight)) {
+      return true;
+    }
+
+    if (
+      toNullableFiniteNumber(formState.calories) !== toNullableFiniteNumber(baseFormState.calories)
+    ) {
+      return true;
+    }
+
+    return MENU_NUTRIENT_FIELD_KEYS.some(
+      (key) =>
+        toNullableFiniteNumber(formState[key]) !== toNullableFiniteNumber(baseFormState[key]),
+    );
+  }, [baseFormState, formState, initialUnit, unit]);
+
+  const nutrientForm: Partial<MenuNutrientFields> = buildNutrientFormFields(formState);
+
+  const { mutate: modifyMenu, isPending: isModifyPending } = useModifyNutrientMutation();
+  const { mutate: createMenuFromPublic, isPending: isCreatePending } = useRegisterMenuMutation();
+  const isSubmitting = isModifyPending || isCreatePending;
 
   const isSubmitDisabled =
     isSubmitting ||
     isMenuPending ||
     menuId === null ||
+    !hasFormChanges ||
     foodName.length === 0 ||
     (formState.weight ?? 0) <= 0 ||
     (formState.calories ?? 0) <= 0;
@@ -232,17 +163,17 @@ export default function NutrientModifyPage() {
   };
 
   const handleBack = () => {
-    if (returnPath) {
-      navigate(returnPath, { replace: true });
+    if (menuId !== null) {
+      navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey));
       return;
     }
 
-    if (draftTarget) {
-      navigate(getMealRecordPath(draftTarget.dateKey, draftTarget.mealType));
+    if (pageKey === "MEAL_SEARCH") {
+      navigate(getMealRecordAddSearchPath(dateKey, mealType));
       return;
     }
 
-    navigate(-1);
+    navigate(getMealRecordPath(dateKey, mealType));
   };
 
   const handleResetForm = () => {
@@ -250,84 +181,66 @@ export default function NutrientModifyPage() {
       ...prev,
       weight: undefined,
       calories: undefined,
-      carbs: undefined,
-      sugars: undefined,
-      sugar_alchol: undefined,
-      dietary_fiber: undefined,
-      protein: undefined,
-      fat: undefined,
-      sat_fat: undefined,
-      trans_fat: undefined,
-      un_sat_fat: undefined,
-      sodium: undefined,
-      caffeine: undefined,
-      potassium: undefined,
-      cholesterol: undefined,
-      alcohol: undefined,
+      ...RESET_NUTRIENT_FIELDS,
     }));
   };
 
   const handleSubmit = () => {
-    if (isSubmitDisabled || menuId === null) {
-      return <p>{menuId}</p>;
+    if (isSubmitDisabled) {
+      toast.warning("수정할 내용이 없어요");
+      return;
     }
 
-    const payload = {
-      id: menuId,
+    if (hasChildNutrientOverflow(formState)) {
+      toast.warning("하위 항목 합이 상위 항목을 초과했어요");
+      return;
+    }
+
+    const payload: RegisterManualMenuPayload = {
       name: foodName,
       brand: brandName,
       unit,
       weight: formState.weight ?? 0,
       calories: formState.calories ?? 0,
-      carbs: toNullableNumber(formState.carbs),
-      sugars: toNullableNumber(formState.sugars),
-      sugar_alchol: toNullableNumber(formState.sugar_alchol),
-      dietary_fiber: toNullableNumber(formState.dietary_fiber),
-      protein: toNullableNumber(formState.protein),
-      fat: toNullableNumber(formState.fat),
-      sat_fat: toNullableNumber(formState.sat_fat),
-      trans_fat: toNullableNumber(formState.trans_fat),
-      un_sat_fat: toNullableNumber(formState.un_sat_fat),
-      sodium: toNullableNumber(formState.sodium),
-      caffeine: toNullableNumber(formState.caffeine),
-      potassium: toNullableNumber(formState.potassium),
-      cholesterol: toNullableNumber(formState.cholesterol),
-      alcohol: toNullableNumber(formState.alcohol),
+      ...buildNullableNutrientFields(formState),
     };
 
-    modifyMenu(payload, {
-      onSuccess: async () => {
-        if (draftTarget) {
-          const draftKey = formatMenuDraftKey(draftTarget.dateKey, draftTarget.mealType);
+    if (isPersonalData) {
+      if (menuId === null) {
+        toast.error("수정할 메뉴 정보를 찾지 못했어요");
+        navigate(PATH.HOME, { replace: true });
+        return;
+      }
 
-          // TODO 수정되었을 때 해당 메뉴 상세 페이지로 이동하는 게 나아보임
-          upsertMenu({
-            key: draftKey,
-            id: menuId,
-            quantity: quantityInState,
-          });
+      modifyMenu(
+        { id: menuId, ...payload },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+            toast.success("영양 성분을 수정했어요");
+            navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey), { replace: true });
+          },
+          onError: () => {
+            toast.warning("영양 성분 수정에 실패했어요");
+          },
+        },
+      );
+      return;
+    }
 
-          await queryClient.invalidateQueries({
-            queryKey: queryKeys.dayMeals(draftTarget.dateKey),
-          });
-        }
-
-        toast.success("수정되었어요");
-
-        if (returnPath) {
-          navigate(returnPath, { replace: true });
+    createMenuFromPublic(payload, {
+      onSuccess: (createdMenuId) => {
+        if (!Number.isInteger(createdMenuId) || createdMenuId <= 0) {
+          toast.warning("등록된 메뉴 정보를 불러오지 못했어요");
+          navigate(PATH.HOME, { replace: true });
           return;
         }
 
-        if (draftTarget) {
-          navigate(getMealRecordPath(draftTarget.dateKey, draftTarget.mealType));
-          return;
-        }
-
-        navigate(-1);
+        toast.success("개인 메뉴로 등록했어요");
+        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey), { replace: true });
       },
       onError: () => {
-        toast.warning("수정에 실패했어요");
+        toast.warning("공용 데이터를 개인 데이터 등록하는데 실패했어요");
       },
     });
   };
@@ -363,18 +276,18 @@ export default function NutrientModifyPage() {
 
             <section className={styles.nutrientFormWrap}>
               <NutrientDetailForm
-                totalWeight={formState.weight ?? 0}
+                totalWeight={formState.weight}
                 onTotalWeightChange={(nextWeight) => {
                   setEditedFormState((prev) => ({
                     ...prev,
-                    weight: Number.isFinite(nextWeight) ? nextWeight : undefined,
+                    weight: nextWeight,
                   }));
                 }}
-                totalCalories={formState.calories ?? 0}
+                totalCalories={formState.calories}
                 onTotalCaloriesChange={(nextCalories) => {
                   setEditedFormState((prev) => ({
                     ...prev,
-                    calories: Number.isFinite(nextCalories) ? nextCalories : undefined,
+                    calories: nextCalories,
                   }));
                 }}
                 form={nutrientForm}
@@ -400,7 +313,7 @@ export default function NutrientModifyPage() {
           fullWidth
           onClick={handleSubmit}
           state={isSubmitDisabled ? "disabled" : "default"}
-          // disabled={isSubmitDisabled}
+          disabled={isSubmitDisabled}
         >
           수정하기
         </Button>

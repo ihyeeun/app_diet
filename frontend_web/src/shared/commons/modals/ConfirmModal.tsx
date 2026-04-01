@@ -1,5 +1,4 @@
 import { AlertDialog } from "@base-ui/react/alert-dialog";
-import * as React from "react";
 
 import { Button } from "@/shared/commons/button/Button";
 

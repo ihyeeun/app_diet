@@ -21,7 +21,7 @@ type AppWebViewScreenProps = {
   currentTab?: AppTabName;
 };
 
-type AppTabName = "home" | "recommend" | "compare" | "profile";
+type AppTabName = "home" | "recommend" | "profile";
 
 function buildWebAppUrl(path?: string) {
   if (!path) return webAppUrl;
@@ -59,7 +59,10 @@ function isEquivalentLocalOrigin(requestOrigin: string, webAppOrigin: string) {
       LOCAL_DEV_HOSTNAMES.has(requestUrl.hostname) && LOCAL_DEV_HOSTNAMES.has(webUrl.hostname);
     if (!isBothLocalDevHost) return false;
 
-    return requestUrl.protocol === webUrl.protocol && resolveUrlPort(requestUrl) === resolveUrlPort(webUrl);
+    return (
+      requestUrl.protocol === webUrl.protocol &&
+      resolveUrlPort(requestUrl) === resolveUrlPort(webUrl)
+    );
   } catch {
     return false;
   }
@@ -81,7 +84,7 @@ function resolveWebPath(requestUrl: string, webAppOrigin: string | null) {
 function resolveTabFromPath(pathname: string): AppTabName | null {
   if (pathname === "/" || pathname === "/home") return "home";
   if (pathname === "/recommend") return "recommend";
-  if (pathname === "/compare") return "compare";
+  // if (pathname === "/compare") return "compare";
   if (pathname === "/profile") return "profile";
 
   return null;
@@ -248,12 +251,9 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     [syncTabStateFromUrl],
   );
 
-  const onNavigationStateChange = useCallback(
-    (navState: WebViewNavigation) => {
-      canGoBackRef.current = navState.canGoBack;
-    },
-    [],
-  );
+  const onNavigationStateChange = useCallback((navState: WebViewNavigation) => {
+    canGoBackRef.current = navState.canGoBack;
+  }, []);
 
   useEffect(() => {
     if (Platform.OS !== "android") return;

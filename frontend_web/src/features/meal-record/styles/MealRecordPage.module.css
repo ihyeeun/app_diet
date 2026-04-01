@@ -22,70 +22,30 @@
   flex-direction: column;
   gap: 8px;
   padding: 20px;
+  justify-content: space-between;
+  align-items: space-between;
 }
 
 .calorieRow {
-  align-items: flex-end;
   display: flex;
-  gap: 10px;
-}
-
-.dividerContainerHorizontal {
-  height: 44px;
-  padding-bottom: 5px;
-  padding-top: 8px;
+  gap: 4px;
+  align-items: baseline;
 }
 
 .currentCalorie {
   color: var(--text-primary);
 }
 
-.targetCalorie {
-  color: var(--text-normal);
-}
-
-.progressRow {
-  align-items: center;
-  display: flex;
-  gap: 10px;
-}
-
-.progressContainer {
-  flex: 1;
-}
-
-.balanceText {
-  align-items: center;
-  color: var(--text-assistive1);
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.balanceDot {
-  border-radius: 50%;
-  height: 8px;
-  width: 8px;
-}
-
-.balanceDotPositive {
-  background-color: var(--status-success);
-}
-
-.balanceDotNegative {
-  background-color: var(--status-warning);
-}
-
 .mealTypeButtonGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .mealTypeButton {
   background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
-  border-radius: 999px;
+  border-radius: 100px;
   color: var(--text-normal);
   padding: 6px 14px;
 }
@@ -141,10 +101,17 @@
 .emptyState {
   background-color: var(--bg-normal-white);
   border: 1px dashed var(--border-normal);
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--text-assistive1);
-  padding: 24px 16px;
+  padding: 20px;
   text-align: center;
+  width: 100%;
+  height: 335px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 }
 
 .footer {

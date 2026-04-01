@@ -1,7 +1,7 @@
-import type { MenuNutrientFields } from "@/shared/api/types/api.dto";
+import type { MenuNutrientFieldKey } from "@/shared/api/types/api.dto";
 
 export type NutrientFormKey = {
-  key: keyof MenuNutrientFields;
+  key: MenuNutrientFieldKey;
   label: string;
   unit: "g" | "mg";
   variant: "main" | "sub";

@@ -40,7 +40,9 @@ export default function MealDetailPage() {
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
-  const pageKey = searchParams.get("pageKey") as PageKey;
+  const rawPageKey = searchParams.get("pageKey");
+  const pageKey: PageKey | null =
+    rawPageKey === "MEAL_SEARCH" || rawPageKey === "MEAL_RECORD" ? rawPageKey : null;
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const rawMenuId = searchParams.get("menuId");
@@ -130,33 +132,41 @@ export default function MealDetailPage() {
     if (pageKey === "MEAL_SEARCH") {
       // TODO 검색어까지 같이 넘겨주면 더 좋을 거 같음
       navigate(getMealRecordAddSearchPath(dateKey, mealType));
+      return;
     }
 
     if (pageKey === "MEAL_RECORD") {
       navigate(getMealRecordPath(dateKey, mealType));
+      return;
     }
+
+    navigate(PATH.HOME);
   };
 
   const handleModify = () => {
-    const returnPath =
-      pageKey === "MEAL_SEARCH"
-        ? getMealRecordAddSearchPath(dateKey, mealType)
-        : getMealRecordPath(dateKey, mealType);
+    const nextPageKey = pageKey ?? "MEAL_RECORD";
+    const modifyQueryParams = new URLSearchParams({
+      date: dateKey,
+      mealType,
+      menuId: String(meal.id),
+      pageKey: nextPageKey,
+    });
 
     const state: NutrientModifyLocationState = {
+      dataSource: meal.data_source,
       source: "meal-record",
       menuId: meal.id,
       menu: meal,
       quantity: existingSelection?.quantity ?? 1,
       dateKey,
       mealType,
+      pageKey: nextPageKey,
       brandName: meal.brand,
       foodName: meal.name,
       servingUnit: meal.unit === MENU_UNIT.MILLILITER ? "ml" : "g",
-      returnPath,
     };
 
-    navigate(PATH.NUTRIENT_ADD_MODIFY, { state });
+    navigate(`${PATH.NUTRIENT_ADD_MODIFY}?${modifyQueryParams.toString()}`, { state });
   };
 
   const handleDelete = () => {

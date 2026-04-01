@@ -6,10 +6,10 @@ import styles from "@/features/nutrient-entry/styles/NutrientDetailForm.module.c
 import type { MenuNutrientFields, MenuUnit } from "@/shared/api/types/api.dto";
 
 type Props = {
-  totalWeight: number;
-  onTotalWeightChange: (nextWeight: number) => void;
-  totalCalories: number;
-  onTotalCaloriesChange: (nextCalories: number) => void;
+  totalWeight?: number;
+  onTotalWeightChange: (nextWeight: number | undefined) => void;
+  totalCalories?: number;
+  onTotalCaloriesChange: (nextCalories: number | undefined) => void;
   form?: Partial<MenuNutrientFields>;
   onFieldChange: (key: keyof MenuNutrientFields, nextValue: string) => void;
   weightUnit: MenuUnit;
@@ -20,6 +20,38 @@ const WEIGHT_UNIT_OPTIONS: Array<{ label: string; value: MenuUnit }> = [
   { label: "g", value: 0 },
   { label: "ml", value: 1 },
 ];
+const MAX_INPUT_VALUE = 9999.9;
+
+function roundToSingleDecimal(value: number) {
+  return Math.round(value * 10) / 10;
+}
+
+function sanitizeSingleDecimalInput(value: string) {
+  const cleaned = value.replace(/[^0-9.]/g, "");
+  const [integerPart = "", ...decimalParts] = cleaned.split(".");
+
+  if (decimalParts.length === 0) {
+    return integerPart;
+  }
+
+  return `${integerPart}.${decimalParts.join("").slice(0, 1)}`;
+}
+
+function parseSingleDecimalInput(value: string, min = 0, max = MAX_INPUT_VALUE) {
+  const sanitized = sanitizeSingleDecimalInput(value);
+
+  if (sanitized === "" || sanitized === ".") {
+    return undefined;
+  }
+
+  const parsed = Number(sanitized);
+  if (!Number.isFinite(parsed)) {
+    return undefined;
+  }
+
+  const clamped = Math.min(max, Math.max(min, parsed));
+  return roundToSingleDecimal(clamped);
+}
 
 function cx(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -49,14 +81,16 @@ export function NutrientDetailForm({
           <input
             className={`typo-body3 ${styles.valueInput}`}
             type="number"
-            step="any"
+            step="0.1"
             inputMode="decimal"
             placeholder="0"
             aria-label="총 용량 입력"
-            value={totalWeight}
+            value={totalWeight === undefined ? "" : String(totalWeight)}
             onChange={(event) => {
-              onTotalWeightChange(Number(event.target.value));
+              onTotalWeightChange(parseSingleDecimalInput(event.target.value));
             }}
+            max={MAX_INPUT_VALUE}
+            min={0}
           />
 
           <Select.Root
@@ -108,14 +142,16 @@ export function NutrientDetailForm({
         <input
           className={`typo-body3 ${styles.valueInput}`}
           type="number"
-          step="any"
+          step="0.1"
           inputMode="decimal"
           placeholder="0"
           aria-label="총 칼로리 입력"
-          value={totalCalories}
+          value={totalCalories === undefined ? "" : String(totalCalories)}
           onChange={(event) => {
-            onTotalCaloriesChange(Number(event.target.value));
+            onTotalCaloriesChange(parseSingleDecimalInput(event.target.value));
           }}
+          max={MAX_INPUT_VALUE}
+          min={0}
         />
       </div>
 
@@ -149,13 +185,20 @@ export function NutrientDetailForm({
                 <input
                   className={`typo-body3 ${styles.nutrientInput}`}
                   type="number"
+                  step="0.1"
                   inputMode="decimal"
                   value={fieldValue === undefined ? "" : String(fieldValue)}
                   onChange={(event) => {
-                    onFieldChange(field.key, event.target.value);
+                    const parsedValue = parseSingleDecimalInput(event.target.value);
+                    onFieldChange(
+                      field.key,
+                      parsedValue === undefined ? "" : String(parsedValue),
+                    );
                   }}
                   aria-label={`${field.label} 입력`}
                   placeholder="0"
+                  max={MAX_INPUT_VALUE}
+                  min={0}
                 />
               </div>
             </div>

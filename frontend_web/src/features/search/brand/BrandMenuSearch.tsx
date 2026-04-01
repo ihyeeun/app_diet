@@ -367,7 +367,7 @@ export default function BrandMenuSearch() {
 
   return (
     <section className={styles.page}>
-      {selectedBrand ? (
+      {/* {selectedBrand ? (
         <>
           <PageHeader title={selectedBrand.name} onBack={handleBack} />
 
@@ -583,7 +583,7 @@ export default function BrandMenuSearch() {
             </section>
           </main>
         </>
-      )}
+      )} */}
 
       <footer className={styles.footer}>
         <FloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />

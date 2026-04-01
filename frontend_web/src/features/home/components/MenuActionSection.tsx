@@ -30,15 +30,14 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
             navigate(PATH.RECOMMEND);
           }}
         />
-        <MenuCard
+        {/* <MenuCard
           title={"메뉴 비교"}
           description="나에게 더 맞는 메뉴를 고르는데 도와줘요"
           iconSrc="/icons/menu_compare.svg"
           onClick={() => {
             syncAppTab("compare");
-            navigate(PATH.COMPARE);
           }}
-        />
+        /> */}
       </div>
       <ActionCard>
         <div className={style.record_container}>
@@ -51,26 +50,26 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
               label="아침"
               iconSrc="/icons/breakfast.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath(selectedDate, 0))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "0"))}
             />
             <MealTimeCard
               label="점심"
               iconSrc="/icons/lunch.svg"
               value="123"
-              onClick={() => navigate(getMealRecordPath(selectedDate, 1))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "1"))}
               selected
             />
             <MealTimeCard
               label="저녁"
               iconSrc="/icons/dinner.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath(selectedDate, 2))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "2"))}
             />
             <MealTimeCard
               label="간식"
               iconSrc="/icons/snack.svg"
               value=""
-              onClick={() => navigate(getMealRecordPath(selectedDate, 3))}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "3"))}
             />
           </div>
         </div>

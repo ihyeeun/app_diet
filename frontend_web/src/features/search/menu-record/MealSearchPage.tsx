@@ -20,11 +20,11 @@ import {
   getMealRecordPath,
 } from "@/features/meal-record/utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import RegisterBottomSheet from "@/features/search/components/RegisterBottomSheet";
 import { useTodayMealRecordRegisterMutation } from "@/features/search/menu-record/hooks/mutations/useTodayMealRecordMutation";
 import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
 import { PATH } from "@/router/path";
 import { MEAL_TIME, type MealType, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
@@ -209,6 +209,21 @@ export default function MealSearchPage() {
                       <ChevronRight size={24} className={styles.brandItemChevron} />
                     </button>
                   ))}
+
+                  <div className={styles.bottomTextContainer}>
+                    <Button
+                      variant="text"
+                      state="default"
+                      size="small"
+                      color="assistive"
+                      onClick={() => {
+                        setIsDirectInputSheetOpen(true);
+                      }}
+                    >
+                      <span className={styles.bottomText}>찾으시는 메뉴가 없나요?</span>
+                      직접 등록하기
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className={styles.emptyResultContainer}>
@@ -259,12 +274,12 @@ export default function MealSearchPage() {
                           );
                         })}
 
-                        {/* {searchResults.brand_list.map((brand) => (
+                        {searchResults.brand_list.map((brand) => (
                           <button key={brand} type="button" className={styles.brandItem}>
                             <span className={`typo-title2 ${styles.brandName}`}>{brand}</span>
                             <ChevronRight size={24} className={styles.brandItemChevron} />
                           </button>
-                        ))} */}
+                        ))}
                       </div>
                     </section>
                   )}
@@ -273,9 +288,23 @@ export default function MealSearchPage() {
             </>
           ) : (
             <div className={styles.placeholder}>
-              <p className={`typo-label4 ${styles.placeholderText}`}>
-                메뉴를 검색하거나 음식 사진을 찍어 기록해보세요
+              <p className={`typo-title4 ${styles.placeholderText}`}>
+                메뉴를 검색하거나
+                <br />
+                음식 사진을 찍어 기록해보세요
               </p>
+
+              <Button
+                variant="text"
+                state="default"
+                size="small"
+                color="assistive"
+                onClick={() => {
+                  setIsDirectInputSheetOpen(true);
+                }}
+              >
+                영양 성분 직접 등록
+              </Button>
             </div>
           )}
         </section>
@@ -297,34 +326,12 @@ export default function MealSearchPage() {
         </Button>
       </footer>
 
-      <BottomSheet isOpen={isDirectInputSheetOpen} onClose={handleCloseDirectInputSheet}>
-        <div className={styles.sheetContainer}>
-          <h2 className={`${styles.sheetTitle} typo-title2`}>등록 방법을 골라주세요</h2>
-          <div className={styles.sheetActions}>
-            <Button
-              variant="text"
-              state="default"
-              size="large"
-              color="assistive"
-              fullWidth
-              onClick={handleNavigateNutrientAdd}
-            >
-              <p className={`typo-title4 ${styles.sheetButtonText}`}>숫자 입력하기</p>
-            </Button>
-            <div className="divider dividerMargin16" />
-            <Button
-              variant="text"
-              state="default"
-              size="large"
-              color="assistive"
-              fullWidth
-              onClick={handleNavigateNutrientCamera}
-            >
-              <p className={`typo-title4 ${styles.sheetButtonText}`}>영양성분표 촬영하기</p>
-            </Button>
-          </div>
-        </div>
-      </BottomSheet>
+      <RegisterBottomSheet
+        isOpen={isDirectInputSheetOpen}
+        onClose={handleCloseDirectInputSheet}
+        onSelectNumberInput={handleNavigateNutrientAdd}
+        onSelectCameraInput={handleNavigateNutrientCamera}
+      />
     </section>
   );
 }
