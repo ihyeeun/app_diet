@@ -23,3 +23,9 @@
   padding: 0 20px;
   padding-bottom: calc(var(--safe-area-bottom) + 8px);
 }
+
+.headerButtons {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}

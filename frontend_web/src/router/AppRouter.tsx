@@ -6,11 +6,12 @@ import HomePage from "@/features/home/HomePage";
 import TodayMealScorePage from "@/features/home/TodayMealScorePage";
 import MealCameraPage from "@/features/meal-record/MealCameraPage";
 import MealDetailPage from "@/features/meal-record/MealDetailPage";
-import MealRecordAddPage from "@/features/meal-record/MealRecordAddPage";
 import MealRecordPage from "@/features/meal-record/MealRecordPage";
-import NutrientAddDetailPage from "@/features/nutrient-entry/NutrientAddDetailPage";
 import NutrientAddPage from "@/features/nutrient-entry/NutrientAddPage";
 import NutrientCameraPage from "@/features/nutrient-entry/NutrientCameraPage";
+import NutrientDetailPage from "@/features/nutrient-entry/NutrientDetailPage";
+import NutrientModifyPage from "@/features/nutrient-entry/NutrientModifyPage";
+import { NutrientRegisterPage } from "@/features/nutrient-entry/NutrientRegisterPage";
 import RecommendPage from "@/features/recommend/RecommendPage";
 import BrandMenuSearch from "@/features/search/brand/BrandMenuSearch";
 import BrandSearch from "@/features/search/brand/BrandSearch";
@@ -34,13 +35,14 @@ export default function AppRouter() {
         <Route path={PATH.TERMS} element={<TermsPage />} />
         <Route path={PATH.TODAY_MEAL_SCORE} element={<TodayMealScorePage />} />
         <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
-        <Route path={PATH.MEAL_RECORD_ADD} element={<MealRecordAddPage />} />
         <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
         <Route path={PATH.MEAL_RECORD_ADD_SEARCH_DETAIL} element={<MealDetailPage />} />
         <Route path={PATH.MEAL_CAMERA} element={<MealCameraPage />} />
         <Route path={PATH.NUTRIENT_ADD} element={<NutrientAddPage />} />
         <Route path={PATH.NUTRIENT_CAMERA} element={<NutrientCameraPage />} />
-        <Route path={PATH.NUTRIENT_ADD_DETAIL} element={<NutrientAddDetailPage />} />
+        <Route path={PATH.NUTRIENT_ADD_DETAIL} element={<NutrientDetailPage />} />
+        <Route path={PATH.NUTRIENT_ADD_MODIFY} element={<NutrientModifyPage />} />
+        <Route path={PATH.NUTRIENT_ADD_REGISTER} element={<NutrientRegisterPage />} />
         <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
         <Route path={PATH.BRAND_MENU_SEARCH} element={<BrandMenuSearch />} />
         <Route path={PATH.COMPARE_MENU_SEARCH} element={<MenuComPareSearchPage />} />

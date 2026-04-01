@@ -11,7 +11,7 @@ import {
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
 import {
-  getMealRecordAddSearchDetailPath,
+  getMealDetailPath,
   getMealRecordPath,
 } from "@/features/meal-record/utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
@@ -280,7 +280,7 @@ export default function BrandMenuSearch() {
       return;
     }
 
-    navigate(getMealRecordAddSearchDetailPath(dateKey, mealType, menu.id), {
+    navigate(getMealDetailPath(dateKey, mealType, menu.id), {
       state: {
         ...baseNutrientEntryContext,
         menu,

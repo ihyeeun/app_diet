@@ -186,25 +186,6 @@ export const MEAL_TYPE_SET: ReadonlySet<MealType> = new Set(
 export type NutrientEntrySource = "meal-record" | "menu-compare" | "general";
 export type NutrientServingUnit = "g" | "ml";
 
-export type NutrientInitialFormState = Partial<{
-  calories: number;
-  carbohydrate: number;
-  protein: number;
-  fat: number;
-  totalWeight: number;
-  sugar: number;
-  sugarAlcohol: number;
-  dietaryFiber: number;
-  transFat: number;
-  saturatedFat: number;
-  unsaturatedFat: number;
-  cholesterol: number;
-  sodium: number;
-  caffeine: number;
-  potassium: number;
-  alcohol: number;
-}>;
-
 export type NutrientEntryContextState = {
   source?: NutrientEntrySource;
   dateKey?: string;
@@ -224,11 +205,10 @@ export type CapturedImage = {
   mimeType: string | null;
 };
 
-export type NutrientAddLocationState = NutrientEntryContextState & {
-  brandName?: string;
-  foodName?: string;
-  initialNutrient?: NutrientInitialFormState;
-  servingUnit?: NutrientServingUnit;
-  capturedImage?: CapturedImage;
-  uploadedImageUrl?: string;
-};
+// export type NutrientAddLocationState = NutrientEntryContextState & {
+//   brandName?: string;
+//   foodName?: string;
+//   servingUnit?: NutrientServingUnit;
+//   capturedImage?: CapturedImage;
+//   uploadedImageUrl?: string;
+// };

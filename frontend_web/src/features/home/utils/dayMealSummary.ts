@@ -6,6 +6,8 @@ import type {
 
 type MealTimeKey = 0 | 1 | 2 | 3 | 4;
 
+export type MenuWithQuantity = MenuSimpleResponseDto & { quantity: number };
+
 export type DayMealSummary = {
   totalCalories: number;
   totalNutrients: {
@@ -48,11 +50,11 @@ export type DayMealSummary = {
     };
   };
   menusByTime: {
-    0: MenuSimpleResponseDto[];
-    1: MenuSimpleResponseDto[];
-    2: MenuSimpleResponseDto[];
-    3: MenuSimpleResponseDto[];
-    4: MenuSimpleResponseDto[];
+    0: MenuWithQuantity[];
+    1: MenuWithQuantity[];
+    2: MenuWithQuantity[];
+    3: MenuWithQuantity[];
+    4: MenuWithQuantity[];
   };
 };
 
@@ -77,7 +79,7 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     snack: { carbs: 0, protein: 0, fat: 0 },
     lateNight: { carbs: 0, protein: 0, fat: 0 },
   };
-  const menusByTime: Record<MealTimeKey, MenuSimpleResponseDto[]> = {
+  const menusByTime: Record<MealTimeKey, MenuWithQuantity[]> = {
     0: [],
     1: [],
     2: [],
@@ -98,7 +100,7 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
       const protein = menu.protein * quantity;
       const fat = menu.fat * quantity;
 
-      const menuItem: MenuSimpleResponseDto & { quantity: number } = {
+      const menuItem: MenuWithQuantity = {
         id: menu.id,
         data_source: menu.data_source,
         name: menu.name,

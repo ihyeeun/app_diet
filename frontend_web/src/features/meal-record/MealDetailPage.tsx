@@ -5,19 +5,30 @@ import {
   MealMenuNutrientDetail,
   type MealMenuNutrientSelection,
 } from "@/features/meal-record/components/MealMenuNutrientDetail";
+import { useMealDeleteMutation } from "@/features/meal-record/hooks/mutations/useMealDetailMutation";
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
-  buildMealRecordDraftKey,
-  useMealRecordDraftStore,
-} from "@/features/meal-record/stores/mealRecordDraft.store";
+  formatMenuDraftKey,
+  useMenuDraftInit,
+  useMenuDraftMenus,
+  useMenuDraftSelectedCount,
+  useMenuDraftUpsert,
+} from "@/features/meal-record/stores/menuDraft.store";
 import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
-import { MENU_DATA_SOURCE } from "@/shared/api/types/api.dto";
+import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
+import { PATH } from "@/router/path";
+import { MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
-import { getMealRecordAddSearchPath } from "./utils/mealRecord.paths";
+import {
+  getMealRecordAddSearchPath,
+  getMealRecordPath,
+  type PageKey,
+} from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
 export default function MealDetailPage() {
@@ -25,10 +36,12 @@ export default function MealDetailPage() {
   const [searchParams] = useSearchParams();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selection, setSelection] = useState<MealMenuNutrientSelection | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
-  const draftKey = buildMealRecordDraftKey(dateKey, mealType);
+  const pageKey = searchParams.get("pageKey") as PageKey;
+  const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const rawMenuId = searchParams.get("menuId");
   const parsedMenuId = rawMenuId ? Number(rawMenuId) : null;
@@ -37,26 +50,32 @@ export default function MealDetailPage() {
       ? parsedMenuId
       : null;
 
-  const ensureDraft = useMealRecordDraftStore((state) => state.ensureDraft);
-  const upsertMenuSelection = useMealRecordDraftStore((state) => state.upsertMenuSelection);
-  const draft = useMealRecordDraftStore((state) => state.drafts[draftKey]);
-  const menuSnapshotById = useMealRecordDraftStore((state) => state.menuSnapshotById);
+  const initDraft = useMenuDraftInit();
+  const upsertMenu = useMenuDraftUpsert();
+  const selectedMenus = useMenuDraftMenus(dateKey, mealType);
+  const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
 
   const { data: meal, isPending, isError } = useMealDetatilQuery(menuId);
+  const { mutate: deleteMealMutation, isPending: isDeletePending } = useMealDeleteMutation({
+    onSuccess: () => {
+      toast.success("삭제되었어요");
+      handleGoBack();
+    },
+  });
 
   useEffect(() => {
-    ensureDraft({
+    initDraft({
       key: draftKey,
       existingMenuCount: 0,
     });
-  }, [draftKey, ensureDraft]);
+  }, [draftKey, initDraft]);
 
   useEffect(() => {
     if (menuId !== null) {
       return;
     }
 
-    navigate(getMealRecordAddSearchPath(dateKey, mealType), { replace: true });
+    navigate(PATH.HOME, { replace: true });
   }, [dateKey, mealType, menuId, navigate]);
 
   useEffect(() => {
@@ -65,29 +84,17 @@ export default function MealDetailPage() {
     }
 
     toast.warning("메뉴 정보를 불러오지 못했어요");
-    navigate(getMealRecordAddSearchPath(dateKey, mealType), { replace: true });
+    navigate(PATH.HOME, { replace: true });
   }, [dateKey, isError, mealType, navigate]);
 
   const existingSelection = useMemo(() => {
-    if (!draft || menuId === null) {
-      return null;
-    }
-
-    return draft.selections.find((item) => item.menuId === menuId) ?? null;
-  }, [draft, menuId]);
-
-  const selectedSnapshot = useMemo(() => {
     if (menuId === null) {
       return null;
     }
 
-    return menuSnapshotById[menuId] ?? null;
-  }, [menuId, menuSnapshotById]);
-
-  const existingMenuCount = draft?.existingMenuCount ?? 0;
-  const selectedCount = draft?.selections.length ?? 0;
+    return selectedMenus.find((item) => item.id === menuId) ?? null;
+  }, [menuId, selectedMenus]);
   const isAlreadyQueued = existingSelection !== null;
-  const initialMode = selectedSnapshot?.serving_input_mode;
 
   const handleAddMenu = () => {
     if (!meal || !selection) {
@@ -95,17 +102,18 @@ export default function MealDetailPage() {
       return;
     }
 
-    if (!isAlreadyQueued && existingMenuCount + selectedCount + 1 > MAX_MEAL_RECORD_MENUS) {
+    if (!isAlreadyQueued && selectedCount + 1 > MAX_MEAL_RECORD_MENUS) {
       toast.warning("최대 100개까지 기록할 수 있어요");
       return;
     }
 
-    upsertMenuSelection({
+    upsertMenu({
       key: draftKey,
-      menu: selection.menu,
+      id: selection.menu.id,
+      quantity: selection.quantity,
     });
 
-    navigate(-1);
+    handleGoBack();
   };
 
   if (isPending) {
@@ -118,16 +126,74 @@ export default function MealDetailPage() {
 
   const isPersonalMenuData = meal.data_source === MENU_DATA_SOURCE.PERSONAL;
 
+  const handleGoBack = () => {
+    if (pageKey === "MEAL_SEARCH") {
+      // TODO 검색어까지 같이 넘겨주면 더 좋을 거 같음
+      navigate(getMealRecordAddSearchPath(dateKey, mealType));
+    }
+
+    if (pageKey === "MEAL_RECORD") {
+      navigate(getMealRecordPath(dateKey, mealType));
+    }
+  };
+
+  const handleModify = () => {
+    const returnPath =
+      pageKey === "MEAL_SEARCH"
+        ? getMealRecordAddSearchPath(dateKey, mealType)
+        : getMealRecordPath(dateKey, mealType);
+
+    const state: NutrientModifyLocationState = {
+      source: "meal-record",
+      menuId: meal.id,
+      menu: meal,
+      quantity: existingSelection?.quantity ?? 1,
+      dateKey,
+      mealType,
+      brandName: meal.brand,
+      foodName: meal.name,
+      servingUnit: meal.unit === MENU_UNIT.MILLILITER ? "ml" : "g",
+      returnPath,
+    };
+
+    navigate(PATH.NUTRIENT_ADD_MODIFY, { state });
+  };
+
+  const handleDelete = () => {
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteMealMutation(menuId);
+  };
+
   return (
     <section className={styles.page}>
       <PageHeader
         title="영양성분 상세"
-        onBack={() => navigate(getMealRecordAddSearchPath(dateKey, mealType))}
+        onBack={handleGoBack}
         rightSlot={
           isPersonalMenuData && (
-            <Button variant="text" state="default" size="small" color="assistive">
-              삭제
-            </Button>
+            <div className={styles.headerButtons}>
+              <Button
+                variant="text"
+                state="default"
+                size="small"
+                color="assistive"
+                onClick={handleModify}
+              >
+                수정
+              </Button>
+              <Button
+                variant="text"
+                state="default"
+                size="small"
+                color="assistive"
+                onClick={handleDelete}
+              >
+                삭제
+              </Button>
+            </div>
           )
         }
       />
@@ -137,7 +203,6 @@ export default function MealDetailPage() {
           <MealMenuNutrientDetail
             menu={meal}
             initialQuantity={existingSelection?.quantity}
-            initialMode={initialMode}
             isDetailOpen={isDetailOpen}
             onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
             onSelectionChange={setSelection}
@@ -160,6 +225,17 @@ export default function MealDetailPage() {
           {isAlreadyQueued ? "수정해서 담기" : "담기"}
         </Button>
       </footer>
+
+      <ConfirmModal
+        open={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        title="영양 성분 삭제"
+        description="영양 성분을 삭제할까요?"
+        cancelText="취소"
+        confirmText="삭제"
+        confirmDisabled={isDeletePending}
+        onConfirm={handleConfirmDelete}
+      />
     </section>
   );
 }

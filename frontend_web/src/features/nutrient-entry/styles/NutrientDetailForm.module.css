@@ -1,0 +1,183 @@
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100%;
+}
+
+.topFieldSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.titleText {
+  color: var(--text-normal);
+}
+
+.titleUnit {
+  color: var(--text-assistive2);
+}
+
+.requiredText {
+  color: var(--status-error);
+}
+
+.weightRow {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.valueInput {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  padding: 10px 14px;
+  text-align: right;
+  width: 100%;
+}
+
+.valueInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.valueInput:focus {
+  /* border-color: var(--border-primary); */
+  outline: none;
+}
+
+.valueInput[type="number"] {
+  appearance: textfield;
+}
+
+.valueInput[type="number"]::-webkit-inner-spin-button,
+.valueInput[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.selectTrigger {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.selectPositioner {
+  z-index: 100;
+}
+
+.selectPopup {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 10px;
+  box-shadow: 0 6px 16px var(--bg-shadow-2);
+  min-width: var(--anchor-width);
+  overflow: hidden;
+}
+
+.selectList {
+  display: flex;
+  flex-direction: column;
+}
+
+.selectItem {
+  color: var(--text-normal);
+  cursor: pointer;
+  padding: 10px 14px;
+  text-align: right;
+}
+
+.selectItem[data-highlighted] {
+  background-color: var(--interaction-primary);
+  outline: none;
+}
+
+.selectItem[data-selected] {
+  color: var(--text-primary);
+}
+
+.selectIcon {
+  color: var(--text-normal);
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.nutrientList {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldRow {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.fieldRowMain {
+  padding: 4px 0;
+}
+
+.fieldRowSub {
+  padding: 2px 0;
+}
+
+.fieldLabel {
+  color: var(--text-normal);
+  min-width: 0;
+}
+
+.fieldLabelMain {
+  color: var(--text-normal);
+}
+
+.fieldLabelSub {
+  color: var(--text-assistive1);
+}
+
+.unitText {
+  color: var(--text-assistive2);
+}
+
+.nutrientInput {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  flex-shrink: 0;
+  max-width: 190px;
+  min-width: 164px;
+  padding: 10px 14px;
+  text-align: right;
+  width: 50%;
+}
+
+.nutrientInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.nutrientInput:focus {
+  /* border-color: var(--border-primary); */
+  outline: none;
+}
+
+.nutrientInput[type="number"] {
+  appearance: textfield;
+}
+
+.nutrientInput[type="number"]::-webkit-inner-spin-button,
+.nutrientInput[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}

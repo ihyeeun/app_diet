@@ -1,26 +1,29 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import { postMealRecordBrandRequest } from "@/features/meal-record/api/brandRequest";
-import { BrandRequestSheetContent } from "@/features/meal-record/components/BrandRequestSheetContent";
-import { ServingAmountSheetContent } from "@/features/meal-record/components/ServingAmountSheetContent";
+import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
-import { useServingAmountSheet } from "@/features/meal-record/hooks/useServingAmountSheet";
 import {
-  buildMealRecordDraftKey,
-  useMealRecordDraftStore,
-} from "@/features/meal-record/stores/mealRecordDraft.store";
+  formatMenuDraftKey,
+  type MenuDraftType,
+  useMenuDraftClear,
+  useMenuDraftInit,
+  useMenuDraftMenus,
+  useMenuDraftRemove,
+  useMenuDraftSelectedCount,
+  useMenuDraftUpsert,
+} from "@/features/meal-record/stores/menuDraft.store";
 import {
-  getMealRecordAddPath,
-  getMealRecordAddSearchDetailPath,
+  getMealDetailPath,
   getMealRecordPath,
 } from "@/features/meal-record/utils/mealRecord.paths";
-import { buildRegisterMealRequest } from "@/features/meal-record/utils/mealRecord.payload";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { useTodayMealRecordRegisterMutation } from "@/features/search/menu-record/hooks/mutations/useTodayMealRecordMutation";
 import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
-import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
+import { PATH } from "@/router/path";
+import { MEAL_TIME, type MealType, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
@@ -30,80 +33,69 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "../styles/MealSearch.module.css";
 
+const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
+  "0": MEAL_TIME.BREAKFAST,
+  "1": MEAL_TIME.LUNCH,
+  "2": MEAL_TIME.DINNER,
+  "3": MEAL_TIME.SNACK,
+  "4": MEAL_TIME.LATE_NIGHT_SNACK,
+};
+
+type MealSearchLocationState = {
+  seedMenus?: MenuDraftType[];
+  selectedMenuCount?: number;
+};
+
 export default function MealSearchPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const locationState = (location.state ?? {}) as NutrientEntryContextState;
+  const locationState = (location.state ?? {}) as MealSearchLocationState;
 
   const [submittedKeyword, setSubmittedKeyword] = useState("");
-  const [isBrandRequestSheetOpen, setIsBrandRequestSheetOpen] = useState(false);
-  const [brandRequestKeyword, setBrandRequestKeyword] = useState("");
-  const [isBrandRequestSubmitting, setIsBrandRequestSubmitting] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
-  const draftKey = buildMealRecordDraftKey(dateKey, mealType);
+  const draftKey = formatMenuDraftKey(dateKey, mealType);
 
-  const { mutate: mealRegister } = useTodayMealRecordRegisterMutation({
-    onSuccess: () => {
-      navigate(getMealRecordPath(dateKey, mealType));
-    },
-
-    onError: () => {
-      toast.warning("메뉴 등록 실패");
-      return;
-    },
-  });
-
-  const ensureDraft = useMealRecordDraftStore((state) => state.ensureDraft);
-  const upsertMenuSelection = useMealRecordDraftStore((state) => state.upsertMenuSelection);
-  const removeMenuSelection = useMealRecordDraftStore((state) => state.removeMenuSelection);
-  const draft = useMealRecordDraftStore((state) => state.drafts[draftKey]);
-  const menuSnapshotById = useMealRecordDraftStore((state) => state.menuSnapshotById);
-  const selectedMenus = useMemo(
-    () =>
-      (draft?.selections ?? []).reduce<MealMenuItem[]>((menus, selection) => {
-        const snapshot = menuSnapshotById[selection.menuId];
-        if (!snapshot) {
-          return menus;
-        }
-
-        menus.push({
-          ...snapshot,
-          serving_input_value: selection.quantity,
-        });
-
-        return menus;
-      }, []),
-    [draft?.selections, menuSnapshotById],
-  );
-  const existingMenuCount = draft?.existingMenuCount ?? 0;
-
+  const initDraft = useMenuDraftInit();
+  const upsertMenu = useMenuDraftUpsert();
+  const removeMenu = useMenuDraftRemove();
+  const clearDraft = useMenuDraftClear();
+  const selectedMenus = useMenuDraftMenus(dateKey, mealType);
+  const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
   const seedMenus = useMemo(
-    () => (Array.isArray(locationState.pendingMenus) ? locationState.pendingMenus : []),
-    [locationState.pendingMenus],
+    () => (Array.isArray(locationState.seedMenus) ? locationState.seedMenus : []),
+    [locationState.seedMenus],
   );
 
-  useEffect(() => {
-    ensureDraft({
-      key: draftKey,
-      existingMenuCount: locationState.existingMenuCount ?? 0,
-      seedMenus,
-    });
-  }, [draftKey, ensureDraft, locationState.existingMenuCount, seedMenus]);
-
-  const selectedMenuMap = useMemo(
-    () => new Map(selectedMenus.map((menu) => [menu.id, menu])),
-    [selectedMenus],
-  );
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
     [selectedMenus],
   );
+  const existingMenuCount = locationState.selectedMenuCount ?? seedMenus.length;
 
   const { mutate: mealSearchMutation, data: searchResults } = useMealSearchMutation();
+  const { mutate: mealRegister } = useTodayMealRecordRegisterMutation({
+    onSuccess: () => {
+      clearDraft(draftKey);
+      queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+      navigate(getMealRecordPath(dateKey, mealType));
+    },
+    onError: () => {
+      toast.warning("메뉴 등록 실패");
+    },
+  });
+
+  useEffect(() => {
+    initDraft({
+      key: draftKey,
+      existingMenuCount,
+      seedMenus,
+    });
+  }, [draftKey, existingMenuCount, initDraft, seedMenus]);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -115,59 +107,37 @@ export default function MealSearchPage() {
     };
   }, []);
 
-  const servingSheet = useServingAmountSheet({
-    onSubmitMenu: (nextMenu) => {
-      const isAlreadySelected = selectedMenuIdSet.has(nextMenu.id);
-      if (
-        !isAlreadySelected &&
-        existingMenuCount + selectedMenus.length + 1 > MAX_MEAL_RECORD_MENUS
-      ) {
-        toast.warning("최대 100개까지 기록할 수 있어요");
-        return false;
-      }
-
-      upsertMenuSelection({
-        key: draftKey,
-        menu: nextMenu,
-      });
-
-      return true;
-    },
-  });
-
-  const handleOpenServingSheet = (targetMenu: MealMenuItem) => {
-    const selectedMenu = selectedMenuMap.get(targetMenu.id) ?? null;
-    const baseMenu =
-      searchResults?.menu_list.find((menu) => menu.id === targetMenu.id) ?? targetMenu;
-
-    servingSheet.open({
-      menu: baseMenu,
-      selectedMenu,
-    });
-  };
-
-  const handleToggleMenuSelection = (targetMenu: MealMenuItem) => {
-    if (selectedMenuIdSet.has(targetMenu.id)) {
-      removeMenuSelection(draftKey, targetMenu.id);
+  const handleToggleMenuSelection = (menuId: number) => {
+    if (selectedMenuIdSet.has(menuId)) {
+      removeMenu({ key: draftKey, id: menuId });
       return;
     }
 
-    handleOpenServingSheet(targetMenu);
+    if (selectedCount + 1 > MAX_MEAL_RECORD_MENUS) {
+      toast.warning("최대 100개까지 기록할 수 있어요");
+      return;
+    }
+
+    upsertMenu({
+      key: draftKey,
+      id: menuId,
+      quantity: 1,
+    });
   };
 
   const handleMenuDetailPageOpen = (menuId: number) => {
-    navigate(getMealRecordAddSearchDetailPath(dateKey, mealType, menuId));
+    navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_SEARCH"));
   };
 
   const handleApplySelectedMenus = () => {
-    if (!draft || draft.selections.length === 0) return;
+    if (selectedMenus.length === 0) return;
 
-    const requestBody = buildRegisterMealRequest({
-      dateKey,
-      mealType,
-      // image: "imageUrl",
-      menus: selectedMenus,
-    });
+    const requestBody: RegisterMealRequestDto = {
+      date: dateKey,
+      time: MEAL_TYPE_TO_TIME[mealType],
+      menu_ids: selectedMenus.map((menu) => menu.id),
+      menu_quantities: selectedMenus.map((menu) => menu.quantity),
+    };
 
     mealRegister(requestBody);
   };
@@ -177,42 +147,23 @@ export default function MealSearchPage() {
     searchInputRef.current?.focus();
   };
 
-  const handleOpenBrandRequestSheet = () => {
-    setIsBrandRequestSheetOpen(true);
+  const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
+  const handleCloseDirectInputSheet = () => {
+    setIsDirectInputSheetOpen(false);
   };
-
-  const handleCloseBrandRequestSheet = () => {
-    if (isBrandRequestSubmitting) return;
-
-    setIsBrandRequestSheetOpen(false);
-    setBrandRequestKeyword("");
+  const handleNavigateNutrientAdd = () => {
+    setIsDirectInputSheetOpen(false);
+    navigate(PATH.NUTRIENT_ADD_REGISTER, {
+      state: {
+        dateKey,
+        mealType,
+      },
+    });
   };
-
-  const handleSubmitBrandRequest = async () => {
-    const normalizedBrandKeyword = brandRequestKeyword.trim();
-    if (!normalizedBrandKeyword) {
-      toast.warning("브랜드명을 입력해주세요");
-      return;
-    }
-
-    if (isBrandRequestSubmitting) return;
-
-    try {
-      setIsBrandRequestSubmitting(true);
-      await postMealRecordBrandRequest(normalizedBrandKeyword);
-      toast.success("브랜드 요청을 보냈어요");
-      setIsBrandRequestSheetOpen(false);
-      setBrandRequestKeyword("");
-    } catch {
-      toast.warning("브랜드 요청 전송에 실패했어요");
-    } finally {
-      setIsBrandRequestSubmitting(false);
-    }
+  const handleNavigateNutrientCamera = () => {
+    setIsDirectInputSheetOpen(false);
+    navigate(PATH.NUTRIENT_CAMERA);
   };
-
-  const selectedCount = selectedMenus.length;
-  const isBrandRequestSubmitDisabled =
-    isBrandRequestSubmitting || brandRequestKeyword.trim().length === 0;
 
   return (
     <section className={styles.page}>
@@ -224,7 +175,7 @@ export default function MealSearchPage() {
         inputRef={searchInputRef}
         placeholder="메뉴를 검색해보세요"
         inputAriaLabel="메뉴 검색"
-        onBack={() => navigate(getMealRecordAddPath(dateKey, mealType))}
+        onBack={() => navigate(getMealRecordPath(dateKey, mealType))}
       />
 
       <main className={styles.main}>
@@ -247,7 +198,7 @@ export default function MealSearchPage() {
                         icon={isSelected ? "check" : "add"}
                         state={isSelected ? "select" : "default"}
                         onClick={() => handleMenuDetailPageOpen(menu.id)}
-                        onIconClick={() => handleToggleMenuSelection(menu)}
+                        onIconClick={() => handleToggleMenuSelection(menu.id)}
                       />
                     );
                   })}
@@ -268,17 +219,16 @@ export default function MealSearchPage() {
                       비슷한 항목을 선택하거나 직접 등록할 수 있어요
                     </p>
                     <div className={styles.buttonContainer}>
-                      <Button variant="text" state="default" size="small" color="assistive">
-                        영양 성분 직접 등록
-                      </Button>
                       <Button
                         variant="text"
                         state="default"
                         size="small"
                         color="assistive"
-                        onClick={handleOpenBrandRequestSheet}
+                        onClick={() => {
+                          setIsDirectInputSheetOpen(true);
+                        }}
                       >
-                        브랜드 추가 요청
+                        영양 성분 직접 등록
                       </Button>
                     </div>
                   </section>
@@ -286,7 +236,7 @@ export default function MealSearchPage() {
                   {(searchResults.menu_list.length > 0 || searchResults.brand_list.length > 0) && (
                     <section className={styles.similarSection}>
                       <p className={`${styles.similarSectionTitle} typo-title3`}>
-                        비슷한 메뉴 / 브랜드는 어때요?
+                        비슷한 메뉴는 어때요?
                       </p>
 
                       <div className={styles.resultList}>
@@ -304,17 +254,17 @@ export default function MealSearchPage() {
                               icon={isSelected ? "check" : "add"}
                               state={isSelected ? "select" : "default"}
                               onClick={() => handleMenuDetailPageOpen(menu.id)}
-                              onIconClick={() => handleToggleMenuSelection(menu)}
+                              onIconClick={() => handleToggleMenuSelection(menu.id)}
                             />
                           );
                         })}
 
-                        {searchResults.brand_list.map((brand) => (
+                        {/* {searchResults.brand_list.map((brand) => (
                           <button key={brand} type="button" className={styles.brandItem}>
                             <span className={`typo-title2 ${styles.brandName}`}>{brand}</span>
                             <ChevronRight size={24} className={styles.brandItemChevron} />
                           </button>
-                        ))}
+                        ))} */}
                       </div>
                     </section>
                   )}
@@ -347,34 +297,33 @@ export default function MealSearchPage() {
         </Button>
       </footer>
 
-      <BottomSheet isOpen={servingSheet.isOpen} onClose={servingSheet.close}>
-        {servingSheet.menu && servingSheet.serving && (
-          <ServingAmountSheetContent
-            menu={servingSheet.menu}
-            serving={servingSheet.serving}
-            previewMenu={servingSheet.previewMenu ?? servingSheet.menu}
-            inputMode={servingSheet.inputMode}
-            inputValue={servingSheet.inputValue}
-            onModeChange={servingSheet.onModeChange}
-            onInputChange={servingSheet.onInputChange}
-            onInputBlur={servingSheet.onInputBlur}
-            onDecrease={servingSheet.onDecrease}
-            onIncrease={servingSheet.onIncrease}
-            onSubmit={servingSheet.onSubmit}
-          />
-        )}
-      </BottomSheet>
-
-      <BottomSheet isOpen={isBrandRequestSheetOpen} onClose={handleCloseBrandRequestSheet}>
-        <BrandRequestSheetContent
-          value={brandRequestKeyword}
-          isSubmitting={isBrandRequestSubmitting}
-          isSubmitDisabled={isBrandRequestSubmitDisabled}
-          onValueChange={setBrandRequestKeyword}
-          onSubmit={() => {
-            void handleSubmitBrandRequest();
-          }}
-        />
+      <BottomSheet isOpen={isDirectInputSheetOpen} onClose={handleCloseDirectInputSheet}>
+        <div className={styles.sheetContainer}>
+          <h2 className={`${styles.sheetTitle} typo-title2`}>등록 방법을 골라주세요</h2>
+          <div className={styles.sheetActions}>
+            <Button
+              variant="text"
+              state="default"
+              size="large"
+              color="assistive"
+              fullWidth
+              onClick={handleNavigateNutrientAdd}
+            >
+              <p className={`typo-title4 ${styles.sheetButtonText}`}>숫자 입력하기</p>
+            </Button>
+            <div className="divider dividerMargin16" />
+            <Button
+              variant="text"
+              state="default"
+              size="large"
+              color="assistive"
+              fullWidth
+              onClick={handleNavigateNutrientCamera}
+            >
+              <p className={`typo-title4 ${styles.sheetButtonText}`}>영양성분표 촬영하기</p>
+            </Button>
+          </div>
+        </div>
       </BottomSheet>
     </section>
   );

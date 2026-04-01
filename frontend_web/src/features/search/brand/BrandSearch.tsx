@@ -1,18 +1,41 @@
-import { ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { useGetBrandSearchQuery } from "@/features/search/brand/hooks/queries/useBrandSearchQuery";
 import styles from "@/features/search/styles/BrandSearch.module.css";
 import { PATH } from "@/router/path";
-import type { NutrientAddLocationState } from "@/shared/api/types/api.dto";
+import type { RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+
+type BrandSearchResult = {
+  id: string;
+  name: string;
+};
+
+function mapBrandList(brandList: string[]): BrandSearchResult[] {
+  return brandList
+    .map((brandName, index) => {
+      const normalizedName = brandName.trim();
+      if (!normalizedName) {
+        return null;
+      }
+
+      return {
+        id: `${normalizedName}-${index}`,
+        name: normalizedName,
+      };
+    })
+    .filter((brand): brand is BrandSearchResult => brand !== null);
+}
 
 export default function BrandSearch() {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = (location.state ?? {}) as NutrientAddLocationState;
-  const [searchKeyword, setSearchKeyword] = useState((locationState.brandName ?? "").trim());
+  const formState = (location.state ?? {}) as Partial<RegisterMenuRequestDto>;
+
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [selectedBrandId, setSelectedBrandId] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,41 +49,54 @@ export default function BrandSearch() {
     };
   }, []);
 
+  const normalizedSubmittedKeyword = submittedKeyword.trim();
+  const { data: brandSearchResult, isFetching } = useGetBrandSearchQuery(
+    normalizedSubmittedKeyword,
+    {
+      enabled: normalizedSubmittedKeyword.length > 0,
+    },
+  );
+
+  const brandResults = mapBrandList(brandSearchResult?.brand_list ?? []);
+  const hasKeyword = normalizedSubmittedKeyword.length > 0;
+  const hasResults = brandResults.length > 0;
+  const isInitialSearching = isFetching && hasKeyword && !hasResults;
+
   const handleClearKeyword = () => {
     setSearchKeyword("");
+    setSubmittedKeyword("");
     setSelectedBrandId("");
     searchInputRef.current?.focus();
   };
 
   const handleBack = () => {
-    navigate(PATH.NUTRIENT_ADD, {
+    navigate(PATH.NUTRIENT_ADD_REGISTER, {
       replace: true,
-      state: locationState,
+      state: formState,
     });
   };
 
-  const handleDirectBrandRegister = () => {
-    const brandName = searchKeyword.trim();
-    if (!brandName) return;
+  const handleBrandSearchQuery = (value: string) => {
+    const normalizedKeyword = value.trim();
 
-    navigate(PATH.NUTRIENT_ADD, {
+    setSelectedBrandId("");
+    setSubmittedKeyword(normalizedKeyword);
+  };
+
+  const handleBrandRegister = (selectedBrandName?: string) => {
+    const brand = (selectedBrandName ?? searchKeyword).trim();
+    if (!brand) return;
+
+    formState.brand = brand;
+
+    navigate(PATH.NUTRIENT_ADD_REGISTER, {
       replace: true,
       state: {
-        ...locationState,
-        brandName,
-      } satisfies NutrientAddLocationState,
+        ...formState,
+      },
     });
   };
 
-  const handleApplySelectedBrand = () => {
-    // navigate(PATH.NUTRIENT_ADD, {
-    //   replace: true,
-    //   state: {
-    //     ...locationState,
-    //     brandName: selectedBrand.name,
-    //   } satisfies NutrientAddLocationState,
-    // });
-  };
   const isDirectRegisterDisabled = searchKeyword.trim().length === 0;
 
   return (
@@ -69,6 +105,7 @@ export default function BrandSearch() {
         value={searchKeyword}
         onValueChange={setSearchKeyword}
         onClear={handleClearKeyword}
+        onEnter={handleBrandSearchQuery}
         inputRef={searchInputRef}
         placeholder="브랜드명 입력"
         inputAriaLabel="브랜드명 입력"
@@ -88,11 +125,11 @@ export default function BrandSearch() {
                       <button
                         type="button"
                         className={`${styles.brandItem} ${isSelected ? styles.brandItemSelected : ""}`}
-                        onClick={() => handleToggleBrandSelection(brand)}
+                        onClick={() => handleBrandRegister(brand.name)}
                         aria-pressed={isSelected}
                       >
                         <span className={`typo-title2 ${styles.brandName}`}>{brand.name}</span>
-                        <ChevronRight size={24} className={styles.brandItemChevron} />
+                        {/* <ChevronRight size={24} className={styles.brandItemChevron} /> */}
                       </button>
                     </li>
                   );
@@ -100,8 +137,9 @@ export default function BrandSearch() {
               </ul>
             ) : (
               <div className={styles.emptyResult}>
-                {isInitialSearching && <p className={`typo-label4`}>브랜드를 찾고 있어요</p>}
-                {!isInitialSearching && (
+                {isInitialSearching ? (
+                  <p className="typo-label4">브랜드를 찾고 있어요</p>
+                ) : (
                   <>
                     <p className={`typo-label4 ${styles.emptyResultSubText}`}>
                       일치하는 브랜드가 없어요
@@ -113,7 +151,7 @@ export default function BrandSearch() {
                       state={isDirectRegisterDisabled ? "disabled" : "default"}
                       size="small"
                       color="assistive"
-                      onClick={handleDirectBrandRegister}
+                      onClick={() => handleBrandRegister()}
                       disabled={isDirectRegisterDisabled}
                     >
                       브랜드 직접 등록
@@ -136,30 +174,14 @@ export default function BrandSearch() {
               state={isDirectRegisterDisabled ? "disabled" : "default"}
               size="small"
               color="assistive"
-              onClick={handleDirectBrandRegister}
+              onClick={() => handleBrandRegister()}
               disabled={isDirectRegisterDisabled}
             >
-              브랜드 직접 등록
+              브랜드 직접 입력
             </Button>
           )}
         </section>
       </main>
-
-      {hasResults && (
-        <footer className={styles.footer}>
-          <Button
-            variant="filled"
-            state={isSelectDisabled ? "disabled" : "default"}
-            size="large"
-            color="primary"
-            fullWidth
-            onClick={handleApplySelectedBrand}
-            disabled={isSelectDisabled}
-          >
-            선택하기
-          </Button>
-        </footer>
-      )}
     </section>
   );
 }

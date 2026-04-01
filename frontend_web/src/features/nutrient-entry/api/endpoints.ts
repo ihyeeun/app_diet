@@ -3,6 +3,8 @@ const ENV_IMAGE_UPLOAD_ENDPOINT = import.meta.env.VITE_IMAGE_UPLOAD_ENDPOINT;
 
 export const NUTRIENT_ENTRY_END_POINT = {
   SEARCH_BRANDS: "/nutrient/brands/search",
+  MENU_REGISTER: "/home/registerMenu",
+  MENU_MODIFY: "/home/modifyMenu",
   IMAGE_UPLOAD:
     typeof ENV_IMAGE_UPLOAD_ENDPOINT === "string" && ENV_IMAGE_UPLOAD_ENDPOINT.trim()
       ? ENV_IMAGE_UPLOAD_ENDPOINT.trim()
