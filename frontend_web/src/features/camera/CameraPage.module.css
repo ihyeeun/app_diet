@@ -16,7 +16,7 @@
   text-align: center;
 }
 
-.cameraWrap {
+.content {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
   justify-content: center;
 }
 
-.cameraIcon {
+.image {
   height: 100px;
   width: 100px;
 }

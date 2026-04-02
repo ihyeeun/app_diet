@@ -1,117 +1,128 @@
-import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
+import { type ChangeEvent, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
+import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import { PATH } from "@/router/path";
+import { getMealSearchPath } from "@/router/pathHelpers";
+import { getPathWithMeal } from "@/router/pathHelpers";
+import type { MealType, RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
+import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 
 import styles from "./styles/NutrientAddPage.module.css";
 
-// function formatBytesToMb(fileSize: number) {
-//   return `${(fileSize / (1024 * 1024)).toFixed(2)}MB`;
-// }
+type NutrientAddLocationState = Partial<RegisterMenuRequestDto> & {
+  dateKey?: string;
+  mealType?: MealType;
+  brandName?: string;
+  returnPath?: string;
+};
 
 export default function NutrientAddPage() {
-  // TODO 추후 카메라 찍기 전 온보딩 페이지로 구현하기
   const navigation = useNavigate();
-  // const location = useLocation();
-  // const brandName = (contextState.brandName ?? "").trim();
-  // const capturedImage = contextState.capturedImage;
-  // const uploadedImageUrl = contextState.uploadedImageUrl;
-  // const [foodName, setFoodName] = useState((contextState.foodName ?? "").trim());
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const locationState = (location.state ?? {}) as NutrientAddLocationState;
 
-  // const handleFoodNameChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-  //   setFoodName(event.target.value);
-  // };
+  const dateKey = getSafeDateKey(searchParams.get("date") ?? locationState.dateKey ?? null);
+  const mealType = getMealType(searchParams.get("mealType") ?? locationState.mealType ?? null);
+  const [foodName, setFoodName] = useState(locationState.name ?? "");
+  const brandName = (locationState.brand ?? locationState.brandName ?? "").trim();
 
-  // const handleOpenBrandSearch = () => {
-  //   navigation(PATH.BRAND_SEARCH, {
-  //     replace: true,
-  //   });
-  // };
+  const handleFoodNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setFoodName(event.target.value);
+  };
 
-  // const isNextDisabled = !foodName.trim();
+  const handleOpenBrandSearch = () => {
+    navigation(PATH.BRAND_SEARCH, {
+      state: {
+        ...locationState,
+        name: foodName,
+        brand: brandName,
+        dateKey,
+        mealType,
+        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType),
+      },
+    });
+  };
 
-  // const handleNext = () => {
-  //   if (isNextDisabled) return;
+  const isNextDisabled = !foodName.trim();
 
-  //   navigation(PATH.NUTRIENT_ADD_DETAIL, {
-  //     state: {
-  //       ...contextState,
-  //       brandName: brandName.trim(),
-  //       foodName: foodName.trim(),
-  //     },
-  //   });
-  // };
+  const handleNext = () => {
+    if (isNextDisabled) {
+      return;
+    }
+
+    const basePath = getPathWithMeal(PATH.MENU_BOARD_CAMERA, dateKey, mealType);
+    const queryString = basePath.split("?")[1] ?? "";
+    const params = new URLSearchParams(queryString);
+
+    params.set("foodName", foodName.trim());
+
+    const normalizedBrand = brandName.trim();
+    if (normalizedBrand) {
+      params.set("brandName", normalizedBrand);
+    } else {
+      params.delete("brandName"); // 쿼리에서 아예 제거
+    }
+
+    navigation(`${PATH.MENU_BOARD_CAMERA}?${params.toString()}`);
+  };
+
+  const handleBack = () => {
+    navigation(getMealSearchPath(dateKey, mealType));
+  };
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title="영양 성분 등록"
-        onBack={() => {
-          navigation(-1);
-        }}
-      />
+      <PageHeader title="영양성분 등록" onBack={handleBack} />
 
       <main className={styles.main}>
-        <p>추후 사진 찍기 전 메뉴명 등록하는 페이지로 구현</p>
-        {/* {capturedImage ? (
-          <section className={styles.imageInfoSection} aria-label="선택된 이미지 정보">
-            <p className={`typo-label3 ${styles.imageInfoTitle}`}>선택된 이미지</p>
-            <p className={`typo-label4 ${styles.imageInfoText}`}>
-              {capturedImage.fileName ?? "이름 없는 이미지"}
-            </p>
-            <p className={`typo-label4 ${styles.imageInfoSubText}`}>
-              {capturedImage.mimeType ?? "image/jpeg"} ·{" "}
-              {capturedImage.fileSize !== null
-                ? formatBytesToMb(capturedImage.fileSize)
-                : "용량 미확인"}
-            </p>
-            <p className={`typo-label4 ${styles.imageInfoSubText}`}>
-              {uploadedImageUrl ? "서버 전송 완료" : "서버 전송 URL 미확인"}
-            </p>
-          </section>
-        ) : null}
+        <div className={styles.content}>
+          <div className={styles.fieldWrap}>
+            <div className={styles.labelRow}>
+              <p className={`typo-title3 ${styles.labelText}`}>음식명</p>
+              <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
+            </div>
 
-        <div className={styles.fieldWrap}>
-          <label>
+            <input
+              className={`typo-body3 ${styles.textInput}`}
+              type="text"
+              maxLength={300}
+              value={foodName}
+              onChange={handleFoodNameChange}
+              placeholder="음식명 입력"
+              aria-label="음식명 입력"
+            />
+
+            <p className={`typo-label4 ${styles.limitText}`}>최대 300자 이내</p>
+          </div>
+
+          <div className={styles.fieldWrap}>
             <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>
-          </label>
-          <button
-            type="button"
-            className={styles.inputBrandButton}
-            onClick={handleOpenBrandSearch}
-            aria-label="브랜드 검색 화면 열기"
-          >
-            <span
-              className={`typo-body3 ${brandName ? styles.inputBrandValue : styles.inputBrandPlaceholder}`}
+            <button
+              type="button"
+              className={styles.brandButton}
+              onClick={handleOpenBrandSearch}
+              aria-label="브랜드명 검색 열기"
             >
-              {brandName || "등록하고 싶은 브랜드를 검색하세요"}
-            </span>
-          </button>
+              <span
+                className={`typo-body3 ${brandName ? styles.brandValue : styles.brandPlaceholder}`}
+              >
+                {brandName || "브랜드명 입력"}
+              </span>
+              <Search size={20} className={styles.brandSearchIcon} />
+            </button>
+          </div>
         </div>
-
-        <div className={styles.fieldWrap}>
-          <label>
-            <p className={`typo-title3 ${styles.labelText}`}>음식명</p>
-          </label>
-
-          <textarea
-            maxLength={300}
-            className={`${styles.textArea} typo-body3`}
-            value={foodName}
-            onChange={handleFoodNameChange}
-            placeholder="등록하고 싶은 음식명 입력하세요"
-            aria-label="등록하고 싶은 음식명 입력하세요"
-            required
-          />
-
-          <p className={`typo-label4 ${styles.limitText}`}>최대 300자 이내</p>
-        </div> */}
       </main>
 
-      {/* <footer className={styles.footer}>
+      <footer className={styles.footer}>
         <Button
           variant="filled"
           size="large"
-          color="assistive"
+          color="primary"
           fullWidth
           onClick={handleNext}
           state={isNextDisabled ? "disabled" : "default"}
@@ -119,7 +130,7 @@ export default function NutrientAddPage() {
         >
           다음
         </Button>
-      </footer> */}
+      </footer>
     </section>
   );
 }
