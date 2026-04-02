@@ -54,26 +54,33 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
         ? `${Math.abs(calorieDiff).toLocaleString("ko-KR")}kcal 초과했어요`
         : "오늘 목표 칼로리를 달성했어요";
 
+  const handleTodayMealScoreClick = () => {
+    if (!targets) {
+      // TODO 목표 칼로리 조회하는 QUERY 연결하기
+    }
+
+    if (!score || !dayMealSummary || !targets) {
+      // TODO 새로고침하거나 그런 동작을 넣어야할거같은데
+      return;
+    }
+
+    navigation(PATH.TODAY_MEAL_SCORE, {
+      state: {
+        score,
+        targets: targets,
+        currents: dayMealSummary,
+        calorieMessage,
+      },
+    });
+  };
+
   if (isSummaryReady) {
     // TODO : skeleton UI
     return <p>로딩 중</p>;
   }
 
   return (
-    <button
-      className={style.content}
-      type="button"
-      onClick={() => {
-        navigation(PATH.TODAY_MEAL_SCORE, {
-          state: {
-            score,
-            targets: targets,
-            currents: dayMealSummary,
-            calorieMessage,
-          },
-        });
-      }}
-    >
+    <button className={style.content} type="button" onClick={handleTodayMealScoreClick}>
       <div className={style.score_container}>
         <div className={style.score_title_container}>
           <div className={style.score_title_text_container}>
