@@ -1,25 +1,58 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
 import { PATH } from "./path";
-import OnboardingPage from "../features/onboarding/OnboardingPage";
-import HomePage from "@/features/home/HomePage";
-import RecommendPage from "@/features/recommend/RecommendPage";
-import ComparePage from "@/features/compare/ComparePage";
-import TermsPage from "@/features/terms/TermsPage";
-import MealDetailPage from "@/features/meal-detail/MealDetailPage";
+
+const HomePage = lazy(() => import("@/features/home/HomePage"));
+const TodayMealScorePage = lazy(() => import("@/features/home/TodayMealScorePage"));
+const MealCameraPage = lazy(() => import("@/features/meal-record/MealCameraPage"));
+const MealDetailPage = lazy(() => import("@/features/meal-record/MealDetailPage"));
+const MealRecordPage = lazy(() => import("@/features/meal-record/MealRecordPage"));
+const NutrientAddPage = lazy(() => import("@/features/nutrient-entry/NutrientAddPage"));
+const NutrientCameraPage = lazy(() => import("@/features/nutrient-entry/NutrientCameraPage"));
+const NutrientModifyPage = lazy(() => import("@/features/nutrient-entry/NutrientModifyPage"));
+const NutrientRegisterPage = lazy(() => import("@/features/nutrient-entry/NutrientRegisterPage"));
+const OnboardingPage = lazy(() => import("@/features/onboarding/OnboardingPage"));
+const RecommendPage = lazy(() => import("@/features/recommend/RecommendPage"));
+const BrandMenuSearch = lazy(() => import("@/features/search/brand/BrandMenuSearch"));
+const BrandSearch = lazy(() => import("@/features/search/brand/BrandSearch"));
+const MealSearchPage = lazy(() => import("@/features/search/menu-record/MealSearchPage"));
+const TermsPage = lazy(() => import("@/features/terms/TermsPage"));
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path={PATH.ROOT} element={<HomePage />} />
-        <Route path={PATH.HOME} element={<HomePage />} />
-        <Route path={PATH.ONBOARDING} element={<OnboardingPage />} />
-        <Route path={PATH.RECOMMEND} element={<RecommendPage />} />
-        <Route path={PATH.COMPARE} element={<ComparePage />} />
-        <Route path={PATH.PROFILE} element={<div>Profile</div>} />
-        <Route path={PATH.TERMS} element={<TermsPage />} />
-        <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path={PATH.ROOT} element={<HomePage />} />
+          <Route path={PATH.HOME} element={<HomePage />} />
+
+          <Route path={PATH.ONBOARDING} element={<OnboardingPage />} />
+
+          <Route path={PATH.RECOMMEND} element={<RecommendPage />} />
+
+          <Route path={PATH.PROFILE} element={<div>Profile</div>} />
+
+          <Route path={PATH.TERMS} element={<TermsPage />} />
+
+          <Route path={PATH.TODAY_MEAL_SCORE} element={<TodayMealScorePage />} />
+
+          <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
+          <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
+          <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
+          <Route path={PATH.MEAL_CAMERA} element={<MealCameraPage />} />
+
+          <Route path={PATH.NUTRIENT_ADD} element={<NutrientAddPage />} />
+          <Route path={PATH.NUTRIENT_CAMERA} element={<NutrientCameraPage />} />
+          <Route path={PATH.NUTRIENT_ADD_MODIFY} element={<NutrientModifyPage />} />
+          <Route path={PATH.NUTRIENT_ADD_REGISTER} element={<NutrientRegisterPage />} />
+
+          <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
+          <Route path={PATH.BRAND_MENU_SEARCH} element={<BrandMenuSearch />} />
+
+          <Route path="*" element={<Navigate replace to={PATH.HOME} />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

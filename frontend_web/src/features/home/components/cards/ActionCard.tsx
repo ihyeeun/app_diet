@@ -1,5 +1,6 @@
-import style from "@/features/home/styles/ActionCard.module.css";
 import type { ReactNode } from "react";
+
+import style from "@/features/home/styles/ActionCard.module.css";
 
 type ActionCardProps = {
   children: ReactNode;

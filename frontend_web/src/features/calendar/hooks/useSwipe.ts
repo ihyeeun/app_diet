@@ -1,4 +1,4 @@
-import { useRef, type TouchEvent } from "react";
+import { type TouchEvent,useRef } from "react";
 
 type UseSwipeParams = {
   onSwipeLeft?: () => void;

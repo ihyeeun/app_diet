@@ -1,4 +1,5 @@
 import { Input } from "@base-ui/react/input";
+
 import styles from "./NumberInput.module.css";
 
 type Props = {

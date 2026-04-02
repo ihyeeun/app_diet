@@ -1,6 +1,7 @@
-import * as React from "react";
-import { AlertDialog } from "@base-ui/react/alert-dialog";
 import "./BaseAlertModal.css";
+
+import { AlertDialog } from "@base-ui/react/alert-dialog";
+import * as React from "react";
 
 type BaseAlertModalProps = {
   open: boolean;
@@ -26,10 +27,10 @@ export function BaseAlertModal({
 
         <AlertDialog.Popup className="modal-popup">
           <div className="modal-surface">
-            <AlertDialog.Title className="modal-title">{title}</AlertDialog.Title>
+            <AlertDialog.Title className="typo-title2">{title}</AlertDialog.Title>
 
             {description ? (
-              <AlertDialog.Description className="modal-description">
+              <AlertDialog.Description className="typo-body3">
                 {description}
               </AlertDialog.Description>
             ) : null}

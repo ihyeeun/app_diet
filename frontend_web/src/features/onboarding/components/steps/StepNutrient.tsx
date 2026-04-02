@@ -1,7 +1,8 @@
+import { useEffect } from "react";
+
 import { useRecommendNutrientMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 import NumberField from "@/shared/commons/input/NumberField";
-import { useEffect } from "react";
 
 const INTERNAL_DECIMALS = 4;
 const NUTRIENT_ENERGY_PER_GRAM = {

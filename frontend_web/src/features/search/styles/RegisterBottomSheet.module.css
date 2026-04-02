@@ -1,0 +1,24 @@
+.sheetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 20px;
+  padding-bottom: calc(var(--safe-area-bottom) + 8px);
+}
+
+.sheetTitle {
+  color: var(--text-normal);
+  padding-bottom: 10px;
+}
+
+.sheetActions {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheetButtonText {
+  color: var(--text-normal);
+  text-align: start;
+  width: 100%;
+  padding: 0 12px;
+}

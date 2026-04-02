@@ -1,3 +1,6 @@
+import { Field } from "@base-ui/react/field";
+import { useEffect, useMemo, useState } from "react";
+
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 import { calculateGoalWeek } from "@/features/onboarding/utils/calculateGoalWeek";
@@ -5,8 +8,6 @@ import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { EditorInput } from "@/shared/commons/input/EditorInput";
 import { toast } from "@/shared/commons/toast/toast";
-import { Field } from "@base-ui/react/field";
-import { useEffect, useMemo, useState } from "react";
 
 const GOAL_CALORIES_MIN = 1;
 const GOAL_CALORIES_MAX = 99999;
@@ -108,8 +109,8 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
   };
 
   const handleConfirmtargetCalories = () => {
-    if (drafttargetCalories === undefined) {
-      toast.warning("목표 칼로리를 입력해주세요");
+    if (drafttargetCalories === undefined || drafttargetCalories === 0) {
+      toast.warning("목표 칼로리는 1 이상 입력해주세요");
       return;
     }
 
@@ -132,8 +133,6 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
           {isPending
             ? "추천 목표 칼로리를 계산하고 있어요"
             : `추천하는 목표 칼로리는 ${formattargetCalories(responseData)}kcal예요`}
-          <br />
-          기초대사량을 고려해 최소 섭취량으로 설정했어요
         </p>
       </div>
 
@@ -159,7 +158,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
             step={GOAL_CALORIES_STEP}
             placeholder="목표 칼로리 입력"
             unit="kcal"
-            clampOnChange={false}
+            clampOnChange={true}
             normalizeOnBlur={false}
             onChange={(value) => {
               setDrafttargetCalories(value === undefined ? undefined : toInteger(value));

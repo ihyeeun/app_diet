@@ -1,5 +1,6 @@
-import { ChevronLeft } from "lucide-react";
 import "../css/OnboardingHeader.css";
+
+import { ChevronLeft } from "lucide-react";
 
 type Props = {
   stepIndex: number;

@@ -1,6 +1,7 @@
-import Picker from "react-mobile-picker";
-import { useEffect, useRef, useState, type TouchEvent } from "react";
 import "./WheelPicker.css";
+
+import { type TouchEvent,useEffect, useRef, useState } from "react";
+import Picker from "react-mobile-picker";
 
 type Props = {
   value: string;

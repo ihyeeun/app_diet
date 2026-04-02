@@ -1,14 +1,18 @@
 import type {
-  AppTabName,
   ApiRequestPayload,
+  AppTabName,
   AppToWebMessage,
+  CameraCaptureRequestPayload,
+  CameraCaptureResponsePayload,
+  GalleryPickRequestPayload,
+  ImageUploadRequestPayload,
   WebToAppMessage,
 } from "./nativeBridge.types";
 
 type PendingRequest = {
   resolve: (value: unknown) => void;
   reject: (reason?: unknown) => void;
-  timeoutId: number;
+  timeoutId: number | null;
 };
 
 const pendingRequests = new Map<string, PendingRequest>();
@@ -55,7 +59,9 @@ export function initNativeBridgeListener() {
         pending.reject(bridgeError);
       }
 
-      clearTimeout(pending.timeoutId);
+      if (pending.timeoutId !== null) {
+        clearTimeout(pending.timeoutId);
+      }
       pendingRequests.delete(parsed.id);
     } catch (error) {
       console.error("[Bridge] 메시지 파싱 실패", error);
@@ -71,18 +77,29 @@ export function initNativeBridgeListener() {
   };
 }
 
-function sendRequestToApp<T>(messageFactory: (id: string) => WebToAppMessage) {
+type SendRequestOptions = {
+  timeoutMs?: number;
+};
+
+function sendRequestToApp<T>(
+  messageFactory: (id: string) => WebToAppMessage,
+  options?: SendRequestOptions,
+) {
   return new Promise<T>((resolve, reject) => {
     const id = generateRequestId();
+    const timeoutMs = options?.timeoutMs ?? 10000;
 
-    const timeoutId = window.setTimeout(() => {
-      pendingRequests.delete(id);
-      reject({
-        message: "앱 응답 시간이 초과되었습니다.",
-        statusCode: 408,
-        error: "BRIDGE_TIMEOUT",
-      });
-    }, 10000);
+    const timeoutId =
+      timeoutMs > 0
+        ? window.setTimeout(() => {
+            pendingRequests.delete(id);
+            reject({
+              message: "앱 응답 시간이 초과되었습니다.",
+              statusCode: 408,
+              error: "BRIDGE_TIMEOUT",
+            });
+          }, timeoutMs)
+        : null;
 
     pendingRequests.set(id, {
       resolve: resolve as (value: unknown) => void,
@@ -95,7 +112,9 @@ function sendRequestToApp<T>(messageFactory: (id: string) => WebToAppMessage) {
     try {
       postMessageToApp(message);
     } catch (error) {
-      clearTimeout(timeoutId);
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
       pendingRequests.delete(id);
       reject(error);
     }
@@ -119,5 +138,35 @@ export function syncAppTab(tab: AppTabName) {
     payload: {
       tab,
     },
+  });
+}
+
+export function requestNativeCameraCapture(payload?: CameraCaptureRequestPayload) {
+  return sendRequestToApp<CameraCaptureResponsePayload>((id) => ({
+    id,
+    type: "CAMERA_CAPTURE_REQUEST",
+    payload,
+  }), {
+    timeoutMs: 120000,
+  });
+}
+
+export function requestNativeGalleryPick(payload?: GalleryPickRequestPayload) {
+  return sendRequestToApp<CameraCaptureResponsePayload>((id) => ({
+    id,
+    type: "GALLERY_PICK_REQUEST",
+    payload,
+  }), {
+    timeoutMs: 120000,
+  });
+}
+
+export function requestNativeImageUpload<T = unknown>(payload: ImageUploadRequestPayload) {
+  return sendRequestToApp<T>((id) => ({
+    id,
+    type: "IMAGE_UPLOAD_REQUEST",
+    payload,
+  }), {
+    timeoutMs: 120000,
   });
 }

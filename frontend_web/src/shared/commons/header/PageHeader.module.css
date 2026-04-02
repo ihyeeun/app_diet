@@ -1,0 +1,43 @@
+.root {
+  width: 100%;
+}
+
+.safeAreaTop {
+  padding-top: var(--safe-area-top);
+}
+
+.navBar {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 80px minmax(0, 1fr) 80px;
+  height: 56px;
+  padding: 0 20px;
+}
+
+.backButton {
+  align-items: center;
+  color: var(--text-normal);
+  display: inline-flex;
+  justify-content: flex-start;
+}
+
+.backButton:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.title {
+  color: var(--text-normal);
+  margin: 0;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rightSlot {
+  align-items: center;
+  display: inline-flex;
+  justify-content: flex-end;
+}

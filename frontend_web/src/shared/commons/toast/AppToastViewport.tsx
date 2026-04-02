@@ -1,5 +1,6 @@
-import { Toast } from "@base-ui/react/toast";
 import "./AppToast.css";
+
+import { Toast } from "@base-ui/react/toast";
 
 export function AppToastViewport() {
   const { toasts } = Toast.useToastManager();

@@ -1,7 +1,8 @@
-import * as React from "react";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
-import { BaseAlertModal } from "./BaseAlertModal";
+
 import { Button } from "@/shared/commons/button/Button";
+
+import { BaseAlertModal } from "./BaseAlertModal";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -13,7 +14,6 @@ type ConfirmModalProps = {
   cancelText?: string;
   confirmText?: string;
 
-  confirmVariant?: "primary" | "danger";
   confirmDisabled?: boolean;
 
   /**
@@ -33,7 +33,6 @@ export function ConfirmModal({
   description,
   cancelText = "취소",
   confirmText = "확인",
-  confirmVariant = "primary",
   confirmDisabled = false,
   closeOnConfirm = true,
   onConfirm,
@@ -43,7 +42,7 @@ export function ConfirmModal({
       {/* 취소는 무조건 닫기 */}
       <AlertDialog.Close
         render={(props) => (
-          <Button {...props} variant="secondary">
+          <Button {...props} variant="outlined" state="default" size="small" color="primary">
             {cancelText}
           </Button>
         )}
@@ -55,12 +54,15 @@ export function ConfirmModal({
           render={(props) => (
             <Button
               {...props}
-              variant={confirmVariant}
               disabled={confirmDisabled}
               onClick={(e) => {
                 props.onClick?.(e); // 닫기 동작 유지
                 void onConfirm(); // 로직 실행
               }}
+              variant="filled"
+              state="default"
+              size="small"
+              color="primary"
             >
               {confirmText}
             </Button>
@@ -69,7 +71,6 @@ export function ConfirmModal({
       ) : (
         // ✅ 서버 성공 후 닫기 패턴: 여기서는 닫지 않음
         <Button
-          variant={confirmVariant}
           disabled={confirmDisabled}
           onClick={async () => {
             try {
@@ -80,6 +81,10 @@ export function ConfirmModal({
               console.error(error);
             }
           }}
+          variant="filled"
+          state="default"
+          size="small"
+          color="primary"
         >
           {confirmText}
         </Button>

@@ -1,0 +1,37 @@
+.badge {
+  align-items: center;
+  border: 1px solid var(--gray-400);
+  border-radius: 100px;
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px 10px;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.dot {
+  border-radius: 50%;
+  flex-shrink: 0;
+  height: 10px;
+  width: 10px;
+}
+
+.label {
+  color: var(--text-normal);
+}
+
+.appropriate {
+  background-color: var(--status-link);
+}
+
+.slightlyUnbalanced {
+  background-color: var(--status-success);
+}
+
+.unbalanced {
+  background-color: var(--status-warning);
+}
+
+.severelyUnbalanced {
+  background-color: var(--status-error);
+}

@@ -1,54 +1,54 @@
 .group {
-  display: flex;
-  width: 100%;
   align-items: center;
-  justify-content: center;
+  display: flex;
   gap: 4px;
+  justify-content: center;
+  width: 100%;
 }
 
 .input {
-  width: 4ch;
+  border: 0;
   box-sizing: border-box;
+  font-size: 20px;
   margin: 0;
   padding: 0;
-  border: 0;
   text-align: center;
-  font-size: 20px;
+  width: 4ch;
 }
 
 .input:focus,
 .input:focus-visible {
-  outline: none;
   box-shadow: none;
+  outline: none;
 }
 
 /* Chrome / Safari / Edge spinner 제거 */
 .input::-webkit-inner-spin-button,
 .input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .input:focus,
 .input:focus-visible {
-  outline: none;
   box-shadow: none;
+  outline: none;
 }
 
 .decrement,
 .increment {
-  box-sizing: border-box;
-  display: flex;
   align-items: center;
+  background: none;
+  border: 0;
+  box-sizing: border-box;
+  color: var(--common-1200);
+  cursor: pointer;
+  display: flex;
   justify-content: center;
   margin: 0;
   outline: 0;
   padding: 0;
-  border: 0;
   user-select: none;
-  background: none;
-  cursor: pointer;
-  color: var(--common-1200);
 
   @media (hover: hover) {
     &:hover {
@@ -58,16 +58,16 @@
 }
 
 .decrement {
-  border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .increment {
-  border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
 }
 
 .unit {
-  font-size: 20px;
   color: var(--common-1200);
+  font-size: 20px;
 }

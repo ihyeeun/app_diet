@@ -1,12 +1,12 @@
 .card_container {
-  box-sizing: border-box;
-  border: 1px solid var(--border-normal);
-  width: 100%;
-  height: fit-content;
-  padding: 16px;
-  border-radius: 8px;
   background-color: var(--bg-normal-white);
-  box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  box-shadow: 3px 3px 5px 0 rgb(0 0 0 / 5%);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  height: fit-content;
+  padding: 16px;
+  width: 100%;
 }

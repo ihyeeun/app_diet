@@ -1,17 +1,17 @@
 .inputBox {
-  display: flex;
   align-items: center;
+  display: flex;
   justify-content: flex-end;
 }
 
 .inputBox input {
   border: none;
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-120);
   outline: none;
   text-align: right;
-  font-size: var(--fs-h1);
-  line-height: var(--line-height-120);
-  letter-spacing: var(--letter-spacing-tight);
-  font-weight: var(--fw-medium);
   width: 100%;
 }
 
@@ -22,14 +22,14 @@ input::placeholder {
 /* Chrome / Safari / Edge spinner 제거 */
 .input::-webkit-inner-spin-button,
 .input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .unit {
-  margin-left: 4px;
-  font-size: 40px;
   color: var(--text-assistive2);
+  font-size: 40px;
+  margin-left: 4px;
 }
 
 .inputBox:has(input:not(:placeholder-shown)) .unit {

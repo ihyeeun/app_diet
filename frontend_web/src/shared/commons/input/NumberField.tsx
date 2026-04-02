@@ -1,7 +1,10 @@
 import { NumberField as BaseNumberField } from "@base-ui/react/number-field";
-import React from "react";
-import styles from "./NumberField.module.css";
 import { MinusIcon, PlusIcon } from "lucide-react";
+import React from "react";
+
+import { toOneDecimalPlace } from "@/shared/utils/numberFormat";
+
+import styles from "./NumberField.module.css";
 
 type Props = {
   value?: number;
@@ -23,7 +26,8 @@ export default function NumberField({ value, onChange, min, max, step, unit }: P
       max={max}
       step={step}
       onValueChange={(nextValue) => {
-        onChange(nextValue ?? undefined);
+        if (nextValue == null) return onChange(undefined);
+        onChange(toOneDecimalPlace(nextValue));
       }}
     >
       <BaseNumberField.Group className={styles.group}>

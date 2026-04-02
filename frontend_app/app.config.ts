@@ -26,6 +26,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: "com.example",
+    permissions: ["CAMERA"],
   },
   web: {
     output: "static",
@@ -33,6 +34,13 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    [
+      "expo-image-picker",
+      {
+        cameraPermission: "음식과 영양성분표를 촬영하기 위해 카메라 접근 권한이 필요합니다.",
+        photosPermission: "갤러리에서 사진을 선택하기 위해 사진 접근 권한이 필요합니다.",
+      },
+    ],
     [
       "expo-splash-screen",
       {

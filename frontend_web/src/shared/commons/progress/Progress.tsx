@@ -1,9 +1,22 @@
 import { Progress } from "@base-ui/react/progress";
+
 import styles from "./Progress.module.css";
 
-export default function ScoreProgress({ value, label }: { value: number; label?: string }) {
+export type ProgressVariant = "primary-white" | "primary-gray" | "black-gray";
+
+type ScoreProgressProps = {
+  value: number;
+  label?: string;
+  variant?: ProgressVariant;
+};
+
+export default function ScoreProgress({
+  value,
+  label,
+  variant = "primary-white",
+}: ScoreProgressProps) {
   return (
-    <Progress.Root className={styles.Progress} value={value}>
+    <Progress.Root className={styles.Progress} data-variant={variant} value={value}>
       {label && <Progress.Label className={styles.Label}>{label}</Progress.Label>}
       <Progress.Track className={styles.Track}>
         <Progress.Indicator className={styles.Indicator} />

@@ -1,7 +1,9 @@
-import * as React from "react";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
-import { BaseAlertModal } from "./BaseAlertModal";
+import * as React from "react";
+
 import { Button } from "@/shared/commons/button/Button";
+
+import { BaseAlertModal } from "./BaseAlertModal";
 
 type CheckButtonModalProps = {
   open: boolean;
@@ -29,9 +31,12 @@ export function CheckButtonModal({
       <AlertDialog.Close
         render={(props) => (
           <Button
-            variant="primary"
-            disabled={confirmDisabled}
             {...props}
+            variant="filled"
+            color="primary"
+            size="small"
+            state="default"
+            disabled={confirmDisabled}
             onClick={(e) => {
               onConfirm?.();
               props.onClick?.(e);

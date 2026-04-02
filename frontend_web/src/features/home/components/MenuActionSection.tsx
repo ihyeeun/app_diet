@@ -1,11 +1,21 @@
+import { useNavigate } from "react-router-dom";
+
 import ActionCard from "@/features/home/components/cards/ActionCard";
+import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
-import { PlusIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import type { MealType } from "@/shared/api/types/api.dto";
 
-export default function MenuActionSection() {
+function getMealRecordPath(date: string, mealType: MealType) {
+  const params = new URLSearchParams({
+    date,
+    mealType: String(mealType),
+  });
+  return `${PATH.MEAL_RECORD}?${params.toString()}`;
+}
+
+export default function MenuActionSection({ selectedDate }: { selectedDate: string }) {
   const navigate = useNavigate();
 
   return (
@@ -20,15 +30,14 @@ export default function MenuActionSection() {
             navigate(PATH.RECOMMEND);
           }}
         />
-        <MenuCard
+        {/* <MenuCard
           title={"메뉴 비교"}
           description="나에게 더 맞는 메뉴를 고르는데 도와줘요"
           iconSrc="/icons/menu_compare.svg"
           onClick={() => {
             syncAppTab("compare");
-            navigate(PATH.COMPARE);
           }}
-        />
+        /> */}
       </div>
       <ActionCard>
         <div className={style.record_container}>
@@ -37,23 +46,36 @@ export default function MenuActionSection() {
             <p className={`${style.description} typo-body4`}>오늘 드신 식단을 기록해주세요</p>
           </div>
           <div className={style.meal_card_list}>
-            <MealTimeCard label="아침" iconSrc="/icons/breakfast.svg" value="" onClick={() => {}} />
+            <MealTimeCard
+              label="아침"
+              iconSrc="/icons/breakfast.svg"
+              value=""
+              onClick={() => navigate(getMealRecordPath(selectedDate, "0"))}
+            />
             <MealTimeCard
               label="점심"
               iconSrc="/icons/lunch.svg"
               value="123"
-              onClick={() => {}}
+              onClick={() => navigate(getMealRecordPath(selectedDate, "1"))}
               selected
             />
-            <MealTimeCard label="저녁" iconSrc="/icons/dinner.svg" value="" onClick={() => {}} />
-            <MealTimeCard label="간식" iconSrc="/icons/snack.svg" value="" onClick={() => {}} />
+            <MealTimeCard
+              label="저녁"
+              iconSrc="/icons/dinner.svg"
+              value=""
+              onClick={() => navigate(getMealRecordPath(selectedDate, "2"))}
+            />
+            <MealTimeCard
+              label="간식"
+              iconSrc="/icons/snack.svg"
+              value=""
+              onClick={() => navigate(getMealRecordPath(selectedDate, "3"))}
+            />
           </div>
         </div>
       </ActionCard>
-      <div className={style.today_container}>
-        <TodayCard onClick={() => {}} title="오늘의 체중" value={42.2} unit="kg" />
-        <TodayCard onClick={() => {}} title="오늘의 걸음 수" value={30000} unit="걸음" />
-      </div>
+
+      <TodayBodyLogSection date={selectedDate} />
     </div>
   );
 }
@@ -110,34 +132,5 @@ function MealTimeCard({
       </div>
       <p className={`${style.meal_label} typo-label3`}>{label}</p>
     </button>
-  );
-}
-
-function TodayCard({
-  title,
-  value,
-  unit,
-  onClick,
-}: {
-  title: string;
-  value: number | string;
-  unit: string;
-  onClick: () => void;
-}) {
-  return (
-    <ActionCard onClick={onClick}>
-      <div className={style.today_card_container}>
-        <div className={style.today_title_container}>
-          <p className="typo-title4">{title}</p>
-          <PlusIcon size={20} />
-        </div>
-        <p style={{ textAlign: "right" }} className="typo-label1">
-          <span className={`typo-h3 ${style.highlightValue}`}>
-            {typeof value === "number" ? value.toLocaleString() : value}
-          </span>{" "}
-          {unit}
-        </p>
-      </div>
-    </ActionCard>
   );
 }

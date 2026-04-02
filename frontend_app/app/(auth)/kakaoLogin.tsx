@@ -3,7 +3,8 @@ import { postHasUserInfo } from "@/features/auth/api/onboardingStatusApi";
 import { parseKakaoRedirectUrl } from "@/features/auth/hooks/parseKakaoCode";
 import { router } from "expo-router";
 import { useCallback, useRef } from "react";
-import { View } from "react-native";
+import { StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import WebView, { WebViewNavigation } from "react-native-webview";
 
 const restApiKey = process.env.EXPO_PUBLIC_KAKAO_REST_API_KEY;
@@ -48,13 +49,20 @@ export default function KakaoLogin() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <WebView
         source={{
           uri: `https://kauth.kakao.com/oauth/authorize?client_id=${restApiKey}&redirect_uri=${redirectUri}&response_type=code`,
         }}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
       />
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+});

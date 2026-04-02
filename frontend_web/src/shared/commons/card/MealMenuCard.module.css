@@ -1,0 +1,115 @@
+.card {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: space-between;
+  padding: 16px 20px;
+  width: 100%;
+}
+
+.card.clickable {
+  cursor: pointer;
+}
+
+.card.selected {
+  background-color: var(--interaction-primary);
+  border-color: var(--border-primary);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.titleSection {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.description {
+  color: var(--text-assistive2);
+}
+
+.chipList {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  align-items: center;
+  border-radius: 4px;
+  display: inline-flex;
+  padding: 2px 6px;
+}
+
+.personalChipLabel {
+  background-color: var(--bg-normal-normal);
+  color: var(--text-assistive2);
+}
+
+.suggestionChipLabel {
+  background-color: var(--interaction-primary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.iconButton {
+  align-items: center;
+  border-radius: 6px;
+  color: var(--text-normal);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.iconButton:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.selected .iconButton {
+  color: var(--primary-strong);
+}
+
+.title {
+  color: var(--text-normal);
+}
+
+.meta {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.prouductInfo {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+.calories {
+  color: var(--text-normal);
+}
+
+.brand {
+  color: var(--text-assistive2);
+}
+
+.unitAmount {
+  color: var(--text-assistive1);
+}

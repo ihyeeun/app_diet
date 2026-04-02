@@ -1,7 +1,8 @@
-import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
-import { ONBOARDING_WEIGHT_RANGE } from "@/features/onboarding/constants/inputRanges";
-import { NumberInput } from "@/shared/commons/input/NumberInput";
 import { Field } from "@base-ui/react";
+
+import { ONBOARDING_WEIGHT_RANGE } from "@/features/onboarding/constants/inputRanges";
+import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import { NumberInput } from "@/shared/commons/input/NumberInput";
 
 export default function StepGoalWeight({ data, update }: StepComponentProps) {
   const diff =

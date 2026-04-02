@@ -1,5 +1,5 @@
 export type BridgeHttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-export type BridgeTabName = "home" | "recommend" | "compare" | "profile";
+export type BridgeTabName = "home" | "recommend" | "profile";
 
 export type BridgeRequestPayload = {
   endpoint: string;
@@ -22,7 +22,49 @@ export type BridgeTabSyncMessage = {
   };
 };
 
-export type WebToAppMessage = BridgeApiRequestMessage | BridgeTabSyncMessage;
+export type BridgeCameraCaptureRequestPayload = {
+  quality?: number;
+};
+
+export type BridgeCameraCaptureRequestMessage = {
+  id: string;
+  type: "CAMERA_CAPTURE_REQUEST";
+  payload?: BridgeCameraCaptureRequestPayload;
+};
+
+export type BridgeGalleryPickRequestPayload = {
+  quality?: number;
+};
+
+export type BridgeGalleryPickRequestMessage = {
+  id: string;
+  type: "GALLERY_PICK_REQUEST";
+  payload?: BridgeGalleryPickRequestPayload;
+};
+
+export type BridgeImageUploadRequestPayload = {
+  endpoint: string;
+  fileUri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  fieldName?: string;
+  method?: "POST" | "PUT";
+  body?: Record<string, string | number | boolean | undefined>;
+  params?: Record<string, string | number | boolean | undefined>;
+};
+
+export type BridgeImageUploadRequestMessage = {
+  id: string;
+  type: "IMAGE_UPLOAD_REQUEST";
+  payload: BridgeImageUploadRequestPayload;
+};
+
+export type WebToAppMessage =
+  | BridgeApiRequestMessage
+  | BridgeTabSyncMessage
+  | BridgeCameraCaptureRequestMessage
+  | BridgeGalleryPickRequestMessage
+  | BridgeImageUploadRequestMessage;
 
 export type BridgeErrorPayload = {
   message: string;

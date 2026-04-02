@@ -1,0 +1,37 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.main {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: center;
+  text-align: center;
+}
+
+.cameraWrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.cameraIcon {
+  height: 100px;
+  width: 100px;
+}
+
+.actionButtons {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

@@ -1,16 +1,17 @@
-import type { StepComponentProps, StepId, StepMeta } from "../../onboarding.types";
-import StepGender from "./StepGender";
-import StepBirthYear from "./StepBirthYear";
-import StepBody from "./StepBody";
-import StepActivity from "./StepActivity";
-import StepGoal from "./StepGoal";
-import StepGoalWeight from "./StepGoalWeight";
-import StepSubscribedCode from "./StepSubscribedCode";
 import type { ComponentType } from "react";
 
-import StepNutrient from "./StepNutrient";
-import { isValidBirthYear } from "@/shared/commons/picker/yearOptions";
 import SteptargetCalories from "@/features/onboarding/components/steps/StepGoalCalories";
+import { isValidBirthYear } from "@/shared/commons/picker/yearOptions";
+
+import type { StepComponentProps, StepId, StepMeta } from "../../onboarding.types";
+import StepActivity from "./StepActivity";
+import StepBirthYear from "./StepBirthYear";
+import StepBody from "./StepBody";
+import StepGender from "./StepGender";
+import StepGoal from "./StepGoal";
+import StepGoalWeight from "./StepGoalWeight";
+import StepNutrient from "./StepNutrient";
+import StepSubscribedCode from "./StepSubscribedCode";
 
 const hasSelectedValue = (value?: number | null) => value !== undefined && value !== null;
 
@@ -71,6 +72,6 @@ export const STEPS: StepMeta[] = [
     id: "subscribedCode",
     title: "코드 입력",
     isValid: () => true,
-    nextText: "완료",
+    nextText: "시작",
   },
 ];
