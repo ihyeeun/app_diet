@@ -83,6 +83,7 @@ export default function AppleLogin() {
       console.error("애플 로그인 메시지 처리 실패:", error);
       isExchangingRef.current = false;
       setIsCallbackProcessing(false);
+      router.replace("/(auth)/login");
     }
   }, []);
 
