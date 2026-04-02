@@ -24,7 +24,10 @@ export default function NutrientCameraPage() {
 
   const handleCameraActions = async () => {
     try {
-      const capturedImage = await requestNativeCameraCapture({ quality: 0.8 });
+      const capturedImage = await requestNativeCameraCapture({
+        quality: 0.8,
+        mode: "NUTRITION_LABEL",
+      });
       const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
       navigate(PATH.NUTRIENT_ADD, {
         state: {

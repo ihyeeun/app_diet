@@ -22,7 +22,10 @@ export default function MealCameraPage() {
 
   const handleCameraActions = async () => {
     try {
-      const capturedImage = await requestNativeCameraCapture({ quality: 0.8 });
+      const capturedImage = await requestNativeCameraCapture({
+        quality: 0.8,
+        mode: "MENU_BOARD",
+      });
       const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
       // navigate(PATH.NUTRIENT_ADD, {
       //   state: {

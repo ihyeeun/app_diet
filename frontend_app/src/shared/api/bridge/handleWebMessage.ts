@@ -5,6 +5,8 @@ import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { apiClient } from "@/src/shared/api/apiClient";
+import { BridgeHandledError, isBridgeHandledError } from "./bridgeError";
+import { beginCameraCaptureSession } from "./cameraCaptureSession";
 import type {
   BridgeCameraCaptureRequestPayload,
   BridgeGalleryPickRequestPayload,
@@ -13,18 +15,6 @@ import type {
 } from "./bridge.types";
 import { sendToWeb } from "./sendToWeb";
 import { requestFromWeb } from "./requestFromWeb";
-
-class BridgeHandledError extends Error {
-  statusCode: number;
-  errorCode: string;
-
-  constructor(message: string, statusCode: number, errorCode: string) {
-    super(message);
-    this.name = "BridgeHandledError";
-    this.statusCode = statusCode;
-    this.errorCode = errorCode;
-  }
-}
 
 const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png"]);
 const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
@@ -36,6 +26,12 @@ type ImageFileSource = {
   fileName?: string | null;
   mimeType?: string | null;
   fileSize?: number | null;
+};
+
+type CapturedImageSource = ImageFileSource & {
+  width: number;
+  height: number;
+  base64?: string | null;
 };
 
 function resolveLowerCaseExtension(value: string | null | undefined) {
@@ -84,10 +80,10 @@ async function resolveImageFileSize(source: ImageFileSource) {
   }
 }
 
-async function normalizeImageAsset(asset: ImagePicker.ImagePickerAsset) {
-  const mimeType = resolveImageMimeType(asset);
-  const extensionFromName = resolveLowerCaseExtension(asset.fileName);
-  const extensionFromUri = resolveLowerCaseExtension(asset.uri);
+async function normalizeCapturedImageSource(source: CapturedImageSource) {
+  const mimeType = resolveImageMimeType(source);
+  const extensionFromName = resolveLowerCaseExtension(source.fileName);
+  const extensionFromUri = resolveLowerCaseExtension(source.uri);
   const extension = extensionFromName ?? extensionFromUri;
   const isAllowedMimeType = mimeType ? ALLOWED_IMAGE_MIME_TYPES.has(mimeType) : false;
   const isAllowedExtension = extension ? ALLOWED_IMAGE_EXTENSIONS.has(extension) : false;
@@ -100,7 +96,7 @@ async function normalizeImageAsset(asset: ImagePicker.ImagePickerAsset) {
     );
   }
 
-  const fileSize = await resolveImageFileSize(asset);
+  const fileSize = await resolveImageFileSize(source);
   if (fileSize === null) {
     throw new BridgeHandledError(
       "이미지 용량을 확인하지 못했어요. 다시 시도해주세요.",
@@ -118,14 +114,26 @@ async function normalizeImageAsset(asset: ImagePicker.ImagePickerAsset) {
   }
 
   return {
+    uri: source.uri,
+    width: source.width,
+    height: source.height,
+    fileName: source.fileName ?? null,
+    fileSize,
+    mimeType: mimeType ?? null,
+    base64: source.base64 ?? null,
+  };
+}
+
+function normalizeImagePickerAsset(asset: ImagePicker.ImagePickerAsset) {
+  return normalizeCapturedImageSource({
     uri: asset.uri,
     width: asset.width,
     height: asset.height,
-    fileName: asset.fileName ?? null,
-    fileSize,
-    mimeType: mimeType ?? null,
-    base64: asset.base64 ?? null,
-  };
+    fileName: asset.fileName,
+    fileSize: asset.fileSize,
+    mimeType: asset.mimeType,
+    base64: asset.base64,
+  });
 }
 
 function assertRelativeEndpoint(endpoint: string) {
@@ -246,32 +254,8 @@ async function uploadImageToServer(payload: BridgeImageUploadRequestPayload) {
 }
 
 async function capturePhotoFromCamera(payload?: BridgeCameraCaptureRequestPayload) {
-  const permission = await ImagePicker.requestCameraPermissionsAsync();
-  if (!permission.granted) {
-    throw new BridgeHandledError("카메라 권한이 필요해요.", 403, "CAMERA_PERMISSION_DENIED");
-  }
-
-  const result = await ImagePicker.launchCameraAsync({
-    quality: payload?.quality ?? 0.8,
-    allowsEditing: false,
-    exif: false,
-    base64: false,
-  });
-
-  if (result.canceled) {
-    throw new BridgeHandledError("촬영이 취소되었어요.", 499, "CAMERA_CAPTURE_CANCELLED");
-  }
-
-  if (result.assets.length !== 1) {
-    throw new BridgeHandledError("이미지는 1장만 첨부할 수 있어요.", 400, "IMAGE_COUNT_EXCEEDED");
-  }
-
-  const asset = result.assets[0];
-  if (!asset) {
-    throw new BridgeHandledError("촬영 결과를 가져오지 못했어요.", 500, "CAMERA_CAPTURE_FAILED");
-  }
-
-  return await normalizeImageAsset(asset);
+  const captured = await beginCameraCaptureSession(payload);
+  return await normalizeCapturedImageSource(captured);
 }
 
 async function pickPhotoFromGallery(payload?: BridgeGalleryPickRequestPayload) {
@@ -302,7 +286,7 @@ async function pickPhotoFromGallery(payload?: BridgeGalleryPickRequestPayload) {
     throw new BridgeHandledError("선택한 사진을 가져오지 못했어요.", 500, "GALLERY_PICK_FAILED");
   }
 
-  return await normalizeImageAsset(asset);
+  return await normalizeImagePickerAsset(asset);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -350,7 +334,16 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
     if (value.payload === undefined) return true;
     if (!isRecord(value.payload)) return false;
 
-    return value.payload.quality === undefined || typeof value.payload.quality === "number";
+    const isValidQuality = value.payload.quality === undefined || typeof value.payload.quality === "number";
+    if (!isValidQuality) return false;
+
+    return (
+      value.payload.mode === undefined ||
+      value.payload.mode === "NUTRITION_LABEL" ||
+      value.payload.mode === "MENU_BOARD" ||
+      value.payload.mode === "FOOD" ||
+      value.payload.mode === "GENERAL"
+    );
   }
 
   if (value.type === "GALLERY_PICK_REQUEST") {
@@ -459,7 +452,7 @@ export async function handleWebMessage(
       payload: result,
     });
   } catch (error) {
-    if (error instanceof BridgeHandledError) {
+    if (isBridgeHandledError(error)) {
       sendToWeb(webViewRef, {
         id: requestId,
         type: "API_ERROR",
