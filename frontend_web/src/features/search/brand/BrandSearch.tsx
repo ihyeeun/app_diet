@@ -13,6 +13,10 @@ type BrandSearchResult = {
   name: string;
 };
 
+type BrandSearchLocationState = Partial<RegisterMenuRequestDto> & {
+  returnPath?: string;
+};
+
 function mapBrandList(brandList: string[]): BrandSearchResult[] {
   return brandList
     .map((brandName, index) => {
@@ -32,7 +36,8 @@ function mapBrandList(brandList: string[]): BrandSearchResult[] {
 export default function BrandSearch() {
   const navigate = useNavigate();
   const location = useLocation();
-  const formState = (location.state ?? {}) as Partial<RegisterMenuRequestDto>;
+  const formState = (location.state ?? {}) as BrandSearchLocationState;
+  const returnPath = formState.returnPath?.trim() || PATH.NUTRIENT_ADD_REGISTER;
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [submittedKeyword, setSubmittedKeyword] = useState("");
@@ -70,7 +75,7 @@ export default function BrandSearch() {
   };
 
   const handleBack = () => {
-    navigate(PATH.NUTRIENT_ADD_REGISTER, {
+    navigate(returnPath, {
       replace: true,
       state: formState,
     });
@@ -87,12 +92,11 @@ export default function BrandSearch() {
     const brand = (selectedBrandName ?? searchKeyword).trim();
     if (!brand) return;
 
-    formState.brand = brand;
-
-    navigate(PATH.NUTRIENT_ADD_REGISTER, {
+    navigate(returnPath, {
       replace: true,
       state: {
         ...formState,
+        brand,
       },
     });
   };

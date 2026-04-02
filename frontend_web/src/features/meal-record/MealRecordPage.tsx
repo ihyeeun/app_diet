@@ -15,11 +15,8 @@ import {
   useMenuDraftRemove,
   useMenuDraftStore,
 } from "@/features/meal-record/stores/menuDraft.store";
-import {
-  getMealDetailPath,
-  getMealRecordAddSearchPath,
-} from "@/features/meal-record/utils/mealRecord.paths";
 import { PATH } from "@/router/path";
+import { getMealDetailPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
   MEAL_TIME,
   MEAL_TYPE_OPTIONS,
@@ -229,7 +226,7 @@ export default function MealRecordPage() {
       seedMenuMap.set(menu.id, { id: menu.id, quantity: menu.quantity });
     });
 
-    navigate(getMealRecordAddSearchPath(dateKey, mealType), {
+    navigate(getMealSearchPath(dateKey, mealType), {
       state: {
         seedMenus: [...seedMenuMap.values()],
         selectedMenuCount: displayMenuItems.length,

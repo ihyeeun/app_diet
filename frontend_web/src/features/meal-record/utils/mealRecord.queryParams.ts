@@ -1,4 +1,4 @@
-import type { PageKey } from "@/features/meal-record/utils/mealRecord.paths";
+import type { PageKey } from "@/router/pathHelpers";
 import { DEFAULT_MEAL_TYPE, MEAL_TYPE_SET, type MealType } from "@/shared/api/types/api.dto";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 

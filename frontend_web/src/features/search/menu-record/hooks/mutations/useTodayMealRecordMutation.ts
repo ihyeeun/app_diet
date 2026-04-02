@@ -7,12 +7,10 @@ export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallba
   return useMutation({
     mutationFn: postTodayMealRecordRegister,
     onSuccess: () => {
-      callbacks?.onSuccess?.();
-      // TODO 여기에 반영해야할 거 같은데
-      // queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+      if (callbacks?.onSuccess) callbacks.onSuccess();
     },
     onError: (error) => {
-      callbacks?.onError?.(error);
+      if (callbacks?.onError) callbacks.onError(error);
     },
   });
 }
