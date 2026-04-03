@@ -296,14 +296,13 @@ export default function CameraCaptureScreen() {
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <View style={styles.spacer} />
-        <Pressable style={styles.closeButton} onPress={closeWithCancellation}>
-          <Ionicons
-            name="close"
-            size={24}
-            color="#ffffff"
-            accessibilityRole="button"
-            accessibilityLabel="카메라 닫기"
-          />
+        <Pressable
+          style={styles.closeButton}
+          onPress={closeWithCancellation}
+          accessibilityRole="button"
+          accessibilityLabel="카메라 닫기"
+        >
+          <Ionicons name="close" size={24} color="#ffffff" />
         </Pressable>
       </View>
 
