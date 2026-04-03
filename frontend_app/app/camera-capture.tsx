@@ -3,7 +3,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Camera, useCameraDevice } from "react-native-vision-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BridgeHandledError } from "@/src/shared/api/bridge/bridgeError";
@@ -225,6 +225,8 @@ export default function CameraCaptureScreen() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
+        //  권한 거부 시 사용자에게 알림
+        Alert.alert("갤러리 접근 권한이 필요해요.");
         return;
       }
 
