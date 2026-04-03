@@ -36,15 +36,15 @@ export default function FoodCameraPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="영양정보 촬영" onBack={() => navigate(-1)} />
+      <PageHeader title="음식촬영" onBack={() => navigate(-1)} />
 
       <main className={styles.main}>
         <div className={styles.content}>
           <img src="/icons/Camera.svg" alt="카메라 아이콘" className={styles.image} />
           <p className="typo-title1">
-            영양성분표 전체가 선명하게
+            음식이 잘 보이도록
             <br />
-            보이도록 촬영해주세요
+            촬영해주세요
           </p>
         </div>
         <div className={styles.actionButtons}>

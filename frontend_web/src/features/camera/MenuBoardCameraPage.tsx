@@ -41,13 +41,13 @@ export default function MenuBoardCameraPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="음식 촬영" onBack={() => navigate(-1)} />
+      <PageHeader title="메뉴판 촬영" onBack={() => navigate(-1)} />
 
       <main className={styles.main}>
         <div className={styles.content}>
           <img src="/icons/Camera.svg" alt="카메라 아이콘" className={styles.image} />
           <p className="typo-title1">
-            영양성분표 전체가 선명하게
+            메뉴판 전체가 선명하게
             <br />
             보이도록 촬영해주세요
           </p>
