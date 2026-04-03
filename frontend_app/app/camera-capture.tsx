@@ -81,6 +81,7 @@ export default function CameraCaptureScreen() {
   const isFocused = useIsFocused();
   const cameraRef = useRef<Camera>(null);
   const [isPreparing, setIsPreparing] = useState(true);
+  const [isDeviceDetectionFinished, setIsDeviceDetectionFinished] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const capturePayload = useMemo(() => getPendingCameraCapturePayload(), []);
   const captureMode = useMemo<CameraCaptureMode>(
@@ -109,26 +110,34 @@ export default function CameraCaptureScreen() {
     let isMounted = true;
 
     (async () => {
-      if (!hasPendingCameraCaptureSession()) {
-        router.back();
-        return;
-      }
+      try {
+        if (!hasPendingCameraCaptureSession()) {
+          router.back();
+          return;
+        }
 
-      const currentStatus = await Camera.getCameraPermissionStatus();
-      const nextStatus =
-        currentStatus === "granted" ? currentStatus : await Camera.requestCameraPermission();
+        const currentStatus = await Camera.getCameraPermissionStatus();
+        const nextStatus =
+          currentStatus === "granted" ? currentStatus : await Camera.requestCameraPermission();
 
-      if (!isMounted) return;
+        if (!isMounted) return;
 
-      if (nextStatus !== "granted") {
+        if (nextStatus !== "granted") {
+          rejectCameraCaptureSession(
+            new BridgeHandledError("카메라 권한이 필요해요.", 403, "CAMERA_PERMISSION_DENIED"),
+          );
+          router.back();
+          return;
+        }
+
+        setIsPreparing(false);
+      } catch {
+        if (!isMounted) return;
         rejectCameraCaptureSession(
-          new BridgeHandledError("카메라 권한이 필요해요.", 403, "CAMERA_PERMISSION_DENIED"),
+          new BridgeHandledError("카메라를 준비하지 못했어요.", 500, "CAMERA_PREPARE_FAILED"),
         );
         router.back();
-        return;
       }
-
-      setIsPreparing(false);
     })();
 
     return () => {
@@ -143,7 +152,28 @@ export default function CameraCaptureScreen() {
   }, []);
 
   useEffect(() => {
-    if (isPreparing || device) return;
+    if (isPreparing) {
+      setIsDeviceDetectionFinished(false);
+      return;
+    }
+
+    if (device) {
+      setIsDeviceDetectionFinished(true);
+      return;
+    }
+
+    setIsDeviceDetectionFinished(false);
+    const timeoutId = setTimeout(() => {
+      setIsDeviceDetectionFinished(true);
+    }, 400);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [device, isPreparing]);
+
+  useEffect(() => {
+    if (isPreparing || device || !isDeviceDetectionFinished) return;
 
     rejectCameraCaptureSession(
       new BridgeHandledError(
@@ -153,7 +183,7 @@ export default function CameraCaptureScreen() {
       ),
     );
     router.back();
-  }, [device, isPreparing]);
+  }, [device, isDeviceDetectionFinished, isPreparing]);
 
   const handleCapturePress = useCallback(async () => {
     if (!cameraRef.current || isProcessing) return;
@@ -267,7 +297,13 @@ export default function CameraCaptureScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <View style={styles.spacer} />
         <Pressable style={styles.closeButton} onPress={closeWithCancellation}>
-          <Ionicons name="close" size={24} color="#ffffff" />
+          <Ionicons
+            name="close"
+            size={24}
+            color="#ffffff"
+            accessibilityRole="button"
+            accessibilityLabel="카메라 닫기"
+          />
         </Pressable>
       </View>
 
@@ -295,6 +331,8 @@ export default function CameraCaptureScreen() {
             style={[styles.sideSlot, styles.galleryButton, isProcessing && styles.disabledButton]}
             onPress={handleGalleryPress}
             disabled={isProcessing}
+            accessibilityRole="button"
+            accessibilityLabel="갤러리에서 사진 선택"
           >
             <Ionicons name="images-outline" size={24} color="#ffffff" />
           </Pressable>
@@ -305,6 +343,8 @@ export default function CameraCaptureScreen() {
           style={[styles.captureOuter, isProcessing && styles.disabledButton]}
           onPress={handleCapturePress}
           disabled={isProcessing}
+          accessibilityRole="button"
+          accessibilityLabel="사진 촬영"
         >
           <View style={styles.captureInner} />
         </Pressable>

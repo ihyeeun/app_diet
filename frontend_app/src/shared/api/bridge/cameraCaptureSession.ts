@@ -50,7 +50,12 @@ export function beginCameraCaptureSession(payload?: BridgeCameraCaptureRequestPa
       reject,
     };
 
-    router.push("/camera-capture");
+    try {
+      router.push("/camera-capture");
+    } catch (error) {
+      pendingCameraCaptureSession = null;
+      reject(error);
+    }
   });
 }
 
