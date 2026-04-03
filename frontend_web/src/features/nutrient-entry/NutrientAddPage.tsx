@@ -54,20 +54,17 @@ export default function NutrientAddPage() {
       return;
     }
 
-    const basePath = getPathWithMeal(PATH.MENU_BOARD_CAMERA, dateKey, mealType);
-    const queryString = basePath.split("?")[1] ?? "";
-    const params = new URLSearchParams(queryString);
+    const params = new URLSearchParams({
+      date: dateKey,
+      mealType,
+      name: foodName.trim(),
+    });
 
-    params.set("foodName", foodName.trim());
-
-    const normalizedBrand = brandName.trim();
-    if (normalizedBrand) {
-      params.set("brandName", normalizedBrand);
-    } else {
-      params.delete("brandName"); // 쿼리에서 아예 제거
+    if (brandName.trim()) {
+      params.set("brand", brandName.trim());
     }
 
-    navigation(`${PATH.MENU_BOARD_CAMERA}?${params.toString()}`);
+    navigation(PATH.MENU_BOARD_CAMERA + "?" + params.toString());
   };
 
   const handleBack = () => {
