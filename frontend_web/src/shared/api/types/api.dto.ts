@@ -190,3 +190,18 @@ export type CapturedImage = {
   fileSize: number | null;
   mimeType: string | null;
 };
+
+// Profile
+export type TargetRatio = [carb: number, protein: number, fat: number];
+export interface ProfileResponseDto {
+  nickname: string;
+  gender: number;
+  birthYear: number;
+  height: number;
+  weight: number;
+  activity: number;
+  goal: number;
+  target_weight: number;
+  target_calories: number;
+  target_ratio: TargetRatio;
+}
