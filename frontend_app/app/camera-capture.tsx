@@ -225,7 +225,6 @@ export default function CameraCaptureScreen() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        setIsProcessing(false);
         return;
       }
 
@@ -239,7 +238,6 @@ export default function CameraCaptureScreen() {
       });
 
       if (result.canceled) {
-        setIsProcessing(false);
         return;
       }
 
@@ -269,6 +267,15 @@ export default function CameraCaptureScreen() {
         mimeType: asset.mimeType,
         base64: asset.base64,
       });
+      router.back();
+    } catch {
+      rejectCameraCaptureSession(
+        new BridgeHandledError(
+          "갤러리에서 사진을 불러오지 못했어요.",
+          500,
+          "GALLERY_ACCESS_FAILED",
+        ),
+      );
       router.back();
     } finally {
       setIsProcessing(false);
