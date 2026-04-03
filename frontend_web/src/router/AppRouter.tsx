@@ -5,11 +5,9 @@ import { PATH } from "./path";
 
 const HomePage = lazy(() => import("@/features/home/HomePage"));
 const TodayMealScorePage = lazy(() => import("@/features/home/TodayMealScorePage"));
-const MealCameraPage = lazy(() => import("@/features/meal-record/MealCameraPage"));
 const MealDetailPage = lazy(() => import("@/features/meal-record/MealDetailPage"));
 const MealRecordPage = lazy(() => import("@/features/meal-record/MealRecordPage"));
 const NutrientAddPage = lazy(() => import("@/features/nutrient-entry/NutrientAddPage"));
-const NutrientCameraPage = lazy(() => import("@/features/nutrient-entry/NutrientCameraPage"));
 const NutrientModifyPage = lazy(() => import("@/features/nutrient-entry/NutrientModifyPage"));
 const NutrientRegisterPage = lazy(() => import("@/features/nutrient-entry/NutrientRegisterPage"));
 const OnboardingPage = lazy(() => import("@/features/onboarding/OnboardingPage"));
@@ -18,6 +16,9 @@ const BrandMenuSearch = lazy(() => import("@/features/search/brand/BrandMenuSear
 const BrandSearch = lazy(() => import("@/features/search/brand/BrandSearch"));
 const MealSearchPage = lazy(() => import("@/features/search/menu-record/MealSearchPage"));
 const TermsPage = lazy(() => import("@/features/terms/TermsPage"));
+const MenuBoardCameraPage = lazy(() => import("@/features/camera/MenuBoardCameraPage"));
+const NutrientCameraPage = lazy(() => import("@/features/camera/NutrientCameraPage"));
+const FoodCameraPage = lazy(() => import("@/features/camera/FoodCameraPage"));
 
 export default function AppRouter() {
   return (
@@ -40,7 +41,8 @@ export default function AppRouter() {
           <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
           <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
           <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
-          <Route path={PATH.MEAL_CAMERA} element={<MealCameraPage />} />
+          <Route path={PATH.MENU_BOARD_CAMERA} element={<MenuBoardCameraPage />} />
+          <Route path={PATH.FOOD_CAMERA} element={<FoodCameraPage />} />
 
           <Route path={PATH.NUTRIENT_ADD} element={<NutrientAddPage />} />
           <Route path={PATH.NUTRIENT_CAMERA} element={<NutrientCameraPage />} />

@@ -8,22 +8,19 @@ import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.con
 import {
   formatMenuDraftKey,
   type MenuDraftType,
-  useMenuDraftClear,
   useMenuDraftInit,
   useMenuDraftMenus,
   useMenuDraftRemove,
   useMenuDraftSelectedCount,
   useMenuDraftUpsert,
 } from "@/features/meal-record/stores/menuDraft.store";
-import {
-  getMealDetailPath,
-  getMealRecordPath,
-} from "@/features/meal-record/utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import RegisterBottomSheet from "@/features/search/components/RegisterBottomSheet";
 import { useTodayMealRecordRegisterMutation } from "@/features/search/menu-record/hooks/mutations/useTodayMealRecordMutation";
 import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
 import { PATH } from "@/router/path";
+import { getMealDetailPath, getMealRecordPath } from "@/router/pathHelpers";
+import { getPathWithMeal } from "@/router/pathHelpers";
 import { MEAL_TIME, type MealType, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
@@ -63,7 +60,6 @@ export default function MealSearchPage() {
   const initDraft = useMenuDraftInit();
   const upsertMenu = useMenuDraftUpsert();
   const removeMenu = useMenuDraftRemove();
-  const clearDraft = useMenuDraftClear();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
   const seedMenus = useMemo(
@@ -78,16 +74,7 @@ export default function MealSearchPage() {
   const existingMenuCount = locationState.selectedMenuCount ?? seedMenus.length;
 
   const { mutate: mealSearchMutation, data: searchResults } = useMealSearchMutation();
-  const { mutate: mealRegister } = useTodayMealRecordRegisterMutation({
-    onSuccess: () => {
-      clearDraft(draftKey);
-      queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
-      navigate(getMealRecordPath(dateKey, mealType));
-    },
-    onError: () => {
-      toast.warning("메뉴 등록 실패");
-    },
-  });
+  const { mutate: mealRegister } = useTodayMealRecordRegisterMutation();
 
   useEffect(() => {
     initDraft({
@@ -139,7 +126,15 @@ export default function MealSearchPage() {
       menu_quantities: selectedMenus.map((menu) => menu.quantity),
     };
 
-    mealRegister(requestBody);
+    mealRegister(requestBody, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+        navigate(getMealRecordPath(dateKey, mealType));
+      },
+      onError: () => {
+        toast.warning("메뉴 등록 실패");
+      },
+    });
   };
 
   const handleClearKeyword = () => {
@@ -153,16 +148,17 @@ export default function MealSearchPage() {
   };
   const handleNavigateNutrientAdd = () => {
     setIsDirectInputSheetOpen(false);
-    navigate(PATH.NUTRIENT_ADD_REGISTER, {
-      state: {
-        dateKey,
-        mealType,
-      },
-    });
+    navigate(getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType));
   };
+
   const handleNavigateNutrientCamera = () => {
     setIsDirectInputSheetOpen(false);
-    navigate(PATH.NUTRIENT_CAMERA);
+
+    navigate(getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType));
+  };
+
+  const handleCameraClick = () => {
+    navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
   };
 
   return (
@@ -311,7 +307,7 @@ export default function MealSearchPage() {
       </main>
 
       <footer className={styles.footer}>
-        <FloatingCameraButton onClick={() => {}} ariaLabel="사진으로 기록하기" />
+        <FloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
 
         <Button
           onClick={handleApplySelectedMenus}

@@ -24,6 +24,7 @@ export type BridgeTabSyncMessage = {
 
 export type BridgeCameraCaptureRequestPayload = {
   quality?: number;
+  mode?: "NUTRITION_LABEL" | "MENU_BOARD" | "FOOD" | "GENERAL";
 };
 
 export type BridgeCameraCaptureRequestMessage = {

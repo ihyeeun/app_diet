@@ -1,25 +1,21 @@
 import { Search } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import {
-  formatMenuDraftKey,
-  useMenuDraftUpsert,
-} from "@/features/meal-record/stores/menuDraft.store";
-import { getMealRecordAddSearchPath } from "@/features/meal-record/utils/mealRecord.paths";
+import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
   type RegisterManualMenuPayload,
-  registerMenu,
 } from "@/features/nutrient-entry/api/nutrient";
 import { NutrientDetailForm } from "@/features/nutrient-entry/components/NutrientDetailForm";
+import { useRegisterMenuMutation } from "@/features/nutrient-entry/hooks/mutations/useNutrientMutation";
 import {
   buildNullableNutrientFields,
   buildNutrientFormFields,
   hasChildNutrientOverflow,
 } from "@/features/nutrient-entry/utils/nutrientFields";
 import { PATH } from "@/router/path";
+import { getMealDetailPath, getMealSearchPath, getPathWithMeal } from "@/router/pathHelpers";
 import type {
-  MealType,
   MenuNutrientFields,
   MenuUnit,
   RegisterMenuRequestDto,
@@ -30,28 +26,24 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "./styles/NutrientRegisterPage.module.css";
 
-type NutrientRegisterFlowState = {
-  dateKey?: string;
-  mealType?: MealType;
+type NutrientRegisterLocationState = Partial<RegisterMenuRequestDto> & {
+  brandName?: string;
 };
-
-type NutrientRegisterLocationState = Partial<RegisterMenuRequestDto> &
-  NutrientRegisterFlowState & {
-    brandName?: string;
-  };
 
 export default function NutrientRegisterPage() {
   const navigation = useNavigate();
   const location = useLocation();
-  const upsertMenu = useMenuDraftUpsert();
+  const [searchParams] = useSearchParams();
   const locationState = (location.state ?? {}) as NutrientRegisterLocationState;
+  const dateKey = getSafeDateKey(searchParams.get("date"));
+  const mealType = getMealType(searchParams.get("mealType"));
 
   const [formState, setFormState] = useState<Partial<RegisterMenuRequestDto>>(() => ({
     ...locationState,
     name: (locationState.name ?? "").trim(),
     brand: (locationState.brand ?? locationState.brandName ?? "").trim(),
   }));
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: registerManualMenu, isPending: isSubmitting } = useRegisterMenuMutation();
 
   const brandName = (formState.brand ?? "").trim();
   const nutrientForm = buildNutrientFormFields(formState);
@@ -76,8 +68,7 @@ export default function NutrientRegisterPage() {
     navigation(PATH.BRAND_SEARCH, {
       state: {
         ...formState,
-        dateKey: locationState.dateKey,
-        mealType: locationState.mealType,
+        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType),
       },
     });
   };
@@ -88,7 +79,7 @@ export default function NutrientRegisterPage() {
     (formState.weight ?? 0) <= 0 ||
     (formState.calories ?? 0) <= 0;
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (isSubmitDisabled) {
       return;
     }
@@ -113,42 +104,20 @@ export default function NutrientRegisterPage() {
       ...buildNullableNutrientFields(formState),
     };
 
-    try {
-      setIsSubmitting(true);
-      const savedMenuId = await registerMenu(payload);
-
-      if (locationState.dateKey && locationState.mealType) {
-        upsertMenu({
-          key: formatMenuDraftKey(locationState.dateKey, locationState.mealType),
-          id: savedMenuId,
-          quantity: 1,
-        });
-
-        const returnPath = getMealRecordAddSearchPath(
-          locationState.dateKey,
-          locationState.mealType,
-        );
-        toast.success("등록되었어요");
+    registerManualMenu(payload, {
+      onSuccess: (savedMenuId) => {
+        const returnPath = getMealDetailPath(dateKey, mealType, savedMenuId, "MEAL_SEARCH");
+        toast.success("메뉴가 등록되었어요");
         navigation(returnPath, { replace: true });
-        return;
-      }
-
-      toast.success("등록되었어요");
-      handleBack();
-    } catch {
-      toast.warning("등록에 실패했어요");
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      onError: () => {
+        toast.warning("등록에 실패했어요");
+      },
+    });
   };
 
   const handleBack = () => {
-    navigation(PATH.MEAL_RECORD_ADD_SEARCH, {
-      state: {
-        dateKey: locationState.dateKey,
-        mealType: locationState.mealType,
-      },
-    });
+    navigation(getMealSearchPath(dateKey, mealType));
   };
 
   return (

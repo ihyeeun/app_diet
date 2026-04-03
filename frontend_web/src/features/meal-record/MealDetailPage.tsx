@@ -17,6 +17,7 @@ import {
 import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
 import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
 import { PATH } from "@/router/path";
+import type { PageKey } from "@/router/pathHelpers";
 import { MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
@@ -24,11 +25,7 @@ import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
-import {
-  getMealRecordAddSearchPath,
-  getMealRecordPath,
-  type PageKey,
-} from "./utils/mealRecord.paths";
+import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
 export default function MealDetailPage() {
@@ -140,7 +137,7 @@ export default function MealDetailPage() {
       return;
     }
 
-    navigate(PATH.HOME);
+    navigate(PATH.HOME, { replace: true });
   };
 
   const handleModify = () => {

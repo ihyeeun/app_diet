@@ -1,5 +1,5 @@
 .page {
-  background-color: var(--bg-normal-primary1);
+  background-color: var(--bg-normal-normal);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -8,97 +8,91 @@
 }
 
 .main {
-  display: flex;
   flex: 1;
-  flex-direction: column;
-  gap: 24px;
+  overflow-y: auto;
   padding: 20px;
-  width: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .fieldWrap {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
-.imageInfoSection {
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
+.labelRow {
+  align-items: center;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.imageInfoTitle {
-  color: var(--text-assistive2);
-}
-
-.imageInfoText {
+.labelText {
   color: var(--text-normal);
 }
 
-.imageInfoSubText {
-  color: var(--text-assistive1);
+.requiredText {
+  color: var(--status-error);
 }
 
-.labelText,
+.textInput {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  padding: 10px 14px;
+  width: 100%;
+}
+
+.textInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.textInput:focus {
+  outline: none;
+}
+
 .limitText {
-  color: var(--text-white);
+  color: var(--text-assistive1);
+  text-align: end;
 }
 
-.inputBrandButton {
+.brandButton {
   align-items: center;
   background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-normal);
   border-radius: 8px;
+  color: var(--text-normal);
   display: inline-flex;
+  gap: 10px;
   justify-content: space-between;
-  padding: 16px 20px;
+  min-height: 56px;
+  padding: 0 16px;
   text-align: left;
   width: 100%;
 }
 
-.inputBrandButton:focus {
+.brandButton:focus {
+  border-color: var(--border-primary);
   outline: none;
 }
 
-.inputBrandValue {
+.brandValue {
   color: var(--text-normal);
 }
 
-.inputBrandPlaceholder {
+.brandPlaceholder {
   color: var(--text-assistive2);
 }
 
-.inputBrandChevron {
-  color: var(--text-assistive2);
-}
-
-.textArea {
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
+.brandSearchIcon {
   color: var(--text-normal);
-  min-height: 150px;
-  overflow-y: auto;
-  padding: 16px 20px;
-  resize: none;
-  width: 100%;
-}
-
-.textArea::placeholder {
-  color: var(--text-assistive2);
-}
-
-.textArea:focus {
-  outline: none;
-}
-
-.limitText {
-  text-align: end;
+  flex-shrink: 0;
 }
 
 .footer {

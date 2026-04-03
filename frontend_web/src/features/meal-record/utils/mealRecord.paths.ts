@@ -1,6 +1,8 @@
 import { PATH } from "@/router/path";
+import type { PageKey } from "@/router/pathHelpers";
 import type { MealType } from "@/shared/api/types/api.dto";
 
+// TODO 추후 이 파일 삭제 @/router/pathHelpers로 사용 예정
 function buildMealRecordQuery(
   dateKey: string,
   mealType: MealType,
@@ -28,19 +30,4 @@ export function getMealRecordPath(dateKey: string, mealType: MealType) {
 
 export function getMealRecordAddSearchPath(dateKey: string, mealType: MealType) {
   return `${PATH.MEAL_RECORD_ADD_SEARCH}?${buildMealRecordQuery(dateKey, mealType)}`;
-}
-
-export type PageKey = "MEAL_SEARCH" | "MEAL_RECORD";
-export function getMealDetailPath(
-  dateKey: string,
-  mealType: MealType,
-  menuId: number,
-  pageKey?: PageKey,
-) {
-  return `${PATH.MEAL_DETAIL}?${buildMealRecordQuery(
-    dateKey,
-    mealType,
-    menuId,
-    pageKey,
-  )}`;
 }

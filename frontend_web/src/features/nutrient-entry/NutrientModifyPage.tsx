@@ -5,11 +5,6 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
-  getMealDetailPath,
-  getMealRecordAddSearchPath,
-  getMealRecordPath,
-} from "@/features/meal-record/utils/mealRecord.paths";
-import {
   getMealType,
   getSafeDateKey,
   getSafeMenuId,
@@ -31,6 +26,7 @@ import {
   toNullableFiniteNumber,
 } from "@/features/nutrient-entry/utils/nutrientFields";
 import { PATH } from "@/router/path";
+import { getMealDetailPath, getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
   type MealMenuItem,
   MENU_DATA_SOURCE,
@@ -169,7 +165,7 @@ export default function NutrientModifyPage() {
     }
 
     if (pageKey === "MEAL_SEARCH") {
-      navigate(getMealRecordAddSearchPath(dateKey, mealType));
+      navigate(getMealSearchPath(dateKey, mealType));
       return;
     }
 

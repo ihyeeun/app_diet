@@ -11,7 +11,7 @@ const config: ExpoConfig = {
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "com.example",
+    bundleIdentifier: "com.melo.frontend",
     config: {
       usesNonExemptEncryption: false,
     },
@@ -25,7 +25,7 @@ const config: ExpoConfig = {
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package: "com.example",
+    package: "com.melo.frontend",
     permissions: ["CAMERA"],
   },
   web: {
@@ -35,9 +35,15 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     [
+      "react-native-vision-camera",
+      {
+        cameraPermissionText: "음식과 영양성분표를 촬영하기 위해 카메라 접근 권한이 필요합니다.",
+        enableMicrophonePermission: false,
+      },
+    ],
+    [
       "expo-image-picker",
       {
-        cameraPermission: "음식과 영양성분표를 촬영하기 위해 카메라 접근 권한이 필요합니다.",
         photosPermission: "갤러리에서 사진을 선택하기 위해 사진 접근 권한이 필요합니다.",
       },
     ],

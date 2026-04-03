@@ -10,16 +10,13 @@ import {
   buildMealRecordDraftKey,
   useMealRecordDraftStore,
 } from "@/features/meal-record/stores/mealRecordDraft.store";
-import {
-  getMealDetailPath,
-  getMealRecordPath,
-} from "@/features/meal-record/utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
   type BrandSearchResult,
   fetchBrandSearchResults,
 } from "@/features/nutrient-entry/api/brandSearch";
 import { PATH } from "@/router/path";
+import { getMealDetailPath, getMealRecordPath } from "@/router/pathHelpers";
 import type { MealMenuItem, NutrientEntryContextState } from "@/shared/api/types/api.dto";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";

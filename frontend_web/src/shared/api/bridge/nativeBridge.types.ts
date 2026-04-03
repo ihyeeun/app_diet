@@ -26,6 +26,7 @@ export type WebToAppTabSyncMessage = {
 
 export type CameraCaptureRequestPayload = {
   quality?: number;
+  mode?: "NUTRITION_LABEL" | "MENU_BOARD" | "FOOD" | "GENERAL";
 };
 
 export type WebToAppCameraCaptureMessage = {
