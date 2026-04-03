@@ -1,5 +1,3 @@
-// import type { MacroRatios } from "@/shared/utils/nutrientScore";
-
 export const MENU_DATA_SOURCE = {
   PUBLIC: 0,
   PERSONAL: 1,
@@ -177,43 +175,12 @@ export type MealPhotoGroup = {
   items: MealMenuItem[];
 };
 
-// export type MealRecordState = {
-//   targetCalories: number;
-//   targetMacroRatios: MacroRatios;
-//   menuItems: MealMenuItem[];
-//   photoGroups: MealPhotoGroup[];
-//   addQueue: MealMenuItem[];
-// };
-
-// export type MealRecordByType = Record<MealType, MealRecordState>;
-
-// export type MealRecordLocationState = {
-//   pendingMenus?: MealMenuItem[];
-// };
-
-// export const DEFAULT_TARGET_MACRO_RATIOS: MacroRatios = {
-//   carbs: 50,
-//   protein: 30,
-//   fat: 20,
-// };
-
 export const DEFAULT_MEAL_TYPE: MealType = "1";
 export const MEAL_TYPE_SET: ReadonlySet<MealType> = new Set(
   MEAL_TYPE_OPTIONS.map((option) => option.key),
 );
 
-// export type NutrientEntrySource = "meal-record" | "menu-compare" | "general";
 export type NutrientServingUnit = "g" | "ml";
-
-// export type NutrientEntryContextState = {
-//   source?: NutrientEntrySource;
-//   dateKey?: string;
-//   mealType?: MealType;
-//   existingMenuCount?: number;
-//   pendingMenus?: MealMenuItem[];
-//   existingCompareCount?: number;
-//   pendingCompareMenus?: MealMenuItem[];
-// };
 
 export type CapturedImage = {
   uri: string;
