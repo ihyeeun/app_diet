@@ -1,12 +1,17 @@
 import { Pencil, Settings } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
+import WeeklyRecordChart from "@/features/profile/components/WeeklyRecordChart";
 import { useNickNameUpdateMutation } from "@/features/profile/hooks/mutations/useProfileMutation";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
+import {
+  useWeeklyRecordQuery,
+  type WeeklyMetricType,
+} from "@/features/profile/hooks/queries/useWeeklyRecordQuery";
 import styles from "@/features/profile/styles/ProfilePage.module.css";
 import { PATH } from "@/router/path";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
@@ -14,6 +19,34 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
+
+const METRIC_CONFIG: Record<
+  WeeklyMetricType,
+  {
+    targetLabel?: string;
+    ticks: number[];
+    title: string;
+    unit: string;
+  }
+> = {
+  weight: {
+    title: "체중",
+    unit: "kg",
+    ticks: [0, 25, 50, 75, 100],
+    targetLabel: "목표 체중",
+  },
+  calories: {
+    title: "섭취량",
+    unit: "kcal",
+    ticks: [0, 1000, 2000, 3000, 4000],
+    targetLabel: "목표 섭취량",
+  },
+  steps: {
+    title: "걸음 수",
+    unit: "걸음",
+    ticks: [0, 3000, 6000, 9000, 12000],
+  },
+};
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -24,11 +57,49 @@ export default function ProfilePage() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [nickName, setNickName] = useState(profile?.nickname);
+  const [selectedMetric, setSelectedMetric] = useState<WeeklyMetricType>("weight");
   const { mutate: updateNickName } = useNickNameUpdateMutation();
 
   const nickname = profile?.nickname ?? "진득한 푸마";
-  const weight = profile?.weight ?? 50;
-  const remainingWeight = Math.abs(weight - (profile?.target_weight ?? weight));
+  const currentWeight = profile?.weight ?? 50;
+  const targetWeight = profile?.target_weight ?? currentWeight;
+  const targetCalories = profile?.target_calories ?? 2000;
+  const remainingWeight = Math.abs(currentWeight - targetWeight);
+  const todayWeight =
+    typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
+  const todaySteps = typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
+  const metricConfig = METRIC_CONFIG[selectedMetric];
+
+  const weeklyRecordQuery = useWeeklyRecordQuery({
+    today,
+    targetWeight,
+    targetCalories,
+  });
+
+  const weeklyChartData = useMemo(() => {
+    return weeklyRecordQuery.records.map((record) => {
+      if (selectedMetric === "weight") {
+        return {
+          label: record.label,
+          value: record.weight,
+          target: record.targetWeight,
+        };
+      }
+
+      if (selectedMetric === "calories") {
+        return {
+          label: record.label,
+          value: record.calories ?? 0,
+          target: record.targetCalories,
+        };
+      }
+
+      return {
+        label: record.label,
+        value: record.steps,
+      };
+    });
+  }, [selectedMetric, weeklyRecordQuery.records]);
 
   const handleUpdateNickName = () => {
     if (nickName?.trim() === "" || nickName === undefined) {
@@ -111,35 +182,45 @@ export default function ProfilePage() {
 
           <section className={styles.bodyLogSection}>
             <div className={styles.activeCardGrid}>
-              <ActionCard onClick={() => {}} className={styles.activeCard}>
+              <ActionCard
+                onClick={() => setSelectedMetric("weight")}
+                className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
+              >
                 <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
 
                 <div className={styles.activeCardValueRow}>
                   <span className={`${styles.activeCardValue} typo-h3`}>
-                    {weight.toLocaleString("ko-KR")}
+                    {todayWeight === null ? "-" : todayWeight.toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-label1`}>kg</span>
                 </div>
               </ActionCard>
 
-              <ActionCard onClick={() => {}} className={styles.activeCard}>
+              <ActionCard
+                onClick={() => setSelectedMetric("calories")}
+                className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
+              >
                 <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
 
                 <div className={styles.activeCardValueRow}>
                   <span className={`${styles.activeCardValue} typo-h3`}>
-                    {dayMeal?.totalCalories.toLocaleString("ko-KR")}
+                    {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-label1`}>kcal</span>
                 </div>
               </ActionCard>
             </div>
-            <ActionCard onClick={() => {}}>
+
+            <ActionCard
+              onClick={() => setSelectedMetric("steps")}
+              className={selectedMetric === "steps" ? styles.activeMetricCard : ""}
+            >
               <div className={styles.activeCardRow}>
                 <span className={`${styles.activeCardTitle} typo-title4`}>걸음 수</span>
 
                 <div className={styles.activeCardValueRow}>
                   <span className={`${styles.activeCardValue} typo-h3`}>
-                    {(bodyLog?.steps ?? 0).toLocaleString("ko-KR")}
+                    {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-label1`}>걸음</span>
                 </div>
@@ -149,8 +230,39 @@ export default function ProfilePage() {
 
           <div className="divider" />
 
-          <section>
-            <p>주간 기록 현황</p>
+          <section className={styles.weeklySection}>
+            <div className={styles.weeklyHeader}>
+              <span className={`${styles.weeklyTitle} typo-title3`}>주간 기록 현황</span>
+
+              <div className={styles.legendRow}>
+                {metricConfig.targetLabel && (
+                  <span className={`${styles.legendItem} typo-label4`}>
+                    <span className={`${styles.legendDot} ${styles.legendTarget}`} />
+                    {metricConfig.targetLabel}
+                  </span>
+                )}
+                <span className={`${styles.legendItem} typo-label4`}>
+                  <span className={`${styles.legendDot} ${styles.legendCurrent}`} />
+                  {metricConfig.title}
+                </span>
+              </div>
+            </div>
+
+            {weeklyRecordQuery.isPending ? (
+              <p className={`${styles.weeklyStatusText} typo-label2`}>
+                주간 기록을 불러오는 중이에요.
+              </p>
+            ) : weeklyRecordQuery.hasError ? (
+              <p className={`${styles.weeklyStatusText} typo-label2`}>
+                주간 기록을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.
+              </p>
+            ) : (
+              <WeeklyRecordChart
+                data={weeklyChartData}
+                unit={metricConfig.unit}
+                yTicks={metricConfig.ticks}
+              />
+            )}
           </section>
 
           <BottomSheet

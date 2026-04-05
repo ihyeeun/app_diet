@@ -1,0 +1,112 @@
+import { useQueries } from "@tanstack/react-query";
+import { subDays } from "date-fns";
+import { useMemo } from "react";
+
+import { getDayMeals } from "@/features/home/api/dayMeal";
+import { getBodyStats } from "@/features/home/api/health";
+import { queryKeys as homeQueryKeys } from "@/features/home/hooks/queries/queryKey";
+
+type UseWeeklyRecordQueryProps = {
+  today: string;
+  targetCalories: number;
+  targetWeight: number;
+};
+
+export type WeeklyMetricType = "weight" | "calories" | "steps";
+
+export type WeeklyRecordPoint = {
+  calories: number;
+  dateKey: string;
+  label: string;
+  steps: number | null;
+  targetCalories: number;
+  targetWeight: number;
+  weight: number | null;
+};
+
+function parseDateKey(dateKey: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    return new Date();
+  }
+
+  return new Date(year, month - 1, day);
+}
+
+function formatDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatChartLabel(dateKey: string) {
+  const date = parseDateKey(dateKey);
+  const weekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
+
+  return `${date.getMonth() + 1}/${date.getDate()}(${weekdayLabel})`;
+}
+
+function getRecentWeekDateKeys(today: string) {
+  const baseDate = parseDateKey(today);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = subDays(baseDate, 6 - index);
+    return formatDateKey(date);
+  });
+}
+
+export function useWeeklyRecordQuery({
+  today,
+  targetCalories,
+  targetWeight,
+}: UseWeeklyRecordQueryProps) {
+  const dateKeys = useMemo(() => getRecentWeekDateKeys(today), [today]);
+
+  const dayMealQueries = useQueries({
+    queries: dateKeys.map((dateKey) => ({
+      queryKey: homeQueryKeys.dayMeals(dateKey),
+      queryFn: () => getDayMeals({ date: dateKey }),
+      staleTime: Infinity,
+    })),
+  });
+
+  const bodyLogQueries = useQueries({
+    queries: dateKeys.map((dateKey) => ({
+      queryKey: homeQueryKeys.bodyStats(dateKey),
+      queryFn: () => getBodyStats({ date: dateKey }),
+      staleTime: Infinity,
+    })),
+  });
+
+  const isPending =
+    dayMealQueries.some((query) => query.isPending || query.isFetching) ||
+    bodyLogQueries.some((query) => query.isPending || query.isFetching);
+  const hasError = dayMealQueries.some((query) => query.isError) || bodyLogQueries.some((query) => query.isError);
+
+  const records = useMemo<WeeklyRecordPoint[]>(() => {
+    return dateKeys.map((dateKey, index) => {
+      const dayMeal = dayMealQueries[index]?.data;
+      const bodyLog = bodyLogQueries[index]?.data;
+      const rawWeight = bodyLog?.weight;
+      const rawSteps = bodyLog?.steps;
+
+      return {
+        dateKey,
+        label: formatChartLabel(dateKey),
+        weight: typeof rawWeight === "number" && rawWeight > 0 ? rawWeight : null,
+        calories: dayMeal?.totalCalories ?? 0,
+        steps: typeof rawSteps === "number" && rawSteps >= 0 ? rawSteps : null,
+        targetWeight,
+        targetCalories,
+      };
+    });
+  }, [bodyLogQueries, dateKeys, dayMealQueries, targetCalories, targetWeight]);
+
+  return {
+    records,
+    isPending,
+    hasError,
+  };
+}

@@ -39,6 +39,7 @@
   --fs-label4: 14px;
   --fs-label5: 13px;
   --fs-label6: 13px;
+  --fs-caption: 12px;
 
   /* =========================
    * Color - Common
@@ -332,6 +333,13 @@ body {
   font-weight: var(--fw-medium);
   letter-spacing: var(--letter-spacing-body);
   line-height: var(--line-height-140);
+}
+
+.typo-caption {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-130);
 }
 
 .ellipsis {

@@ -79,6 +79,11 @@
   gap: 8px;
 }
 
+.activeMetricCard {
+  background-color: var(--interaction-primary);
+  border-color: var(--border-primary);
+}
+
 .activeCardRow {
   display: flex;
   justify-content: space-between;
@@ -102,6 +107,61 @@
 
 .activeCardUnit {
   color: var(--text-normal);
+}
+
+.weeklySection {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 17px;
+}
+
+.weeklyHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.weeklyTitle {
+  color: var(--text-normal);
+}
+
+.legendRow {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  width: fit-content;
+}
+
+.legendItem {
+  align-items: center;
+  color: var(--text-normal);
+  display: flex;
+  gap: 6px;
+}
+
+.legendDot {
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.legendTarget {
+  background-color: var(--etc-1);
+}
+
+.legendCurrent {
+  background-color: var(--primary-normal);
+}
+
+.weeklyStatusText {
+  color: var(--text-assistive1);
+  text-align: center;
+  padding: 24px 0;
 }
 
 .sheetContainer {

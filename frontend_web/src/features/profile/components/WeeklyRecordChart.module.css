@@ -1,0 +1,53 @@
+.chartContainer {
+  --chart-current: var(--primary-strong);
+  --chart-grid: var(--border-normal);
+  --chart-target: var(--status-error);
+  --chart-tick: #2b2b2b;
+
+  height: 280px;
+  width: 100%;
+}
+
+.xAxisTick {
+  fill: var(--chart-tick);
+  font-size: 7px;
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
+}
+
+.yAxisTick {
+  fill: var(--chart-tick);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
+}
+
+.tooltipWrapper {
+  outline: none;
+}
+
+.tooltip {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  box-shadow: 3px 3px 5px 0 rgb(0 0 0 / 5%);
+  min-width: 92px;
+  padding: 8px 10px;
+}
+
+.tooltipLabel {
+  color: var(--text-normal);
+  font-size: 12px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.tooltipValue {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 4px 0 0;
+}

@@ -1,18 +1,12 @@
 import "@/features/onboarding/css/OnboardingPage.css";
 import "@/features/onboarding/css/OnboardingSteps.css";
 
-import { Field } from "@base-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import StepActivity from "@/features/onboarding/components/steps/StepActivity";
-import StepBirthYear from "@/features/onboarding/components/steps/StepBirthYear";
-import StepGender from "@/features/onboarding/components/steps/StepGender";
-import StepGoal from "@/features/onboarding/components/steps/StepGoal";
 import StepGoalCalories from "@/features/onboarding/components/steps/StepGoalCalories";
-import StepGoalWeight from "@/features/onboarding/components/steps/StepGoalWeight";
 import StepNutrient from "@/features/onboarding/components/steps/StepNutrient";
 import {
   isInRange,
@@ -40,7 +34,12 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { NumberInput } from "@/shared/commons/input/NumberInput";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
-import { isValidBirthYear } from "@/shared/commons/picker/yearOptions";
+import WheelPicker from "@/shared/commons/picker/WheelPicker";
+import {
+  getBirthYearRange,
+  isValidBirthYear,
+  makeYearOptions,
+} from "@/shared/commons/picker/yearOptions";
 import { toast } from "@/shared/commons/toast/toast";
 import { useSetTargets } from "@/shared/stores/targetNutrient.store";
 
@@ -84,14 +83,22 @@ const SUMMARY_FIELDS: SummaryField[] = [
   { id: "goalWeight", label: "목표 몸무게" },
 ];
 
-const ACTIVITY_LABELS = [
-  "대부분 앉아서 생활해요",
-  "가벼운 이동이 있어요",
-  "움직이는 시간이 꽤 많아요",
-  "가만히 있는 시간은 거의 없어요",
+const ACTIVITY_OPTIONS = [
+  { title: "대부분 앉아서 생활해요", description: "하루에 4,000보 이하로 걸어요" },
+  { title: "가벼운 이동이 있어요", description: "하루에 4,000 ~ 7,500보 사이로 걸어요" },
+  { title: "움직이는 시간이 꽤 많아요", description: "하루에 7,500 ~ 12,000보 사이로 걸어요" },
+  { title: "가만히 있는 시간은 거의 없어요", description: "하루에 12,000보 이상 걸어요" },
 ] as const;
 
-const GOAL_LABELS = ["다이어트", "체중 유지", "근육 늘리기"] as const;
+const ACTIVITY_LABELS = ACTIVITY_OPTIONS.map((activity) => activity.title);
+
+const GOAL_OPTIONS = [
+  { title: "다이어트", description: "체지방을 줄이고 싶어요" },
+  { title: "체중 유지", description: "지금의 몸무게를 유지하고 싶어요" },
+  { title: "근육 늘리기", description: "근육량을 늘리고 싶어요" },
+] as const;
+
+const GOAL_LABELS = GOAL_OPTIONS.map((goal) => goal.title);
 
 const GOAL_CALORIES_MIN = 1;
 const GOAL_CALORIES_MAX = 99999;
@@ -280,6 +287,27 @@ export default function GoalEditPage() {
   const updateSheetData = useCallback((patch: Partial<OnboardingData>) => {
     setSheetData((previous) => ({ ...previous, ...patch }));
   }, []);
+
+  const birthYearRange = useMemo(() => getBirthYearRange(), []);
+  const birthYearDefault = useMemo(
+    () => Math.min(Math.max(2000, birthYearRange.min), birthYearRange.max),
+    [birthYearRange.max, birthYearRange.min],
+  );
+  const birthYearOptions = useMemo(
+    () =>
+      makeYearOptions({
+        from: birthYearRange.max,
+        count: birthYearRange.max - birthYearRange.min + 1,
+      }).map(String),
+    [birthYearRange.max, birthYearRange.min],
+  );
+
+  useEffect(() => {
+    if (editingField !== "birthYear") return;
+    if (isValidBirthYear(sheetData.birthYear)) return;
+
+    updateSheetData({ birthYear: birthYearDefault });
+  }, [birthYearDefault, editingField, sheetData.birthYear, updateSheetData]);
 
   const openEditor = (field: EditableField) => {
     if (!draft) return;
@@ -545,76 +573,164 @@ export default function GoalEditPage() {
     setStage("targetCalories");
   };
 
+  const selectedBirthYear = isValidBirthYear(sheetData.birthYear)
+    ? sheetData.birthYear
+    : birthYearDefault;
+
+  const getSelectableCardClassName = (selected: boolean) =>
+    [styles.selectableCard, selected ? styles.selectableCardActive : ""].filter(Boolean).join(" ");
+
   const renderEditorBody = () => {
     if (!editingField) {
       return null;
     }
 
     if (editingField === "gender") {
-      return <StepGender data={sheetData} update={updateSheetData} />;
+      return (
+        <section className={styles.editorSection}>
+          <h2 className={styles.editorTitle}>성별</h2>
+          <div className={styles.genderGrid}>
+            <button
+              type="button"
+              className={getSelectableCardClassName(sheetData.gender === 0)}
+              aria-pressed={sheetData.gender === 0}
+              onClick={() => updateSheetData({ gender: 0 })}
+            >
+              <span className={styles.genderCardLabel}>남성</span>
+            </button>
+            <button
+              type="button"
+              className={getSelectableCardClassName(sheetData.gender === 1)}
+              aria-pressed={sheetData.gender === 1}
+              onClick={() => updateSheetData({ gender: 1 })}
+            >
+              <span className={styles.genderCardLabel}>여성</span>
+            </button>
+          </div>
+        </section>
+      );
     }
 
     if (editingField === "birthYear") {
-      return <StepBirthYear data={sheetData} update={updateSheetData} />;
+      return (
+        <section className={styles.editorSection}>
+          <h2 className={styles.editorTitle}>출생연도</h2>
+          <div className={styles.birthYearPicker}>
+            <WheelPicker
+              value={String(selectedBirthYear)}
+              options={birthYearOptions}
+              suffix="년"
+              height={490}
+              itemHeight={80}
+              onChange={(value) => updateSheetData({ birthYear: Number(value) })}
+            />
+          </div>
+        </section>
+      );
     }
 
     if (editingField === "height") {
       return (
-        <section>
-          <div className="onboarding-title">
-            <h2 className="typo-title1">키가 몇인가요?</h2>
+        <section className={styles.editorSection}>
+          <h2 className={styles.editorTitle}>키</h2>
+          <div className={styles.numberInputCard}>
+            <NumberInput
+              value={sheetData.height}
+              onChange={(value) => updateSheetData({ height: value })}
+              placeholder="키 입력"
+              min={ONBOARDING_HEIGHT_RANGE.min}
+              max={ONBOARDING_HEIGHT_RANGE.max}
+              step={1}
+              unit="cm"
+              inputMode="numeric"
+              normalizeOnBlur={false}
+            />
           </div>
-          <Field.Root className="onboarding-field-padding">
-            <div className="onboarding-goal-weight-card">
-              <NumberInput
-                value={sheetData.height}
-                onChange={(value) => updateSheetData({ height: value })}
-                placeholder="165"
-                min={ONBOARDING_HEIGHT_RANGE.min}
-                max={ONBOARDING_HEIGHT_RANGE.max}
-                step={1}
-                unit="cm"
-                normalizeOnBlur={false}
-              />
-            </div>
-          </Field.Root>
         </section>
       );
     }
 
     if (editingField === "weight") {
       return (
-        <section>
-          <div className="onboarding-title">
-            <h2 className="typo-title1">현재 몸무게가 몇인가요?</h2>
+        <section className={styles.editorSection}>
+          <h2 className={styles.editorTitle}>현재 몸무게</h2>
+          <div className={styles.numberInputCard}>
+            <NumberInput
+              value={sheetData.weight}
+              onChange={(value) => updateSheetData({ weight: value })}
+              placeholder="현재 몸무게 입력"
+              min={ONBOARDING_WEIGHT_RANGE.min}
+              max={ONBOARDING_WEIGHT_RANGE.max}
+              step={0.1}
+              unit="kg"
+              normalizeOnBlur={false}
+            />
           </div>
-          <Field.Root className="onboarding-field-padding">
-            <div className="onboarding-goal-weight-card">
-              <NumberInput
-                value={sheetData.weight}
-                onChange={(value) => updateSheetData({ weight: value })}
-                placeholder="55"
-                min={ONBOARDING_WEIGHT_RANGE.min}
-                max={ONBOARDING_WEIGHT_RANGE.max}
-                step={0.1}
-                unit="kg"
-                normalizeOnBlur={false}
-              />
-            </div>
-          </Field.Root>
         </section>
       );
     }
 
     if (editingField === "activity") {
-      return <StepActivity data={sheetData} update={updateSheetData} />;
+      return (
+        <section className={styles.editorSection}>
+          <h2 className={styles.editorTitle}>활동량</h2>
+          <div className={styles.optionList}>
+            {ACTIVITY_OPTIONS.map((activity, index) => (
+              <button
+                key={activity.title}
+                type="button"
+                className={getSelectableCardClassName(sheetData.activity === index)}
+                aria-pressed={sheetData.activity === index}
+                onClick={() => updateSheetData({ activity: index as OnboardingData["activity"] })}
+              >
+                <p className={`${styles.optionTitle} typo-title3`}>{activity.title}</p>
+                <p className={`${styles.optionDescription} typo-body3`}>{activity.description}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+      );
     }
 
     if (editingField === "goal") {
-      return <StepGoal data={sheetData} update={updateSheetData} />;
+      return (
+        <section className={styles.editorSection}>
+          <h2 className={styles.editorTitle}>목표</h2>
+          <div className={styles.optionList}>
+            {GOAL_OPTIONS.map((goal, index) => (
+              <button
+                key={goal.title}
+                type="button"
+                className={getSelectableCardClassName(sheetData.goal === index)}
+                aria-pressed={sheetData.goal === index}
+                onClick={() => updateSheetData({ goal: index as OnboardingData["goal"] })}
+              >
+                <p className={`${styles.optionTitle} typo-title3`}>{goal.title}</p>
+                <p className={`${styles.optionDescription} typo-body3`}>{goal.description}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+      );
     }
 
-    return <StepGoalWeight data={sheetData} update={updateSheetData} />;
+    return (
+      <section className={styles.editorSection}>
+        <h2 className={styles.editorTitle}>목표 몸무게</h2>
+        <div className={styles.numberInputCard}>
+          <NumberInput
+            value={sheetData.goalweight}
+            onChange={(value) => updateSheetData({ goalweight: value })}
+            placeholder="목표 몸무게 입력"
+            min={ONBOARDING_WEIGHT_RANGE.min}
+            max={ONBOARDING_WEIGHT_RANGE.max}
+            step={0.1}
+            unit="kg"
+            normalizeOnBlur={false}
+          />
+        </div>
+      </section>
+    );
   };
 
   const isFooterDisabled = isSubmitting || (stage === "summary" && !canStartPlan);
@@ -702,8 +818,12 @@ export default function GoalEditPage() {
         )}
       </footer>
 
-      <BottomSheet isOpen={editingField !== null} onClose={closeEditor}>
-        <div className={styles.sheetContent}>
+      <BottomSheet
+        isOpen={editingField !== null}
+        onClose={closeEditor}
+        className={styles.goalEditBottomSheet}
+      >
+        <div className={styles.sheetContent} data-editor-field={editingField ?? undefined}>
           <div className={styles.sheetBody}>{renderEditorBody()}</div>
           <div className={styles.sheetActions}>
             <Button fullWidth onClick={applyEditor} variant="filled" size="large" color="primary">

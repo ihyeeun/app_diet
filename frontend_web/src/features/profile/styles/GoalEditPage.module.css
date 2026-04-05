@@ -17,6 +17,10 @@
   text-align: center;
 }
 
+.summarySection {
+  padding-bottom: 8px;
+}
+
 .summaryItem {
   align-items: center;
   border-bottom: 1px solid var(--gray-400);
@@ -60,6 +64,183 @@
 .sheetContent {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 16px;
+  max-height: min(82dvh, 620px);
+  min-height: 320px;
   padding: 0 20px;
+}
+
+.sheetContent[data-editor-field="birthYear"] {
+  min-height: 460px;
+}
+
+.sheetContent[data-editor-field="activity"],
+.sheetContent[data-editor-field="goal"] {
+  min-height: 500px;
+}
+
+.sheetBody {
+  flex: 1;
+  min-height: 0;
+}
+
+.sheetActions {
+  padding-top: 4px;
+}
+
+.editorSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.editorTitle {
+  color: var(--text-normal);
+  font-size: var(--fs-title2);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
+  margin: 0;
+  padding: 0 4px;
+}
+
+.genderGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  height: 134px;
+}
+
+.selectableCard {
+  background: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+  width: 100%;
+}
+
+.selectableCardActive {
+  background: var(--interaction-primary);
+  border-color: var(--border-primary);
+}
+
+.selectableCard:focus-visible {
+  outline: 2px solid var(--border-primary);
+  outline-offset: 2px;
+}
+
+.genderGrid .selectableCard {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  text-align: center;
+}
+
+.genderCardLabel {
+  font-size: var(--fs-title3);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-145);
+}
+
+.optionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optionList .selectableCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 16px 20px;
+  text-align: left;
+}
+
+.optionTitle {
+  color: var(--text-normal);
+}
+
+.optionDescription {
+  color: var(--text-assistive1);
+}
+
+.numberInputCard {
+  background: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.sheetNumberInput {
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.sheetNumberInputField {
+  color: var(--text-normal);
+  font-size: 14px !important;
+  font-weight: var(--fw-medium) !important;
+  letter-spacing: var(--letter-spacing-body);
+  line-height: var(--line-height-145) !important;
+  text-align: left !important;
+}
+
+.sheetNumberInputField::placeholder {
+  color: var(--text-assistive2);
+}
+
+.sheetNumberInputUnit {
+  color: var(--text-normal) !important;
+  font-size: 20px !important;
+  font-weight: var(--fw-semibold) !important;
+  line-height: var(--line-height-120) !important;
+  margin-left: 0 !important;
+}
+
+.birthYearPicker {
+  --wheel-highlight-height: 72px;
+
+  flex: 1;
+  height: 320px;
+  min-height: 320px;
+}
+
+.goalEditBottomSheet :global(.react-modal-sheet-container) {
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+}
+
+.goalEditBottomSheet :global(.react-modal-sheet-header) {
+  height: 32px;
+}
+
+.goalEditBottomSheet :global(.react-modal-sheet-drag-indicator) {
+  background: var(--gray-1100);
+  border-radius: 999px;
+  height: 3px;
+  width: 30px;
+}
+
+@media (max-height: 700px) {
+  .sheetContent[data-editor-field="birthYear"] {
+    min-height: 420px;
+  }
+
+  .sheetContent[data-editor-field="activity"],
+  .sheetContent[data-editor-field="goal"] {
+    min-height: 460px;
+  }
+
+  .birthYearPicker {
+    height: 290px;
+    min-height: 290px;
+  }
 }
