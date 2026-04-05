@@ -1,5 +1,5 @@
 export type BridgeHttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-export type BridgeTabName = "home" | "recommend" | "profile";
+export type BridgeTabName = "home" | "chat" | "diary" | "profile";
 
 export type BridgeRequestPayload = {
   endpoint: string;

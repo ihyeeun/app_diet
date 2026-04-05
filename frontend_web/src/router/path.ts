@@ -21,6 +21,12 @@ export const PATH = {
   BRAND_SEARCH: "/brand-search",
   BRAND_MENU_SEARCH: "/brand-search/menu",
 
+  // Chat
+  CHAT: "/chat",
+
+  //Diary
+  DIARY: "diary",
+
   // Profile
   GOAL_EDIT: "/profile/goal-edit",
 };

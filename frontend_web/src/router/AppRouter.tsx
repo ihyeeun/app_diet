@@ -24,6 +24,8 @@ const NutrientCameraPage = lazy(() => import("@/features/camera/NutrientCameraPa
 const FoodCameraPage = lazy(() => import("@/features/camera/FoodCameraPage"));
 const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const GoalEditPage = lazy(() => import("@/features/profile/GoalEditPage"));
+const ChatPage = lazy(() => import("@/features/chat/ChatPage"));
+const DiaryPage = lazy(() => import("@/features/diary/DiaryPage"));
 
 export default function AppRouter() {
   return (
@@ -57,6 +59,10 @@ export default function AppRouter() {
 
           <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
           <Route path={PATH.BRAND_MENU_SEARCH} element={<BrandMenuSearch />} />
+
+          <Route path={PATH.CHAT} element={<ChatPage />} />
+
+          <Route path={PATH.DIARY} element={<DiaryPage />} />
 
           <Route path={PATH.PROFILE} element={<ProfilePage />} />
           <Route path={PATH.GOAL_EDIT} element={<GoalEditPage />} />

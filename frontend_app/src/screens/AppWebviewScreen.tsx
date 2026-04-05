@@ -19,9 +19,10 @@ const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "10.0.2.2"]);
 type AppWebViewScreenProps = {
   path?: string;
   currentTab?: AppTabName;
+  onTabBarVisibilityChange?: (hidden: boolean) => void;
 };
 
-type AppTabName = "home" | "recommend" | "profile";
+export type AppTabName = "home" | "chat" | "diary" | "profile";
 
 function buildWebAppUrl(path?: string) {
   if (!path) return webAppUrl;
@@ -33,6 +34,11 @@ function buildWebAppUrl(path?: string) {
   } catch {
     return `${webAppUrl.replace(/\/$/, "")}${normalizedPath}`;
   }
+}
+
+function normalizeTabPath(path?: string) {
+  if (!path || path === "/") return "/home";
+  return path.startsWith("/") ? path : `/${path}`;
 }
 
 function getWebAppOrigin() {
@@ -83,8 +89,8 @@ function resolveWebPath(requestUrl: string, webAppOrigin: string | null) {
 
 function resolveTabFromPath(pathname: string): AppTabName | null {
   if (pathname === "/" || pathname === "/home") return "home";
-  if (pathname === "/recommend") return "recommend";
-  // if (pathname === "/compare") return "compare";
+  if (pathname === "/chat") return "chat";
+  if (pathname === "/diary") return "diary";
   if (pathname === "/profile") return "profile";
 
   return null;
@@ -140,6 +146,47 @@ const pathChangeBridgeScript = `
   })();
 `;
 
+function createTabPathSyncScript(path: string) {
+  const serializedPath = JSON.stringify(path);
+
+  return `
+    (function () {
+      var targetPath = ${serializedPath};
+      if (typeof targetPath !== "string" || targetPath.length === 0) return;
+
+      var targetUrl;
+      try {
+        targetUrl = new URL(targetPath, window.location.origin);
+      } catch {
+        return;
+      }
+
+      var nextPath = targetUrl.pathname + targetUrl.search + targetUrl.hash;
+      var currentPath = window.location.pathname + window.location.search + window.location.hash;
+      if (nextPath === currentPath) return;
+
+      history.replaceState(history.state, "", nextPath);
+
+      try {
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      } catch {
+        var event = document.createEvent("Event");
+        event.initEvent("popstate", true, true);
+        window.dispatchEvent(event);
+      }
+
+      if (!window.ReactNativeWebView) return;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "WEB_PATH_CHANGE",
+          payload: { href: window.location.href }
+        })
+      );
+    })();
+    true;
+  `;
+}
+
 function normalizeInset(inset: number) {
   return Math.max(0, Math.round(inset * 100) / 100);
 }
@@ -158,14 +205,31 @@ function createSafeAreaSyncScript(topInset: number, bottomInset: number) {
   `;
 }
 
-export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenProps) {
+export default function AppWebViewScreen({
+  path,
+  currentTab,
+  onTabBarVisibilityChange,
+}: AppWebViewScreenProps) {
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
+  const didLoadOnceRef = useRef(false);
+  const pendingTabPathRef = useRef<string | null>(null);
+  const latestWebPathRef = useRef<string | null>(null);
+  const tabInitialUrlRef = useRef<string | null>(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const targetUrl = buildWebAppUrl(path);
-  const webAppOrigin = getWebAppOrigin();
   const isTabWebView = Boolean(currentTab);
+  const normalizedTabPath = useMemo(() => normalizeTabPath(path), [path]);
+  const webAppOrigin = getWebAppOrigin();
+
+  if (isTabWebView && tabInitialUrlRef.current === null) {
+    tabInitialUrlRef.current = buildWebAppUrl(normalizedTabPath);
+  }
+
+  const targetUrl = isTabWebView
+    ? (tabInitialUrlRef.current ?? buildWebAppUrl(normalizedTabPath))
+    : buildWebAppUrl(path);
+  const webViewSource = useMemo(() => ({ uri: targetUrl }), [targetUrl]);
   const safeAreaSyncScript = useMemo(
     () => createSafeAreaSyncScript(insets.top, insets.bottom),
     [insets.bottom, insets.top],
@@ -179,11 +243,16 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     (hide: boolean) => {
       if (!isTabWebView) return;
 
+      if (onTabBarVisibilityChange) {
+        onTabBarVisibilityChange(hide);
+        return;
+      }
+
       navigation.setOptions({
         tabBarStyle: hide ? { display: "none" } : undefined,
       });
     },
-    [isTabWebView, navigation],
+    [isTabWebView, navigation, onTabBarVisibilityChange],
   );
 
   const syncTabBarFromUrl = useCallback(
@@ -212,6 +281,29 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     [currentTab, isTabWebView, syncTabBarFromUrl, webAppOrigin],
   );
 
+  const syncWebViewPathFromTab = useCallback(
+    (nextPath: string) => {
+      if (!isTabWebView) return;
+      if (latestWebPathRef.current === nextPath) return;
+
+      webViewRef.current?.injectJavaScript(createTabPathSyncScript(nextPath));
+    },
+    [isTabWebView],
+  );
+
+  useEffect(() => {
+    if (!isTabWebView) return;
+
+    if (!didLoadOnceRef.current) {
+      pendingTabPathRef.current = normalizedTabPath;
+      return;
+    }
+
+    pendingTabPathRef.current = null;
+
+    syncWebViewPathFromTab(normalizedTabPath);
+  }, [isTabWebView, normalizedTabPath, syncWebViewPathFromTab]);
+
   useEffect(() => {
     if (!isTabWebView) return;
 
@@ -222,14 +314,6 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
     };
   }, [isTabWebView, syncTabBarVisibility]);
 
-  const onShouldStartLoadWithRequest = useCallback(
-    (request: WebViewNavigation) => {
-      if (syncTabStateFromUrl(request.url)) return false;
-      return true;
-    },
-    [syncTabStateFromUrl],
-  );
-
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
       try {
@@ -239,6 +323,10 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
         };
 
         if (rawData.type === "WEB_PATH_CHANGE" && typeof rawData.payload?.href === "string") {
+          const pathFromWeb = resolveWebPath(rawData.payload.href, webAppOrigin);
+          if (pathFromWeb) {
+            latestWebPathRef.current = pathFromWeb;
+          }
           syncTabStateFromUrl(rawData.payload.href);
           return;
         }
@@ -248,12 +336,22 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
 
       handleWebMessage(event, webViewRef);
     },
-    [syncTabStateFromUrl],
+    [syncTabStateFromUrl, webAppOrigin],
   );
 
-  const onNavigationStateChange = useCallback((navState: WebViewNavigation) => {
-    canGoBackRef.current = navState.canGoBack;
-  }, []);
+  const onNavigationStateChange = useCallback(
+    (navState: WebViewNavigation) => {
+      canGoBackRef.current = navState.canGoBack;
+
+      const webPath = resolveWebPath(navState.url, webAppOrigin);
+      if (webPath) {
+        latestWebPathRef.current = webPath;
+      }
+
+      syncTabStateFromUrl(navState.url);
+    },
+    [syncTabStateFromUrl, webAppOrigin],
+  );
 
   useEffect(() => {
     if (Platform.OS !== "android") return;
@@ -275,19 +373,26 @@ export default function AppWebViewScreen({ path, currentTab }: AppWebViewScreenP
   }, [safeAreaSyncScript]);
 
   const onLoadEnd = useCallback(() => {
+    didLoadOnceRef.current = true;
     webViewRef.current?.injectJavaScript(`${safeAreaSyncScript}true;`);
-  }, [safeAreaSyncScript]);
+
+    if (!isTabWebView) return;
+    const pendingTabPath = pendingTabPathRef.current;
+    if (!pendingTabPath) return;
+    pendingTabPathRef.current = null;
+
+    syncWebViewPathFromTab(pendingTabPath);
+  }, [isTabWebView, safeAreaSyncScript, syncWebViewPathFromTab]);
 
   return (
     <SafeAreaView style={styles.container} edges={["left", "right"]}>
       <WebView
         ref={webViewRef}
-        source={{ uri: targetUrl }}
+        source={webViewSource}
         injectedJavaScriptBeforeContentLoaded={injectedScriptBeforeContentLoaded}
         onMessage={onMessage}
         onLoadEnd={onLoadEnd}
         onNavigationStateChange={onNavigationStateChange}
-        onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         allowsBackForwardNavigationGestures
         javaScriptEnabled
         domStorageEnabled

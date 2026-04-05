@@ -332,7 +332,8 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
 
     return (
       value.payload.tab === "home" ||
-      value.payload.tab === "recommend" ||
+      value.payload.tab === "chat" ||
+      value.payload.tab === "diary" ||
       value.payload.tab === "profile"
     );
   }
@@ -341,7 +342,8 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
     if (value.payload === undefined) return true;
     if (!isRecord(value.payload)) return false;
 
-    const isValidQuality = value.payload.quality === undefined || typeof value.payload.quality === "number";
+    const isValidQuality =
+      value.payload.quality === undefined || typeof value.payload.quality === "number";
     if (!isValidQuality) return false;
 
     return (

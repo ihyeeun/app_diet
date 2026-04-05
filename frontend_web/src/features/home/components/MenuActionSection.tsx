@@ -22,12 +22,12 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
     <div className={style.content}>
       <div className={style.menu_container}>
         <MenuCard
-          title={"메뉴 추천"}
-          description="메뉴를 상황에 맞게 추천해줘요"
+          title={"물어보기"}
+          description="메뉴판이 없다면 직접 물어봐도 좋아요"
           iconSrc="/icons/menu_recommend.svg"
           onClick={() => {
-            syncAppTab("recommend");
-            navigate(PATH.RECOMMEND);
+            syncAppTab("chat");
+            navigate(PATH.CHAT);
           }}
         />
         {/* <MenuCard
