@@ -205,3 +205,55 @@ export interface ProfileResponseDto {
   target_calories: number;
   target_ratio: TargetRatio;
 }
+
+// Chat
+export interface ChatHistoryResponseDto {
+  chat_list: ChatHistoryItemResponseDto[];
+}
+
+export interface ChatHistoryItemResponseDto {
+  id: number; //채팅 기록 id
+  input_text: string; //사용자 입력값
+  createdAt: string; //저장 시각
+  response_payload: {
+    intro_message: string; //추천 결과 전체를 소개하는 도입 문구
+    parsed_request: {
+      orginal_input: string; //사용자가 입력한 원본 입력 문장
+      normalized_request: string; //사용자가 입력만 정규화된 입력 문장
+      meal_time: number;
+      meal_time_label: string; //섭취 시간대 라벨
+      desired_brand?: string; //브랜드 필터
+      desired_category?: string; //카테고리 필터
+      nutrition_focus: string[]; //영양 우선순위
+      amount_preference?: amount_preference_level; //섭취량 선호
+      keywords: string[]; //검색 보조 키워드
+    };
+    recommendation_basis: {
+      goal: string;
+      target_calories: number;
+      target_ratio: TargetRatio;
+      consumed_macros: TargetRatio; //당일 누적 탄단지 섭취량(g)
+      remaining_calories: number; //남은 목표 칼로리
+      remaining_macros: TargetRatio; //남은 탄단지 목표량(g)
+      target_meal_calories: number; //현재 추천 슬롯의 목표 칼로리
+    };
+    recommendation: ChatRecommendItemResponseDto[];
+  };
+}
+
+export type amount_preference_level = "light" | "regular" | "hearty";
+
+export interface ChatRecommendItemResponseDto {
+  rank: number;
+  menu_id: number;
+  menu: string; //메뉴명
+  brand?: string;
+  amount: string; //음식 양 (1인분 230g)
+  calories: number;
+  carbs: number;
+  protein: number;
+  fat: number;
+  score: number; //최종 점수
+  one_line_summary: string;
+  recommendation_reason: string;
+}
