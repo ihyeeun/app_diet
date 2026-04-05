@@ -1,0 +1,120 @@
+import { ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import {
+  useLogoutMutation,
+  useWithdrawMutation,
+} from "@/features/settings/hooks/mutations/useAccountMutation";
+import { PATH } from "@/router/path";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
+import { toast } from "@/shared/commons/toast/toast";
+
+import styles from "./styles/SettingsPage.module.css";
+
+function resolveErrorMessage(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+
+  return fallbackMessage;
+}
+
+export default function SettingsPage() {
+  const navigate = useNavigate();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const { mutateAsync: requestLogout, isPending: isLogoutPending } = useLogoutMutation();
+  const { mutateAsync: requestWithdraw, isPending: isWithdrawPending } = useWithdrawMutation();
+
+  return (
+    <div className={styles.page}>
+      <PageHeader onBack={() => navigate(-1)} title="설정" />
+
+      <main className={styles.main}>
+        <div className={styles.content}>
+          <button
+            type="button"
+            className={styles.menuItem}
+            onClick={() => navigate(PATH.SETTINGS_FEEDBACK)}
+          >
+            <span className={`${styles.menuLabel} typo-title3`}>문의하기</span>
+            <ChevronRight size={24} className={styles.menuChevron} />
+          </button>
+
+          <button
+            type="button"
+            className={styles.menuItem}
+            onClick={() => navigate(PATH.SETTINGS_SUB_CODE)}
+          >
+            <span className={`${styles.menuLabel} typo-title3`}>쿠폰 코드 입력</span>
+            <ChevronRight size={24} className={styles.menuChevron} />
+          </button>
+
+          <button type="button" className={styles.menuItem} onClick={() => navigate(PATH.TERMS)}>
+            <span className={`${styles.menuLabel} typo-title3`}>
+              서비스 이용 약관/ 개인정보처리방침
+            </span>
+            <ChevronRight size={24} className={styles.menuChevron} />
+          </button>
+
+          <button
+            type="button"
+            className={styles.menuItem}
+            onClick={() => setIsLogoutModalOpen(true)}
+          >
+            <span className={`${styles.menuLabel} typo-title3`}>로그아웃</span>
+            <ChevronRight size={24} className={styles.menuChevron} />
+          </button>
+
+          <button
+            type="button"
+            className={styles.menuItem}
+            onClick={() => setIsWithdrawModalOpen(true)}
+          >
+            <span className={`${styles.menuLabel} typo-title3`}>탈퇴하기</span>
+            <ChevronRight size={24} className={styles.menuChevron} />
+          </button>
+        </div>
+      </main>
+
+      <ConfirmModal
+        open={isLogoutModalOpen}
+        onOpenChange={setIsLogoutModalOpen}
+        title="로그아웃 하시겠어요?"
+        cancelText="취소"
+        confirmText="확인"
+        confirmDisabled={isLogoutPending}
+        closeOnConfirm={false}
+        onConfirm={async () => {
+          try {
+            await requestLogout();
+          } catch (error) {
+            toast.warning(resolveErrorMessage(error, "로그아웃에 실패했어요."));
+            throw error;
+          }
+        }}
+      />
+
+      <ConfirmModal
+        open={isWithdrawModalOpen}
+        onOpenChange={setIsWithdrawModalOpen}
+        title="정말 탈퇴하시겠어요?"
+        description="기록한 데이터가 완전히 삭제되며 복구할 수 없어요"
+        cancelText="취소"
+        confirmText="확인"
+        confirmDisabled={isWithdrawPending}
+        closeOnConfirm={false}
+        onConfirm={async () => {
+          try {
+            await requestWithdraw();
+          } catch (error) {
+            toast.warning(resolveErrorMessage(error, "탈퇴 처리에 실패했어요."));
+            throw error;
+          }
+        }}
+      />
+    </div>
+  );
+}

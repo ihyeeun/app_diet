@@ -1,5 +1,8 @@
+import { loadRefreshToken } from "@/features/auth/store/tokenStore";
 import { apiClient } from "@/src/shared/api/apiClient";
 import type { BridgeRequestPayload } from "./bridge.types";
+
+const SIGN_OUT_ENDPOINT = "/commonAuth/signout";
 
 function assertAllowedBridgeRequest(endpoint: string, method: BridgeRequestPayload["method"]) {
   if (!endpoint.startsWith("/") || endpoint.startsWith("//")) {
@@ -7,10 +10,34 @@ function assertAllowedBridgeRequest(endpoint: string, method: BridgeRequestPaylo
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+async function resolveRequestBody(payload: BridgeRequestPayload) {
+  if (payload.endpoint !== SIGN_OUT_ENDPOINT) {
+    return payload.body;
+  }
+
+  const refreshToken = await loadRefreshToken();
+
+  if (!refreshToken) {
+    throw new Error("로그아웃을 위한 refreshToken이 없습니다.");
+  }
+
+  const baseBody = isRecord(payload.body) ? payload.body : {};
+
+  return {
+    ...baseBody,
+    refreshToken,
+  };
+}
+
 export async function requestFromWeb(payload: BridgeRequestPayload) {
-  const { endpoint, method, body, params } = payload;
+  const { endpoint, method, params } = payload;
 
   assertAllowedBridgeRequest(endpoint, method);
+  const body = await resolveRequestBody(payload);
 
   const response = await apiClient.request({
     url: endpoint,

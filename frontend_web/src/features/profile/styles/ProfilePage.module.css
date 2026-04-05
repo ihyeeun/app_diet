@@ -103,3 +103,29 @@
 .activeCardUnit {
   color: var(--text-normal);
 }
+
+.sheetContainer {
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.sheetContent {
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  padding: 14px 12px;
+}
+
+.input::placeholder {
+  color: var(--text-assistive2);
+}
+
+.input:focus {
+  outline: none;
+}

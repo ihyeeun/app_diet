@@ -4,7 +4,9 @@ import { isAxiosError } from "axios";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
+import { clearTokens } from "@/features/auth/store/tokenStore";
 import { apiClient } from "@/src/shared/api/apiClient";
+import { emitAuthExpired } from "@/src/shared/auth/authSessionEvents";
 import { BridgeHandledError, isBridgeHandledError } from "./bridgeError";
 import { beginCameraCaptureSession } from "./cameraCaptureSession";
 import type {
@@ -20,6 +22,7 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png"]);
 const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_UPLOAD_FIELD_NAME = "file";
+const SESSION_TERMINATION_ENDPOINTS = new Set(["/commonAuth/signout", "/commonAuth/delete"]);
 
 type ImageFileSource = {
   uri: string;
@@ -293,6 +296,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function shouldTerminateSession(endpoint: string) {
+  return SESSION_TERMINATION_ENDPOINTS.has(endpoint);
+}
+
 function isBridgePrimitiveValue(value: unknown): value is string | number | boolean | undefined {
   return (
     value === undefined ||
@@ -451,6 +458,11 @@ export async function handleWebMessage(
       type: "API_RESPONSE",
       payload: result,
     });
+
+    if (shouldTerminateSession(message.payload.endpoint)) {
+      await clearTokens();
+      emitAuthExpired();
+    }
   } catch (error) {
     if (isBridgeHandledError(error)) {
       sendToWeb(webViewRef, {

@@ -1,34 +1,65 @@
 import { Pencil, Settings } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
+import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
+import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
+import { useNickNameUpdateMutation } from "@/features/profile/hooks/mutations/useProfileMutation";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import styles from "@/features/profile/styles/ProfilePage.module.css";
 import { PATH } from "@/router/path";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-
-const DEFAULT_STEPS = 36000;
+import { toast } from "@/shared/commons/toast/toast";
+import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { data: profile } = useGetProfileQuery();
+  const today = getTodayFormatDateKey();
+  const { data: profile, isPending: isProfilePending } = useGetProfileQuery();
+  const { data: dayMeal, isPending: isDayMealPending } = useDayMealsQuery(today);
+  const { data: bodyLog, isPending: isBodyLogPending } = useGetBodyLog(today);
+
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [nickName, setNickName] = useState(profile?.nickname);
+  const { mutate: updateNickName } = useNickNameUpdateMutation();
 
   const nickname = profile?.nickname ?? "진득한 푸마";
   const weight = profile?.weight ?? 50;
-  const targetCalories = profile?.target_calories ?? 1200;
   const remainingWeight = Math.abs(weight - (profile?.target_weight ?? weight));
+
+  const handleUpdateNickName = () => {
+    if (nickName?.trim() === "" || nickName === undefined) {
+      toast.warning("닉네임을 입력해주세요");
+      return;
+    }
+
+    updateNickName(nickName, {
+      onSuccess: () => {
+        setSheetOpen(false);
+        toast.success("닉네임이 수정되었어요");
+      },
+      onError: () => {
+        toast.warning("닉네임 수정에 실패했어요");
+      },
+    });
+  };
+
+  if (isProfilePending || isDayMealPending || isBodyLogPending) {
+    return <div>로딩 중..</div>;
+  }
 
   return (
     <div className={styles.page}>
       <PageHeader
         title="식단기록"
-        onBack={() => navigate(-1)}
         rightSlot={
           <button
             type="button"
             className={styles.headerIconButton}
-            onClick={() => navigate(PATH.TERMS)}
+            onClick={() => navigate(PATH.SETTINGS)}
             aria-label="설정"
           >
             <Settings size={24} />
@@ -45,7 +76,14 @@ export default function ProfilePage() {
                   <span className={styles.highlight}>{nickname}</span> 님
                 </p>
 
-                <button type="button" className={styles.inlineIconButton} aria-label="닉네임 수정">
+                <button
+                  type="button"
+                  className={styles.inlineIconButton}
+                  aria-label="닉네임 수정"
+                  onClick={() => {
+                    setSheetOpen(true);
+                  }}
+                >
                   <Pencil size={20} />
                 </button>
               </div>
@@ -60,7 +98,12 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.textButton}>
-              <Button onClick={() => {}} variant="text" size="small" color="assistive">
+              <Button
+                onClick={() => navigate(PATH.GOAL_EDIT)}
+                variant="text"
+                size="small"
+                color="assistive"
+              >
                 목표 재설정
               </Button>
             </div>
@@ -84,7 +127,7 @@ export default function ProfilePage() {
 
                 <div className={styles.activeCardValueRow}>
                   <span className={`${styles.activeCardValue} typo-h3`}>
-                    {targetCalories.toLocaleString("ko-KR")}
+                    {dayMeal?.totalCalories.toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-label1`}>kcal</span>
                 </div>
@@ -96,7 +139,7 @@ export default function ProfilePage() {
 
                 <div className={styles.activeCardValueRow}>
                   <span className={`${styles.activeCardValue} typo-h3`}>
-                    {DEFAULT_STEPS.toLocaleString("ko-KR")}
+                    {(bodyLog?.steps ?? 0).toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-label1`}>걸음</span>
                 </div>
@@ -109,6 +152,37 @@ export default function ProfilePage() {
           <section>
             <p>주간 기록 현황</p>
           </section>
+
+          <BottomSheet
+            isOpen={sheetOpen}
+            onClose={() => {
+              setSheetOpen(false);
+              setNickName(nickname);
+            }}
+          >
+            <div className={styles.sheetContainer}>
+              <section className={styles.sheetContent}>
+                <p className="typo-title2">닉네임 수정하기</p>
+                <input
+                  placeholder="닉네임 입력"
+                  value={nickName ?? nickname}
+                  onChange={(e) => setNickName(e.target.value.slice(0, 15))}
+                  className={`${styles.input} typo-body3`}
+                />
+              </section>
+
+              <Button
+                variant="filled"
+                state="default"
+                size="large"
+                color="primary"
+                fullWidth
+                onClick={handleUpdateNickName}
+              >
+                수정하기
+              </Button>
+            </div>
+          </BottomSheet>
         </div>
       </main>
     </div>

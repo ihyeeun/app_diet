@@ -15,6 +15,9 @@ const RecommendPage = lazy(() => import("@/features/recommend/RecommendPage"));
 const BrandMenuSearch = lazy(() => import("@/features/search/brand/BrandMenuSearch"));
 const BrandSearch = lazy(() => import("@/features/search/brand/BrandSearch"));
 const MealSearchPage = lazy(() => import("@/features/search/menu-record/MealSearchPage"));
+const SettingsFeedbackPage = lazy(() => import("@/features/settings/SettingsFeedbackPage"));
+const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
+const SettingsSubCodePage = lazy(() => import("@/features/settings/SettingsSubCodePage"));
 const TermsPage = lazy(() => import("@/features/terms/TermsPage"));
 const MenuBoardCameraPage = lazy(() => import("@/features/camera/MenuBoardCameraPage"));
 const NutrientCameraPage = lazy(() => import("@/features/camera/NutrientCameraPage"));
@@ -34,6 +37,9 @@ export default function AppRouter() {
 
           <Route path={PATH.RECOMMEND} element={<RecommendPage />} />
 
+          <Route path={PATH.SETTINGS} element={<SettingsPage />} />
+          <Route path={PATH.SETTINGS_FEEDBACK} element={<SettingsFeedbackPage />} />
+          <Route path={PATH.SETTINGS_SUB_CODE} element={<SettingsSubCodePage />} />
           <Route path={PATH.TERMS} element={<TermsPage />} />
 
           <Route path={PATH.TODAY_MEAL_SCORE} element={<TodayMealScorePage />} />
