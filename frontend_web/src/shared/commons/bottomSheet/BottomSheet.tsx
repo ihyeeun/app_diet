@@ -4,12 +4,19 @@ type BottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  className?: string;
   children: React.ReactNode;
 };
 
-export default function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
+export default function BottomSheet({
+  isOpen,
+  onClose,
+  title,
+  className,
+  children,
+}: BottomSheetProps) {
   return (
-    <Sheet isOpen={isOpen} onClose={onClose} detent="content">
+    <Sheet isOpen={isOpen} onClose={onClose} detent="content" className={className}>
       <Sheet.Container
         style={{
           paddingBottom: "var(--safe-area-bottom)",

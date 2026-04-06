@@ -5,7 +5,10 @@ export const PATH = {
   ONBOARDING: "/onboarding",
   RECOMMEND: "/recommend",
   PROFILE: "/profile",
-  TERMS: "/terms",
+  SETTINGS: "/settings",
+  SETTINGS_FEEDBACK: "/settings/feedback",
+  SETTINGS_SUB_CODE: "/settings/sub-code",
+  TERMS: "/settings/terms",
   MEAL_RECORD: "/meal-record",
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
   MEAL_DETAIL: "/meal/detail",
@@ -17,4 +20,13 @@ export const PATH = {
   NUTRIENT_ADD_MODIFY: "/nutrient-add/modify",
   BRAND_SEARCH: "/brand-search",
   BRAND_MENU_SEARCH: "/brand-search/menu",
+
+  // Chat
+  CHAT: "/chat",
+
+  //Diary
+  DIARY: "/diary",
+
+  // Profile
+  GOAL_EDIT: "/profile/goal-edit",
 };

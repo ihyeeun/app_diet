@@ -1,0 +1,191 @@
+.page {
+  background-color: var(--bg-normal-normal);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.summarySection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summaryText {
+  display: flex;
+  flex-direction: column;
+}
+
+.nicknameRow {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.nickname {
+  color: var(--text-normal);
+}
+
+.highlight {
+  color: var(--text-primary);
+}
+
+.textButton {
+  text-align: start;
+}
+
+.inlineIconButton {
+  align-items: center;
+  color: var(--text-normal);
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.goalText {
+  color: var(--text-normal);
+  word-break: keep-all;
+}
+
+.bodyLogSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activeCardGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.activeCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activeMetricCard {
+  background-color: var(--interaction-primary);
+  border-color: var(--border-primary);
+}
+
+.activeCardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activeCardTitle {
+  color: var(--text-normal);
+}
+
+.activeCardValueRow {
+  align-items: baseline;
+  display: flex;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.activeCardValue {
+  color: var(--text-primary);
+}
+
+.activeCardUnit {
+  color: var(--text-normal);
+}
+
+.weeklySection {
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 17px;
+}
+
+.weeklyHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.weeklyTitle {
+  color: var(--text-normal);
+}
+
+.legendRow {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  width: fit-content;
+}
+
+.legendItem {
+  align-items: center;
+  color: var(--text-normal);
+  display: flex;
+  gap: 6px;
+}
+
+.legendDot {
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.legendTarget {
+  background-color: var(--etc-1);
+}
+
+.legendCurrent {
+  background-color: var(--primary-normal);
+}
+
+.weeklyStatusText {
+  color: var(--text-assistive1);
+  text-align: center;
+  padding: 24px 0;
+}
+
+.sheetContainer {
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.sheetContent {
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  padding: 14px 12px;
+}
+
+.input::placeholder {
+  color: var(--text-assistive2);
+}
+
+.input:focus {
+  outline: none;
+}

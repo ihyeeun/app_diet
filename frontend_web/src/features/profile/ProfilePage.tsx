@@ -1,0 +1,308 @@
+import { Pencil, Settings } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import ActionCard from "@/features/home/components/cards/ActionCard";
+import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
+import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
+import WeeklyRecordChart from "@/features/profile/components/WeeklyRecordChart";
+import { useNickNameUpdateMutation } from "@/features/profile/hooks/mutations/useProfileMutation";
+import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
+import {
+  useWeeklyRecordQuery,
+  type WeeklyMetricType,
+} from "@/features/profile/hooks/queries/useWeeklyRecordQuery";
+import styles from "@/features/profile/styles/ProfilePage.module.css";
+import { PATH } from "@/router/path";
+import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
+import { Button } from "@/shared/commons/button/Button";
+import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { toast } from "@/shared/commons/toast/toast";
+import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
+
+const METRIC_CONFIG: Record<
+  WeeklyMetricType,
+  {
+    targetLabel?: string;
+    ticks: number[];
+    title: string;
+    unit: string;
+  }
+> = {
+  weight: {
+    title: "체중",
+    unit: "kg",
+    ticks: [0, 25, 50, 75, 100],
+    targetLabel: "목표 체중",
+  },
+  calories: {
+    title: "섭취량",
+    unit: "kcal",
+    ticks: [0, 1000, 2000, 3000, 4000],
+    targetLabel: "목표 섭취량",
+  },
+  steps: {
+    title: "걸음 수",
+    unit: "걸음",
+    ticks: [0, 3000, 6000, 9000, 12000],
+  },
+};
+
+export default function ProfilePage() {
+  const navigate = useNavigate();
+  const today = getTodayFormatDateKey();
+  const { data: profile, isPending: isProfilePending } = useGetProfileQuery();
+  const { data: dayMeal, isPending: isDayMealPending } = useDayMealsQuery(today);
+  const { data: bodyLog, isPending: isBodyLogPending } = useGetBodyLog(today);
+
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [nickName, setNickName] = useState("");
+  const [selectedMetric, setSelectedMetric] = useState<WeeklyMetricType>("weight");
+  const { mutate: updateNickName } = useNickNameUpdateMutation();
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep sheet input synced with async profile data.
+    setNickName(profile?.nickname ?? "");
+  }, [profile?.nickname]);
+
+  const nickname = profile?.nickname ?? "진득한 푸마";
+  const currentWeight = profile?.weight ?? 50;
+  const targetWeight = profile?.target_weight ?? currentWeight;
+  const targetCalories = profile?.target_calories ?? 2000;
+  const remainingWeight = Math.abs(currentWeight - targetWeight);
+  const todayWeight =
+    typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
+  const todaySteps =
+    typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
+  const metricConfig = METRIC_CONFIG[selectedMetric];
+
+  const weeklyRecordQuery = useWeeklyRecordQuery({
+    today,
+    targetWeight,
+    targetCalories,
+  });
+
+  const weeklyChartData = useMemo(() => {
+    return weeklyRecordQuery.records.map((record) => {
+      if (selectedMetric === "weight") {
+        return {
+          label: record.label,
+          value: record.weight,
+          target: record.targetWeight,
+        };
+      }
+
+      if (selectedMetric === "calories") {
+        return {
+          label: record.label,
+          value: record.calories,
+          target: record.targetCalories,
+        };
+      }
+
+      return {
+        label: record.label,
+        value: record.steps,
+      };
+    });
+  }, [selectedMetric, weeklyRecordQuery.records]);
+
+  const handleUpdateNickName = () => {
+    if (nickName?.trim() === "" || nickName === undefined) {
+      toast.warning("닉네임을 입력해주세요");
+      return;
+    }
+
+    updateNickName(nickName, {
+      onSuccess: () => {
+        setSheetOpen(false);
+        toast.success("닉네임이 수정되었어요");
+      },
+      onError: () => {
+        toast.warning("닉네임 수정에 실패했어요");
+      },
+    });
+  };
+
+  if (isProfilePending || isDayMealPending || isBodyLogPending) {
+    return <div>로딩 중..</div>;
+  }
+
+  return (
+    <div className={styles.page}>
+      <PageHeader
+        title="식단기록"
+        rightSlot={
+          <button
+            type="button"
+            className={styles.headerIconButton}
+            onClick={() => navigate(PATH.SETTINGS)}
+            aria-label="설정"
+          >
+            <Settings size={24} />
+          </button>
+        }
+      />
+
+      <main className={styles.main}>
+        <div className={styles.content}>
+          <section className={styles.summarySection}>
+            <div className={styles.summaryText}>
+              <div className={styles.nicknameRow}>
+                <p className={`${styles.nickname} typo-title2`}>
+                  <span className={styles.highlight}>{nickname}</span> 님
+                </p>
+
+                <button
+                  type="button"
+                  className={styles.inlineIconButton}
+                  aria-label="닉네임 수정"
+                  onClick={() => {
+                    setSheetOpen(true);
+                  }}
+                >
+                  <Pencil size={20} />
+                </button>
+              </div>
+
+              <p className={`${styles.goalText} typo-body1`}>
+                목표 체중까지{" "}
+                <span className={styles.highlight}>
+                  {remainingWeight.toLocaleString("ko-KR")}kg
+                </span>{" "}
+                남았어요
+              </p>
+            </div>
+
+            <div className={styles.textButton}>
+              <Button
+                onClick={() => navigate(PATH.GOAL_EDIT)}
+                variant="text"
+                size="small"
+                color="assistive"
+              >
+                목표 재설정
+              </Button>
+            </div>
+          </section>
+
+          <section className={styles.bodyLogSection}>
+            <div className={styles.activeCardGrid}>
+              <ActionCard
+                onClick={() => setSelectedMetric("weight")}
+                className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
+              >
+                <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
+
+                <div className={styles.activeCardValueRow}>
+                  <span className={`${styles.activeCardValue} typo-h3`}>
+                    {todayWeight === null ? "-" : todayWeight.toLocaleString("ko-KR")}
+                  </span>
+                  <span className={`${styles.activeCardUnit} typo-label1`}>kg</span>
+                </div>
+              </ActionCard>
+
+              <ActionCard
+                onClick={() => setSelectedMetric("calories")}
+                className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
+              >
+                <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
+
+                <div className={styles.activeCardValueRow}>
+                  <span className={`${styles.activeCardValue} typo-h3`}>
+                    {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
+                  </span>
+                  <span className={`${styles.activeCardUnit} typo-label1`}>kcal</span>
+                </div>
+              </ActionCard>
+            </div>
+
+            <ActionCard
+              onClick={() => setSelectedMetric("steps")}
+              className={selectedMetric === "steps" ? styles.activeMetricCard : ""}
+            >
+              <div className={styles.activeCardRow}>
+                <span className={`${styles.activeCardTitle} typo-title4`}>걸음 수</span>
+
+                <div className={styles.activeCardValueRow}>
+                  <span className={`${styles.activeCardValue} typo-h3`}>
+                    {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
+                  </span>
+                  <span className={`${styles.activeCardUnit} typo-label1`}>걸음</span>
+                </div>
+              </div>
+            </ActionCard>
+          </section>
+
+          <div className="divider" />
+
+          <section className={styles.weeklySection}>
+            <div className={styles.weeklyHeader}>
+              <span className={`${styles.weeklyTitle} typo-title3`}>주간 기록 현황</span>
+
+              <div className={styles.legendRow}>
+                {metricConfig.targetLabel && (
+                  <span className={`${styles.legendItem} typo-label4`}>
+                    <span className={`${styles.legendDot} ${styles.legendTarget}`} />
+                    {metricConfig.targetLabel}
+                  </span>
+                )}
+                <span className={`${styles.legendItem} typo-label4`}>
+                  <span className={`${styles.legendDot} ${styles.legendCurrent}`} />
+                  {metricConfig.title}
+                </span>
+              </div>
+            </div>
+
+            {weeklyRecordQuery.isPending ? (
+              <p className={`${styles.weeklyStatusText} typo-label2`}>
+                주간 기록을 불러오는 중이에요.
+              </p>
+            ) : weeklyRecordQuery.hasError ? (
+              <p className={`${styles.weeklyStatusText} typo-label2`}>
+                주간 기록을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.
+              </p>
+            ) : (
+              <WeeklyRecordChart
+                data={weeklyChartData}
+                unit={metricConfig.unit}
+                yTicks={metricConfig.ticks}
+              />
+            )}
+          </section>
+
+          <BottomSheet
+            isOpen={sheetOpen}
+            onClose={() => {
+              setSheetOpen(false);
+              setNickName(profile?.nickname ?? "");
+            }}
+          >
+            <div className={styles.sheetContainer}>
+              <section className={styles.sheetContent}>
+                <p className="typo-title2">닉네임 수정하기</p>
+                <input
+                  placeholder="닉네임 입력"
+                  value={nickName}
+                  onChange={(e) => setNickName(e.target.value.slice(0, 15))}
+                  className={`${styles.input} typo-body3`}
+                />
+              </section>
+
+              <Button
+                variant="filled"
+                state="default"
+                size="large"
+                color="primary"
+                fullWidth
+                onClick={handleUpdateNickName}
+              >
+                수정하기
+              </Button>
+            </div>
+          </BottomSheet>
+        </div>
+      </main>
+    </div>
+  );
+}
