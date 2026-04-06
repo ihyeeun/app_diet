@@ -462,8 +462,11 @@ export async function handleWebMessage(
     });
 
     if (shouldTerminateSession(message.payload.endpoint)) {
-      await clearTokens();
-      emitAuthExpired();
+      try {
+        await clearTokens();
+      } finally {
+        emitAuthExpired();
+      }
     }
   } catch (error) {
     if (isBridgeHandledError(error)) {
