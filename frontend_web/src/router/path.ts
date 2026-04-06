@@ -25,7 +25,7 @@ export const PATH = {
   CHAT: "/chat",
 
   //Diary
-  DIARY: "diary",
+  DIARY: "/diary",
 
   // Profile
   GOAL_EDIT: "/profile/goal-edit",
