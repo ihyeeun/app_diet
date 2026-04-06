@@ -1,6 +1,6 @@
 import { handleWebMessage } from "@/src/shared/api/bridge/handleWebMessage";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, Platform, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -215,20 +215,24 @@ export default function AppWebViewScreen({
   const didLoadOnceRef = useRef(false);
   const pendingTabPathRef = useRef<string | null>(null);
   const latestWebPathRef = useRef<string | null>(null);
-  const tabInitialUrlRef = useRef<string | null>(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const isTabWebView = Boolean(currentTab);
   const normalizedTabPath = useMemo(() => normalizeTabPath(path), [path]);
   const webAppOrigin = getWebAppOrigin();
 
-  if (isTabWebView && tabInitialUrlRef.current === null) {
-    tabInitialUrlRef.current = buildWebAppUrl(normalizedTabPath);
-  }
+  const [tabInitialUrl, setTabInitialUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isTabWebView && tabInitialUrl === null) {
+      setTabInitialUrl(buildWebAppUrl(normalizedTabPath));
+    }
+  }, [isTabWebView, normalizedTabPath, tabInitialUrl]);
 
   const targetUrl = isTabWebView
-    ? (tabInitialUrlRef.current ?? buildWebAppUrl(normalizedTabPath))
+    ? (tabInitialUrl ?? buildWebAppUrl(normalizedTabPath))
     : buildWebAppUrl(path);
+
   const webViewSource = useMemo(() => ({ uri: targetUrl }), [targetUrl]);
   const safeAreaSyncScript = useMemo(
     () => createSafeAreaSyncScript(insets.top, insets.bottom),
