@@ -531,9 +531,7 @@ export default function GoalEditPage() {
     try {
       setIsSubmitting(true);
 
-      for (const updateTask of updateTasks) {
-        await updateTask();
-      }
+      await Promise.all(updateTasks.map((task) => task()));
 
       queryClient.setQueryData<ProfileResponseDto>(queryKeys.profile, (previous) => {
         if (!previous) {
