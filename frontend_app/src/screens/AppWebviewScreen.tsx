@@ -331,18 +331,29 @@ export default function AppWebViewScreen({
     [isTabWebView, webAppOrigin],
   );
 
+  const canSyncAfterInitialLoad = useCallback(() => {
+    return didLoadOnceRef.current && pendingTabPathRef.current === null;
+  }, []);
+
+  const flushPendingTabPathSync = useCallback(() => {
+    if (!isTabWebView) return;
+    if (!didLoadOnceRef.current) return;
+
+    const pendingTabPath = pendingTabPathRef.current;
+    if (!pendingTabPath) return;
+
+    pendingTabPathRef.current = null;
+    if (!canSyncAfterInitialLoad()) return;
+
+    syncWebViewPathFromTab(pendingTabPath);
+  }, [canSyncAfterInitialLoad, isTabWebView, syncWebViewPathFromTab]);
+
   useEffect(() => {
     if (!isTabWebView) return;
 
-    if (!didLoadOnceRef.current) {
-      pendingTabPathRef.current = normalizedTabPath;
-      return;
-    }
-
-    pendingTabPathRef.current = null;
-
-    syncWebViewPathFromTab(normalizedTabPath);
-  }, [isTabWebView, normalizedTabPath, syncWebViewPathFromTab]);
+    pendingTabPathRef.current = normalizedTabPath;
+    flushPendingTabPathSync();
+  }, [flushPendingTabPathSync, isTabWebView, normalizedTabPath]);
 
   useEffect(() => {
     if (!isTabWebView) return;
@@ -367,7 +378,9 @@ export default function AppWebViewScreen({
           if (hrefFromWeb) {
             latestWebPathRef.current = hrefFromWeb;
           }
-          syncTabStateFromUrl(rawData.payload.href);
+          if (canSyncAfterInitialLoad()) {
+            syncTabStateFromUrl(rawData.payload.href);
+          }
           return;
         }
       } catch {
@@ -376,7 +389,7 @@ export default function AppWebViewScreen({
 
       handleWebMessage(event, webViewRef);
     },
-    [syncTabStateFromUrl, webAppOrigin],
+    [canSyncAfterInitialLoad, syncTabStateFromUrl, webAppOrigin],
   );
 
   const onNavigationStateChange = useCallback(
@@ -388,9 +401,11 @@ export default function AppWebViewScreen({
         latestWebPathRef.current = webHref;
       }
 
-      syncTabStateFromUrl(navState.url);
+      if (canSyncAfterInitialLoad()) {
+        syncTabStateFromUrl(navState.url);
+      }
     },
-    [syncTabStateFromUrl, webAppOrigin],
+    [canSyncAfterInitialLoad, syncTabStateFromUrl, webAppOrigin],
   );
 
   useEffect(() => {
@@ -417,12 +432,8 @@ export default function AppWebViewScreen({
     webViewRef.current?.injectJavaScript(`${safeAreaSyncScript}true;`);
 
     if (!isTabWebView) return;
-    const pendingTabPath = pendingTabPathRef.current;
-    if (!pendingTabPath) return;
-    pendingTabPathRef.current = null;
-
-    syncWebViewPathFromTab(pendingTabPath);
-  }, [isTabWebView, safeAreaSyncScript, syncWebViewPathFromTab]);
+    flushPendingTabPathSync();
+  }, [flushPendingTabPathSync, isTabWebView, safeAreaSyncScript]);
 
   return (
     <SafeAreaView style={styles.container} edges={["left", "right"]}>
