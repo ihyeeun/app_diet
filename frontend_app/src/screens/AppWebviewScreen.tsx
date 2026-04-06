@@ -81,7 +81,19 @@ function resolveWebPath(requestUrl: string, webAppOrigin: string | null) {
     const parsed = new URL(requestUrl);
     if (!isEquivalentLocalOrigin(parsed.origin, webAppOrigin)) return null;
 
-    return parsed.pathname;
+    const canonicalUrl = new URL(`${parsed.pathname}${parsed.search}${parsed.hash}`, webAppOrigin);
+    return canonicalUrl.toString();
+  } catch {
+    return null;
+  }
+}
+
+function resolveWebPathname(requestUrl: string, webAppOrigin: string | null) {
+  const href = resolveWebPath(requestUrl, webAppOrigin);
+  if (!href) return null;
+
+  try {
+    return new URL(href).pathname;
   } catch {
     return null;
   }
@@ -97,14 +109,14 @@ function resolveTabFromPath(pathname: string): AppTabName | null {
 }
 
 function resolveTabFromUrl(requestUrl: string, webAppOrigin: string | null): AppTabName | null {
-  const pathname = resolveWebPath(requestUrl, webAppOrigin);
+  const pathname = resolveWebPathname(requestUrl, webAppOrigin);
   if (!pathname) return null;
 
   return resolveTabFromPath(pathname);
 }
 
 function shouldHideTabBar(requestUrl: string, webAppOrigin: string | null) {
-  const pathname = resolveWebPath(requestUrl, webAppOrigin);
+  const pathname = resolveWebPathname(requestUrl, webAppOrigin);
   if (!pathname) return false;
 
   return resolveTabFromPath(pathname) === null;
@@ -146,22 +158,38 @@ const pathChangeBridgeScript = `
   })();
 `;
 
-function createTabPathSyncScript(path: string) {
-  const serializedPath = JSON.stringify(path);
+function createTabPathSyncScript(absoluteHref: string, appOrigin: string | null) {
+  const serializedAbsoluteHref = JSON.stringify(absoluteHref);
+  const serializedAppOrigin = JSON.stringify(appOrigin);
 
   return `
     (function () {
-      var targetPath = ${serializedPath};
-      if (typeof targetPath !== "string" || targetPath.length === 0) return;
+      var passedAbsoluteUrl = ${serializedAbsoluteHref};
+      var appOrigin = ${serializedAppOrigin};
+      if (typeof passedAbsoluteUrl !== "string" || passedAbsoluteUrl.length === 0) return;
 
       var targetUrl;
       try {
-        targetUrl = new URL(targetPath, window.location.origin);
+        targetUrl = new URL(passedAbsoluteUrl);
       } catch {
         return;
       }
 
       var nextPath = targetUrl.pathname + targetUrl.search + targetUrl.hash;
+      if (targetUrl.origin !== window.location.origin) {
+        if (typeof appOrigin === "string" && appOrigin.length > 0) {
+          try {
+            location.replace(new URL(nextPath, appOrigin).toString());
+            return;
+          } catch {
+            // no-op
+          }
+        }
+
+        location.replace(passedAbsoluteUrl);
+        return;
+      }
+
       var currentPath = window.location.pathname + window.location.search + window.location.hash;
       if (nextPath === currentPath) return;
 
@@ -288,11 +316,19 @@ export default function AppWebViewScreen({
   const syncWebViewPathFromTab = useCallback(
     (nextPath: string) => {
       if (!isTabWebView) return;
-      if (latestWebPathRef.current === nextPath) return;
+      if (!webAppOrigin) return;
 
-      webViewRef.current?.injectJavaScript(createTabPathSyncScript(nextPath));
+      let nextHref: string;
+      try {
+        nextHref = new URL(nextPath, webAppOrigin).toString();
+      } catch {
+        return;
+      }
+      if (latestWebPathRef.current === nextHref) return;
+
+      webViewRef.current?.injectJavaScript(createTabPathSyncScript(nextHref, webAppOrigin));
     },
-    [isTabWebView],
+    [isTabWebView, webAppOrigin],
   );
 
   useEffect(() => {
@@ -327,9 +363,9 @@ export default function AppWebViewScreen({
         };
 
         if (rawData.type === "WEB_PATH_CHANGE" && typeof rawData.payload?.href === "string") {
-          const pathFromWeb = resolveWebPath(rawData.payload.href, webAppOrigin);
-          if (pathFromWeb) {
-            latestWebPathRef.current = pathFromWeb;
+          const hrefFromWeb = resolveWebPath(rawData.payload.href, webAppOrigin);
+          if (hrefFromWeb) {
+            latestWebPathRef.current = hrefFromWeb;
           }
           syncTabStateFromUrl(rawData.payload.href);
           return;
@@ -347,9 +383,9 @@ export default function AppWebViewScreen({
     (navState: WebViewNavigation) => {
       canGoBackRef.current = navState.canGoBack;
 
-      const webPath = resolveWebPath(navState.url, webAppOrigin);
-      if (webPath) {
-        latestWebPathRef.current = webPath;
+      const webHref = resolveWebPath(navState.url, webAppOrigin);
+      if (webHref) {
+        latestWebPathRef.current = webHref;
       }
 
       syncTabStateFromUrl(navState.url);
