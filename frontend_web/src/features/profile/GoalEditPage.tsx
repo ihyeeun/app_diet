@@ -280,9 +280,13 @@ export default function GoalEditPage() {
     setInitialDraft(mapped);
   }, [profile, draft]);
 
-  const updateDraft = useCallback((patch: Partial<OnboardingData>) => {
-    setDraft((previous) => (previous ? { ...previous, ...patch } : previous));
-  }, []);
+  const updateDraft = useCallback(
+    (patch: Partial<OnboardingData>) => {
+      if (isSubmitting) return;
+      setDraft((previous) => (previous ? { ...previous, ...patch } : previous));
+    },
+    [isSubmitting],
+  );
 
   const updateSheetData = useCallback((patch: Partial<OnboardingData>) => {
     setSheetData((previous) => ({ ...previous, ...patch }));
@@ -558,6 +562,8 @@ export default function GoalEditPage() {
   };
 
   const handleBack = () => {
+    if (isSubmitting) return;
+
     if (stage === "summary") {
       navigate(-1);
       return;
