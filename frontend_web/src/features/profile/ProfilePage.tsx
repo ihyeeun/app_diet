@@ -1,5 +1,5 @@
 import { Pencil, Settings } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
@@ -56,9 +56,14 @@ export default function ProfilePage() {
   const { data: bodyLog, isPending: isBodyLogPending } = useGetBodyLog(today);
 
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [nickName, setNickName] = useState(profile?.nickname);
+  const [nickName, setNickName] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<WeeklyMetricType>("weight");
   const { mutate: updateNickName } = useNickNameUpdateMutation();
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep sheet input synced with async profile data.
+    setNickName(profile?.nickname ?? "");
+  }, [profile?.nickname]);
 
   const nickname = profile?.nickname ?? "진득한 푸마";
   const currentWeight = profile?.weight ?? 50;
@@ -67,7 +72,8 @@ export default function ProfilePage() {
   const remainingWeight = Math.abs(currentWeight - targetWeight);
   const todayWeight =
     typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
-  const todaySteps = typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
+  const todaySteps =
+    typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
   const metricConfig = METRIC_CONFIG[selectedMetric];
 
   const weeklyRecordQuery = useWeeklyRecordQuery({
@@ -89,7 +95,7 @@ export default function ProfilePage() {
       if (selectedMetric === "calories") {
         return {
           label: record.label,
-          value: record.calories ?? 0,
+          value: record.calories,
           target: record.targetCalories,
         };
       }
@@ -269,7 +275,7 @@ export default function ProfilePage() {
             isOpen={sheetOpen}
             onClose={() => {
               setSheetOpen(false);
-              setNickName(nickname);
+              setNickName(profile?.nickname ?? "");
             }}
           >
             <div className={styles.sheetContainer}>
@@ -277,7 +283,7 @@ export default function ProfilePage() {
                 <p className="typo-title2">닉네임 수정하기</p>
                 <input
                   placeholder="닉네임 입력"
-                  value={nickName ?? nickname}
+                  value={nickName}
                   onChange={(e) => setNickName(e.target.value.slice(0, 15))}
                   className={`${styles.input} typo-body3`}
                 />
