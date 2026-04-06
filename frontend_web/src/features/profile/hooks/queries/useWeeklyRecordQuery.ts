@@ -83,26 +83,25 @@ export function useWeeklyRecordQuery({
   const isPending =
     dayMealQueries.some((query) => query.isPending || query.isFetching) ||
     bodyLogQueries.some((query) => query.isPending || query.isFetching);
-  const hasError = dayMealQueries.some((query) => query.isError) || bodyLogQueries.some((query) => query.isError);
+  const hasError =
+    dayMealQueries.some((query) => query.isError) || bodyLogQueries.some((query) => query.isError);
 
-  const records = useMemo<WeeklyRecordPoint[]>(() => {
-    return dateKeys.map((dateKey, index) => {
-      const dayMeal = dayMealQueries[index]?.data;
-      const bodyLog = bodyLogQueries[index]?.data;
-      const rawWeight = bodyLog?.weight;
-      const rawSteps = bodyLog?.steps;
+  const records = dateKeys.map<WeeklyRecordPoint>((dateKey, index) => {
+    const dayMeal = dayMealQueries[index]?.data;
+    const bodyLog = bodyLogQueries[index]?.data;
+    const rawWeight = bodyLog?.weight;
+    const rawSteps = bodyLog?.steps;
 
-      return {
-        dateKey,
-        label: formatChartLabel(dateKey),
-        weight: typeof rawWeight === "number" && rawWeight > 0 ? rawWeight : null,
-        calories: dayMeal?.totalCalories ?? 0,
-        steps: typeof rawSteps === "number" && rawSteps >= 0 ? rawSteps : null,
-        targetWeight,
-        targetCalories,
-      };
-    });
-  }, [bodyLogQueries, dateKeys, dayMealQueries, targetCalories, targetWeight]);
+    return {
+      dateKey,
+      label: formatChartLabel(dateKey),
+      weight: typeof rawWeight === "number" && rawWeight > 0 ? rawWeight : null,
+      calories: dayMeal?.totalCalories ?? 0,
+      steps: typeof rawSteps === "number" && rawSteps >= 0 ? rawSteps : null,
+      targetWeight,
+      targetCalories,
+    };
+  });
 
   return {
     records,
