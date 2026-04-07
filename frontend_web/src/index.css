@@ -101,3 +101,7 @@ select {
   color: var(--text-normal);
   font-family: var(--font-family-base);
 }
+
+input:focus {
+  outline: 1px solid var(--border-primary);
+}
