@@ -758,7 +758,7 @@ export default function GoalEditPage() {
               >
                 <span className={`${styles.summaryLabel} typo-title3`}>{field.label}</span>
                 <span className={styles.summaryValueRow}>
-                  <span className={`${styles.summaryValue} typo-label6`}>
+                  <span className={`${styles.summaryValue} typo-label1`}>
                     {getSummaryValue(field.id, draft)}
                   </span>
                   <ChevronRight className={styles.summaryChevron} size={24} />
