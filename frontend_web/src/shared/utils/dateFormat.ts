@@ -17,3 +17,12 @@ export function getTodayFormatDateKey() {
 export function isValidDateKey(date: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(date);
 }
+
+export function parseDateKey(dateKey: string) {
+  if (!isValidDateKey(dateKey)) {
+    return new Date();
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}

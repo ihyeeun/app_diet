@@ -2,9 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
+import ActionCard from "@/features/home/components/cards/ActionCard";
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
-import style from "@/features/home/styles/TodayScoreSection.module.css";
+import style from "@/features/home/styles/PreviewTodayScoreSection.module.css";
 import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
 import { PATH } from "@/router/path";
 import ScoreProgress from "@/shared/commons/progress/Progress";
@@ -80,7 +81,7 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
   }
 
   return (
-    <button className={style.content} type="button" onClick={handleTodayMealScoreClick}>
+    <ActionCard className={style.content} onClick={handleTodayMealScoreClick}>
       <div className={style.score_container}>
         <div className={style.score_title_container}>
           <div className={style.score_title_text_container}>
@@ -105,7 +106,7 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
       <div className={style.badge_container}>
         <Badge>{calorieMessage}</Badge>
       </div>
-    </button>
+    </ActionCard>
   );
 }
 

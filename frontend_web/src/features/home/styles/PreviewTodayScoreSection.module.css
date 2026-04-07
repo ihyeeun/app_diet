@@ -1,10 +1,8 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  height: 320px;
-  padding: 52px 40px 32px;
-  width: 100%;
+  background-color: var(--bg-normal-primary2);
+  gap: 10px;
 }
 
 .score_container {

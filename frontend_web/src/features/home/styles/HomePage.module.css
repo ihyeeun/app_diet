@@ -7,9 +7,10 @@
 }
 
 .homeContainer {
-  background-color: var(--bg-normal-primary2);
+  background-color: var(--bg-normal-normal);
   display: flex;
   flex: 1;
   flex-direction: column;
-  width: 100%;
+  padding: 20px;
+  gap: 20px;
 }

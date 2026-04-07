@@ -1,3 +1,261 @@
+import { ChevronDown, ChevronRight, PlusIcon, UtensilsCrossed } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import Calendar from "@/features/calendar/components/Calendar";
+import styles from "@/features/diary/styles/DiaryPage.module.css";
+import ActionCard from "@/features/home/components/cards/ActionCard";
+import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
+import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
+import type { MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
+import { getMealRecordPath } from "@/router/pathHelpers";
+import type { MealType } from "@/shared/api/types/api.dto";
+import ScoreProgress from "@/shared/commons/progress/Progress";
+import { useSelectedDateKey, useSetSelectedDate } from "@/shared/stores/selectedDate.store";
+import { useTargetsState } from "@/shared/stores/targetNutrient.store";
+import { parseDateKey } from "@/shared/utils/dateFormat";
+import {
+  calculateNutrientScore,
+  getCalorieProgressPercent,
+  toMacroRatiosFromGrams,
+} from "@/shared/utils/nutrientScore";
+
+type DiaryMealType = Extract<MealType, "0" | "1" | "2">;
+
+const DIARY_MEALS = [
+  {
+    type: "0",
+    label: "아침",
+    iconSrc: "/icons/breakfast.svg",
+    emptyStatusText: "아직 기록이 없어요",
+  },
+  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "아직 기록이 없어요" },
+  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "단식했어요" },
+] as const satisfies ReadonlyArray<{
+  type: DiaryMealType;
+  label: string;
+  iconSrc: string;
+  emptyStatusText: string;
+}>;
+
 export default function DiaryPage() {
-  return <>다이어리 페이지</>;
+  const selectedDateKey = useSelectedDateKey();
+  const setSelectedDate = useSetSelectedDate();
+  const selectedDate = parseDateKey(selectedDateKey);
+  const [expandedMealType, setExpandedMealType] = useState<DiaryMealType | null>("1");
+  const navigate = useNavigate();
+  const targets = useTargetsState();
+
+  const { data: dayMeals, isPending } = useDayMealsQuery(selectedDateKey);
+
+  const targetCalories = targets?.target_calories ?? 2100;
+  const totalCalories = isPending ? 0 : (dayMeals?.totalCalories ?? 0);
+  const calorieProgress = getCalorieProgressPercent(totalCalories, targetCalories);
+
+  const mealScore = useMemo(() => {
+    if (isPending || !dayMeals || !targets || dayMeals.totalCalories <= 0) {
+      return 0;
+    }
+
+    return calculateNutrientScore({
+      actualCalories: dayMeals.totalCalories,
+      targetCalories: targets.target_calories,
+      actualMacroRatios: toMacroRatiosFromGrams({
+        carbs: dayMeals.totalNutrients.carbs,
+        protein: dayMeals.totalNutrients.protein,
+        fat: dayMeals.totalNutrients.fat,
+      }),
+      targetMacroRatios: {
+        carbs: targets.target_ratio[0],
+        protein: targets.target_ratio[1],
+        fat: targets.target_ratio[2],
+      },
+    }).totalScore;
+  }, [dayMeals, isPending, targets]);
+
+  const calorieDiff = Math.round(targetCalories - totalCalories);
+  const calorieMessage = isPending
+    ? "식사 데이터를 불러오는 중이에요"
+    : calorieDiff > 0
+      ? `${Math.abs(calorieDiff).toLocaleString("ko-KR")}kcal 더 먹을 수 있어요`
+      : calorieDiff < 0
+        ? `${Math.abs(calorieDiff).toLocaleString("ko-KR")}kcal 초과했어요`
+        : "오늘 목표 칼로리를 달성했어요";
+
+  const handleMoveMealRecord = (mealType: MealType) => {
+    navigate(getMealRecordPath(selectedDateKey, mealType));
+  };
+
+  return (
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <Calendar initialDate={selectedDate} onSelectDate={setSelectedDate} />
+
+        <div className={styles.content}>
+          <section className={styles.summaryCard}>
+            <p className="typo-title2">{formatDiaryRecordTitle(selectedDate)}</p>
+
+            <div className={styles.scoreCard}>
+              <div className={styles.scoreContainer}>
+                <p className={styles.scoreText}>
+                  <span className={`${styles.scoreCurrent} typo-h2`}>
+                    {formatCalories(totalCalories)}
+                  </span>
+                  <span className="typo-title2">
+                    / {targetCalories.toLocaleString("ko-KR")} kcal
+                  </span>
+                  <span className={styles.scoreDivider} aria-hidden="true" />
+                  <span className={`${styles.scorePoint} typo-title4`}>{mealScore}점</span>
+                </p>
+
+                <ScoreProgress value={calorieProgress} />
+              </div>
+              <p className={`${styles.calorieMessage} typo-body4`}>{calorieMessage}</p>
+            </div>
+          </section>
+
+          <section className={styles.actionCardList}>
+            {DIARY_MEALS.map((meal) => {
+              const mealMenus = dayMeals?.menusByTime[meal.type] ?? [];
+              const mealCalories = getTotalMealCalories(mealMenus);
+
+              return (
+                <MealRecordCard
+                  key={meal.type}
+                  title={meal.label}
+                  iconSrc={meal.iconSrc}
+                  menus={mealMenus}
+                  calories={mealCalories}
+                  emptyStatusText={meal.emptyStatusText}
+                  isExpanded={expandedMealType === meal.type}
+                  onNavigate={() => handleMoveMealRecord(meal.type)}
+                  onToggleExpand={() => {
+                    setExpandedMealType((prev) => (prev === meal.type ? null : meal.type));
+                  }}
+                />
+              );
+            })}
+          </section>
+
+          <ActionCard className={styles.extraMealCard} onClick={() => handleMoveMealRecord("3")}>
+            <PlusIcon size={34} strokeWidth={2.4} />
+            <p className="typo-title2">그 외 식사 추가하기</p>
+          </ActionCard>
+
+          <div className={styles.bodyCardList}>
+            <TodayBodyLogSection date={selectedDateKey} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function MealRecordCard({
+  title,
+  iconSrc,
+  menus,
+  calories,
+  emptyStatusText,
+  isExpanded,
+  onNavigate,
+  onToggleExpand,
+}: {
+  title: string;
+  iconSrc: string;
+  menus: MenuWithQuantity[];
+  calories: number;
+  emptyStatusText: string;
+  isExpanded: boolean;
+  onNavigate: () => void;
+  onToggleExpand: () => void;
+}) {
+  const hasRecord = menus.length > 0;
+
+  return (
+    <ActionCard className={styles.mealCard}>
+      <button type="button" className={styles.mealHeader} onClick={onNavigate}>
+        <div className={styles.mealTitleContainer}>
+          <img src={iconSrc} alt="" aria-hidden="true" className={styles.mealIcon} />
+          <p className="typo-title2">{title}</p>
+        </div>
+
+        {hasRecord ? (
+          <div className={styles.navigateButton} aria-label={`${title} 기록으로 이동`}>
+            <ChevronRight size={24} />
+          </div>
+        ) : (
+          <div className={styles.emptyStatusButton} aria-label={`${title} 기록하기`}>
+            <UtensilsCrossed size={16} />
+            <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
+          </div>
+        )}
+      </button>
+
+      {hasRecord ? (
+        <div className={styles.mealSummaryCard}>
+          <button
+            type="button"
+            className={styles.mealSummaryButton}
+            onClick={onToggleExpand}
+            aria-expanded={isExpanded}
+            aria-label={`${title} 상세 ${isExpanded ? "접기" : "펼치기"}`}
+          >
+            <span className={`${styles.mealSummaryTitle} typo-title4`}>
+              {getMealSummaryText(menus)}
+            </span>
+
+            <span className={styles.mealSummaryMeta}>
+              <span className={`${styles.mealSummaryCalories} typo-title3`}>
+                {formatCalories(calories)} kcal
+              </span>
+              <ChevronDown
+                size={24}
+                className={`${styles.mealSummaryArrow} ${isExpanded ? styles.mealSummaryArrowExpanded : ""}`}
+              />
+            </span>
+          </button>
+
+          {isExpanded ? (
+            <ul className={styles.mealDetailList}>
+              {menus.map((menu, index) => (
+                <li key={`${menu.id}-${index}`} className={styles.mealDetailItem}>
+                  <span className="typo-body4">{menu.name}</span>
+                  <span className={`${styles.mealDetailCalories} typo-body4`}>
+                    {formatCalories(menu.calories)} kcal
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </ActionCard>
+  );
+}
+
+function formatDiaryRecordTitle(date: Date) {
+  const weekDays = ["일", "월", "화", "수", "목", "금", "토"] as const;
+
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 ${weekDays[date.getDay()]}요일의 기록`;
+}
+
+function formatCalories(value: number) {
+  return value.toLocaleString("ko-KR", { maximumFractionDigits: 1 });
+}
+
+function getTotalMealCalories(menus: MenuWithQuantity[]) {
+  return menus.reduce((sum, menu) => sum + menu.calories, 0);
+}
+
+function getMealSummaryText(menus: MenuWithQuantity[]) {
+  if (menus.length === 0) {
+    return "기록된 식사가 없어요";
+  }
+
+  if (menus.length === 1) {
+    return menus[0].name;
+  }
+
+  return `${menus[0].name} 외 ${menus.length - 1}개`;
 }

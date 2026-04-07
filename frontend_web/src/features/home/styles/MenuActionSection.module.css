@@ -1,12 +1,9 @@
 .content {
-  background-color: var(--bg-normal-normal);
-  border-radius: 20px 20px 0 0;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   height: 100%;
-  padding: 20px;
   width: 100%;
 }
 
@@ -30,6 +27,11 @@
   align-items: center;
   display: flex;
   justify-content: end;
+}
+
+.icon_size {
+  width: 60px;
+  height: 60px;
 }
 
 .record_container {
@@ -89,4 +91,12 @@
 .meal_label {
   color: var(--text-assistive1);
   text-align: center;
+}
+
+.bg_primary {
+  background-color: var(--primary-normal);
+}
+
+.text_white {
+  color: var(--text-white);
 }
