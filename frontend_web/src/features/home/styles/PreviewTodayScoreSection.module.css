@@ -3,59 +3,52 @@
   flex-direction: column;
   background-color: var(--bg-normal-primary2);
   gap: 10px;
+  padding: 24px 20px;
 }
 
-.score_container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-}
-
-.score_title_container {
+.scoreDescription {
   display: flex;
   justify-content: space-between;
-  width: 100%;
 }
 
-.score_title_text_container {
+.scoreTitleText {
+  color: var(--text-normal);
+}
+
+.scoreContainer {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 
-.score_text {
-  align-items: baseline;
+.scoreTextContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scoreText {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
 .score {
   color: var(--text-primary);
-  margin-right: 4px;
 }
 
-.unit {
+.calorieText {
   color: var(--text-normal);
-  margin-right: 8px;
-}
-
-.calorie_text {
-  color: var(--text-assistive1);
-}
-
-.img_container {
-  height: 62px;
-  width: 62px;
-}
-
-.badge_container {
+  align-items: center;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  height: 32px;
-  width: 100%;
+  gap: 8px;
+}
+
+.dividerContainer {
+  height: 24px;
+  background-color: var(--bg-normal-white);
+  width: 1px;
 }
 
 .badge_content_container {
@@ -63,5 +56,6 @@
   border-radius: 100px;
   color: var(--text-assistive1);
   padding: 6px 16px;
+  white-space: nowrap;
   width: fit-content;
 }

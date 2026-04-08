@@ -15,9 +15,8 @@ import { useSelectedDateKey, useSetSelectedDate } from "@/shared/stores/selected
 import { useTargetsState } from "@/shared/stores/targetNutrient.store";
 import { parseDateKey } from "@/shared/utils/dateFormat";
 import {
-  calculateNutrientScore,
+  calculateDailyNutritionMetrics,
   getCalorieProgressPercent,
-  toMacroRatiosFromGrams,
 } from "@/shared/utils/nutrientScore";
 
 type DiaryMealType = Extract<MealType, "0" | "1" | "2">;
@@ -27,10 +26,10 @@ const DIARY_MEALS = [
     type: "0",
     label: "아침",
     iconSrc: "/icons/breakfast.svg",
-    emptyStatusText: "아직 기록이 없어요",
+    emptyStatusText: "안먹었어요",
   },
-  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "아직 기록이 없어요" },
-  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "단식했어요" },
+  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안먹었어요" },
+  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안먹었어요" },
 ] as const satisfies ReadonlyArray<{
   type: DiaryMealType;
   label: string;
@@ -48,30 +47,33 @@ export default function DiaryPage() {
 
   const { data: dayMeals, isPending } = useDayMealsQuery(selectedDateKey);
 
-  const targetCalories = targets?.target_calories ?? 2100;
-  const totalCalories = isPending ? 0 : (dayMeals?.totalCalories ?? 0);
-  const calorieProgress = getCalorieProgressPercent(totalCalories, targetCalories);
-
-  const mealScore = useMemo(() => {
+  const nutritionMetrics = useMemo(() => {
     if (isPending || !dayMeals || !targets || dayMeals.totalCalories <= 0) {
-      return 0;
+      return null;
     }
 
-    return calculateNutrientScore({
+    return calculateDailyNutritionMetrics({
       actualCalories: dayMeals.totalCalories,
       targetCalories: targets.target_calories,
-      actualMacroRatios: toMacroRatiosFromGrams({
+      actualMacrosInGram: {
         carbs: dayMeals.totalNutrients.carbs,
         protein: dayMeals.totalNutrients.protein,
         fat: dayMeals.totalNutrients.fat,
-      }),
+      },
       targetMacroRatios: {
         carbs: targets.target_ratio[0],
         protein: targets.target_ratio[1],
         fat: targets.target_ratio[2],
       },
-    }).totalScore;
+    });
   }, [dayMeals, isPending, targets]);
+
+  const targetCalories = targets?.target_calories ?? 2100;
+  const totalCalories = isPending ? 0 : (dayMeals?.totalCalories ?? 0);
+  const calorieProgress =
+    nutritionMetrics?.calorieProgressPercent ??
+    getCalorieProgressPercent(totalCalories, targetCalories);
+  const mealScore = nutritionMetrics?.score.totalScore ?? 0;
 
   const calorieDiff = Math.round(targetCalories - totalCalories);
   const calorieMessage = isPending
@@ -138,7 +140,7 @@ export default function DiaryPage() {
           </section>
 
           <ActionCard className={styles.extraMealCard} onClick={() => handleMoveMealRecord("3")}>
-            <PlusIcon size={34} strokeWidth={2.4} />
+            <PlusIcon size={24} />
             <p className="typo-title2">그 외 식사 추가하기</p>
           </ActionCard>
 

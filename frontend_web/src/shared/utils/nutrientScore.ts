@@ -35,7 +35,25 @@ type NutrientScoreInput = {
   targetMacroRatios: MacroRatios;
 };
 
+export type DailyNutritionMetricsInput = {
+  actualCalories: number;
+  targetCalories: number;
+  actualMacrosInGram: MacroGrams;
+  targetMacroRatios: MacroRatios;
+};
+
+export type DailyNutritionMetrics = {
+  roundedActualCalories: number;
+  roundedTargetCalories: number;
+  calorieDiff: number;
+  calorieIntakePercent: number;
+  calorieProgressPercent: number;
+  actualMacroRatios: MacroRatios;
+  score: NutrientScoreResult;
+};
+
 const MACRO_MAX_SCORE: Record<MacroKey, number> = {
+  // 탄단지 점수 총합 50점이 되도록 가중치 분배 (17+17+16)
   carbs: 17,
   protein: 17,
   fat: 16,
@@ -47,8 +65,7 @@ const MACRO_KCAL_PER_GRAM: Record<MacroKey, number> = {
   fat: 9,
 };
 
-// 값의 집합이나 범위를 한정하는 연산
-export function clamp(value: number, min: number, max: number) {
+function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
@@ -57,8 +74,11 @@ function roundTo(value: number, digits = 1) {
   return Math.round(value * factor) / factor;
 }
 
-// 탄단지의 점수를 퍼센트로 보여주는 값
-function normalizeRatios(ratios: MacroRatios): MacroRatios {
+/**
+ * 탄/단/지 값(그램 또는 퍼센트 입력)을 합계 100% 비율로 정규화한다.
+ * - 합계가 0 이하이면 0%로 처리한다.
+ */
+function normalizeMacroRatios(ratios: MacroRatios): MacroRatios {
   const total = ratios.carbs + ratios.protein + ratios.fat;
   if (total <= 0) {
     return { carbs: 0, protein: 0, fat: 0 };
@@ -71,15 +91,14 @@ function normalizeRatios(ratios: MacroRatios): MacroRatios {
   };
 }
 
-// 매크로별 등급
 function getGradeByDeviation(deviation: number): NutrientGrade {
+  // 목표 비율과의 차이(percentage point)로 등급 분류
   if (deviation <= 5) return "appropriate";
   if (deviation <= 10) return "slightlyUnbalanced";
   if (deviation <= 15) return "unbalanced";
   return "severelyUnbalanced";
 }
 
-// 매크로 비율 균형 점수
 function getMacroItemScore(key: MacroKey, deviation: number) {
   const maxScore = MACRO_MAX_SCORE[key];
   if (deviation <= 5) return maxScore;
@@ -88,8 +107,8 @@ function getMacroItemScore(key: MacroKey, deviation: number) {
   return key === "fat" ? 4 : 5;
 }
 
-// 총 섭취 열량 점수
 function getCalorieScoreByDiff(calorieDiffPercent: number) {
+  // 칼로리 점수는 최대 50점, 목표와 가까울수록 높은 점수
   if (calorieDiffPercent <= 5) return 50;
   if (calorieDiffPercent <= 10) return 40;
   if (calorieDiffPercent <= 15) return 30;
@@ -97,14 +116,7 @@ function getCalorieScoreByDiff(calorieDiffPercent: number) {
   return 10;
 }
 
-export function getNutrientGradeLabel(grade: NutrientGrade) {
-  if (grade === "appropriate") return "적절";
-  if (grade === "slightlyUnbalanced") return "약간 불균형";
-  if (grade === "unbalanced") return "불균형";
-  return "심한 불균형";
-}
-
-export function getNutrientGuideMessageByScore(score: number) {
+function getNutrientGuideMessageByScore(score: number) {
   if (score >= 85) {
     return "아주 좋아요! 섭취량과 균형이 모두 잘 맞고 있어요 👏";
   }
@@ -117,21 +129,19 @@ export function getNutrientGuideMessageByScore(score: number) {
   return "오늘은 식단 균형이 많이 어긋났어요. 다음 식사에서 천천히 맞춰가면 돼요.";
 }
 
-export function getNutrientGradeByScore(score: number): NutrientGrade {
+function getNutrientGradeByScore(score: number): NutrientGrade {
   if (score >= 85) return "appropriate";
   if (score >= 70) return "slightlyUnbalanced";
   if (score >= 50) return "unbalanced";
   return "severelyUnbalanced";
 }
 
-// 열량 차이율
-export function calculateCalorieDiffPercent(actualCalories: number, targetCalories: number) {
+function calculateCalorieDiffPercent(actualCalories: number, targetCalories: number) {
   if (targetCalories <= 0) return 0;
   return Math.abs((actualCalories - targetCalories) / targetCalories) * 100;
 }
 
-// 섭취한 열량 비율
-export function calculateCalorieIntakePercent(actualCalories: number, targetCalories: number) {
+function calculateCalorieIntakePercent(actualCalories: number, targetCalories: number) {
   if (targetCalories <= 0) return 0;
   return Math.round((actualCalories / targetCalories) * 100);
 }
@@ -141,18 +151,32 @@ export function getCalorieProgressPercent(actualCalories: number, targetCalories
   return clamp(percent, 0, 100);
 }
 
-export function toMacroRatiosFromGrams(grams: MacroGrams): MacroRatios {
-  return normalizeRatios(grams);
+function toMacroRatiosFromGrams(grams: MacroGrams): MacroRatios {
+  // 목표 탄단지 비율(target_ratio)은 "열량 비율(%)"이므로,
+  // 실제 섭취도 g 그대로가 아니라 kcal(탄4/단4/지9)로 변환해 같은 기준으로 비교한다.
+  const macroCalories = {
+    carbs: Math.max(0, grams.carbs) * MACRO_KCAL_PER_GRAM.carbs,
+    protein: Math.max(0, grams.protein) * MACRO_KCAL_PER_GRAM.protein,
+    fat: Math.max(0, grams.fat) * MACRO_KCAL_PER_GRAM.fat,
+  };
+
+  return normalizeMacroRatios(macroCalories);
 }
 
-export function calculateNutrientScore({
+/**
+ * 최종 식사 점수 계산의 단일 기준 함수.
+ * - 칼로리 점수(최대 50점): 목표 대비 오차율로 계산
+ * - 탄단지 점수(최대 50점): 목표 비율 대비 편차로 계산
+ * - 최종 점수: 위 두 점수 합산(0~100 clamp)
+ */
+function calculateNutrientScore({
   actualCalories,
   targetCalories,
   actualMacroRatios,
   targetMacroRatios,
 }: NutrientScoreInput): NutrientScoreResult {
-  const normalizedActual = normalizeRatios(actualMacroRatios);
-  const normalizedTarget = normalizeRatios(targetMacroRatios);
+  const normalizedActual = normalizeMacroRatios(actualMacroRatios);
+  const normalizedTarget = normalizeMacroRatios(targetMacroRatios);
 
   const carbsDeviation = Math.abs(normalizedActual.carbs - normalizedTarget.carbs);
   const proteinDeviation = Math.abs(normalizedActual.protein - normalizedTarget.protein);
@@ -201,6 +225,50 @@ export function calculateNutrientScore({
     overallMessage: getNutrientGuideMessageByScore(totalScore),
     macroBalanceGrade,
     macro,
+  };
+}
+
+/**
+ * 화면에서 재사용하기 위한 "하루 영양 지표" 집계 함수.
+ * - 점수 계산(calculateNutrientScore)
+ * - 칼로리 진행률/차이값
+ * - 실제 탄단지 비율(%)까지 한 번에 반환
+ */
+export function calculateDailyNutritionMetrics({
+  actualCalories,
+  targetCalories,
+  actualMacrosInGram,
+  targetMacroRatios,
+}: DailyNutritionMetricsInput): DailyNutritionMetrics {
+  const safeActualCalories = Number.isFinite(actualCalories) ? actualCalories : 0;
+  const safeTargetCalories =
+    Number.isFinite(targetCalories) && targetCalories > 0 ? targetCalories : 0;
+
+  const actualMacroRatios = toMacroRatiosFromGrams(actualMacrosInGram);
+  const score = calculateNutrientScore({
+    actualCalories: safeActualCalories,
+    targetCalories: safeTargetCalories,
+    actualMacroRatios,
+    targetMacroRatios,
+  });
+
+  const calorieIntakePercent = calculateCalorieIntakePercent(
+    safeActualCalories,
+    safeTargetCalories,
+  );
+
+  return {
+    roundedActualCalories: Math.round(safeActualCalories),
+    roundedTargetCalories: Math.round(safeTargetCalories),
+    calorieDiff: safeTargetCalories - safeActualCalories,
+    calorieIntakePercent,
+    calorieProgressPercent: clamp(calorieIntakePercent, 0, 100),
+    actualMacroRatios: {
+      carbs: roundTo(actualMacroRatios.carbs),
+      protein: roundTo(actualMacroRatios.protein),
+      fat: roundTo(actualMacroRatios.fat),
+    },
+    score,
   };
 }
 
