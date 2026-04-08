@@ -78,9 +78,7 @@ export default function DiaryPage() {
     getCalorieProgressPercent(totalCalories, targetCalories);
   const mealScore = nutritionMetrics?.score.totalScore ?? 0;
 
-  const calorieMessage = isPending
-    ? "식사 데이터를 불러오는 중이에요"
-    : calorieSummary.message;
+  const calorieMessage = isPending ? "식사 데이터를 불러오는 중이에요" : calorieSummary.message;
 
   const handleMoveMealRecord = (mealType: MealType) => {
     navigate(getMealRecordPath(selectedDateKey, mealType));
@@ -218,8 +216,8 @@ function MealRecordCard({
 
           {isExpanded ? (
             <ul className={styles.mealDetailList}>
-              {menus.map((menu, index) => (
-                <li key={`${menu.id}-${index}`} className={styles.mealDetailItem}>
+              {menus.map((menu) => (
+                <li key={menu.id} className={styles.mealDetailItem}>
                   <span className="typo-body4">{menu.name}</span>
                   <span className={`${styles.mealDetailCalories} typo-body4`}>
                     {formatCalories(menu.calories)} kcal
