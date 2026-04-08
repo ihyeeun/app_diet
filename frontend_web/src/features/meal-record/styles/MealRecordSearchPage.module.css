@@ -82,19 +82,11 @@
 
 .footer {
   padding: 0 20px;
-  padding-bottom: calc(var(--safe-area-bottom) + 8px);
+  padding-bottom: var(--safe-area-bottom);
 }
 
 .directInputText {
   color: var(--text-assistive2);
-}
-
-.brandRequestSheetContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  padding: 0 24px;
-  padding-bottom: calc(var(--safe-area-bottom) + 16px);
 }
 
 .brandRequestSheetContent {

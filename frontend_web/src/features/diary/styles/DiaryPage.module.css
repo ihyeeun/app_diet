@@ -197,5 +197,5 @@
 }
 
 .bodyCardList {
-  margin-bottom: calc(var(--safe-area-bottom) + 8px);
+  margin-bottom: var(--safe-area-bottom);
 }
