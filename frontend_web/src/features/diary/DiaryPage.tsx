@@ -8,6 +8,7 @@ import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import type { MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
+import { getCalorieSummary } from "@/features/home/utils/todayMealFeedback";
 import { getMealRecordPath } from "@/router/pathHelpers";
 import type { MealType } from "@/shared/api/types/api.dto";
 import ScoreProgress from "@/shared/commons/progress/Progress";
@@ -70,19 +71,16 @@ export default function DiaryPage() {
 
   const targetCalories = targets?.target_calories ?? 2100;
   const totalCalories = isPending ? 0 : (dayMeals?.totalCalories ?? 0);
+  const calorieSummary = getCalorieSummary(totalCalories, targetCalories);
+  const roundedTargetCalories = calorieSummary.roundedTargetCalories ?? Math.round(targetCalories);
   const calorieProgress =
     nutritionMetrics?.calorieProgressPercent ??
     getCalorieProgressPercent(totalCalories, targetCalories);
   const mealScore = nutritionMetrics?.score.totalScore ?? 0;
 
-  const calorieDiff = Math.round(targetCalories - totalCalories);
   const calorieMessage = isPending
     ? "식사 데이터를 불러오는 중이에요"
-    : calorieDiff > 0
-      ? `${Math.abs(calorieDiff).toLocaleString("ko-KR")}kcal 더 먹을 수 있어요`
-      : calorieDiff < 0
-        ? `${Math.abs(calorieDiff).toLocaleString("ko-KR")}kcal 초과했어요`
-        : "오늘 목표 칼로리를 달성했어요";
+    : calorieSummary.message;
 
   const handleMoveMealRecord = (mealType: MealType) => {
     navigate(getMealRecordPath(selectedDateKey, mealType));
@@ -101,10 +99,10 @@ export default function DiaryPage() {
               <div className={styles.scoreContainer}>
                 <p className={styles.scoreText}>
                   <span className={`${styles.scoreCurrent} typo-h2`}>
-                    {formatCalories(totalCalories)}
+                    {calorieSummary.roundedCurrentCalories.toLocaleString("ko-KR")}
                   </span>
                   <span className="typo-title2">
-                    / {targetCalories.toLocaleString("ko-KR")} kcal
+                    / {roundedTargetCalories.toLocaleString("ko-KR")} kcal
                   </span>
                   <span className={styles.scoreDivider} aria-hidden="true" />
                   <span className={`${styles.scorePoint} typo-title4`}>{mealScore}점</span>
