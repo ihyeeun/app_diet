@@ -13,7 +13,7 @@ export default function ActionCard({ children, className = "", onClick }: Action
 
   return (
     <Component
-      className={`${style.card_container} ${className ?? ""}`}
+      className={`${style.cardContainer} ${className ?? ""}`}
       onClick={onClick}
       type={onClick ? "button" : undefined}
     >

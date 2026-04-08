@@ -1,13 +1,14 @@
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 
 export default function StepActivity({ data, update }: StepComponentProps) {
   return (
-    <section>
-      <div className="onboarding-title">
+    <section className={styles.content}>
+      <div className={styles.onboardingTitle}>
         <h2 className="typo-title1">평소에 얼마나 움직이시나요?</h2>
       </div>
 
-      <div className="onboarding-option-list onboarding-option-list--padded">
+      <div className={`${styles.onboardingOptionList} ${styles.onboardingOptionListPadded}`}>
         <ActivityCard
           selected={data.activity === 0}
           onClick={() => update({ activity: 0 })}
@@ -52,12 +53,14 @@ function ActivityCard({
     <button
       type="button"
       onClick={onClick}
-      className={`onboarding-option-card ${selected ? "onboarding-option-card--active" : ""}`}
+      className={[styles.onboardingOptionCard, selected ? styles.onboardingOptionCardActive : ""]
+        .filter(Boolean)
+        .join(" ")}
       aria-pressed={selected}
     >
-      <div className="onboarding-option-card-content">
-        <p className="onboarding-option-card-title">{title}</p>
-        <p className="onboarding-option-card-description">{description}</p>
+      <div className={styles.onboardingOptionCardContent}>
+        <p className={styles.onboardingOptionCardTitle}>{title}</p>
+        <p className={styles.onboardingOptionCardDescription}>{description}</p>
       </div>
     </button>
   );

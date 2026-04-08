@@ -39,11 +39,11 @@
   gap: 2px;
 }
 
-.feedback_text {
+.feedbackText {
   color: var(--text-assistive1);
 }
 
-.score_value {
+.scoreValue {
   flex-shrink: 0;
 }
 
@@ -77,7 +77,7 @@
   gap: 12px;
 }
 
-.divider_container {
+.dividerContainer {
   height: 24px;
 }
 
@@ -111,7 +111,7 @@
   flex-direction: column;
 }
 
-.nutrient_amount {
+.nutrientAmount {
   color: var(--text-assistive1);
 }
 
@@ -124,40 +124,40 @@
   bottom: 0;
 }
 
-.progress_track {
+.progressTrack {
   background-color: var(--gray-300);
   border-radius: 100px;
   height: 12px;
   overflow: hidden;
 }
 
-.progress_indicator {
+.progressIndicator {
   border-radius: 100px;
   height: 100%;
   transition: width 500ms;
 }
 
-.progress_primary {
+.progressPrimary {
   background-color: var(--primary-normal);
 }
 
-.progress_insufficient {
+.progressInsufficient {
   background-color: var(--gray-500);
 }
 
-.progress_adequate {
+.progressAdequate {
   background-color: var(--blue-500);
 }
 
-.progress_caution {
+.progressCaution {
   background-color: var(--yellow-600);
 }
 
-.progress_excess {
+.progressExcess {
   background-color: var(--red-500);
 }
 
-.nutrient_badge {
+.nutrientBadge {
   align-items: center;
   border: 1px solid var(--gray-300);
   border-radius: 100px;
@@ -166,24 +166,24 @@
   padding: 5px 10px;
 }
 
-.nutrient_badge_dot {
+.nutrientBadgeDot {
   border-radius: 50%;
   height: 10px;
   width: 10px;
 }
 
-.badge_insufficient .nutrient_badge_dot {
+.badgeInsufficient .nutrientBadgeDot {
   background-color: var(--gray-500);
 }
 
-.badge_adequate .nutrient_badge_dot {
+.badgeAdequate .nutrientBadgeDot {
   background-color: var(--blue-500);
 }
 
-.badge_caution .nutrient_badge_dot {
+.badgeCaution .nutrientBadgeDot {
   background-color: var(--yellow-600);
 }
 
-.badge_excess .nutrient_badge_dot {
+.badgeExcess .nutrientBadgeDot {
   background-color: var(--red-500);
 }

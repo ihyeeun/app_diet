@@ -28,6 +28,20 @@ type NutrientItem = {
   progressPercent: number;
 };
 
+const progressStatusClassName: Record<NutrientStatus, string> = {
+  insufficient: styles.progressInsufficient,
+  adequate: styles.progressAdequate,
+  caution: styles.progressCaution,
+  excess: styles.progressExcess,
+};
+
+const badgeStatusClassName: Record<NutrientStatus, string> = {
+  insufficient: styles.badgeInsufficient,
+  adequate: styles.badgeAdequate,
+  caution: styles.badgeCaution,
+  excess: styles.badgeExcess,
+};
+
 export default function TodayMealScorePage() {
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -128,11 +142,11 @@ export default function TodayMealScorePage() {
             <div className={styles.scoreDescription}>
               <p className="typo-title2">오늘의 식사 점수</p>
               <div>
-                <p className={`${styles.feedback_text} typo-label3`}>{mealFeedback.primary}</p>
-                <p className={`${styles.feedback_text} typo-label3`}>{mealFeedback.secondary}</p>
+                <p className={`${styles.feedbackText} typo-label3`}>{mealFeedback.primary}</p>
+                <p className={`${styles.feedbackText} typo-label3`}>{mealFeedback.secondary}</p>
               </div>
             </div>
-            <p className={styles.score_value}>
+            <p className={styles.scoreValue}>
               <span className={`${styles.score} typo-h2`}>{score}</span>
               <span className={`${styles.score} typo-title2`}> 점</span>
             </p>
@@ -149,7 +163,7 @@ export default function TodayMealScorePage() {
                     {calorieSummary.roundedCurrentCalories.toLocaleString("ko-KR")} kcal
                   </p>
 
-                  <div className={styles.divider_container}>
+                  <div className={styles.dividerContainer}>
                     <div className="divider-horizontal" />
                   </div>
 
@@ -159,7 +173,7 @@ export default function TodayMealScorePage() {
                 </div>
                 <div className={styles.calorieProgressContainer}>
                   <NutrientProgress value={calorieProgress} />
-                  <p className={`${styles.nutrient_amount} typo-label3`}>
+                  <p className={`${styles.nutrientAmount} typo-label3`}>
                     {calorieSummary.message}
                   </p>
                 </div>
@@ -174,7 +188,7 @@ export default function TodayMealScorePage() {
                   <div className={styles.nutrientHeader}>
                     <p className={styles.nutrientTitle}>
                       <span className="typo-title4">{item.name}</span>
-                      <span className={`${styles.nutrient_amount} typo-label4`}>
+                      <span className={`${styles.nutrientAmount} typo-label4`}>
                         {item.current.toLocaleString("ko-KR")}g /{" "}
                         {item.target.toLocaleString("ko-KR")}g
                       </span>
@@ -224,9 +238,9 @@ function getNutrientProgressPercent(current: number, target: number) {
 
 function NutrientProgress({ value, status }: { value: number; status?: NutrientStatus }) {
   return (
-    <div className={styles.progress_track}>
+    <div className={styles.progressTrack}>
       <div
-        className={`${styles.progress_indicator} ${status ? styles[`progress_${status}`] : styles.progress_primary}`}
+        className={`${styles.progressIndicator} ${status ? progressStatusClassName[status] : styles.progressPrimary}`}
         style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
       />
     </div>
@@ -235,8 +249,8 @@ function NutrientProgress({ value, status }: { value: number; status?: NutrientS
 
 function NutrientStatusBadge({ status }: { status: NutrientStatus }) {
   return (
-    <span className={`${styles.nutrient_badge} ${styles[`badge_${status}`]}`}>
-      <span className={styles.nutrient_badge_dot} aria-hidden="true" />
+    <span className={`${styles.nutrientBadge} ${badgeStatusClassName[status]}`}>
+      <span className={styles.nutrientBadgeDot} aria-hidden="true" />
       <span className="typo-label6">{getNutrientStatusLabel(status)}</span>
     </span>
   );

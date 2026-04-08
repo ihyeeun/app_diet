@@ -156,7 +156,7 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
 
 function Badge({ children }: { children: ReactNode }) {
   return (
-    <div className={style.badge_content_container}>
+    <div className={style.badgeContentContainer}>
       <p className="typo-body4">{children}</p>
     </div>
   );

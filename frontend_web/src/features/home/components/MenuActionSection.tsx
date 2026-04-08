@@ -11,7 +11,7 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
 
   return (
     <div className={style.content}>
-      <div className={style.menu_container}>
+      <div className={style.menuContainer}>
         <MenuCard
           title={"메뉴판 촬영하기"}
           description="식당 메뉴판이나 배달 앱 스크린샷도 좋아요"
@@ -51,14 +51,14 @@ function MenuCard({
   type?: string;
 }) {
   return (
-    <ActionCard onClick={onClick} className={type === "camera" ? style.bg_primary : ""}>
-      <div className={style.menu_card_container}>
-        <p className={`typo-title4 ${type === "camera" ? style.text_white : ""}`}>{title}</p>
-        <p className={`${type === "camera" ? style.text_white : style.description} typo-body4`}>
+    <ActionCard onClick={onClick} className={type === "camera" ? style.bgPrimary : ""}>
+      <div className={style.menuCardContainer}>
+        <p className={`typo-title4 ${type === "camera" ? style.textWhite : ""}`}>{title}</p>
+        <p className={`${type === "camera" ? style.textWhite : style.description} typo-body4`}>
           {description}
         </p>
-        <div className={style.icon_container}>
-          <img src={iconSrc} alt={`${title} 아이콘`} className={style.icon_size} />
+        <div className={style.iconContainer}>
+          <img src={iconSrc} alt={`${title} 아이콘`} className={style.iconSize} />
         </div>
       </div>
     </ActionCard>

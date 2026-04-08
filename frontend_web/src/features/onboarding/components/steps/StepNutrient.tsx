@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { useRecommendNutrientMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import NumberField from "@/shared/commons/input/NumberField";
 
 const INTERNAL_DECIMALS = 4;
@@ -56,14 +57,18 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
   }, [nutrient]);
 
   return (
-    <section>
-      <div className="onboarding-title onboarding-title-group onboarding-title-group--compact">
+    <section className={styles.content}>
+      <div
+        className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup} ${styles.onboardingTitleGroupCompact}`}
+      >
         <h2 className="typo-title1">추천하는 탄단지 비율이에요</h2>
-        <p className="onboarding-subtitle">비율을 수정할 수 있어요</p>
+        <p className={styles.onboardingSubtitle}>비율을 수정할 수 있어요</p>
       </div>
-      <div className="onboarding-nutrient-content">
-        <p className="onboarding-nutrient-goal">목표 칼로리 {data.targetCalories ?? "--"}kcal</p>
-        <div className="onboarding-nutrient-list">
+      <div className={styles.onboardingNutrientContent}>
+        <p className={styles.onboardingNutrientGoal}>
+          목표 칼로리 {data.targetCalories ?? "--"}kcal
+        </p>
+        <div className={styles.onboardingNutrientList}>
           <NutrientCard
             label="탄수화물"
             nutrientType="carbs"
@@ -109,13 +114,13 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
     targetKcal === undefined ? undefined : calculateTargetGram(targetKcal, nutrientType);
 
   return (
-    <div className="onboarding-nutrient-card">
-      <label className="onboarding-nutrient-label">{label}</label>
+    <div className={styles.onboardingNutrientCard}>
+      <label className={styles.onboardingNutrientLabel}>{label}</label>
       <NumberField value={value} onChange={onChange} min={0} max={100} step={0.5} unit="%" />
 
-      <div className="onboarding-nutrient-divider" />
+      <div className={styles.onboardingNutrientDivider} />
 
-      <div className="onboarding-nutrient-meta">
+      <div className={styles.onboardingNutrientMeta}>
         <span>{formatRoundedValue(targetGram)}g</span>
         <span>{formatRoundedValue(targetKcal)}kcal</span>
       </div>

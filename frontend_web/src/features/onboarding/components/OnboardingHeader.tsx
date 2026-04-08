@@ -1,6 +1,6 @@
-import "../css/OnboardingHeader.css";
-
 import { ChevronLeft } from "lucide-react";
+
+import styles from "@/features/onboarding/styles/OnboardingHeader.module.css";
 
 type Props = {
   stepIndex: number;
@@ -10,11 +10,11 @@ type Props = {
 
 export default function OnboardingHeader({ stepIndex, total, onPrev }: Props) {
   return (
-    <header className="onboarding-header">
-      <div className="onboarding-navigation">
+    <header className={styles.header}>
+      <div className={styles.navigation}>
         <button
           type="button"
-          className="onboarding-back"
+          className={styles.back}
           onClick={onPrev}
           disabled={stepIndex === 0}
           aria-label="이전"
@@ -23,11 +23,11 @@ export default function OnboardingHeader({ stepIndex, total, onPrev }: Props) {
         </button>
       </div>
 
-      <div className="onboarding-progress">
+      <div className={styles.progress}>
         {Array.from({ length: total }).map((_, i) => (
           <span
             key={i}
-            className={["progress-segment", i <= stepIndex ? "filled" : ""]
+            className={[styles.progressSegment, i <= stepIndex ? styles.filled : ""]
               .filter(Boolean)
               .join(" ")}
           />

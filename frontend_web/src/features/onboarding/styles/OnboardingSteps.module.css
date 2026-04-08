@@ -1,14 +1,20 @@
-.onboarding-option-list {
+.content {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+
+.onboardingOptionList {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.onboarding-option-list--padded {
-  padding: 0 5px;
+.onboardingOptionListPadded {
+  padding: 0;
 }
 
-.onboarding-option-card {
+.onboardingOptionCard {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
@@ -20,25 +26,25 @@
   width: 100%;
 }
 
-.onboarding-option-card--active {
+.onboardingOptionCardActive {
   background: var(--interaction-primary);
   border-color: var(--border-primary);
 }
 
-.onboarding-option-card-content {
+.onboardingOptionCardContent {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.onboarding-option-card-title {
+.onboardingOptionCardTitle {
   font-size: 17px;
   font-weight: var(--fw-semibold);
   line-height: var(--line-height-145);
   margin: 0;
 }
 
-.onboarding-option-card-description {
+.onboardingOptionCardDescription {
   color: var(--text-assistive1);
   font-size: 15px;
   font-weight: var(--fw-medium);
@@ -46,14 +52,13 @@
   margin: 0;
 }
 
-.onboarding-body-list {
+.onboardingBodyList {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 5px;
 }
 
-.onboarding-input-card {
+.onboardingInputCard {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
@@ -64,19 +69,19 @@
   padding: 16px 20px;
 }
 
-.onboarding-input-card-label {
+.onboardingInputCardLabel {
   font-size: 18px;
   font-weight: var(--fw-medium);
   line-height: var(--line-height-145);
 }
 
-.onboarding-gender-grid {
+.onboardingGenderGrid {
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr 1fr;
 }
 
-.onboarding-gender-card {
+.onboardingGenderCard {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
@@ -88,34 +93,34 @@
   width: 100%;
 }
 
-.onboarding-gender-card--active {
+.onboardingGenderCardActive {
   background: var(--interaction-primary);
   border-color: var(--border-primary);
 }
 
-.onboarding-gender-label {
+.onboardingGenderLabel {
   font-size: 17px;
   font-weight: var(--fw-semibold);
   line-height: var(--line-height-145);
 }
 
-.onboarding-birth-year-section {
+.onboardingBirthYearSection {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.onboarding-title-group {
+.onboardingTitleGroup {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.onboarding-title-group--compact {
+.onboardingTitleGroupCompact {
   gap: 2px;
 }
 
-.onboarding-subtitle {
+.onboardingSubtitle {
   color: var(--text-assistive1);
   font-size: 16px;
   font-weight: var(--fw-medium);
@@ -123,11 +128,11 @@
   margin: 0;
 }
 
-.onboarding-field-padding {
-  padding: 0 5px;
+.onboardingFieldPadding {
+  padding: 0;
 }
 
-.onboarding-goal-kcal-trigger {
+.onboardingGoalKcalTrigger {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
@@ -138,14 +143,14 @@
   width: 100%;
 }
 
-.onboarding-goal-kcal-value {
+.onboardingGoalKcalValue {
   color: var(--gray-1100);
   font-size: 40px;
   line-height: var(--line-height-120);
   margin: 0;
 }
 
-.onboarding-goal-kcal-helper {
+.onboardingGoalKcalHelper {
   font-size: 18px;
   font-weight: var(--fw-medium);
   line-height: var(--line-height-145);
@@ -154,18 +159,18 @@
   text-align: center;
 }
 
-.onboarding-goal-kcal-sheet {
+.onboardingGoalKcalSheet {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 0 24px;
 }
 
-.onboarding-goal-kcal-actions {
+.onboardingGoalKcalActions {
   padding: 12px 0;
 }
 
-.onboarding-goal-weight-card {
+.onboardingGoalWeightCard {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
@@ -174,15 +179,14 @@
   padding: 16px 20px;
 }
 
-.onboarding-nutrient-content {
+.onboardingNutrientContent {
   color: var(--orange-950);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 5px;
 }
 
-.onboarding-nutrient-goal {
+.onboardingNutrientGoal {
   font-size: 18px;
   font-weight: var(--fw-medium);
   line-height: var(--line-height-145);
@@ -190,13 +194,13 @@
   text-align: center;
 }
 
-.onboarding-nutrient-list {
+.onboardingNutrientList {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.onboarding-nutrient-card {
+.onboardingNutrientCard {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
@@ -208,29 +212,34 @@
   width: 100%;
 }
 
-.onboarding-nutrient-label {
+.onboardingNutrientLabel {
   font-size: 18px;
   font-weight: var(--fw-medium);
   line-height: var(--line-height-145);
 }
 
-.onboarding-nutrient-divider {
+.onboardingNutrientDivider {
   background: var(--gary-400);
   height: 1px;
   margin: 4px 0;
 }
 
-.onboarding-nutrient-meta {
+.onboardingNutrientMeta {
   display: flex;
   font-weight: var(--fw-semibold);
   justify-content: space-around;
 }
 
-.onboarding-subscribe-input {
+.onboardingSubscribeInput {
   border: 1px solid var(--border-normal);
   border-radius: 8px;
   font-size: 40px;
   padding: 16px 20px;
   text-align: right;
   width: 100%;
+}
+
+.onboardingTitle {
+  height: fit-content;
+  padding: 16px 0;
 }

@@ -51,7 +51,7 @@
   width: 1px;
 }
 
-.badge_content_container {
+.badgeContentContainer {
   background-color: var(--bg-normal-white);
   border-radius: 100px;
   color: var(--text-assistive1);

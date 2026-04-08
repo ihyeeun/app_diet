@@ -2,6 +2,7 @@ import { Field } from "@base-ui/react";
 
 import { ONBOARDING_WEIGHT_RANGE } from "@/features/onboarding/constants/inputRanges";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import { NumberInput } from "@/shared/commons/input/NumberInput";
 
 export default function StepGoalWeight({ data, update }: StepComponentProps) {
@@ -14,19 +15,19 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
     diff === undefined ? undefined : Number.isInteger(diff) ? diff.toString() : diff.toFixed(1);
 
   return (
-    <section>
-      <div className="onboarding-title onboarding-title-group">
+    <section className={styles.content}>
+      <div className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup}`}>
         <h2 className="typo-title1">목표 몸무게가 몇인가요?</h2>
         {diff !== undefined && (
-          <p className="onboarding-subtitle">
+          <p className={styles.onboardingSubtitle}>
             현재 몸무게 기준 {diff > 0 ? "+" : ""}
             {diffLabel}kg
           </p>
         )}
       </div>
 
-      <Field.Root className="onboarding-field-padding">
-        <div className="onboarding-goal-weight-card">
+      <Field.Root className={styles.onboardingFieldPadding}>
+        <div className={styles.onboardingGoalWeightCard}>
           <NumberInput
             value={data.goalweight}
             onChange={(value) => update({ goalweight: value })}
