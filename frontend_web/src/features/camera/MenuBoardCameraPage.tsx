@@ -1,43 +1,34 @@
 import { useNavigate } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
-// import { CameraLoading } from "@/features/camera/components/CameraLoading";
+import {
+  DEFAULT_CAMERA_CAPTURE_QUALITY,
+  getCameraCaptureErrorMessage,
+  isCameraCaptureCancelled,
+} from "@/features/camera/utils/cameraCapture";
 import { uploadCapturedImageToServer } from "@/features/nutrient-entry/api/uploadCapturedImage";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 
-type BridgeCameraError = Error & {
-  error?: string;
-};
-
 export default function MenuBoardCameraPage() {
   const navigate = useNavigate();
-
-  // TODO 여기서 param으로 넘어온 dateKey, MealType, foodName, BrandName? 받아서 넘기기
 
   const handleCameraActions = async () => {
     try {
       const capturedImage = await requestNativeCameraCapture({
-        quality: 0.8,
+        quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "MENU_BOARD",
       });
-      const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
-      // navigate(PATH.NUTRIENT_ADD, {
-      // });
+      await uploadCapturedImageToServer(capturedImage);
       toast.success("촬영 후 서버 전송이 완료되었어요");
     } catch (error) {
-      const bridgeError = error as BridgeCameraError;
-      if (bridgeError.error === "CAMERA_CAPTURE_CANCELLED") return;
+      if (isCameraCaptureCancelled(error)) return;
 
-      toast.warning(bridgeError.message ?? "카메라를 실행하지 못했어요");
+      toast.warning(getCameraCaptureErrorMessage(error));
     }
   };
-
-  // if (isPending) {
-  //   return <CameraLoading description="영양성분을 확인하고 있어요" />;
-  // }
 
   return (
     <section className={styles.page}>

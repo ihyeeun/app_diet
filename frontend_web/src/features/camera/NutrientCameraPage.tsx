@@ -1,36 +1,34 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
+import {
+  DEFAULT_CAMERA_CAPTURE_QUALITY,
+  getCameraCaptureErrorMessage,
+  isCameraCaptureCancelled,
+} from "@/features/camera/utils/cameraCapture";
 import { PATH } from "@/router/path";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 
-type BridgeCameraError = Error & {
-  error?: string;
-};
-
 export default function NutrientCameraPage() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleCameraActions = async () => {
     try {
-      const capturedImage = await requestNativeCameraCapture({
-        quality: 0.8,
+      await requestNativeCameraCapture({
+        quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "NUTRITION_LABEL",
       });
-      // const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
       navigate(PATH.NUTRIENT_ADD, {
         state: {},
       });
       toast.success("촬영 후 서버 전송이 완료되었어요");
     } catch (error) {
-      const bridgeError = error as BridgeCameraError;
-      if (bridgeError.error === "CAMERA_CAPTURE_CANCELLED") return;
+      if (isCameraCaptureCancelled(error)) return;
 
-      toast.warning(bridgeError.message ?? "카메라를 실행하지 못했어요");
+      toast.warning(getCameraCaptureErrorMessage(error));
     }
   };
 
