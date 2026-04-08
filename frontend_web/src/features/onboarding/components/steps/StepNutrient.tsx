@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useRecommendNutrientMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
@@ -35,17 +35,20 @@ function formatRoundedValue(value?: number) {
 }
 
 export default function StepNutrient({ data, update }: StepComponentProps) {
-  const requestPayload = {
-    targetCalories: data.targetCalories,
-    weight: data.weight,
-    goal: data.goal,
-  };
+  const requestPayload = useMemo(
+    () => ({
+      targetCalories: data.targetCalories,
+      weight: data.weight,
+      goal: data.goal,
+    }),
+    [data.goal, data.targetCalories, data.weight],
+  );
 
   const { mutate, data: nutrient } = useRecommendNutrientMutation();
 
   useEffect(() => {
     mutate(requestPayload);
-  }, []);
+  }, [mutate, requestPayload]);
 
   useEffect(() => {
     if (!nutrient) return;
@@ -54,7 +57,7 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
       protein: nutrient.protein,
       fat: nutrient.fat,
     });
-  }, [nutrient]);
+  }, [nutrient, update]);
 
   return (
     <section className={styles.content}>
