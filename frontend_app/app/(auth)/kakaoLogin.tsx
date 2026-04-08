@@ -34,7 +34,7 @@ export default function KakaoLogin() {
 
             router.replace("/(tabs)/home");
           } catch (error) {
-            console.error("카카오 로그인 실패");
+            console.error("카카오 로그인 실패", error);
             isExchangingRef.current = false;
           }
         })();
@@ -45,7 +45,7 @@ export default function KakaoLogin() {
       console.error("Kakao login error:", redirectResult.error);
       return false;
     },
-    [redirectUri],
+    [],
   );
 
   return (
