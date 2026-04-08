@@ -11,20 +11,21 @@ type SelectedDateState = {
   };
 };
 
-const TODAY_DATE_KEY = getTodayFormatDateKey();
+const getTodayDateKey = () => getTodayFormatDateKey();
 
 const useSelectedDateStore = create<SelectedDateState>((set) => ({
-  selectedDateKey: TODAY_DATE_KEY,
+  selectedDateKey: getTodayDateKey(),
   actions: {
     setSelectedDate: (date) => set({ selectedDateKey: formatDateKey(date) }),
     setSelectedDateKey: (dateKey) =>
-      set({ selectedDateKey: isValidDateKey(dateKey) ? dateKey : TODAY_DATE_KEY }),
-    resetSelectedDate: () => set({ selectedDateKey: TODAY_DATE_KEY }),
+      set({ selectedDateKey: isValidDateKey(dateKey) ? dateKey : getTodayDateKey() }),
+    resetSelectedDate: () => set({ selectedDateKey: getTodayDateKey() }),
   },
 }));
 
 export const useSelectedDateKey = () => useSelectedDateStore((state) => state.selectedDateKey);
-export const useSetSelectedDate = () => useSelectedDateStore((state) => state.actions.setSelectedDate);
+export const useSetSelectedDate = () =>
+  useSelectedDateStore((state) => state.actions.setSelectedDate);
 export const useSetSelectedDateKey = () =>
   useSelectedDateStore((state) => state.actions.setSelectedDateKey);
 export const useResetSelectedDate = () =>
