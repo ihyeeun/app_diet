@@ -172,39 +172,6 @@
   color: var(--text-assistive1);
 }
 
-.numberInputCard {
-  background: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.sheetNumberInput {
-  gap: 8px;
-  justify-content: space-between;
-}
-
-.sheetNumberInputField {
-  color: var(--text-normal);
-  font-size: 14px !important;
-  font-weight: var(--fw-medium) !important;
-  letter-spacing: var(--letter-spacing-body);
-  line-height: var(--line-height-145) !important;
-  text-align: left !important;
-}
-
-.sheetNumberInputField::placeholder {
-  color: var(--text-assistive2);
-}
-
-.sheetNumberInputUnit {
-  color: var(--text-normal) !important;
-  font-size: 20px !important;
-  font-weight: var(--fw-semibold) !important;
-  line-height: var(--line-height-120) !important;
-  margin-left: 0 !important;
-}
-
 .birthYearPicker {
   --wheel-highlight-height: 72px;
 
