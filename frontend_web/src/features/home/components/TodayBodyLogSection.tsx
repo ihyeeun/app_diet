@@ -111,13 +111,13 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
     <>
       <div className={style.todayContainer}>
         <TodayMetricCard
-          title="오늘의 체중"
+          title="체중"
           value={bodyLog?.weight ?? 0}
           unit="kg"
           onClick={() => openEditor("weight")}
         />
         <TodayMetricCard
-          title="오늘의 걸음 수"
+          title="걸음 수"
           value={bodyLog?.steps ?? 0}
           unit="걸음"
           onClick={() => openEditor("steps")}

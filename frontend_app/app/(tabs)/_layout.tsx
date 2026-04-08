@@ -51,6 +51,7 @@ export default function TabsLayout() {
   const [isTabBarHidden, setIsTabBarHidden] = useState(false);
   const insets = useSafeAreaInsets();
   const tabBarBottomPadding = Math.max(insets.bottom, 8);
+  const shouldHideTabBar = isTabBarHidden || currentTab === "chat";
 
   return (
     <View style={styles.container}>
@@ -66,7 +67,7 @@ export default function TabsLayout() {
         <Slot />
       </View>
 
-      {!isTabBarHidden ? (
+      {!shouldHideTabBar ? (
         <View style={[styles.tabBar, { paddingBottom: tabBarBottomPadding }]}>
           {TAB_ITEMS.map(({ tab, label, Icon, FocusedIcon }) => {
             const isFocused = currentTab === tab;

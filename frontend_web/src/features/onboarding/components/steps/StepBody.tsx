@@ -5,16 +5,17 @@ import {
   ONBOARDING_WEIGHT_RANGE,
 } from "@/features/onboarding/constants/inputRanges";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import { NumberInput } from "@/shared/commons/input/NumberInput";
 
 export default function StepBody({ data, update }: StepComponentProps) {
   return (
-    <section>
-      <div className="onboarding-title">
+    <section className={styles.content}>
+      <div className={styles.onboardingTitle}>
         <h2 className="typo-title1">키 / 몸무게가 몇인가요?</h2>
       </div>
 
-      <div className="onboarding-body-list">
+      <div className={styles.onboardingBodyList}>
         <InputCard
           label="키"
           value={data.height}
@@ -68,8 +69,8 @@ export function InputCard({
   normalizeOnBlur,
 }: InputCardProps) {
   return (
-    <Field.Root className="onboarding-input-card">
-      <Field.Label className="onboarding-input-card-label">{label}</Field.Label>
+    <Field.Root className={styles.onboardingInputCard}>
+      <Field.Label className={styles.onboardingInputCardLabel}>{label}</Field.Label>
 
       <NumberInput
         value={value}

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import WheelPicker from "@/shared/commons/picker/WheelPicker";
 import {
   getBirthYearRange,
@@ -19,8 +20,8 @@ export default function StepBirthYear({ data, update }: StepComponentProps) {
   }, [data.birthYear, selectedYear, update]);
 
   return (
-    <section className="onboarding-birth-year-section">
-      <div className="onboarding-title">
+    <section className={styles.onboardingBirthYearSection}>
+      <div className={styles.onboardingTitle}>
         <h2 className="typo-title1">출생 연도를 알려주세요</h2>
       </div>
 

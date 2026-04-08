@@ -12,7 +12,6 @@ const NutrientModifyPage = lazy(() => import("@/features/nutrient-entry/Nutrient
 const NutrientRegisterPage = lazy(() => import("@/features/nutrient-entry/NutrientRegisterPage"));
 const OnboardingPage = lazy(() => import("@/features/onboarding/OnboardingPage"));
 const RecommendPage = lazy(() => import("@/features/recommend/RecommendPage"));
-const BrandMenuSearch = lazy(() => import("@/features/search/brand/BrandMenuSearch"));
 const BrandSearch = lazy(() => import("@/features/search/brand/BrandSearch"));
 const MealSearchPage = lazy(() => import("@/features/search/menu-record/MealSearchPage"));
 const SettingsFeedbackPage = lazy(() => import("@/features/settings/SettingsFeedbackPage"));
@@ -58,7 +57,6 @@ export default function AppRouter() {
           <Route path={PATH.NUTRIENT_ADD_REGISTER} element={<NutrientRegisterPage />} />
 
           <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
-          <Route path={PATH.BRAND_MENU_SEARCH} element={<BrandMenuSearch />} />
 
           <Route path={PATH.CHAT} element={<ChatPage />} />
 

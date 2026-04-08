@@ -19,7 +19,6 @@ export const PATH = {
   NUTRIENT_ADD_REGISTER: "/nutrient-add/register",
   NUTRIENT_ADD_MODIFY: "/nutrient-add/modify",
   BRAND_SEARCH: "/brand-search",
-  BRAND_MENU_SEARCH: "/brand-search/menu",
 
   // Chat
   CHAT: "/chat",

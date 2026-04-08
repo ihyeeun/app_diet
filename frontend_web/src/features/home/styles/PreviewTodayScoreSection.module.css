@@ -1,0 +1,61 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-normal-primary2);
+  gap: 10px;
+  padding: 24px 20px;
+}
+
+.scoreDescription {
+  display: flex;
+  justify-content: space-between;
+}
+
+.scoreTitleText {
+  color: var(--text-normal);
+}
+
+.scoreContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scoreTextContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scoreText {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.score {
+  color: var(--text-primary);
+}
+
+.calorieText {
+  color: var(--text-normal);
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.dividerContainer {
+  height: 24px;
+  background-color: var(--bg-normal-white);
+  width: 1px;
+}
+
+.badgeContentContainer {
+  background-color: var(--bg-normal-white);
+  border-radius: 100px;
+  color: var(--text-assistive1);
+  padding: 6px 16px;
+  white-space: nowrap;
+  width: fit-content;
+}

@@ -1,6 +1,3 @@
-import "@/features/onboarding/css/OnboardingPage.css";
-import "@/features/onboarding/css/OnboardingSteps.css";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -32,7 +29,7 @@ import type { ProfileResponseDto } from "@/shared/api/types/api.dto";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { NumberInput } from "@/shared/commons/input/NumberInput";
+import { EditorInput } from "@/shared/commons/input/EditorInput";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import WheelPicker from "@/shared/commons/picker/WheelPicker";
 import {
@@ -324,6 +321,11 @@ export default function GoalEditPage() {
     setSheetData({});
   };
 
+  const applyInstantSelection = (patch: Partial<OnboardingData>) => {
+    updateDraft(patch);
+    closeEditor();
+  };
+
   const applyEditor = () => {
     if (!draft || !editingField) return;
 
@@ -334,7 +336,6 @@ export default function GoalEditPage() {
       }
 
       updateDraft({ gender: sheetData.gender });
-      toast.success("수정되었어요");
       closeEditor();
       return;
     }
@@ -346,7 +347,6 @@ export default function GoalEditPage() {
       }
 
       updateDraft({ birthYear: sheetData.birthYear });
-      toast.success("수정되었어요");
       closeEditor();
       return;
     }
@@ -358,7 +358,6 @@ export default function GoalEditPage() {
       }
 
       updateDraft({ height: sheetData.height });
-      toast.success("수정되었어요");
       closeEditor();
       return;
     }
@@ -370,7 +369,6 @@ export default function GoalEditPage() {
       }
 
       updateDraft({ weight: sheetData.weight });
-      toast.success("수정되었어요");
       closeEditor();
       return;
     }
@@ -382,7 +380,6 @@ export default function GoalEditPage() {
       }
 
       updateDraft({ activity: sheetData.activity });
-      toast.success("수정되었어요");
       closeEditor();
       return;
     }
@@ -394,7 +391,6 @@ export default function GoalEditPage() {
       }
 
       updateDraft({ goal: sheetData.goal });
-      toast.success("수정되었어요");
       closeEditor();
       return;
     }
@@ -428,7 +424,6 @@ export default function GoalEditPage() {
     }
 
     updateDraft({ goalweight: sheetData.goalweight });
-    toast.success("수정되었어요");
     closeEditor();
   };
 
@@ -580,6 +575,8 @@ export default function GoalEditPage() {
   const selectedBirthYear = isValidBirthYear(sheetData.birthYear)
     ? sheetData.birthYear
     : birthYearDefault;
+  const isInstantSelectEditor =
+    editingField === "gender" || editingField === "activity" || editingField === "goal";
 
   const getSelectableCardClassName = (selected: boolean) =>
     [styles.selectableCard, selected ? styles.selectableCardActive : ""].filter(Boolean).join(" ");
@@ -598,7 +595,7 @@ export default function GoalEditPage() {
               type="button"
               className={getSelectableCardClassName(sheetData.gender === 0)}
               aria-pressed={sheetData.gender === 0}
-              onClick={() => updateSheetData({ gender: 0 })}
+              onClick={() => applyInstantSelection({ gender: 0 })}
             >
               <span className={styles.genderCardLabel}>남성</span>
             </button>
@@ -606,7 +603,7 @@ export default function GoalEditPage() {
               type="button"
               className={getSelectableCardClassName(sheetData.gender === 1)}
               aria-pressed={sheetData.gender === 1}
-              onClick={() => updateSheetData({ gender: 1 })}
+              onClick={() => applyInstantSelection({ gender: 1 })}
             >
               <span className={styles.genderCardLabel}>여성</span>
             </button>
@@ -637,19 +634,19 @@ export default function GoalEditPage() {
       return (
         <section className={styles.editorSection}>
           <h2 className={styles.editorTitle}>키</h2>
-          <div className={styles.numberInputCard}>
-            <NumberInput
-              value={sheetData.height}
-              onChange={(value) => updateSheetData({ height: value })}
-              placeholder="키 입력"
-              min={ONBOARDING_HEIGHT_RANGE.min}
-              max={ONBOARDING_HEIGHT_RANGE.max}
-              step={1}
-              unit="cm"
-              inputMode="numeric"
-              normalizeOnBlur={false}
-            />
-          </div>
+          <EditorInput
+            type="number"
+            inputMode="numeric"
+            value={sheetData.height}
+            onChange={(value) => updateSheetData({ height: value })}
+            placeholder="키 입력"
+            min={ONBOARDING_HEIGHT_RANGE.min}
+            max={ONBOARDING_HEIGHT_RANGE.max}
+            step={1}
+            unit="cm"
+            clampOnChange={false}
+            normalizeOnBlur={false}
+          />
         </section>
       );
     }
@@ -658,18 +655,19 @@ export default function GoalEditPage() {
       return (
         <section className={styles.editorSection}>
           <h2 className={styles.editorTitle}>현재 몸무게</h2>
-          <div className={styles.numberInputCard}>
-            <NumberInput
-              value={sheetData.weight}
-              onChange={(value) => updateSheetData({ weight: value })}
-              placeholder="현재 몸무게 입력"
-              min={ONBOARDING_WEIGHT_RANGE.min}
-              max={ONBOARDING_WEIGHT_RANGE.max}
-              step={0.1}
-              unit="kg"
-              normalizeOnBlur={false}
-            />
-          </div>
+          <EditorInput
+            type="number"
+            inputMode="decimal"
+            value={sheetData.weight}
+            onChange={(value) => updateSheetData({ weight: value })}
+            placeholder="현재 몸무게 입력"
+            min={ONBOARDING_WEIGHT_RANGE.min}
+            max={ONBOARDING_WEIGHT_RANGE.max}
+            step={0.1}
+            unit="kg"
+            clampOnChange={false}
+            normalizeOnBlur={false}
+          />
         </section>
       );
     }
@@ -685,7 +683,9 @@ export default function GoalEditPage() {
                 type="button"
                 className={getSelectableCardClassName(sheetData.activity === index)}
                 aria-pressed={sheetData.activity === index}
-                onClick={() => updateSheetData({ activity: index as OnboardingData["activity"] })}
+                onClick={() =>
+                  applyInstantSelection({ activity: index as OnboardingData["activity"] })
+                }
               >
                 <p className={`${styles.optionTitle} typo-title3`}>{activity.title}</p>
                 <p className={`${styles.optionDescription} typo-body3`}>{activity.description}</p>
@@ -707,7 +707,7 @@ export default function GoalEditPage() {
                 type="button"
                 className={getSelectableCardClassName(sheetData.goal === index)}
                 aria-pressed={sheetData.goal === index}
-                onClick={() => updateSheetData({ goal: index as OnboardingData["goal"] })}
+                onClick={() => applyInstantSelection({ goal: index as OnboardingData["goal"] })}
               >
                 <p className={`${styles.optionTitle} typo-title3`}>{goal.title}</p>
                 <p className={`${styles.optionDescription} typo-body3`}>{goal.description}</p>
@@ -721,18 +721,19 @@ export default function GoalEditPage() {
     return (
       <section className={styles.editorSection}>
         <h2 className={styles.editorTitle}>목표 몸무게</h2>
-        <div className={styles.numberInputCard}>
-          <NumberInput
-            value={sheetData.goalweight}
-            onChange={(value) => updateSheetData({ goalweight: value })}
-            placeholder="목표 몸무게 입력"
-            min={ONBOARDING_WEIGHT_RANGE.min}
-            max={ONBOARDING_WEIGHT_RANGE.max}
-            step={0.1}
-            unit="kg"
-            normalizeOnBlur={false}
-          />
-        </div>
+        <EditorInput
+          type="number"
+          inputMode="decimal"
+          value={sheetData.goalweight}
+          onChange={(value) => updateSheetData({ goalweight: value })}
+          placeholder="목표 몸무게 입력"
+          min={ONBOARDING_WEIGHT_RANGE.min}
+          max={ONBOARDING_WEIGHT_RANGE.max}
+          step={0.1}
+          unit="kg"
+          clampOnChange={false}
+          normalizeOnBlur={false}
+        />
       </section>
     );
   };
@@ -758,7 +759,7 @@ export default function GoalEditPage() {
               >
                 <span className={`${styles.summaryLabel} typo-title3`}>{field.label}</span>
                 <span className={styles.summaryValueRow}>
-                  <span className={`${styles.summaryValue} typo-label6`}>
+                  <span className={`${styles.summaryValue} typo-label1`}>
                     {getSummaryValue(field.id, draft)}
                   </span>
                   <ChevronRight className={styles.summaryChevron} size={24} />
@@ -829,11 +830,19 @@ export default function GoalEditPage() {
       >
         <div className={styles.sheetContent} data-editor-field={editingField ?? undefined}>
           <div className={styles.sheetBody}>{renderEditorBody()}</div>
-          <div className={styles.sheetActions}>
-            <Button fullWidth onClick={applyEditor} variant="filled" size="large" color="primary">
-              수정하기
-            </Button>
-          </div>
+          {!isInstantSelectEditor && (
+            <div className={styles.sheetActions}>
+              <Button
+                fullWidth
+                onClick={applyEditor}
+                variant="filled"
+                size="large"
+                color="primary"
+              >
+                확인
+              </Button>
+            </div>
+          )}
         </div>
       </BottomSheet>
 

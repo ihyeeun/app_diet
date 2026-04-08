@@ -1,33 +1,87 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import styles from "@/features/home/styles/TodayMealScorePage.module.css";
+import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
+import {
+  getCalorieSummary,
+  getHomeMealFeedback,
+  getNutrientStatus,
+  getNutrientStatusLabel,
+  hasValidTargets,
+  type MealFeedback,
+  type NutrientStatus,
+  resolveTargetCalories,
+} from "@/features/home/utils/todayMealFeedback";
+import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-import ScoreProgress from "@/shared/commons/progress/Progress";
-import {
-  calculateMacroPercentToGram,
-  getCalorieProgressPercent,
-  type MacroKey,
-} from "@/shared/utils/nutrientScore";
+import type { TargetsNutrients } from "@/shared/stores/targetNutrient.store";
+import { calculateMacroPercentToGram, type MacroKey } from "@/shared/utils/nutrientScore";
 
 type NutrientItem = {
   key: MacroKey;
   name: "탄수화물" | "단백질" | "지방";
   current: number;
   target: number;
+  status: NutrientStatus;
+  progressPercent: number;
+};
+
+const progressStatusClassName: Record<NutrientStatus, string> = {
+  insufficient: styles.progressInsufficient,
+  adequate: styles.progressAdequate,
+  caution: styles.progressCaution,
+  excess: styles.progressExcess,
+};
+
+const badgeStatusClassName: Record<NutrientStatus, string> = {
+  insufficient: styles.badgeInsufficient,
+  adequate: styles.badgeAdequate,
+  caution: styles.badgeCaution,
+  excess: styles.badgeExcess,
 };
 
 export default function TodayMealScorePage() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  const [carbsRatio, proteinRatio, fatRatio] = state.targets.target_ratio;
-  const targetCalories = state.targets.target_calories;
-  const nutrientItems = [
+  const pageState = state as TodayMealScorePageState | null;
+  const isValidState = Boolean(
+    pageState &&
+    pageState.currents &&
+    hasValidTargets(pageState.targets) &&
+    Number.isFinite(pageState.score),
+  );
+
+  useEffect(() => {
+    if (isValidState) {
+      return;
+    }
+
+    navigate(PATH.HOME, { replace: true });
+  }, [isValidState, navigate]);
+
+  if (!isValidState || !pageState) {
+    return null;
+  }
+
+  const [carbsRatio, proteinRatio, fatRatio] = pageState.targets.target_ratio;
+  const targetCalories = resolveTargetCalories(pageState.targets);
+
+  if (targetCalories === null) {
+    return null;
+  }
+
+  const calorieSummary = getCalorieSummary(pageState.currents.totalCalories, targetCalories);
+  const mealFeedback =
+    pageState.mealFeedback ?? getHomeMealFeedback(pageState.currents, pageState.targets);
+  const roundedTargetCalories = calorieSummary.roundedTargetCalories ?? Math.round(targetCalories);
+  const nutrientBaseItems: Array<Omit<NutrientItem, "status" | "progressPercent">> = [
     {
       key: "carbs",
       name: "탄수화물",
-      current: state.currents.totalNutrients.carbs,
+      current: Math.round(pageState.currents.totalNutrients.carbs),
       target: Math.round(
         calculateMacroPercentToGram({
           nutrientType: "carbs",
@@ -39,7 +93,7 @@ export default function TodayMealScorePage() {
     {
       key: "protein",
       name: "단백질",
-      current: state.currents.totalNutrients.protein,
+      current: Math.round(pageState.currents.totalNutrients.protein),
       target: Math.round(
         calculateMacroPercentToGram({
           nutrientType: "protein",
@@ -51,7 +105,7 @@ export default function TodayMealScorePage() {
     {
       key: "fat",
       name: "지방",
-      current: state.currents.totalNutrients.fat,
+      current: Math.round(pageState.currents.totalNutrients.fat),
       target: Math.round(
         calculateMacroPercentToGram({
           nutrientType: "fat",
@@ -60,120 +114,94 @@ export default function TodayMealScorePage() {
         }),
       ),
     },
-  ] satisfies NutrientItem[];
+  ];
 
-  const calorieProgress = getCalorieProgressPercent(state.currents.totalCalories, targetCalories);
+  const nutrientItems: NutrientItem[] = nutrientBaseItems.map((item) => {
+    const status = getNutrientStatus(item.current, item.target);
+
+    return {
+      ...item,
+      status,
+      progressPercent: getNutrientProgressPercent(item.current, item.target),
+    };
+  });
+
+  const score = Math.round(pageState.score);
+  const calorieProgress = getNutrientProgressPercent(
+    calorieSummary.roundedCurrentCalories,
+    roundedTargetCalories,
+  );
 
   return (
     <section className={styles.page}>
       <PageHeader title="오늘의 식사 분석" onBack={() => navigate(-1)} />
 
-      <main className={styles.content}>
-        <section className={styles.meal_score_section}>
-          <div className={styles.score_card}>
-            <p className="typo-title2">오늘의 식사 점수</p>
-            <p>
-              <span className={`${styles.score} typo-h2`}>{state.score}</span>
-              <span className="typo-title2"> 점</span>
+      <main className={styles.main}>
+        <div className={styles.content}>
+          <section className={styles.mealScoreCard}>
+            <div className={styles.scoreDescription}>
+              <p className="typo-title2">오늘의 식사 점수</p>
+              <div>
+                <p className={`${styles.feedbackText} typo-label3`}>{mealFeedback.primary}</p>
+                <p className={`${styles.feedbackText} typo-label3`}>{mealFeedback.secondary}</p>
+              </div>
+            </div>
+            <p className={styles.scoreValue}>
+              <span className={`${styles.score} typo-h2`}>{score}</span>
+              <span className={`${styles.score} typo-title2`}> 점</span>
             </p>
-          </div>
-        </section>
+          </section>
 
-        <div className="divider" />
+          <div className="divider" />
 
-        <section className={styles.calorie_section}>
-          <div className={styles.calorie_card}>
-            <p className="typo-title3">칼로리</p>
+          <section className={styles.nutrientSection}>
+            <div className={styles.calorieCard}>
+              <p className="typo-title3">칼로리</p>
+              <div className={styles.calorieInfo}>
+                <div className={styles.calorieValueContainer}>
+                  <p className="typo-h3">
+                    {calorieSummary.roundedCurrentCalories.toLocaleString("ko-KR")} kcal
+                  </p>
 
-            <div className={styles.calorie_value_container}>
-              <p className="typo-title2">
-                <span className={`${styles.score} typo-h2`}>
-                  {state.currents.totalCalories.toLocaleString("ko-KR")}
-                </span>{" "}
-                kcal
-              </p>
-
-              <div className={styles.divider_container}>
-                <div className="divider-horizontal" />
-              </div>
-
-              <p className="typo-title2">
-                {state.targets.target_calories.toLocaleString("ko-KR")} kcal
-              </p>
-            </div>
-
-            <ScoreProgress value={calorieProgress} variant="primary-gray" />
-            <p className="typo-label4">{state.calorieMessage}</p>
-          </div>
-        </section>
-
-        <section className={styles.balance_section}>
-          <div className={styles.balance_card}>
-            <div className={styles.balance_header}>
-              <div className={styles.balance_title_container}>
-                <p className="typo-title3">탄단지 균형</p>
-              </div>
-
-              <div className={styles.legend_container}>
-                <div className={styles.legend_item}>
-                  <span className={`${styles.legend_dot} ${styles.legend_target_dot}`} />
-                  <span className="typo-label4">목표</span>
-                </div>
-                <div className={styles.legend_item}>
-                  <span className={`${styles.legend_dot} ${styles.legend_current_dot}`} />
-                  <span className="typo-label4">현재</span>
-                </div>
-              </div>
-            </div>
-
-            {/* <div className={styles.balance_chart}>
-              {nutrientMetrics.map((item) => {
-                const { targetHeight, currentHeight } = getChartHeights(item.currentPercent);
-
-                return (
-                  <div key={item.name} className={styles.chart_item}>
-                    <div className={styles.chart_pair}>
-                      <span
-                        className={`${styles.chart_bar} ${styles.chart_target}`}
-                        style={{ height: `${targetHeight}%` }}
-                      />
-                      <span
-                        className={`${styles.chart_bar} ${styles.chart_current}`}
-                        style={{ height: `${currentHeight}%` }}
-                      />
-                    </div>
-                    <p className={`${styles.chart_label} typo-label4`}>{item.name}</p>
+                  <div className={styles.dividerContainer}>
+                    <div className="divider-horizontal" />
                   </div>
-                );
-              })}
-            </div> */}
+
+                  <p className="typo-title3">
+                    {roundedTargetCalories.toLocaleString("ko-KR")} kcal
+                  </p>
+                </div>
+                <div className={styles.calorieProgressContainer}>
+                  <NutrientProgress value={calorieProgress} />
+                  <p className={`${styles.nutrientAmount} typo-label3`}>
+                    {calorieSummary.message}
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="divider" />
 
-            <div className={styles.nutrient_list}>
+            <div className={styles.balanceCard}>
               {nutrientItems.map((item) => (
-                <article key={item.name} className={styles.nutrient_item}>
-                  <div className={styles.nutrient_header}>
-                    <p className={styles.nutrient_title}>
+                <article key={item.name} className={styles.nutrientItem}>
+                  <div className={styles.nutrientHeader}>
+                    <p className={styles.nutrientTitle}>
                       <span className="typo-title4">{item.name}</span>
-                      <span className={`${styles.nutrient_amount} typo-label4`}>
+                      <span className={`${styles.nutrientAmount} typo-label4`}>
                         {item.current.toLocaleString("ko-KR")}g /{" "}
                         {item.target.toLocaleString("ko-KR")}g
                       </span>
                     </p>
-
-                    {/* <StatusBadge status={item.grade} /> */}
+                    <NutrientStatusBadge status={item.status} />
                   </div>
 
-                  {/* <ScoreProgress
-                    value={getProgressPercent(item.currentPercent)}
-                    variant="black-gray"
-                  /> */}
+                  <NutrientProgress value={item.progressPercent} status={item.status} />
                 </article>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
 
       <footer className={styles.footer}>
@@ -189,5 +217,41 @@ export default function TodayMealScorePage() {
         </Button>
       </footer>
     </section>
+  );
+}
+
+type TodayMealScorePageState = {
+  score: number;
+  targets: TargetsNutrients;
+  currents: DayMealSummary;
+  calorieMessage?: string;
+  mealFeedback?: MealFeedback;
+};
+
+function getNutrientProgressPercent(current: number, target: number) {
+  if (!Number.isFinite(current) || !Number.isFinite(target) || target <= 0) {
+    return 0;
+  }
+
+  return Math.min(Math.round((current / target) * 100), 100);
+}
+
+function NutrientProgress({ value, status }: { value: number; status?: NutrientStatus }) {
+  return (
+    <div className={styles.progressTrack}>
+      <div
+        className={`${styles.progressIndicator} ${status ? progressStatusClassName[status] : styles.progressPrimary}`}
+        style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+      />
+    </div>
+  );
+}
+
+function NutrientStatusBadge({ status }: { status: NutrientStatus }) {
+  return (
+    <span className={`${styles.nutrientBadge} ${badgeStatusClassName[status]}`}>
+      <span className={styles.nutrientBadgeDot} aria-hidden="true" />
+      <span className="typo-label6">{getNutrientStatusLabel(status)}</span>
+    </span>
   );
 }

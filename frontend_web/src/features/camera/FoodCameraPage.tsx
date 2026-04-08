@@ -1,36 +1,30 @@
 import { useNavigate } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
-import { PATH } from "@/router/path";
 import {
-  requestNativeCameraCapture,
-  requestNativeGalleryPick,
-} from "@/shared/api/bridge/nativeBridge";
+  DEFAULT_CAMERA_CAPTURE_QUALITY,
+  getCameraCaptureErrorMessage,
+  isCameraCaptureCancelled,
+} from "@/features/camera/utils/cameraCapture";
+import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-
-type BridgeCameraError = Error & {
-  error?: string;
-};
 
 export default function FoodCameraPage() {
   const navigate = useNavigate();
 
   const handleCameraActions = async () => {
     try {
-      const capturedImage = await requestNativeCameraCapture({
-        quality: 0.8,
+      await requestNativeCameraCapture({
+        quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "FOOD",
       });
-      // const { uploadedImageUrl } = await uploadCapturedImageToServer(capturedImage);
-      // navigate(PATH.NUTRIENT_ADD, {});
       toast.success("촬영 후 서버 전송이 완료되었어요");
     } catch (error) {
-      const bridgeError = error as BridgeCameraError;
-      if (bridgeError.error === "CAMERA_CAPTURE_CANCELLED") return;
+      if (isCameraCaptureCancelled(error)) return;
 
-      toast.warning(bridgeError.message ?? "카메라를 실행하지 못했어요");
+      toast.warning(getCameraCaptureErrorMessage(error));
     }
   };
 
@@ -40,7 +34,7 @@ export default function FoodCameraPage() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <img src="/icons/Camera.svg" alt="카메라 아이콘" className={styles.image} />
+          <img src="/icons/Food.svg" alt="카메라 아이콘" className={styles.image} />
           <p className="typo-title1">
             음식이 잘 보이도록
             <br />

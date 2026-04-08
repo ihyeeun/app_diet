@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
+import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import { calculateGoalWeek } from "@/features/onboarding/utils/calculateGoalWeek";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
@@ -126,28 +127,28 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
   };
 
   return (
-    <section>
-      <div className="onboarding-title onboarding-title-group">
+    <section className={styles.content}>
+      <div className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup}`}>
         <h2 className="typo-title1">목표 칼로리를 선택해주세요</h2>
-        <p className="onboarding-subtitle">
+        <p className={styles.onboardingSubtitle}>
           {isPending
             ? "추천 목표 칼로리를 계산하고 있어요"
             : `추천하는 목표 칼로리는 ${formattargetCalories(responseData)}kcal예요`}
         </p>
       </div>
 
-      <Field.Root className="onboarding-field-padding">
-        <button className="onboarding-goal-kcal-trigger" type="button" onClick={openEditor}>
-          <p className="onboarding-goal-kcal-value">
+      <Field.Root className={styles.onboardingFieldPadding}>
+        <button className={styles.onboardingGoalKcalTrigger} type="button" onClick={openEditor}>
+          <p className={styles.onboardingGoalKcalValue}>
             {formattargetCalories(visibletargetCalories)} kcal
           </p>
         </button>
       </Field.Root>
 
-      <p className="onboarding-goal-kcal-helper">{goalWeekMessage}</p>
+      <p className={styles.onboardingGoalKcalHelper}>{goalWeekMessage}</p>
 
       <BottomSheet isOpen={open} onClose={() => setOpen(false)}>
-        <div className="onboarding-goal-kcal-sheet">
+        <div className={styles.onboardingGoalKcalSheet}>
           <h3>목표 칼로리</h3>
           <EditorInput
             type="number"
@@ -164,7 +165,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
               setDrafttargetCalories(value === undefined ? undefined : toInteger(value));
             }}
           />
-          <div className="onboarding-goal-kcal-actions">
+          <div className={styles.onboardingGoalKcalActions}>
             <Button onClick={handleConfirmtargetCalories} fullWidth>
               수정하기
             </Button>

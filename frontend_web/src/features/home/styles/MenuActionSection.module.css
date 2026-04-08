@@ -1,22 +1,19 @@
 .content {
-  background-color: var(--bg-normal-normal);
-  border-radius: 20px 20px 0 0;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   height: 100%;
-  padding: 20px;
   width: 100%;
 }
 
-.menu_container {
+.menuContainer {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, 1fr);
 }
 
-.menu_card_container {
+.menuCardContainer {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -26,31 +23,36 @@
   color: var(--text-assistive1);
 }
 
-.icon_container {
+.iconContainer {
   align-items: center;
   display: flex;
   justify-content: end;
 }
 
-.record_container {
+.iconSize {
+  width: 60px;
+  height: 60px;
+}
+
+.recordContainer {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.record_title_container {
+.recordTitleContainer {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.meal_card_list {
+.mealCardList {
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(4, 1fr);
 }
 
-.meal_card {
+.mealCard {
   align-items: center;
   border: 0;
   cursor: pointer;
@@ -60,7 +62,7 @@
   padding: 0;
 }
 
-.meal_inner {
+.mealInner {
   align-items: center;
   aspect-ratio: 1 / 1;
   background-color: var(--bg-normal-white);
@@ -71,22 +73,30 @@
   width: 100%;
 }
 
-.meal_selected .meal_inner {
+.mealSelected .mealInner {
   background-color: var(--interaction-primary);
   border: 1px solid var(--border-primary);
 }
 
-.meal_value {
+.mealValue {
   color: var(--text-primary);
 }
 
-.meal_icon {
+.mealIcon {
   height: 48px;
   object-fit: contain;
   width: 48px;
 }
 
-.meal_label {
+.mealLabel {
   color: var(--text-assistive1);
   text-align: center;
+}
+
+.bgPrimary {
+  background-color: var(--primary-normal);
+}
+
+.textWhite {
+  color: var(--text-white);
 }
