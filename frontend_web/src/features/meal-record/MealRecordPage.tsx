@@ -212,7 +212,7 @@ export default function MealRecordPage() {
     }
 
     clearAllDrafts();
-    navigate(-1);
+    navigate(PATH.DIARY, { replace: true });
   };
 
   const handleExitConfirm = () => {
