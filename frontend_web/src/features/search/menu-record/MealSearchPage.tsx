@@ -20,7 +20,7 @@ import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMe
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealRecordPath } from "@/router/pathHelpers";
 import { getPathWithMeal } from "@/router/pathHelpers";
-import { MEAL_TIME, type MealType, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import { type MealTime, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
@@ -28,14 +28,6 @@ import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "../styles/MealSearch.module.css";
-
-const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
-  "0": MEAL_TIME.BREAKFAST,
-  "1": MEAL_TIME.LUNCH,
-  "2": MEAL_TIME.DINNER,
-  "3": MEAL_TIME.SNACK,
-  "4": MEAL_TIME.LATE_NIGHT_SNACK,
-};
 
 export default function MealSearchPage() {
   const navigate = useNavigate();
@@ -109,7 +101,7 @@ export default function MealSearchPage() {
 
     const requestBody: RegisterMealRequestDto = {
       date: dateKey,
-      time: MEAL_TYPE_TO_TIME[mealType],
+      time: Number(mealType) as MealTime,
       menu_ids: selectedMenus.map((menu) => menu.id),
       menu_quantities: selectedMenus.map((menu) => menu.quantity),
     };

@@ -17,8 +17,8 @@ import {
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
-  MEAL_TIME,
   MEAL_TYPE_OPTIONS,
+  type MealTime,
   type MealType,
   type RegisterMealRequestDto,
 } from "@/shared/api/types/api.dto";
@@ -30,14 +30,6 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "./styles/MealRecordPage.module.css";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
-
-const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
-  "0": MEAL_TIME.BREAKFAST,
-  "1": MEAL_TIME.LUNCH,
-  "2": MEAL_TIME.DINNER,
-  "3": MEAL_TIME.SNACK,
-  "4": MEAL_TIME.LATE_NIGHT_SNACK,
-};
 
 function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
   return menus
@@ -146,7 +138,7 @@ export default function MealRecordPage() {
 
       requests.push({
         date: dateKey,
-        time: MEAL_TYPE_TO_TIME[type],
+        time: Number(type) as MealTime,
         menu_ids: draftMenusByType.map((menu) => menu.id),
         menu_quantities: draftMenusByType.map((menu) => menu.quantity),
       });
