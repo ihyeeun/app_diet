@@ -5,7 +5,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
-import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
+import {
+  DELETE_MEAL_RECORD_RESULT,
+  useTodayMealRecordDeleteWithRollbackMutation,
+  useTodayMealRecordRegisterMutation,
+} from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
 import {
   formatMenuDraftKey,
   useMenuDraftClear,
@@ -50,6 +54,11 @@ export default function MealRecordPage() {
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const { data: currentMenus, isPending: isSummaryReady } = useDayMealsQuery(dateKey);
+
+  const { mutateAsync: registerMealAsync, isPending: isRegisterPending } =
+    useTodayMealRecordRegisterMutation();
+  const { mutateAsync: deleteWithRollbackAsync, isPending: isDeletePending } =
+    useTodayMealRecordDeleteWithRollbackMutation();
   const initDraft = useMenuDraftInit();
   const removeMenu = useMenuDraftRemove();
   const clearDraft = useMenuDraftClear();
@@ -154,9 +163,6 @@ export default function MealRecordPage() {
     }, 0);
   }, [displayMenuItems]);
 
-  const { mutateAsync: registerMealAsync, isPending: isRegisterPending } =
-    useTodayMealRecordRegisterMutation();
-
   const clearAllDrafts = () => {
     MEAL_TYPE_OPTIONS.forEach((option) => {
       clearDraft(formatMenuDraftKey(dateKey, option.key));
@@ -175,13 +181,34 @@ export default function MealRecordPage() {
   };
 
   const handleComplete = async () => {
-    if (changedRequests.length === 0) {
+    if (changedRequests.length === 0 || !currentMenus) {
       return;
     }
 
     try {
-      // 여기서 분기처리하면 될거같으넫
       for (const request of changedRequests) {
+        if (request.menu_ids.length === 0) {
+          const deleteResult = await deleteWithRollbackAsync({
+            dateKey,
+            request,
+            currentMenusByTime: currentMenus.menusByTime,
+          });
+
+          if (deleteResult === DELETE_MEAL_RECORD_RESULT.FAILED_RECOVERED) {
+            toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+            return;
+          }
+
+          if (deleteResult === DELETE_MEAL_RECORD_RESULT.FAILED_UNRECOVERED) {
+            clearAllDrafts();
+            toast.warning("서버가 불안정해요. 잠시 후 다시 시도해주세요.");
+            navigate(PATH.DIARY, { replace: true });
+            return;
+          }
+
+          continue;
+        }
+
         await registerMealAsync(request);
       }
 
@@ -189,9 +216,11 @@ export default function MealRecordPage() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
       toast.success("식사 기록이 저장되었어요");
     } catch {
-      toast.warning("식사 기록 저장에 실패했어요");
+      toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
     }
   };
+
+  const isSavePending = isRegisterPending || isDeletePending;
 
   const handleMenuDetail = (menuId: number) => {
     navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_RECORD"));
@@ -317,11 +346,11 @@ export default function MealRecordPage() {
             void handleComplete();
           }}
           variant="filled"
-          state={hasUnsavedChanges && !isRegisterPending ? "default" : "disabled"}
+          state={hasUnsavedChanges && !isSavePending ? "default" : "disabled"}
           size="medium"
           color="primary"
           fullWidth
-          disabled={!hasUnsavedChanges || isRegisterPending}
+          disabled={!hasUnsavedChanges || isSavePending}
         >
           완료하기
         </Button>

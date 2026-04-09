@@ -1,6 +1,7 @@
 import { appApiData } from "@/shared/api/appApi";
 import type {
   DateRequestDto,
+  DeleteMealRequestDto,
   MealRecordResponseDto,
   RegisterMealRequestDto,
 } from "@/shared/api/types/api.dto";
@@ -8,6 +9,7 @@ import type {
 const END_POINT = {
   DAY_MEALS: "/home/getMealRecord",
   MEAL_REGISTER: "/home/registerMeal",
+  MEAL_DELETE: "/home/deleteMeal",
 };
 
 export async function getDayMeals(date: DateRequestDto) {
@@ -28,4 +30,12 @@ export async function postTodayMealRecordRegister(body: RegisterMealRequestDto) 
   });
 
   return response;
+}
+
+export async function deleteTodayMealRecord(body: DeleteMealRequestDto) {
+  await appApiData({
+    endpoint: END_POINT.MEAL_DELETE,
+    method: "POST",
+    body,
+  });
 }
