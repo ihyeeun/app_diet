@@ -8,7 +8,6 @@ import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery
 import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
 import {
   formatMenuDraftKey,
-  type MenuDraftType,
   useMenuDraftClear,
   useMenuDraftInit,
   useMenuDraftMenus,
@@ -189,6 +188,7 @@ export default function MealRecordPage() {
     }
 
     try {
+      // 여기서 분기처리하면 될거같으넫
       for (const request of changedRequests) {
         await registerMealAsync(request);
       }
@@ -217,21 +217,24 @@ export default function MealRecordPage() {
 
   const handleExitConfirm = () => {
     clearAllDrafts();
-    navigate(PATH.HOME, { replace: true });
+    navigate(PATH.DIARY, { replace: true });
   };
 
   const handleMealSearchNavigate = () => {
-    const seedMenuMap = new Map<number, MenuDraftType>();
-    displayMenuItems.forEach((menu) => {
-      seedMenuMap.set(menu.id, { id: menu.id, quantity: menu.quantity });
+    const seedMenus = hasCurrentDraft
+      ? draftMenus
+      : currentMenuItems.map((menu) => ({
+          id: menu.id,
+          quantity: menu.quantity,
+        }));
+
+    initDraft({
+      key: draftKey,
+      existingMenuCount: seedMenus.length,
+      seedMenus,
     });
 
-    navigate(getMealSearchPath(dateKey, mealType), {
-      state: {
-        seedMenus: [...seedMenuMap.values()],
-        selectedMenuCount: displayMenuItems.length,
-      },
-    });
+    navigate(getMealSearchPath(dateKey, mealType));
   };
 
   if (isSummaryReady) return <p> 로딩 중</p>;

@@ -1,17 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
 import {
   formatMenuDraftKey,
-  type MenuDraftType,
-  useMenuDraftInit,
   useMenuDraftMenus,
   useMenuDraftRemove,
   useMenuDraftSelectedCount,
+  useMenuDraftStore,
   useMenuDraftUpsert,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
@@ -38,17 +37,10 @@ const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
   "4": MEAL_TIME.LATE_NIGHT_SNACK,
 };
 
-type MealSearchLocationState = {
-  seedMenus?: MenuDraftType[];
-  selectedMenuCount?: number;
-};
-
 export default function MealSearchPage() {
-  const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const locationState = (location.state ?? {}) as MealSearchLocationState;
 
   const [submittedKeyword, setSubmittedKeyword] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -57,32 +49,28 @@ export default function MealSearchPage() {
   const mealType = getMealType(searchParams.get("mealType"));
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
-  const initDraft = useMenuDraftInit();
   const upsertMenu = useMenuDraftUpsert();
   const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
-  const seedMenus = useMemo(
-    () => (Array.isArray(locationState.seedMenus) ? locationState.seedMenus : []),
-    [locationState.seedMenus],
-  );
+  const hasDraft = useMenuDraftStore((store) => Boolean(store.drafts[draftKey]));
 
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
     [selectedMenus],
   );
-  const existingMenuCount = locationState.selectedMenuCount ?? seedMenus.length;
 
   const { mutate: mealSearchMutation, data: searchResults } = useMealSearchMutation();
   const { mutate: mealRegister } = useTodayMealRecordRegisterMutation();
 
   useEffect(() => {
-    initDraft({
-      key: draftKey,
-      existingMenuCount,
-      seedMenus,
-    });
-  }, [draftKey, existingMenuCount, initDraft, seedMenus]);
+    if (hasDraft) {
+      return;
+    }
+
+    toast.warning("올바르지 않은 접근이에요");
+    navigate(getMealRecordPath(dateKey, mealType), { replace: true });
+  }, [dateKey, hasDraft, mealType, navigate]);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -160,6 +148,10 @@ export default function MealSearchPage() {
   const handleCameraClick = () => {
     navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
   };
+
+  if (!hasDraft) {
+    return null;
+  }
 
   return (
     <section className={styles.page}>
