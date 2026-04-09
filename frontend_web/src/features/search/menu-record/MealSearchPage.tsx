@@ -141,6 +141,12 @@ export default function MealSearchPage() {
     navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
   };
 
+  const handleMealSearch = () => {
+    if (submittedKeyword.trim() === "") return;
+
+    mealSearchMutation(submittedKeyword);
+  };
+
   if (!hasDraft) {
     return null;
   }
@@ -151,7 +157,7 @@ export default function MealSearchPage() {
         value={submittedKeyword}
         onValueChange={setSubmittedKeyword}
         onClear={handleClearKeyword}
-        onEnter={mealSearchMutation}
+        onEnter={handleMealSearch}
         inputRef={searchInputRef}
         placeholder="메뉴를 검색해보세요"
         inputAriaLabel="메뉴 검색"
