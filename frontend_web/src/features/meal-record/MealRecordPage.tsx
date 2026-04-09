@@ -1,9 +1,7 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import {
   DELETE_MEAL_RECORD_RESULT,
@@ -46,7 +44,6 @@ function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
 export default function MealRecordPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const queryClient = useQueryClient();
   const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
@@ -213,7 +210,6 @@ export default function MealRecordPage() {
       }
 
       clearAllDrafts();
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
       toast.success("식사 기록이 저장되었어요");
     } catch {
       toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");

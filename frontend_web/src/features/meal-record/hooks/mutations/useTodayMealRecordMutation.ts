@@ -9,24 +9,32 @@ import type { MealTime, RegisterMealRequestDto } from "@/shared/api/types/api.dt
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
 
 export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallback) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: postTodayMealRecordRegister,
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
       callbacks?.onSuccess?.();
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
       callbacks?.onError?.(error);
     },
   });
 }
 
 export function useTodayMealRecordDeleteMutation(callbacks?: UseMutationCallback) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: deleteTodayMealRecord,
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
       callbacks?.onSuccess?.();
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
       callbacks?.onError?.(error);
     },
   });
@@ -78,6 +86,7 @@ export function useTodayMealRecordDeleteWithRollbackMutation() {
           });
         }
 
+        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
         return DELETE_MEAL_RECORD_RESULT.DELETED;
       } catch {
         let rollbackSucceeded = true;

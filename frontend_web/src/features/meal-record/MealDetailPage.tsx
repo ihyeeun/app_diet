@@ -74,6 +74,8 @@ export default function MealDetailPage() {
       return;
     }
 
+    toast.warning("잘못된 접근입니다.");
+
     navigate(PATH.HOME, { replace: true });
   }, [dateKey, mealType, menuId, navigate]);
 
