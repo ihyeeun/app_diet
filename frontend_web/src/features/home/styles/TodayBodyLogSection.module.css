@@ -32,16 +32,129 @@
 .sheetContainer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   padding: 0 24px;
   padding-bottom: var(--safe-area-bottom);
 }
 
+.sheetContent {
+  padding-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .sheetTitle {
-  margin: 0;
+  color: var(--text-normal);
+  padding-bottom: 16px;
 }
 
 .sheetActions {
-  padding-bottom: 16px;
-  padding-top: 20px;
+  padding-top: 40px;
+}
+
+.sheetFieldLabel {
+  color: var(--text-normal);
+  margin: 0;
+}
+
+.weightNumberFieldGroup {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 50px;
+}
+
+.weightValueDisplay {
+  align-items: baseline;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.weightNumberInput {
+  background: transparent;
+  border: 0;
+  color: var(--text-normal);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  width: 4ch;
+}
+
+.weightNumberInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.weightNumberInput:focus,
+.weightNumberInput:focus-visible {
+  box-shadow: none;
+  outline: none;
+}
+
+.weightAdjustButton {
+  align-items: center;
+  background: var(--primary-normal);
+  border: none;
+  border-radius: 100px;
+  color: var(--text-white);
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  transition: filter 0.14s ease;
+  width: 32px;
+}
+
+.weightAdjustButton:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.weightAdjustButton:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.weightAdjustButton:disabled {
+  background: var(--gray-400);
+  cursor: not-allowed;
+}
+
+.weightUnit {
+  color: var(--text-normal);
+}
+
+.stepsNumberFieldGroup {
+  align-items: end;
+  display: flex;
+  gap: 12px;
+}
+
+.stepsNumberInput {
+  background: transparent;
+  border: 1px solid var(--border-normal);
+  border-radius: 6px;
+  color: var(--text-normal);
+  flex: 1;
+  padding: 14px 12px;
+}
+
+.stepsNumberInput::placeholder {
+  color: var(--text-assistive2);
+}
+
+.stepsNumberInput:focus,
+.stepsNumberInput:focus-visible {
+  box-shadow: none;
+  outline: none;
+}
+
+.stepsNumberInput::-webkit-inner-spin-button,
+.stepsNumberInput::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.stepsUnit {
+  color: var(--text-normal);
+  padding-bottom: 2px;
 }
