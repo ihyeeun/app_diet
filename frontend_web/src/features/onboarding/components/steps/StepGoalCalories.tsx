@@ -1,4 +1,3 @@
-import { Field } from "@base-ui/react/field";
 import { useEffect, useMemo, useState } from "react";
 
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
@@ -137,16 +136,15 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
         </p>
       </div>
 
-      <Field.Root className={styles.onboardingFieldPadding}>
+      <div className={styles.goalCalorieContainer}>
         <button className={styles.onboardingGoalKcalTrigger} type="button" onClick={openEditor}>
-          <p className={styles.onboardingGoalKcalValue}>
+          <p className={`${styles.onboardingGoalKcalValue} typo-h1`}>
             {formattargetCalories(visibletargetCalories)} kcal
           </p>
         </button>
-      </Field.Root>
 
-      <p className={styles.onboardingGoalKcalHelper}>{goalWeekMessage}</p>
-
+        <p className={`${styles.onboardingGoalKcalHelper} typo-title3`}>{goalWeekMessage}</p>
+      </div>
       <BottomSheet isOpen={open} onClose={() => setOpen(false)}>
         <div className={styles.onboardingGoalKcalSheet}>
           <h3>목표 칼로리</h3>
