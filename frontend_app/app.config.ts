@@ -1,8 +1,13 @@
 import type { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
-  name: "frontend_app",
-  slug: "frontend_app",
+  name: "melo",
+  slug: "melo",
+  extra: {
+    eas: {
+      projectId: "507c0e33-8576-4aba-84f4-00d6b74a7338",
+    },
+  },
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
