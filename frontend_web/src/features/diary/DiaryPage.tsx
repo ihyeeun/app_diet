@@ -42,7 +42,7 @@ export default function DiaryPage() {
   const selectedDateKey = useSelectedDateKey();
   const setSelectedDate = useSetSelectedDate();
   const selectedDate = parseDateKey(selectedDateKey);
-  const [expandedMealType, setExpandedMealType] = useState<MealType | null>("1");
+  const [expandedMealType, setExpandedMealType] = useState<MealType | null>(null);
   const navigate = useNavigate();
   const targets = useTargetsState();
 
