@@ -338,6 +338,10 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
     );
   }
 
+  if (value.type === "NAVIGATION_BACK") {
+    return true;
+  }
+
   if (value.type === "CAMERA_CAPTURE_REQUEST") {
     if (value.payload === undefined) return true;
     if (!isRecord(value.payload)) return false;
@@ -417,6 +421,11 @@ export async function handleWebMessage(
 
     if (message.type === "TAB_SYNC") {
       router.replace(`/(tabs)/${message.payload.tab}`);
+      return;
+    }
+
+    if (message.type === "NAVIGATION_BACK") {
+      router.back();
       return;
     }
 

@@ -24,6 +24,11 @@ export type WebToAppTabSyncMessage = {
   };
 };
 
+export type WebToAppNavigationBackMessage = {
+  id: string;
+  type: "NAVIGATION_BACK";
+};
+
 export type CameraCaptureRequestPayload = {
   quality?: number;
   mode?: "NUTRITION_LABEL" | "MENU_BOARD" | "FOOD" | "GENERAL";
@@ -65,6 +70,7 @@ export type WebToAppImageUploadMessage = {
 export type WebToAppMessage =
   | WebToAppApiRequestMessage
   | WebToAppTabSyncMessage
+  | WebToAppNavigationBackMessage
   | WebToAppCameraCaptureMessage
   | WebToAppGalleryPickMessage
   | WebToAppImageUploadMessage;

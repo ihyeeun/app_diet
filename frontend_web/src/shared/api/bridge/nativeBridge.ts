@@ -141,6 +141,15 @@ export function syncAppTab(tab: AppTabName) {
   });
 }
 
+export function requestAppBack() {
+  if (!isNativeApp()) return;
+
+  postMessageToApp({
+    id: generateRequestId(),
+    type: "NAVIGATION_BACK",
+  });
+}
+
 export function requestNativeCameraCapture(payload?: CameraCaptureRequestPayload) {
   return sendRequestToApp<CameraCaptureResponsePayload>((id) => ({
     id,

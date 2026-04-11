@@ -22,6 +22,11 @@ export type BridgeTabSyncMessage = {
   };
 };
 
+export type BridgeNavigationBackMessage = {
+  id: string;
+  type: "NAVIGATION_BACK";
+};
+
 export type BridgeCameraCaptureRequestPayload = {
   quality?: number;
   mode?: "NUTRITION_LABEL" | "MENU_BOARD" | "FOOD" | "GENERAL";
@@ -63,6 +68,7 @@ export type BridgeImageUploadRequestMessage = {
 export type WebToAppMessage =
   | BridgeApiRequestMessage
   | BridgeTabSyncMessage
+  | BridgeNavigationBackMessage
   | BridgeCameraCaptureRequestMessage
   | BridgeGalleryPickRequestMessage
   | BridgeImageUploadRequestMessage;
