@@ -10,7 +10,7 @@ const config: ExpoConfig = {
   },
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/logo/meloLogo.png",
   scheme: "frontendapp",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
@@ -23,10 +23,10 @@ const config: ExpoConfig = {
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#E6F4FE",
-      foregroundImage: "./assets/images/android-icon-foreground.png",
-      backgroundImage: "./assets/images/android-icon-background.png",
-      monochromeImage: "./assets/images/android-icon-monochrome.png",
+      backgroundColor: "#ff8e00",
+      foregroundImage: "./assets/logo/android-icon-foreground.png",
+      backgroundImage: "./assets/logo/android-icon-background.png",
+      monochromeImage: "./assets/logo/android-icon-foreground.png",
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
@@ -35,7 +35,7 @@ const config: ExpoConfig = {
   },
   web: {
     output: "static",
-    favicon: "./assets/images/favicon.png",
+    favicon: "./assets/logo/meloLogo.svg",
   },
   plugins: [
     "expo-router",
