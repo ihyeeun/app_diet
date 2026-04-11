@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getDayMeals } from "@/features/meal-record/api/DayMeal";
-
-function isValidDateKey(date: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(date);
-}
+import { isValidDateKey } from "@/shared/utils/dateFormat";
 
 export function useDayMealsQuery(date: string) {
   return useQuery({
