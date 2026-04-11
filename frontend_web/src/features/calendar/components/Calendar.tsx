@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function Calendar({ initialDate, summaries = [], onSelectDate }: Props) {
-  const { viewMode, viewDate, weekDays, monthDays, toggleViewMode, selectDate, goPrev, goNext } =
+  const { viewMode, selectedDate, viewDate, weekDays, monthDays, toggleViewMode, selectDate, goPrev, goNext } =
     useCalendar({
       initialDate,
       initialViewMode: "week",
@@ -31,6 +31,7 @@ export default function Calendar({ initialDate, summaries = [], onSelectDate }: 
       <CalendarHeader
         viewMode={viewMode}
         viewDate={viewDate}
+        selectedDate={selectedDate}
         onToggleViewMode={toggleViewMode}
         onPrev={goPrev}
         onNext={goNext}
