@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useSendMessageMutation } from "@/features/chat/hooks/mutations/useSendMessageMutation";
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
 import styles from "@/features/chat/styles/ChatPage.module.css";
+import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
 import { PATH } from "@/router/path";
 import { AppApiError } from "@/shared/api/appApi";
 import type { ChatRecommendItemResponseDto } from "@/shared/api/types/api.dto";
@@ -153,6 +154,7 @@ export default function ChatPage() {
 
                     {chatItem.response_payload.recommendations.length > 0 ? (
                       <RecommendationSection
+                        chatId={chatItem.id}
                         recommendations={chatItem.response_payload.recommendations}
                         selectedMenuIds={selectedMenuIds}
                         onSelectMenu={(menuId) => handleSelectMenu(chatItem.id, menuId)}
@@ -300,14 +302,17 @@ function ChatInput({
 }
 
 function RecommendationSection({
+  chatId,
   recommendations,
   selectedMenuIds,
   onSelectMenu,
 }: {
+  chatId: number;
   recommendations: ChatRecommendItemResponseDto[];
   selectedMenuIds: number[];
   onSelectMenu: (menuId: number) => void;
 }) {
+  const navigate = useNavigate();
   const topRecommendation = recommendations[0];
   const remaining = recommendations.slice(1);
 
@@ -315,7 +320,6 @@ function RecommendationSection({
 
   const topIsSelected = selectedMenuIds.includes(topRecommendation.menu_id);
   const topBadgeText = topRecommendation.rank ? `${topRecommendation.rank}위` : "추천";
-  const topBrandText = topRecommendation.brand?.trim() || "개인용";
 
   return (
     <div className={styles.recommendationSection}>
@@ -330,11 +334,9 @@ function RecommendationSection({
         <div className={styles.recommendContents}>
           <p className={`${styles.recommendMenuName} typo-title2`}>{topRecommendation.menu}</p>
           {/* {topIsSelected ? <CircleCheck size={28} /> : <CirclePlus size={28} />} */}
-
           <p className={`${styles.recommendSummary} typo-label4`}>
             {topRecommendation.one_line_summary}
           </p>
-
           <div className={styles.recommendMetaRow}>
             {topRecommendation.brand && (
               <span className={`${styles.recommendBrand} typo-label4`}>
@@ -348,8 +350,10 @@ function RecommendationSection({
               {formatCalories(topRecommendation.calories)} kcal
             </span>
           </div>
-
-          <span className={`${styles.recommendTag} typo-caption`}>{topBrandText}</span>
+          {/* TODO 개인용 메뉴가 필드에 응답으로 안오고 있음. 확인 필요 */}
+          {/* {topRecommendation. && (
+            <span className={`${styles.recommendTag} typo-caption`}>개인용</span>
+          )} */}
         </div>
 
         <div className="divider" />
@@ -372,7 +376,12 @@ function RecommendationSection({
       </button>
 
       {remaining.length > 0 ? (
-        <button type="button" className={styles.moreRecommendCard} aria-label="추천 목록 더보기">
+        <button
+          type="button"
+          className={styles.moreRecommendCard}
+          aria-label="추천 목록 더보기"
+          onClick={() => navigate(getRecommendResultPath(chatId))}
+        >
           <p className={`${styles.moreRecommendTitle} typo-body3`}>
             상위 추천 메뉴 2~{recommendations.length}위(총 {recommendations.length}개)
           </p>

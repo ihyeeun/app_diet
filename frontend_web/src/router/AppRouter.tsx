@@ -33,6 +33,8 @@ const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const GoalEditPage = lazy(() => import("@/features/profile/GoalEditPage"));
 const ChatPage = lazy(() => import("@/features/chat/ChatPage"));
 const DiaryPage = lazy(() => import("@/features/diary/DiaryPage"));
+const RecommendResultPage = lazy(() => import("@/features/chat/RecommendResultPage"));
+const RecommendDetailPage = lazy(() => import("@/features/chat/RecommendDetailPage"));
 
 function useSyncTargetsFromProfile() {
   const hasTargetsLoaded = useTargetsLoadedState();
@@ -93,6 +95,8 @@ export default function AppRouter() {
             <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
 
             <Route path={PATH.CHAT} element={<ChatPage />} />
+            <Route path={PATH.RECOMMEND_RESULT} element={<RecommendResultPage />} />
+            <Route path={PATH.RECOMMEND_DETAIL} element={<RecommendDetailPage />} />
 
             <Route path={PATH.DIARY} element={<DiaryPage />} />
 
