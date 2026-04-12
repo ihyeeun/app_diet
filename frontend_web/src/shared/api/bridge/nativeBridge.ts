@@ -121,12 +121,15 @@ function sendRequestToApp<T>(
   });
 }
 
-export function requestToApp<T>(payload: ApiRequestPayload) {
-  return sendRequestToApp<T>((id) => ({
-    id,
-    type: "API_REQUEST",
-    payload,
-  }));
+export function requestToApp<T>(payload: ApiRequestPayload, options?: SendRequestOptions) {
+  return sendRequestToApp<T>(
+    (id) => ({
+      id,
+      type: "API_REQUEST",
+      payload,
+    }),
+    options,
+  );
 }
 
 export function syncAppTab(tab: AppTabName) {

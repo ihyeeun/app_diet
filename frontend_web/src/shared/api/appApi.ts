@@ -10,6 +10,7 @@ export type RequestOptions = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   params?: Record<string, string | number | boolean | undefined>;
+  timeoutMs?: number;
 };
 
 export async function appApi<T>(options: RequestOptions): Promise<ApiResponse<T>> {
@@ -17,7 +18,8 @@ export async function appApi<T>(options: RequestOptions): Promise<ApiResponse<T>
     throw new Error("앱 WebView 환경에서만 API 요청이 가능합니다.");
   }
 
-  const response = await requestToApp<ApiResponse<T>>(options);
+  const { timeoutMs, ...payload } = options;
+  const response = await requestToApp<ApiResponse<T>>(payload, { timeoutMs });
   return response;
 }
 
