@@ -1,12 +1,4 @@
-import {
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  CircleAlert,
-  CircleCheck,
-  CirclePlus,
-  Plus,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronUp, CircleAlert, Plus } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -132,7 +124,7 @@ export default function ChatPage() {
                 chatDate !== null &&
                 (previousDate === null || toDateKey(chatDate) !== toDateKey(previousDate));
               const selectedMenuIds = selectedMenuIdsByChatId[chatItem.id] ?? [];
-              const selectedRecommendations = chatItem.response_payload.recommendation.filter(
+              const selectedRecommendations = chatItem.response_payload.recommendations.filter(
                 (item) => selectedMenuIds.includes(item.menu_id),
               );
               const isCompleteCardExpanded = expandedCompleteCardByChatId[chatItem.id] ?? false;
@@ -159,9 +151,9 @@ export default function ChatPage() {
                       {chatItem.response_payload.intro_message}
                     </p>
 
-                    {chatItem.response_payload.recommendation.length > 0 ? (
+                    {chatItem.response_payload.recommendations.length > 0 ? (
                       <RecommendationSection
-                        recommendations={chatItem.response_payload.recommendation}
+                        recommendations={chatItem.response_payload.recommendations}
                         selectedMenuIds={selectedMenuIds}
                         onSelectMenu={(menuId) => handleSelectMenu(chatItem.id, menuId)}
                       />
@@ -333,41 +325,60 @@ function RecommendationSection({
         onClick={() => onSelectMenu(topRecommendation.menu_id)}
         aria-pressed={topIsSelected}
       >
-        <span className={`${styles.rankBadge} typo-caption`}>{topBadgeText}</span>
+        <span className={`${styles.rankBadge} typo-label6`}>{topBadgeText}</span>
 
-        <div className={styles.recommendHeaderRow}>
+        <div className={styles.recommendContents}>
           <p className={`${styles.recommendMenuName} typo-title2`}>{topRecommendation.menu}</p>
-          <span
-            className={`${styles.recommendToggleIcon} ${topIsSelected ? styles.recommendToggleIconSelected : ""}`}
-          >
-            {topIsSelected ? <CircleCheck size={28} /> : <CirclePlus size={28} />}
-          </span>
+          {/* {topIsSelected ? <CircleCheck size={28} /> : <CirclePlus size={28} />} */}
+
+          <p className={`${styles.recommendSummary} typo-label4`}>
+            {topRecommendation.one_line_summary}
+          </p>
+
+          <div className={styles.recommendMetaRow}>
+            {topRecommendation.brand && (
+              <span className={`${styles.recommendBrand} typo-label4`}>
+                {topRecommendation.brand}
+              </span>
+            )}
+            <span className={`${styles.recommendAmount} typo-label4`}>
+              1{topRecommendation.amount}
+            </span>
+            <span className={`${styles.recommendCalories} typo-title2`}>
+              {formatCalories(topRecommendation.calories)} kcal
+            </span>
+          </div>
+
+          <span className={`${styles.recommendTag} typo-caption`}>{topBrandText}</span>
         </div>
 
-        <p className={`${styles.recommendSummary} typo-body4`}>
-          {topRecommendation.one_line_summary}
-        </p>
+        <div className="divider" />
 
-        <div className={styles.recommendMetaRow}>
-          <span className={`${styles.recommendAmount} typo-title4`}>
-            {topRecommendation.amount}
-          </span>
-          <span className={`${styles.recommendCalories} typo-title2`}>
-            {formatCalories(topRecommendation.calories)} kcal
-          </span>
-        </div>
-
-        <span className={`${styles.recommendTag} typo-caption`}>{topBrandText}</span>
+        {!topIsSelected ? (
+          <div className={styles.addAction}>
+            <span className={`${styles.addActionText} typo-label3`}>오늘의 식사에 추가</span>
+            <span>
+              <Plus size={20} />
+            </span>
+          </div>
+        ) : (
+          <div className={styles.addActionSelected}>
+            <span className="typo-label3">오늘의 식사에 추가 완료</span>
+            <span>
+              <Check size={20} />
+            </span>
+          </div>
+        )}
       </button>
 
       {remaining.length > 0 ? (
         <button type="button" className={styles.moreRecommendCard} aria-label="추천 목록 더보기">
-          <p className={`${styles.moreRecommendTitle} typo-title3`}>
+          <p className={`${styles.moreRecommendTitle} typo-body3`}>
             상위 추천 메뉴 2~{recommendations.length}위(총 {recommendations.length}개)
           </p>
-          <span className={`${styles.moreRecommendAction} typo-body4`}>
+          <span className={`${styles.moreRecommendAction} typo-label3`}>
             더보기
-            <ChevronRight size={18} />
+            <ChevronRight size={20} />
           </span>
         </button>
       ) : null}
