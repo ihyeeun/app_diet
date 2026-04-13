@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
+import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import styles from "@/features/chat/styles/RecommendDetailPage.module.css";
 import {
   getRecommendResultPath,
@@ -13,6 +14,8 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 
 export default function RecommendDetailPage() {
+  useClearChatDraftOnFlowExit();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const chatId = getSafeChatId(searchParams.get("chatId"));

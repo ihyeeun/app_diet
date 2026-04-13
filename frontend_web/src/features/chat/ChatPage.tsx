@@ -3,31 +3,71 @@ import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { ChatMealRecordBottomSheet } from "@/features/chat/components/ChatMealRecordBottomSheet";
 import { useSendMessageMutation } from "@/features/chat/hooks/mutations/useSendMessageMutation";
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
+import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecordActions";
+import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
+import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
+import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
 import { PATH } from "@/router/path";
+import { getMealRecordPath } from "@/router/pathHelpers";
 import { AppApiError } from "@/shared/api/appApi";
-import type { ChatRecommendItemResponseDto } from "@/shared/api/types/api.dto";
+import {
+  type ChatHistoryItemResponseDto,
+  type ChatRecommendItemResponseDto,
+  DEFAULT_MEAL_TYPE,
+  type MealType,
+} from "@/shared/api/types/api.dto";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
+import {
+  CHAT_TO_MEAL_RECORD_SOURCE,
+  type MealRecordTransferPreview,
+  type MealRecordTransferState,
+} from "@/shared/types/mealRecordTransfer";
 
 const QUICK_CHIP_LIST = ["지금 먹기 좋은 메뉴를 추천해줘", "고지방 식단 추천해줘"];
 
+type RecordedMenuItem = {
+  id: number;
+  menu: string;
+  calories: number;
+  quantity: number;
+};
+
 export default function ChatPage() {
+  useClearChatDraftOnFlowExit();
+
   const navigate = useNavigate();
+  const selectedDateKey = useSelectedDateKey();
   const endAnchorRef = useRef<HTMLDivElement>(null);
+
   const [inputValue, setInputValue] = useState("");
   const [pendingInput, setPendingInput] = useState<string | null>(null);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
-  const [selectedMenuIdsByChatId, setSelectedMenuIdsByChatId] = useState<Record<number, number[]>>(
-    {},
-  );
   const [expandedCompleteCardByChatId, setExpandedCompleteCardByChatId] = useState<
     Record<number, boolean>
   >({});
+  const [activeSheetChatId, setActiveSheetChatId] = useState<number | null>(null);
+  const [sheetMenus, setSheetMenus] = useState<Array<{ id: number; quantity: number }>>([]);
+  const [sheetMealType, setSheetMealType] = useState<MealType>(DEFAULT_MEAL_TYPE);
+
+  const committedByChatId = useChatMealDraftStore((state) => state.committedByChatId);
+  const ensureDraft = useChatMealDraftStore((state) => state.ensureDraft);
+  const setDraftMenus = useChatMealDraftStore((state) => state.setDraftMenus);
+  const setDraftMealType = useChatMealDraftStore((state) => state.setDraftMealType);
+
+  const {
+    registerDraft,
+    cancelCommitted,
+    isPending: isRecordPending,
+    REGISTER_RESULT,
+  } = useChatMealRecordActions();
 
   const { data, isPending: isHistoryPending, refetch } = useGetChatHistoryQuery();
   const { mutateAsync: sendMessageMutation, isPending: isSendPending } = useSendMessageMutation();
@@ -50,6 +90,22 @@ export default function ChatPage() {
 
   const hasAnyConversation = chatList.length > 0 || pendingInput !== null;
   const isTypingPending = pendingInput !== null && (isSendPending || isAwaitingHistory);
+
+  const activeSheetChatItem = useMemo(() => {
+    if (activeSheetChatId === null) {
+      return null;
+    }
+
+    return chatList.find((item) => item.id === activeSheetChatId) ?? null;
+  }, [activeSheetChatId, chatList]);
+
+  const activeSheetCommitted = useMemo(() => {
+    if (activeSheetChatId === null) {
+      return null;
+    }
+
+    return committedByChatId[activeSheetChatId] ?? null;
+  }, [activeSheetChatId, committedByChatId]);
 
   useEffect(() => {
     endAnchorRef.current?.scrollIntoView({
@@ -83,26 +139,151 @@ export default function ChatPage() {
     await sendChatMessage(inputValue);
   };
 
-  const handleSelectMenu = (chatId: number, menuId: number) => {
-    setSelectedMenuIdsByChatId((prev) => {
-      const selectedMenuIds = prev[chatId] ?? [];
-      const isSelected = selectedMenuIds.includes(menuId);
-      const nextSelected = isSelected
-        ? selectedMenuIds.filter((value) => value !== menuId)
-        : [...selectedMenuIds, menuId];
-
-      return {
-        ...prev,
-        [chatId]: nextSelected,
-      };
-    });
-  };
-
   const handleToggleCompleteExpanded = (chatId: number) => {
     setExpandedCompleteCardByChatId((prev) => ({
       ...prev,
       [chatId]: !prev[chatId],
     }));
+  };
+
+  const handleOpenBottomSheet = (
+    chatItem: ChatHistoryItemResponseDto,
+    options?: { fromCommitted?: boolean; initialMenuId?: number },
+  ) => {
+    const fromCommitted = options?.fromCommitted ?? false;
+    const initialMenuId = options?.initialMenuId;
+    const committed = committedByChatId[chatItem.id];
+    const defaultMealType = getMealTypeFromChatMealTime(
+      chatItem.response_payload.parsed_request.meal_time,
+    );
+
+    const baseMealType = fromCommitted && committed ? committed.mealType : defaultMealType;
+    const quantityByMenuId = new Map<number, number>();
+
+    if (fromCommitted && committed) {
+      committed.menus.forEach((menu) => {
+        quantityByMenuId.set(menu.id, menu.quantity);
+      });
+    }
+
+    if (typeof initialMenuId === "number" && Number.isInteger(initialMenuId) && initialMenuId > 0) {
+      if (!quantityByMenuId.has(initialMenuId)) {
+        quantityByMenuId.set(initialMenuId, 1);
+      }
+    }
+
+    setSheetMealType(baseMealType);
+    setSheetMenus(
+      [...quantityByMenuId.entries()].map(([id, quantity]) => ({
+        id,
+        quantity,
+      })),
+    );
+    setActiveSheetChatId(chatItem.id);
+  };
+
+  const handleBottomSheetSubmit = async () => {
+    if (!activeSheetChatItem) {
+      return;
+    }
+
+    ensureDraft({
+      chatId: activeSheetChatItem.id,
+      dateKey: selectedDateKey,
+      mealType: sheetMealType,
+    });
+
+    setDraftMealType({
+      chatId: activeSheetChatItem.id,
+      mealType: sheetMealType,
+    });
+
+    setDraftMenus({
+      chatId: activeSheetChatItem.id,
+      menus: sheetMenus,
+    });
+
+    const hadCommitted = Boolean(activeSheetCommitted);
+    const result = await registerDraft({
+      chatId: activeSheetChatItem.id,
+    });
+
+    if (result === REGISTER_RESULT.SUCCESS) {
+      setActiveSheetChatId(null);
+      setSheetMenus([]);
+      toast.success(hadCommitted ? "수정되었어요" : "등록했어요");
+      return;
+    }
+
+    if (result === REGISTER_RESULT.SKIPPED) {
+      toast.warning("기록할 메뉴를 선택해주세요");
+      return;
+    }
+
+    toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+  };
+
+  const handleRecordCancel = async (chatId: number) => {
+    const result = await cancelCommitted(chatId);
+
+    if (result === REGISTER_RESULT.SUCCESS) {
+      toast.success("기록이 취소되었어요");
+      return;
+    }
+
+    if (result === REGISTER_RESULT.FAILED) {
+      toast.warning("기록 취소에 실패했어요. 잠시 후 다시 시도해주세요.");
+    }
+  };
+
+  const handleCloseBottomSheet = () => {
+    setActiveSheetChatId(null);
+    setSheetMenus([]);
+  };
+
+  const handleNavigateMealRecordAddMore = () => {
+    if (!activeSheetChatItem) {
+      return;
+    }
+
+    const previewByMenuId = new Map(
+      activeSheetChatItem.response_payload.recommendations.map((recommendation) => [
+        recommendation.menu_id,
+        recommendation,
+      ]),
+    );
+
+    const previews: MealRecordTransferPreview[] = sheetMenus.reduce<MealRecordTransferPreview[]>(
+      (acc, menu) => {
+        const recommendation = previewByMenuId.get(menu.id);
+        if (!recommendation) {
+          return acc;
+        }
+
+        acc.push({
+          id: menu.id,
+          name: recommendation.menu,
+          brand: recommendation.brand,
+          unit_quantity: recommendation.amount,
+          calories: recommendation.calories,
+        });
+        return acc;
+      },
+      [],
+    );
+
+    const transferState: MealRecordTransferState = {
+      source: CHAT_TO_MEAL_RECORD_SOURCE,
+      dateKey: selectedDateKey,
+      mealType: sheetMealType,
+      menus: sheetMenus,
+      previews,
+    };
+
+    handleCloseBottomSheet();
+    navigate(getMealRecordPath(selectedDateKey, sheetMealType), {
+      state: transferState,
+    });
   };
 
   return (
@@ -124,12 +305,14 @@ export default function ChatPage() {
               const shouldShowDateDivider =
                 chatDate !== null &&
                 (previousDate === null || toDateKey(chatDate) !== toDateKey(previousDate));
-              const selectedMenuIds = selectedMenuIdsByChatId[chatItem.id] ?? [];
-              const selectedRecommendations = chatItem.response_payload.recommendations.filter(
-                (item) => selectedMenuIds.includes(item.menu_id),
-              );
-              const isCompleteCardExpanded = expandedCompleteCardByChatId[chatItem.id] ?? false;
 
+              const committed = committedByChatId[chatItem.id];
+              const selectedMenuIds = (committed?.menus ?? []).map((menu) => menu.id);
+              const recordedMenus = committed
+                ? buildRecordedMenus(chatItem.response_payload.recommendations, committed.menus)
+                : [];
+
+              const isCompleteCardExpanded = expandedCompleteCardByChatId[chatItem.id] ?? false;
               return (
                 <section key={chatItem.id} className={styles.conversationSection}>
                   {shouldShowDateDivider ? (
@@ -157,15 +340,21 @@ export default function ChatPage() {
                         chatId={chatItem.id}
                         recommendations={chatItem.response_payload.recommendations}
                         selectedMenuIds={selectedMenuIds}
-                        onSelectMenu={(menuId) => handleSelectMenu(chatItem.id, menuId)}
+                        onSelectMenu={(menuId) =>
+                          handleOpenBottomSheet(chatItem, { initialMenuId: menuId })
+                        }
+                        onOpenBottomSheet={() => handleOpenBottomSheet(chatItem)}
                       />
                     ) : null}
 
-                    {selectedRecommendations.length > 0 ? (
+                    {recordedMenus.length > 0 ? (
                       <RecordCompleteCard
-                        recommendations={selectedRecommendations}
+                        menus={recordedMenus}
                         expanded={isCompleteCardExpanded}
                         onToggleExpanded={() => handleToggleCompleteExpanded(chatItem.id)}
+                        onCancel={() => handleRecordCancel(chatItem.id)}
+                        onEdit={() => handleOpenBottomSheet(chatItem, { fromCommitted: true })}
+                        isActionPending={isRecordPending}
                       />
                     ) : null}
                   </div>
@@ -215,6 +404,36 @@ export default function ChatPage() {
           }}
         />
       </footer>
+
+      <ChatMealRecordBottomSheet
+        isOpen={activeSheetChatItem !== null}
+        onClose={handleCloseBottomSheet}
+        recommendations={activeSheetChatItem?.response_payload.recommendations ?? []}
+        selectedMenus={sheetMenus}
+        mealType={activeSheetChatItem ? sheetMealType : DEFAULT_MEAL_TYPE}
+        onMealTypeChange={(mealType) => {
+          setSheetMealType(mealType);
+        }}
+        onQuantityChange={(menuId, quantity) => {
+          setSheetMenus((prev) => {
+            const targetIndex = prev.findIndex((menu) => menu.id === menuId);
+            if (targetIndex < 0) {
+              return [...prev, { id: menuId, quantity }];
+            }
+
+            return prev.map((menu, index) =>
+              index === targetIndex ? { ...menu, quantity } : menu,
+            );
+          });
+        }}
+        onRemoveMenu={(menuId) => {
+          setSheetMenus((prev) => prev.filter((menu) => menu.id !== menuId));
+        }}
+        onSubmit={handleBottomSheetSubmit}
+        isSubmitPending={isRecordPending}
+        submitLabel={activeSheetCommitted ? "수정하기" : "등록하기"}
+        onAddMore={handleNavigateMealRecordAddMore}
+      />
     </div>
   );
 }
@@ -306,11 +525,13 @@ function RecommendationSection({
   recommendations,
   selectedMenuIds,
   onSelectMenu,
+  // onOpenBottomSheet,
 }: {
   chatId: number;
   recommendations: ChatRecommendItemResponseDto[];
   selectedMenuIds: number[];
   onSelectMenu: (menuId: number) => void;
+  onOpenBottomSheet: () => void;
 }) {
   const navigate = useNavigate();
   const topRecommendation = recommendations[0];
@@ -333,7 +554,6 @@ function RecommendationSection({
 
         <div className={styles.recommendContents}>
           <p className={`${styles.recommendMenuName} typo-title2`}>{topRecommendation.menu}</p>
-          {/* {topIsSelected ? <CircleCheck size={28} /> : <CirclePlus size={28} />} */}
           <p className={`${styles.recommendSummary} typo-label4`}>
             {topRecommendation.one_line_summary}
           </p>
@@ -350,10 +570,6 @@ function RecommendationSection({
               {formatCalories(topRecommendation.calories)} kcal
             </span>
           </div>
-          {/* TODO 개인용 메뉴가 필드에 응답으로 안오고 있음. 확인 필요 */}
-          {/* {topRecommendation. && (
-            <span className={`${styles.recommendTag} typo-caption`}>개인용</span>
-          )} */}
         </div>
 
         <div className="divider" />
@@ -375,6 +591,13 @@ function RecommendationSection({
         )}
       </button>
 
+      {/* {selectedMenuIds.length > 0 ? (
+        <button type="button" className={styles.recordNowButton} onClick={onOpenBottomSheet}>
+          <span className="typo-label3">{selectedMenuIds.length}개 담겼어요</span>
+          <span className="typo-label3">기록하기</span>
+        </button>
+      ) : null} */}
+
       {remaining.length > 0 ? (
         <button
           type="button"
@@ -385,10 +608,10 @@ function RecommendationSection({
           <p className={`${styles.moreRecommendTitle} typo-body3`}>
             상위 추천 메뉴 2~{recommendations.length}위(총 {recommendations.length}개)
           </p>
-          <span className={`${styles.moreRecommendAction} typo-label3`}>
+          <p className={`${styles.moreRecommendAction} typo-label3`}>
             더보기
             <ChevronRight size={20} />
-          </span>
+          </p>
         </button>
       ) : null}
     </div>
@@ -396,20 +619,26 @@ function RecommendationSection({
 }
 
 function RecordCompleteCard({
-  recommendations,
+  menus,
   expanded,
   onToggleExpanded,
+  onCancel,
+  onEdit,
+  isActionPending,
 }: {
-  recommendations: ChatRecommendItemResponseDto[];
+  menus: RecordedMenuItem[];
   expanded: boolean;
   onToggleExpanded: () => void;
+  onCancel: () => void;
+  onEdit: () => void;
+  isActionPending: boolean;
 }) {
-  const totalCalories = recommendations.reduce((sum, item) => sum + item.calories, 0);
-  const summaryText = getRecordSummaryText(recommendations);
+  const totalCalories = menus.reduce((sum, item) => sum + item.calories * item.quantity, 0);
+  const summaryText = getRecordSummaryText(menus);
 
   return (
     <article className={styles.recordCompleteCard}>
-      <p className={`${styles.recordCompleteTitle} typo-title2`}>🎉 기록 완료!</p>
+      <p className={`${styles.recordCompleteTitle} typo-title2`}>기록 완료!</p>
 
       <button
         type="button"
@@ -417,10 +646,10 @@ function RecordCompleteCard({
         onClick={onToggleExpanded}
         aria-expanded={expanded}
       >
-        <span className={`${styles.recordCompleteSummaryText} typo-title3`}>{summaryText}</span>
+        <span className={`${styles.recordCompleteSummaryText} typo-title4`}>{summaryText}</span>
 
         <span className={styles.recordCompleteCaloriesWrapper}>
-          <span className={`${styles.recordCompleteCalories} typo-title2`}>
+          <span className={`${styles.recordCompleteCalories} typo-title3`}>
             {formatCalories(totalCalories)} kcal
           </span>
           <ChevronDown
@@ -432,11 +661,11 @@ function RecordCompleteCard({
 
       {expanded ? (
         <ul className={styles.recordCompleteDetailList}>
-          {recommendations.map((item) => (
-            <li key={item.menu_id} className={styles.recordCompleteDetailItem}>
+          {menus.map((item) => (
+            <li key={item.id} className={styles.recordCompleteDetailItem}>
               <span className="typo-body3">{item.menu}</span>
               <span className={`${styles.recordCompleteDetailCalories} typo-body3`}>
-                {formatCalories(item.calories)} kcal
+                {formatCalories(item.calories * item.quantity)} kcal
               </span>
             </li>
           ))}
@@ -447,12 +676,16 @@ function RecordCompleteCard({
         <button
           type="button"
           className={`${styles.recordActionButton} ${styles.recordActionButtonNeutral}`}
+          onClick={onCancel}
+          disabled={isActionPending}
         >
           기록 취소
         </button>
         <button
           type="button"
           className={`${styles.recordActionButton} ${styles.recordActionButtonPrimary}`}
+          onClick={onEdit}
+          disabled={isActionPending}
         >
           수정하기
         </button>
@@ -461,10 +694,33 @@ function RecordCompleteCard({
   );
 }
 
-function getRecordSummaryText(recommendations: ChatRecommendItemResponseDto[]) {
-  if (recommendations.length === 0) return "선택한 메뉴 없음";
-  if (recommendations.length === 1) return recommendations[0].menu;
-  return `${recommendations[0].menu} 외 ${recommendations.length - 1}개`;
+function getRecordSummaryText(menus: RecordedMenuItem[]) {
+  if (menus.length === 0) return "선택한 메뉴 없음";
+  if (menus.length === 1) return menus[0].menu;
+  return `${menus[0].menu} 외 ${menus.length - 1}개`;
+}
+
+function buildRecordedMenus(
+  recommendations: ChatRecommendItemResponseDto[],
+  selectedMenus: Array<{ id: number; quantity: number }>,
+): RecordedMenuItem[] {
+  const recommendationById = new Map(recommendations.map((item) => [item.menu_id, item]));
+
+  return selectedMenus.reduce<RecordedMenuItem[]>((acc, selectedMenu) => {
+    const recommendation = recommendationById.get(selectedMenu.id);
+    if (!recommendation) {
+      return acc;
+    }
+
+    acc.push({
+      id: selectedMenu.id,
+      menu: recommendation.menu,
+      calories: recommendation.calories,
+      quantity: selectedMenu.quantity,
+    });
+
+    return acc;
+  }, []);
 }
 
 function parseDateValue(value: string) {

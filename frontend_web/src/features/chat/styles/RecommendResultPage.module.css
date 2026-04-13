@@ -32,9 +32,9 @@
 }
 
 .intro {
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .introMessage {
@@ -52,15 +52,20 @@
 }
 
 .resultCard {
+  align-items: stretch;
   background-color: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
   border-radius: 8px;
   color: var(--text-normal);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding: 16px;
-  width: 100%;
+}
+
+.resultCardSelected {
+  background-color: var(--interaction-primary);
+  border-color: var(--border-primary);
 }
 
 .rankBadge {
@@ -69,8 +74,8 @@
   border-radius: 4px;
   color: var(--text-white);
   display: inline-flex;
-  width: fit-content;
   padding: 2px 6px;
+  width: fit-content;
 }
 
 .cardBody {
@@ -84,12 +89,14 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .titleRow {
   align-items: center;
-  justify-content: space-between;
   display: flex;
+  gap: 8px;
+  justify-content: space-between;
 }
 
 .menuName {
@@ -106,22 +113,21 @@
   gap: 4px;
 }
 
-.brand {
-  color: var(--text-assistive2);
-}
-
-.amount {
-  color: var(--text-assistive1);
-}
-
 .calories {
   color: var(--text-normal);
   margin-left: auto;
 }
 
-.icon {
-  color: var(--text-assistive2);
-  flex-shrink: 0;
+.addButton {
+  align-items: center;
+  color: var(--gray-500);
+  display: inline-flex;
+  justify-content: center;
+}
+
+.addButtonSelected {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
 }
 
 .loadingText {

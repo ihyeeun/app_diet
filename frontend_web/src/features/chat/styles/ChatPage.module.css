@@ -209,6 +209,16 @@
   width: 100%;
 }
 
+.recordNowButton {
+  align-items: center;
+  background-color: var(--bg-normal-white);
+  border-radius: 8px;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
 .moreRecommendTitle {
   color: var(--text-normal);
 }
@@ -305,6 +315,10 @@
 .recordActionButtonPrimary {
   border: 1px solid var(--border-primary);
   color: var(--primary-strong);
+}
+
+.recordActionButton:disabled {
+  opacity: 0.6;
 }
 
 .typingBubble {

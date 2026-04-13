@@ -1,6 +1,6 @@
 import { PlusIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import {
@@ -15,9 +15,11 @@ import {
   useMenuDraftMenus,
   useMenuDraftRemove,
   useMenuDraftStore,
+  useMenuDraftUpsert,
+  useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
-import { getMealDetailPath, getMealSearchPath } from "@/router/pathHelpers";
+import { getMealDetailPath, getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
   MEAL_TYPE_OPTIONS,
   type MealTime,
@@ -29,6 +31,7 @@ import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { parseMealRecordTransferState } from "@/shared/types/mealRecordTransfer";
 
 import styles from "./styles/MealRecordPage.module.css";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
@@ -41,14 +44,29 @@ function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
     .join("|");
 }
 
+type DisplayMenuItem = {
+  id: number;
+  name: string;
+  brand?: string;
+  calories: number;
+  quantity: number;
+  unit_quantity?: string;
+  unit?: number;
+  weight?: number;
+  data_source?: number;
+};
+
 export default function MealRecordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+  const hasAppliedTransferRef = useRef(false);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
   const draftKey = formatMenuDraftKey(dateKey, mealType);
+  const transferState = useMemo(() => parseMealRecordTransferState(location.state), [location.state]);
 
   const { data: currentMenus, isPending: isSummaryReady } = useDayMealsQuery(dateKey);
 
@@ -57,11 +75,17 @@ export default function MealRecordPage() {
   const { mutateAsync: deleteWithRollbackAsync, isPending: isDeletePending } =
     useTodayMealRecordDeleteWithRollbackMutation();
   const initDraft = useMenuDraftInit();
+  const upsertMenu = useMenuDraftUpsert();
+  const upsertPreviews = useMenuDraftUpsertPreviews();
   const removeMenu = useMenuDraftRemove();
   const clearDraft = useMenuDraftClear();
   const draftMenus = useMenuDraftMenus(dateKey, mealType);
   const allDrafts = useMenuDraftStore((store) => store.drafts);
   const hasCurrentDraft = Boolean(allDrafts[draftKey]);
+  const draftPreviewsById = useMemo(
+    () => allDrafts[draftKey]?.previewsById ?? {},
+    [allDrafts, draftKey],
+  );
 
   const currentMenuItems = (() => {
     if (!currentMenus) return [];
@@ -97,29 +121,104 @@ export default function MealRecordPage() {
     });
   }, [currentMenus, dateKey, draftKey, initDraft, mealType]);
 
+  useEffect(() => {
+    if (hasAppliedTransferRef.current || !currentMenus || !transferState) {
+      return;
+    }
+
+    if (transferState.dateKey !== dateKey || transferState.mealType !== mealType) {
+      return;
+    }
+
+    const seedMenus = currentMenus.menusByTime[mealType].map((menu) => ({
+      id: menu.id,
+      quantity: menu.quantity,
+    }));
+
+    initDraft({
+      key: draftKey,
+      existingMenuCount: seedMenus.length,
+      seedMenus,
+    });
+
+    transferState.menus.forEach((menu) => {
+      upsertMenu({
+        key: draftKey,
+        id: menu.id,
+        quantity: menu.quantity,
+      });
+    });
+
+    upsertPreviews({
+      key: draftKey,
+      previews: transferState.previews ?? [],
+    });
+
+    hasAppliedTransferRef.current = true;
+    navigate(getMealRecordPath(dateKey, mealType), { replace: true });
+  }, [
+    currentMenus,
+    dateKey,
+    draftKey,
+    initDraft,
+    mealType,
+    navigate,
+    transferState,
+    upsertMenu,
+    upsertPreviews,
+  ]);
+
   const menuById = useMemo(
     () => new Map(normalizedCurrentMenuItems.map((menu) => [menu.id, menu])),
     [normalizedCurrentMenuItems],
   );
 
   const displayMenuItems = useMemo(() => {
+    const toDisplayItem = (menu: (typeof normalizedCurrentMenuItems)[number]): DisplayMenuItem => ({
+      id: menu.id,
+      name: menu.name,
+      brand: menu.brand,
+      calories: menu.calories,
+      quantity: menu.quantity,
+      unit_quantity: menu.unit_quantity,
+      unit: menu.unit,
+      weight: menu.weight,
+      data_source: menu.data_source,
+    });
+
     if (!hasCurrentDraft) {
-      return normalizedCurrentMenuItems;
+      return normalizedCurrentMenuItems.map(toDisplayItem);
     }
 
-    return draftMenus.reduce<typeof normalizedCurrentMenuItems>((menus, draftMenu) => {
+    return draftMenus.reduce<DisplayMenuItem[]>((menus, draftMenu) => {
       const baseMenu = menuById.get(draftMenu.id);
-      if (!baseMenu) {
+      if (baseMenu) {
+        menus.push({
+          ...toDisplayItem(baseMenu),
+          quantity: draftMenu.quantity,
+        });
+        return menus;
+      }
+
+      const preview = draftPreviewsById[draftMenu.id];
+      if (!preview) {
         return menus;
       }
 
       menus.push({
-        ...baseMenu,
+        id: preview.id,
+        name: preview.name,
+        brand: preview.brand,
+        calories: preview.calories,
         quantity: draftMenu.quantity,
+        unit_quantity: preview.unit_quantity,
+        unit: preview.unit,
+        weight: preview.weight,
+        data_source: preview.data_source,
       });
       return menus;
     }, []);
-  }, [draftMenus, hasCurrentDraft, menuById, normalizedCurrentMenuItems]);
+  }, [draftMenus, draftPreviewsById, hasCurrentDraft, menuById, normalizedCurrentMenuItems]);
 
   const changedRequests = useMemo(() => {
     if (!currentMenus) {
