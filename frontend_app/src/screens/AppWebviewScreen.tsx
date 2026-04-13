@@ -15,6 +15,7 @@ const defaultWebUrl =
 
 const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL ?? defaultWebUrl;
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "10.0.2.2"]);
+const lastKnownTabWebHrefByTab = new Map<AppTabName, string>();
 
 type AppWebViewScreenProps = {
   path?: string;
@@ -241,6 +242,7 @@ export default function AppWebViewScreen({
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
   const didLoadOnceRef = useRef(false);
+  const didInitializeTabPathSyncRef = useRef(false);
   const pendingTabPathRef = useRef<string | null>(null);
   const latestWebPathRef = useRef<string | null>(null);
   const insets = useSafeAreaInsets();
@@ -249,13 +251,15 @@ export default function AppWebViewScreen({
   const normalizedTabPath = useMemo(() => normalizeTabPath(path), [path]);
   const webAppOrigin = getWebAppOrigin();
 
-  const [tabInitialUrl, setTabInitialUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isTabWebView && tabInitialUrl === null) {
-      setTabInitialUrl(buildWebAppUrl(normalizedTabPath));
+  const [tabInitialUrl] = useState<string | null>(() => {
+    if (!isTabWebView) return null;
+    if (currentTab) {
+      const preservedHref = lastKnownTabWebHrefByTab.get(currentTab);
+      if (preservedHref) return preservedHref;
     }
-  }, [isTabWebView, normalizedTabPath, tabInitialUrl]);
+
+    return buildWebAppUrl(normalizedTabPath);
+  });
 
   const targetUrl = isTabWebView
     ? (tabInitialUrl ?? buildWebAppUrl(normalizedTabPath))
@@ -331,6 +335,22 @@ export default function AppWebViewScreen({
     [isTabWebView, webAppOrigin],
   );
 
+  const rememberTabWebHref = useCallback(
+    (url: string) => {
+      if (!isTabWebView || !currentTab) return;
+
+      const webHref = resolveWebPath(url, webAppOrigin);
+      if (!webHref) return;
+
+      const tabFromUrl = resolveTabFromUrl(url, webAppOrigin);
+      if (tabFromUrl !== null && tabFromUrl !== currentTab) return;
+
+      lastKnownTabWebHrefByTab.set(currentTab, webHref);
+      latestWebPathRef.current = webHref;
+    },
+    [currentTab, isTabWebView, webAppOrigin],
+  );
+
   const canSyncAfterInitialLoad = useCallback(() => {
     return didLoadOnceRef.current && pendingTabPathRef.current === null;
   }, []);
@@ -350,6 +370,11 @@ export default function AppWebViewScreen({
 
   useEffect(() => {
     if (!isTabWebView) return;
+
+    if (!didInitializeTabPathSyncRef.current) {
+      didInitializeTabPathSyncRef.current = true;
+      return;
+    }
 
     pendingTabPathRef.current = normalizedTabPath;
     flushPendingTabPathSync();
@@ -371,13 +396,15 @@ export default function AppWebViewScreen({
         const rawData = JSON.parse(event.nativeEvent.data) as {
           type?: string;
           payload?: { href?: string };
+          context?: { href?: string };
         };
 
+        if (typeof rawData.context?.href === "string") {
+          rememberTabWebHref(rawData.context.href);
+        }
+
         if (rawData.type === "WEB_PATH_CHANGE" && typeof rawData.payload?.href === "string") {
-          const hrefFromWeb = resolveWebPath(rawData.payload.href, webAppOrigin);
-          if (hrefFromWeb) {
-            latestWebPathRef.current = hrefFromWeb;
-          }
+          rememberTabWebHref(rawData.payload.href);
           if (canSyncAfterInitialLoad()) {
             syncTabStateFromUrl(rawData.payload.href);
           }
@@ -389,23 +416,19 @@ export default function AppWebViewScreen({
 
       handleWebMessage(event, webViewRef);
     },
-    [canSyncAfterInitialLoad, syncTabStateFromUrl, webAppOrigin],
+    [canSyncAfterInitialLoad, rememberTabWebHref, syncTabStateFromUrl],
   );
 
   const onNavigationStateChange = useCallback(
     (navState: WebViewNavigation) => {
       canGoBackRef.current = navState.canGoBack;
-
-      const webHref = resolveWebPath(navState.url, webAppOrigin);
-      if (webHref) {
-        latestWebPathRef.current = webHref;
-      }
+      rememberTabWebHref(navState.url);
 
       if (canSyncAfterInitialLoad()) {
         syncTabStateFromUrl(navState.url);
       }
     },
-    [canSyncAfterInitialLoad, syncTabStateFromUrl, webAppOrigin],
+    [canSyncAfterInitialLoad, rememberTabWebHref, syncTabStateFromUrl],
   );
 
   useEffect(() => {

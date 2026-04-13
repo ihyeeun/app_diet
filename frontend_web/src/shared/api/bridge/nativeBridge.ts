@@ -30,7 +30,16 @@ function postMessageToApp(message: WebToAppMessage) {
     throw new Error("현재 앱 브리지를 사용할 수 없는 환경입니다.");
   }
 
-  window.ReactNativeWebView!.postMessage(JSON.stringify(message));
+  const href = typeof window !== "undefined" ? window.location.href : undefined;
+  const messageWithContext: WebToAppMessage = {
+    ...message,
+    context: {
+      ...message.context,
+      href,
+    },
+  };
+
+  window.ReactNativeWebView!.postMessage(JSON.stringify(messageWithContext));
 }
 
 export function initNativeBridgeListener() {

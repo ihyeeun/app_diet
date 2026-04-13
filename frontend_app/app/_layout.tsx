@@ -1,9 +1,11 @@
 import { loadAccessToken } from "@/features/auth/store/tokenStore";
 import { subscribeAuthExpired } from "@/src/shared/auth/authSessionEvents";
-import { router, Stack } from "expo-router";
+import { router, Stack, useSegments } from "expo-router";
 import { useEffect } from "react";
 
 export default function RootLayout() {
+  const segments = useSegments();
+
   useEffect(() => {
     const unsubscribe = subscribeAuthExpired(() => {
       router.replace("/(auth)/login");
@@ -16,6 +18,10 @@ export default function RootLayout() {
     let cancelled = false;
 
     (async () => {
+      const currentRoute = segments.join("/");
+      const shouldBootstrapRoute = currentRoute === "" || currentRoute === "index";
+      if (!shouldBootstrapRoute) return;
+
       const token = await loadAccessToken();
 
       if (cancelled) return;
@@ -30,7 +36,7 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [segments]);
 
   return (
     <Stack>

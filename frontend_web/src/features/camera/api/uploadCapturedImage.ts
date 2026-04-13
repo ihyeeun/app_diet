@@ -2,7 +2,8 @@ import { requestNativeImageUpload } from "@/shared/api/bridge/nativeBridge";
 import type { CapturedImage } from "@/shared/api/types/api.dto";
 
 const END_POINT = {
-  IMAGE_UPLOAD: "",
+  IMAGE_UPLOAD: "/home/uploadMealImage",
+  FOOD_ANALYSIS: "/home/recognizeFoodImage",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -40,18 +41,16 @@ export function resolveUploadedImageUrl(response: unknown) {
   return null;
 }
 
+// 서버로 이미지를 전송하는 로직
 export async function uploadCapturedImageToServer(capturedImage: CapturedImage) {
-  const response = await requestNativeImageUpload({
-    endpoint: END_POINT.IMAGE_UPLOAD,
+  const response = await requestNativeImageUpload<string[]>({
+    endpoint: END_POINT.FOOD_ANALYSIS,
     fileUri: capturedImage.uri,
     fileName: capturedImage.fileName,
     mimeType: capturedImage.mimeType,
-    fieldName: "file",
+    fieldName: "image",
     method: "POST",
   });
 
-  return {
-    response,
-    uploadedImageUrl: resolveUploadedImageUrl(response),
-  };
+  return response;
 }

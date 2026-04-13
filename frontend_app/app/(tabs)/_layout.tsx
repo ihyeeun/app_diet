@@ -31,13 +31,19 @@ const TAB_ITEMS: {
   { tab: "profile", label: "프로필", Icon: UserIcon, FocusedIcon: UserFillIcon },
 ];
 
-function resolveCurrentTab(segments: string[]): AppTabName {
-  const routeName = segments[segments.length - 1];
+let lastResolvedTab: AppTabName = "home";
 
-  if (routeName === "chat") return "chat";
-  if (routeName === "diary") return "diary";
-  if (routeName === "profile") return "profile";
-  return "home";
+function resolveCurrentTab(segments: string[]): AppTabName | null {
+  for (let index = segments.length - 1; index >= 0; index -= 1) {
+    const routeName = segments[index];
+
+    if (routeName === "home") return "home";
+    if (routeName === "chat") return "chat";
+    if (routeName === "diary") return "diary";
+    if (routeName === "profile") return "profile";
+  }
+
+  return null;
 }
 
 function getTabRoute(tab: AppTabName) {
@@ -46,7 +52,11 @@ function getTabRoute(tab: AppTabName) {
 
 export default function TabsLayout() {
   const segments = useSegments();
-  const currentTab = resolveCurrentTab(segments as string[]);
+  const resolvedTab = resolveCurrentTab(segments as string[]);
+  if (resolvedTab) {
+    lastResolvedTab = resolvedTab;
+  }
+  const currentTab = resolvedTab ?? lastResolvedTab;
   const tabPath = TAB_PATH_MAP[currentTab];
   const [isTabBarHidden, setIsTabBarHidden] = useState(false);
   const insets = useSafeAreaInsets();
