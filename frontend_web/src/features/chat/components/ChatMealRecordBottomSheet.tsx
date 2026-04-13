@@ -27,8 +27,8 @@ const MEAL_TYPE_ICON_MAP = {
   "0": "/icons/breakfast.svg",
   "1": "/icons/lunch.svg",
   "2": "/icons/dinner.svg",
-  "3": "/icons/Snack.svg",
-  "4": "/icons/Pizza.svg",
+  "3": "/icons/snack.svg",
+  "4": "/icons/pizza-icon.svg",
 } satisfies Record<MealType, string>;
 
 type ChatMealRecordBottomSheetProps = {

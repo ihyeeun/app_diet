@@ -10,7 +10,7 @@ const config: ExpoConfig = {
   },
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/logo/meloLogo.png",
+  icon: "./assets/logo/melo-logo.png",
   scheme: "frontendapp",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
@@ -35,7 +35,7 @@ const config: ExpoConfig = {
   },
   web: {
     output: "static",
-    favicon: "./assets/logo/meloLogo.svg",
+    favicon: "./assets/logo/melo-logo.svg",
   },
   plugins: [
     "expo-router",

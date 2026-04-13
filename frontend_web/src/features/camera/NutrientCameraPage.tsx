@@ -38,7 +38,7 @@ export default function NutrientCameraPage() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <img src="/icons/Camera.svg" alt="카메라 아이콘" className={styles.image} />
+          <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
           <p className="typo-title1">
             영양성분표 전체가 선명하게
             <br />

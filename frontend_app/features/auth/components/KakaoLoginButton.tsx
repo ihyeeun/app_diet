@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import KakaoLogo from "../../../assets/images/Icon/KakaoLogo.svg";
+import KakaoLogo from "../../../assets/images/Icon/kakao-logo.svg";
 
 type KakaoLoginButtonProps = {
   onPress: () => void;

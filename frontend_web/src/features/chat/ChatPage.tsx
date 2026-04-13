@@ -441,7 +441,7 @@ export default function ChatPage() {
 function EmptySection() {
   return (
     <div className={styles.emptySection}>
-      <img src="/icons/ChatFace.svg" />
+      <img src="/icons/chat-face.svg" />
       <p className={`typo-title1 ${styles.emptyTitle}`}>
         상황에 맞는
         <br />

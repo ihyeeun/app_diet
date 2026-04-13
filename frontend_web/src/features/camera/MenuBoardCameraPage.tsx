@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
+import { uploadCapturedImageToServer } from "@/features/camera/api/uploadCapturedImage";
 import styles from "@/features/camera/CameraPage.module.css";
 import {
   DEFAULT_CAMERA_CAPTURE_QUALITY,
   getCameraCaptureErrorMessage,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
-import { uploadCapturedImageToServer } from "@/features/nutrient-entry/api/uploadCapturedImage";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
@@ -36,7 +36,7 @@ export default function MenuBoardCameraPage() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <img src="/icons/Camera.svg" alt="카메라 아이콘" className={styles.image} />
+          <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
           <p className="typo-title1">
             메뉴판 전체가 선명하게
             <br />

@@ -205,7 +205,7 @@ export default function RecommendResultPage() {
               추천해드려요!
             </p>
 
-            <img src="/icons/Recommend.svg" />
+            <img src="/icons/recommend-icon.svg" />
           </div>
 
           <ul className={styles.resultList}>

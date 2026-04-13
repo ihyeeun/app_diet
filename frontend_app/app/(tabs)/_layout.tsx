@@ -3,14 +3,14 @@ import { router, Slot, useSegments } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import HomeIcon from "../../assets/images/Icon/Home.svg";
-import HomeFillIcon from "../../assets/images/Icon/HomeFill.svg";
-import ChatIcon from "../../assets/images/Icon/Chat.svg";
-import ChatFillIcon from "../../assets/images/Icon/ChatFill.svg";
-import DiaryIcon from "../../assets/images/Icon/Diary.svg";
-import DiaryFillIcon from "../../assets/images/Icon/DiaryFill.svg";
-import UserIcon from "../../assets/images/Icon/User.svg";
-import UserFillIcon from "../../assets/images/Icon/UserFill.svg";
+import HomeIcon from "../../assets/images/Icon/home-outline.svg";
+import HomeFillIcon from "../../assets/images/Icon/home-fill.svg";
+import ChatIcon from "../../assets/images/Icon/chat-outline.svg";
+import ChatFillIcon from "../../assets/images/Icon/chat-fill.svg";
+import DiaryIcon from "../../assets/images/Icon/diary-outline.svg";
+import DiaryFillIcon from "../../assets/images/Icon/diary-fill.svg";
+import UserIcon from "../../assets/images/Icon/user-outline.svg";
+import UserFillIcon from "../../assets/images/Icon/user-fill.svg";
 
 const TAB_PATH_MAP: Record<AppTabName, string> = {
   home: "/home",

@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import AppleLogo from "../../../assets/images/Icon/AppleLogo.svg";
+import AppleLogo from "../../../assets/images/Icon/apple-logo.svg";
 
 type AppleLoginButtonProps = {
   onPress: () => void;

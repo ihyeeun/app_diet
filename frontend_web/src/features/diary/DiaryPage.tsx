@@ -29,8 +29,8 @@ const DIARY_MEALS = [
   },
   { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안먹었어요" },
   { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안먹었어요" },
-  { type: "3", label: "간식", iconSrc: "/icons/Snack.svg", emptyStatusText: "안먹었어요" },
-  { type: "4", label: "야식", iconSrc: "/icons/Pizza.svg", emptyStatusText: "안먹었어요" },
+  { type: "3", label: "간식", iconSrc: "/icons/snack.svg", emptyStatusText: "안먹었어요" },
+  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg", emptyStatusText: "안먹었어요" },
 ] as const satisfies ReadonlyArray<{
   type: MealType;
   label: string;
