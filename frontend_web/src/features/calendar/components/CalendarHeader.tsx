@@ -6,6 +6,7 @@ import { formatCalendarHeader } from "../utils/format";
 type Props = {
   viewMode: ViewMode;
   viewDate: Date;
+  selectedDate: Date;
   onToggleViewMode: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -14,11 +15,12 @@ type Props = {
 export default function CalendarHeader({
   viewMode,
   viewDate,
+  selectedDate,
   onToggleViewMode,
   onPrev,
   onNext,
 }: Props) {
-  const weekTitle = formatCalendarHeader(viewDate, "week");
+  const weekTitle = formatCalendarHeader(selectedDate, "week");
   const monthTitle = formatCalendarHeader(viewDate, "month");
 
   return (

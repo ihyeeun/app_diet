@@ -66,12 +66,12 @@ export default function ProfilePage() {
   }, [profile?.nickname]);
 
   const nickname = profile?.nickname ?? "진득한 푸마";
-  const currentWeight = profile?.weight ?? 50;
+  const currentWeight = profile?.weight ?? 0;
   const targetWeight = profile?.target_weight ?? currentWeight;
   const targetCalories = profile?.target_calories ?? 2000;
   const remainingWeight = Math.abs(currentWeight - targetWeight);
-  const todayWeight =
-    typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
+  // const todayWeight =
+  //   typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
   const todaySteps =
     typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
   const metricConfig = METRIC_CONFIG[selectedMetric];
@@ -196,7 +196,8 @@ export default function ProfilePage() {
 
                 <div className={styles.activeCardValueRow}>
                   <span className={`${styles.activeCardValue} typo-h3`}>
-                    {todayWeight === null ? "-" : todayWeight.toLocaleString("ko-KR")}
+                    {/* {todayWeight === null ? "-" : todayWeight.toLocaleString("ko-KR")} */}
+                    {currentWeight.toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-label1`}>kg</span>
                 </div>

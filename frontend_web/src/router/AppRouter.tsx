@@ -1,5 +1,13 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+
+import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
+import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
+import {
+  useSetTargets,
+  useTargetsLoadedState,
+  useTargetsState,
+} from "@/shared/stores/targetNutrient.store";
 
 import { PATH } from "./path";
 
@@ -25,47 +33,78 @@ const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const GoalEditPage = lazy(() => import("@/features/profile/GoalEditPage"));
 const ChatPage = lazy(() => import("@/features/chat/ChatPage"));
 const DiaryPage = lazy(() => import("@/features/diary/DiaryPage"));
+const RecommendResultPage = lazy(() => import("@/features/chat/RecommendResultPage"));
+const RecommendDetailPage = lazy(() => import("@/features/chat/RecommendDetailPage"));
+
+function useSyncTargetsFromProfile() {
+  const hasTargetsLoaded = useTargetsLoadedState();
+  const targets = useTargetsState();
+  const setTargets = useSetTargets();
+  const shouldFetchProfile = hasTargetsLoaded && !targets && isNativeApp();
+  const { data: profile } = useGetProfileQuery({ enabled: shouldFetchProfile });
+
+  useEffect(() => {
+    if (!profile || targets) {
+      return;
+    }
+
+    setTargets({
+      target_calories: profile.target_calories,
+      target_ratio: profile.target_ratio,
+    });
+  }, [profile, setTargets, targets]);
+}
+
+function PrivateRouteLayout() {
+  useSyncTargetsFromProfile();
+  return <Outlet />;
+}
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Suspense fallback={null}>
         <Routes>
-          <Route path={PATH.ROOT} element={<HomePage />} />
-          <Route path={PATH.HOME} element={<HomePage />} />
-
-          <Route path={PATH.ONBOARDING} element={<OnboardingPage />} />
-
-          <Route path={PATH.RECOMMEND} element={<RecommendPage />} />
-
-          <Route path={PATH.SETTINGS} element={<SettingsPage />} />
-          <Route path={PATH.SETTINGS_FEEDBACK} element={<SettingsFeedbackPage />} />
-          <Route path={PATH.SETTINGS_SUB_CODE} element={<SettingsSubCodePage />} />
           <Route path={PATH.TERMS} element={<TermsPage />} />
 
-          <Route path={PATH.TODAY_MEAL_SCORE} element={<TodayMealScorePage />} />
+          <Route element={<PrivateRouteLayout />}>
+            <Route path={PATH.ROOT} element={<HomePage />} />
+            <Route path={PATH.HOME} element={<HomePage />} />
 
-          <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
-          <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
-          <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
-          <Route path={PATH.MENU_BOARD_CAMERA} element={<MenuBoardCameraPage />} />
-          <Route path={PATH.FOOD_CAMERA} element={<FoodCameraPage />} />
+            <Route path={PATH.ONBOARDING} element={<OnboardingPage />} />
 
-          <Route path={PATH.NUTRIENT_ADD} element={<NutrientAddPage />} />
-          <Route path={PATH.NUTRIENT_CAMERA} element={<NutrientCameraPage />} />
-          <Route path={PATH.NUTRIENT_ADD_MODIFY} element={<NutrientModifyPage />} />
-          <Route path={PATH.NUTRIENT_ADD_REGISTER} element={<NutrientRegisterPage />} />
+            <Route path={PATH.RECOMMEND} element={<RecommendPage />} />
 
-          <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
+            <Route path={PATH.SETTINGS} element={<SettingsPage />} />
+            <Route path={PATH.SETTINGS_FEEDBACK} element={<SettingsFeedbackPage />} />
+            <Route path={PATH.SETTINGS_SUB_CODE} element={<SettingsSubCodePage />} />
 
-          <Route path={PATH.CHAT} element={<ChatPage />} />
+            <Route path={PATH.TODAY_MEAL_SCORE} element={<TodayMealScorePage />} />
 
-          <Route path={PATH.DIARY} element={<DiaryPage />} />
+            <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
+            <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
+            <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
+            <Route path={PATH.MENU_BOARD_CAMERA} element={<MenuBoardCameraPage />} />
+            <Route path={PATH.FOOD_CAMERA} element={<FoodCameraPage />} />
 
-          <Route path={PATH.PROFILE} element={<ProfilePage />} />
-          <Route path={PATH.GOAL_EDIT} element={<GoalEditPage />} />
+            <Route path={PATH.NUTRIENT_ADD} element={<NutrientAddPage />} />
+            <Route path={PATH.NUTRIENT_CAMERA} element={<NutrientCameraPage />} />
+            <Route path={PATH.NUTRIENT_ADD_MODIFY} element={<NutrientModifyPage />} />
+            <Route path={PATH.NUTRIENT_ADD_REGISTER} element={<NutrientRegisterPage />} />
 
-          <Route path="*" element={<Navigate replace to={PATH.HOME} />} />
+            <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
+
+            <Route path={PATH.CHAT} element={<ChatPage />} />
+            <Route path={PATH.RECOMMEND_RESULT} element={<RecommendResultPage />} />
+            <Route path={PATH.RECOMMEND_DETAIL} element={<RecommendDetailPage />} />
+
+            <Route path={PATH.DIARY} element={<DiaryPage />} />
+
+            <Route path={PATH.PROFILE} element={<ProfilePage />} />
+            <Route path={PATH.GOAL_EDIT} element={<GoalEditPage />} />
+
+            <Route path="*" element={<Navigate replace to={PATH.HOME} />} />
+          </Route>
         </Routes>
       </Suspense>
     </BrowserRouter>

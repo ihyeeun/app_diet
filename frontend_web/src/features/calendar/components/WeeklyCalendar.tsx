@@ -12,13 +12,13 @@ type Props = {
 };
 
 export default function WeeklyCalendar({ days, onSelectDate, onSwipePrev, onSwipeNext }: Props) {
-  const swipeHandlers = useSwipe({
+  const { motionStyle, ...swipeHandlers } = useSwipe({
     onSwipeLeft: onSwipeNext,
     onSwipeRight: onSwipePrev,
   });
 
   return (
-    <div className="weekly-calendar" {...swipeHandlers}>
+    <div className="weekly-calendar" style={motionStyle} {...swipeHandlers}>
       {days.map((day, index) => (
         <DayCell
           key={day.date.toISOString()}

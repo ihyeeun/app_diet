@@ -1,17 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
 import {
   formatMenuDraftKey,
-  type MenuDraftType,
-  useMenuDraftInit,
   useMenuDraftMenus,
   useMenuDraftRemove,
   useMenuDraftSelectedCount,
+  useMenuDraftStore,
   useMenuDraftUpsert,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
@@ -21,7 +20,7 @@ import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMe
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealRecordPath } from "@/router/pathHelpers";
 import { getPathWithMeal } from "@/router/pathHelpers";
-import { MEAL_TIME, type MealType, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import { type MealTime, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
@@ -30,25 +29,10 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "../styles/MealSearch.module.css";
 
-const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
-  "0": MEAL_TIME.BREAKFAST,
-  "1": MEAL_TIME.LUNCH,
-  "2": MEAL_TIME.DINNER,
-  "3": MEAL_TIME.SNACK,
-  "4": MEAL_TIME.LATE_NIGHT_SNACK,
-};
-
-type MealSearchLocationState = {
-  seedMenus?: MenuDraftType[];
-  selectedMenuCount?: number;
-};
-
 export default function MealSearchPage() {
-  const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const locationState = (location.state ?? {}) as MealSearchLocationState;
 
   const [submittedKeyword, setSubmittedKeyword] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -57,32 +41,28 @@ export default function MealSearchPage() {
   const mealType = getMealType(searchParams.get("mealType"));
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
-  const initDraft = useMenuDraftInit();
   const upsertMenu = useMenuDraftUpsert();
   const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
-  const seedMenus = useMemo(
-    () => (Array.isArray(locationState.seedMenus) ? locationState.seedMenus : []),
-    [locationState.seedMenus],
-  );
+  const hasDraft = useMenuDraftStore((store) => Boolean(store.drafts[draftKey]));
 
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
     [selectedMenus],
   );
-  const existingMenuCount = locationState.selectedMenuCount ?? seedMenus.length;
 
   const { mutate: mealSearchMutation, data: searchResults } = useMealSearchMutation();
   const { mutate: mealRegister } = useTodayMealRecordRegisterMutation();
 
   useEffect(() => {
-    initDraft({
-      key: draftKey,
-      existingMenuCount,
-      seedMenus,
-    });
-  }, [draftKey, existingMenuCount, initDraft, seedMenus]);
+    if (hasDraft) {
+      return;
+    }
+
+    toast.warning("올바르지 않은 접근이에요");
+    navigate(getMealRecordPath(dateKey, mealType), { replace: true });
+  }, [dateKey, hasDraft, mealType, navigate]);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -121,7 +101,7 @@ export default function MealSearchPage() {
 
     const requestBody: RegisterMealRequestDto = {
       date: dateKey,
-      time: MEAL_TYPE_TO_TIME[mealType],
+      time: Number(mealType) as MealTime,
       menu_ids: selectedMenus.map((menu) => menu.id),
       menu_quantities: selectedMenus.map((menu) => menu.quantity),
     };
@@ -161,13 +141,23 @@ export default function MealSearchPage() {
     navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
   };
 
+  const handleMealSearch = () => {
+    if (submittedKeyword.trim() === "") return;
+
+    mealSearchMutation(submittedKeyword);
+  };
+
+  if (!hasDraft) {
+    return null;
+  }
+
   return (
     <section className={styles.page}>
       <SearchInputHeader
         value={submittedKeyword}
         onValueChange={setSubmittedKeyword}
         onClear={handleClearKeyword}
-        onEnter={mealSearchMutation}
+        onEnter={handleMealSearch}
         inputRef={searchInputRef}
         placeholder="메뉴를 검색해보세요"
         inputAriaLabel="메뉴 검색"

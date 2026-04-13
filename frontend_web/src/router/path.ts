@@ -8,7 +8,7 @@ export const PATH = {
   SETTINGS: "/settings",
   SETTINGS_FEEDBACK: "/settings/feedback",
   SETTINGS_SUB_CODE: "/settings/sub-code",
-  TERMS: "/settings/terms",
+  TERMS: "/terms",
   MEAL_RECORD: "/meal-record",
   MEAL_RECORD_ADD_SEARCH: "/meal-record/add/search",
   MEAL_DETAIL: "/meal/detail",
@@ -22,6 +22,8 @@ export const PATH = {
 
   // Chat
   CHAT: "/chat",
+  RECOMMEND_RESULT: "/recommend-result",
+  RECOMMEND_DETAIL: "/recommend-detail",
 
   //Diary
   DIARY: "/diary",

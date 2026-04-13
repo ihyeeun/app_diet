@@ -1,11 +1,10 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View, Image } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import AppleLogo from "../../../assets/images/Icon/apple-logo.svg";
 
 type AppleLoginButtonProps = {
   onPress: () => void;
 };
-
-const AppleLogoImage = require("../../../assets/images/appleLogo.png");
 
 export function AppleLoginButton({ onPress }: AppleLoginButtonProps) {
   return (
@@ -16,7 +15,7 @@ export function AppleLoginButton({ onPress }: AppleLoginButtonProps) {
       onPress={onPress}
     >
       <View style={styles.content}>
-        <Image source={AppleLogoImage} resizeMode="contain" style={styles.logo} />
+        <AppleLogo width={20} height={20} />
         <Text style={styles.label}>Apple 로그인</Text>
       </View>
     </Pressable>
@@ -41,10 +40,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-  },
-  logo: {
-    width: 20,
-    height: 20,
   },
   label: {
     color: "#ffffff",

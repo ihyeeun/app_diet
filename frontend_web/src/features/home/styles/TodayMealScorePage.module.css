@@ -142,19 +142,19 @@
 }
 
 .progressInsufficient {
-  background-color: var(--gray-500);
+  background-color: var(--status-warning);
 }
 
 .progressAdequate {
-  background-color: var(--blue-500);
+  background-color: var(--status-link);
 }
 
 .progressCaution {
-  background-color: var(--yellow-600);
+  background-color: var(--primary-heavy);
 }
 
 .progressExcess {
-  background-color: var(--red-500);
+  background-color: var(--status-error);
 }
 
 .nutrientBadge {
@@ -173,17 +173,17 @@
 }
 
 .badgeInsufficient .nutrientBadgeDot {
-  background-color: var(--gray-500);
+  background-color: var(--status-warning);
 }
 
 .badgeAdequate .nutrientBadgeDot {
-  background-color: var(--blue-500);
+  background-color: var(--status-link);
 }
 
 .badgeCaution .nutrientBadgeDot {
-  background-color: var(--yellow-600);
+  background-color: var(--primary-heavy);
 }
 
 .badgeExcess .nutrientBadgeDot {
-  background-color: var(--red-500);
+  background-color: var(--status-error);
 }

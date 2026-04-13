@@ -1,16 +1,110 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { postTodayMealRecordRegister } from "@/features/meal-record/api/DayMeal";
+import { queryKeys } from "@/features/home/hooks/queries/queryKey";
+import {
+  deleteTodayMealRecord,
+  postTodayMealRecordRegister,
+} from "@/features/meal-record/api/DayMeal";
+import type { MealTime, RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
 
 export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallback) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: postTodayMealRecordRegister,
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
       callbacks?.onSuccess?.();
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
       callbacks?.onError?.(error);
+    },
+  });
+}
+
+export function useTodayMealRecordDeleteMutation(callbacks?: UseMutationCallback) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteTodayMealRecord,
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      callbacks?.onSuccess?.();
+    },
+    onError: async (error, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      callbacks?.onError?.(error);
+    },
+  });
+}
+
+type MenuSnapshot = {
+  id: number;
+  quantity: number;
+};
+
+type DeleteWithRollbackParams = {
+  dateKey: string;
+  request: RegisterMealRequestDto;
+  currentMenusByTime: Record<MealTime, MenuSnapshot[]>;
+};
+
+export const DELETE_MEAL_RECORD_RESULT = {
+  DELETED: "deleted",
+  FAILED_RECOVERED: "failed_recovered",
+  FAILED_UNRECOVERED: "failed_unrecovered",
+} as const;
+
+export type DeleteMealRecordResult =
+  (typeof DELETE_MEAL_RECORD_RESULT)[keyof typeof DELETE_MEAL_RECORD_RESULT];
+
+export function useTodayMealRecordDeleteWithRollbackMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      dateKey,
+      request,
+      currentMenusByTime,
+    }: DeleteWithRollbackParams): Promise<DeleteMealRecordResult> => {
+      const menusByTime = currentMenusByTime[request.time];
+      const snapshot: RegisterMealRequestDto = {
+        date: request.date,
+        time: request.time,
+        menu_ids: menusByTime.map((menu) => menu.id),
+        menu_quantities: menusByTime.map((menu) => menu.quantity),
+      };
+
+      try {
+        for (const menu of menusByTime) {
+          await deleteTodayMealRecord({
+            date: request.date,
+            time: request.time,
+            menu_id: menu.id,
+          });
+        }
+
+        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+        return DELETE_MEAL_RECORD_RESULT.DELETED;
+      } catch {
+        let rollbackSucceeded = true;
+
+        try {
+          if (snapshot.menu_ids.length > 0) {
+            await postTodayMealRecordRegister(snapshot);
+          }
+        } catch {
+          rollbackSucceeded = false;
+        }
+
+        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+
+        return rollbackSucceeded
+          ? DELETE_MEAL_RECORD_RESULT.FAILED_RECOVERED
+          : DELETE_MEAL_RECORD_RESULT.FAILED_UNRECOVERED;
+      }
     },
   });
 }

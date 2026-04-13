@@ -1,11 +1,16 @@
 import type { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
-  name: "frontend_app",
-  slug: "frontend_app",
+  name: "melo",
+  slug: "melo",
+  extra: {
+    eas: {
+      projectId: "507c0e33-8576-4aba-84f4-00d6b74a7338",
+    },
+  },
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/logo/melo-logo.png",
   scheme: "frontendapp",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
@@ -18,10 +23,10 @@ const config: ExpoConfig = {
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#E6F4FE",
-      foregroundImage: "./assets/images/android-icon-foreground.png",
-      backgroundImage: "./assets/images/android-icon-background.png",
-      monochromeImage: "./assets/images/android-icon-monochrome.png",
+      backgroundColor: "#ff8e00",
+      foregroundImage: "./assets/logo/android-icon-foreground.png",
+      backgroundImage: "./assets/logo/android-icon-background.png",
+      monochromeImage: "./assets/logo/android-icon-foreground.png",
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
@@ -30,7 +35,7 @@ const config: ExpoConfig = {
   },
   web: {
     output: "static",
-    favicon: "./assets/images/favicon.png",
+    favicon: "./assets/logo/melo-logo.svg",
   },
   plugins: [
     "expo-router",

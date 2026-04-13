@@ -30,7 +30,16 @@ function postMessageToApp(message: WebToAppMessage) {
     throw new Error("현재 앱 브리지를 사용할 수 없는 환경입니다.");
   }
 
-  window.ReactNativeWebView!.postMessage(JSON.stringify(message));
+  const href = typeof window !== "undefined" ? window.location.href : undefined;
+  const messageWithContext: WebToAppMessage = {
+    ...message,
+    context: {
+      ...message.context,
+      href,
+    },
+  };
+
+  window.ReactNativeWebView!.postMessage(JSON.stringify(messageWithContext));
 }
 
 export function initNativeBridgeListener() {
@@ -121,12 +130,15 @@ function sendRequestToApp<T>(
   });
 }
 
-export function requestToApp<T>(payload: ApiRequestPayload) {
-  return sendRequestToApp<T>((id) => ({
-    id,
-    type: "API_REQUEST",
-    payload,
-  }));
+export function requestToApp<T>(payload: ApiRequestPayload, options?: SendRequestOptions) {
+  return sendRequestToApp<T>(
+    (id) => ({
+      id,
+      type: "API_REQUEST",
+      payload,
+    }),
+    options,
+  );
 }
 
 export function syncAppTab(tab: AppTabName) {
@@ -138,6 +150,15 @@ export function syncAppTab(tab: AppTabName) {
     payload: {
       tab,
     },
+  });
+}
+
+export function requestAppBack() {
+  if (!isNativeApp()) return;
+
+  postMessageToApp({
+    id: generateRequestId(),
+    type: "NAVIGATION_BACK",
   });
 }
 

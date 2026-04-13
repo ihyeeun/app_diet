@@ -88,7 +88,7 @@ export function SearchInputHeader({
               onClick={handleClear}
               aria-label="검색어 지우기"
             >
-              <img src="/icons/CircleClose.svg" alt="검색어 지우기" />
+              <img src="/icons/circle-close.svg" alt="검색어 지우기" />
             </button>
           )}
         </div>

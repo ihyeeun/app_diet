@@ -1,5 +1,8 @@
 export type BridgeHttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 export type BridgeTabName = "home" | "chat" | "diary" | "profile";
+export type BridgeMessageContext = {
+  href?: string;
+};
 
 export type BridgeRequestPayload = {
   endpoint: string;
@@ -12,6 +15,7 @@ export type BridgeApiRequestMessage = {
   id: string;
   type: "API_REQUEST";
   payload: BridgeRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type BridgeTabSyncMessage = {
@@ -20,6 +24,13 @@ export type BridgeTabSyncMessage = {
   payload: {
     tab: BridgeTabName;
   };
+  context?: BridgeMessageContext;
+};
+
+export type BridgeNavigationBackMessage = {
+  id: string;
+  type: "NAVIGATION_BACK";
+  context?: BridgeMessageContext;
 };
 
 export type BridgeCameraCaptureRequestPayload = {
@@ -31,6 +42,7 @@ export type BridgeCameraCaptureRequestMessage = {
   id: string;
   type: "CAMERA_CAPTURE_REQUEST";
   payload?: BridgeCameraCaptureRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type BridgeGalleryPickRequestPayload = {
@@ -41,6 +53,7 @@ export type BridgeGalleryPickRequestMessage = {
   id: string;
   type: "GALLERY_PICK_REQUEST";
   payload?: BridgeGalleryPickRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type BridgeImageUploadRequestPayload = {
@@ -58,11 +71,13 @@ export type BridgeImageUploadRequestMessage = {
   id: string;
   type: "IMAGE_UPLOAD_REQUEST";
   payload: BridgeImageUploadRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type WebToAppMessage =
   | BridgeApiRequestMessage
   | BridgeTabSyncMessage
+  | BridgeNavigationBackMessage
   | BridgeCameraCaptureRequestMessage
   | BridgeGalleryPickRequestMessage
   | BridgeImageUploadRequestMessage;

@@ -12,13 +12,13 @@ type Props = {
 };
 
 export default function MonthlyCalendar({ days, onSelectDate, onSwipePrev, onSwipeNext }: Props) {
-  const swipeHandlers = useSwipe({
+  const { motionStyle, ...swipeHandlers } = useSwipe({
     onSwipeLeft: onSwipeNext,
     onSwipeRight: onSwipePrev,
   });
 
   return (
-    <div className="monthly-calendar" {...swipeHandlers}>
+    <div className="monthly-calendar" style={motionStyle} {...swipeHandlers}>
       <div className="monthly-calendar-weekdays">
         {WEEKDAY_LABELS.map((label) => (
           <div key={label} className="monthly-calendar-weekday typo-label4">

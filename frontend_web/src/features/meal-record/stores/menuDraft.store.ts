@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 import type { MealType } from "@/shared/api/types/api.dto";
+import type { MealRecordTransferPreview } from "@/shared/types/mealRecordTransfer";
 
 export type MenuDraftKey = `${string}:${MealType}`;
 export function formatMenuDraftKey(date: string, mealType: MealType): MenuDraftKey {
@@ -16,6 +17,7 @@ export type MenuDraftType = {
 type MenusDraft = {
   existingMenuCount: number;
   existingMenus: MenuDraftType[];
+  previewsById: Record<number, MealRecordTransferPreview>;
 };
 
 type InitDraftParams = {
@@ -35,17 +37,24 @@ type RemoveMenuParams = {
   id: number;
 };
 
+type UpsertPreviewsParams = {
+  key: MenuDraftKey;
+  previews: MealRecordTransferPreview[];
+};
+
 type MenuDraftStoreState = {
   drafts: Record<MenuDraftKey, MenusDraft>;
   initDraft: (params: InitDraftParams) => void;
   upsertMenu: (params: UpsertMenuParams) => void;
   removeMenu: (params: RemoveMenuParams) => void;
+  upsertPreviews: (params: UpsertPreviewsParams) => void;
   clearDraft: (key: MenuDraftKey) => void;
 };
 
 const INIT_DRAFT: MenusDraft = {
   existingMenuCount: 0,
   existingMenus: [],
+  previewsById: {},
 };
 
 function getDraftOrInit(drafts: Record<MenuDraftKey, MenusDraft>, key: MenuDraftKey): MenusDraft {
@@ -69,6 +78,7 @@ export const useMenuDraftStore = create<MenuDraftStoreState>()(
                 [key]: {
                   existingMenuCount: safeCount,
                   existingMenus: [...(seedMenus ?? [])],
+                  previewsById: {},
                 },
               },
             };
@@ -133,6 +143,43 @@ export const useMenuDraftStore = create<MenuDraftStoreState>()(
         });
       },
 
+      upsertPreviews: ({ key, previews }) => {
+        set((state) => {
+          if (!Array.isArray(previews) || previews.length === 0) {
+            return state;
+          }
+
+          const draft = state.drafts[key] ?? INIT_DRAFT;
+          const nextPreviews = { ...draft.previewsById };
+
+          previews.forEach((preview) => {
+            if (!preview || typeof preview !== "object") {
+              return;
+            }
+
+            if (
+              typeof preview.id !== "number" ||
+              !Number.isInteger(preview.id) ||
+              preview.id <= 0
+            ) {
+              return;
+            }
+
+            nextPreviews[preview.id] = preview;
+          });
+
+          return {
+            drafts: {
+              ...state.drafts,
+              [key]: {
+                ...draft,
+                previewsById: nextPreviews,
+              },
+            },
+          };
+        });
+      },
+
       clearDraft: (key) => {
         set((state) => {
           const nextDrafts = { ...state.drafts };
@@ -151,6 +198,7 @@ export const useMenuDraftStore = create<MenuDraftStoreState>()(
 export const useMenuDraftInit = () => useMenuDraftStore((store) => store.initDraft);
 export const useMenuDraftUpsert = () => useMenuDraftStore((store) => store.upsertMenu);
 export const useMenuDraftRemove = () => useMenuDraftStore((store) => store.removeMenu);
+export const useMenuDraftUpsertPreviews = () => useMenuDraftStore((store) => store.upsertPreviews);
 export const useMenuDraftClear = () => useMenuDraftStore((store) => store.clearDraft);
 
 export function useMenuDraft(date: string, mealType: MealType) {

@@ -1,0 +1,141 @@
+.page {
+  background-color: var(--bg-normal-normal);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.primaryText {
+  color: var(--text-primary);
+}
+
+.secondaryText {
+  color: var(--text-assistive1);
+}
+
+.tertiaryText {
+  color: var(--text-assistive2);
+}
+
+.intro {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.introMessage {
+  color: var(--text-normal);
+  white-space: pre-wrap;
+}
+
+.resultList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resultCard {
+  align-items: stretch;
+  background-color: var(--bg-normal-white);
+  border: 1px solid var(--border-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.resultCardSelected {
+  background-color: var(--interaction-primary);
+  border-color: var(--border-primary);
+}
+
+.rankBadge {
+  align-items: center;
+  background-color: var(--primary-normal);
+  border-radius: 4px;
+  color: var(--text-white);
+  display: inline-flex;
+  padding: 2px 6px;
+  width: fit-content;
+}
+
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.titleRow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.menuName {
+  color: var(--text-normal);
+}
+
+.summary {
+  color: var(--text-assistive2);
+}
+
+.metaRow {
+  align-items: baseline;
+  display: flex;
+  gap: 4px;
+}
+
+.calories {
+  color: var(--text-normal);
+  margin-left: auto;
+}
+
+.addButton {
+  align-items: center;
+  color: var(--gray-500);
+  display: inline-flex;
+  justify-content: center;
+}
+
+.addButtonSelected {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.loadingText {
+  color: var(--text-assistive2);
+  text-align: center;
+}
+
+.footer {
+  padding: 0 20px;
+  padding-bottom: var(--safe-area-bottom);
+}

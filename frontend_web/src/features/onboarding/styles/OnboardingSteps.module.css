@@ -125,37 +125,29 @@
   font-size: 16px;
   font-weight: var(--fw-medium);
   line-height: var(--line-height-145);
-  margin: 0;
 }
 
 .onboardingFieldPadding {
   padding: 0;
 }
 
-.onboardingGoalKcalTrigger {
+.goalCalorieContainer {
   background: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  padding: 16px 20px;
-  text-align: right;
+  padding: 16px 0;
   width: 100%;
+  gap: 20px;
+  align-items: center;
 }
 
 .onboardingGoalKcalValue {
-  color: var(--gray-1100);
-  font-size: 40px;
-  line-height: var(--line-height-120);
-  margin: 0;
+  color: var(--text-normal);
+  text-decoration: underline;
 }
 
 .onboardingGoalKcalHelper {
-  font-size: 18px;
-  font-weight: var(--fw-medium);
-  line-height: var(--line-height-145);
-  margin: 0;
-  padding: 16px 5px;
+  color: var(--text-normal);
   text-align: center;
 }
 

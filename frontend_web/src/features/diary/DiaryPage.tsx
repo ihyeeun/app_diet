@@ -20,8 +20,6 @@ import {
   getCalorieProgressPercent,
 } from "@/shared/utils/nutrientScore";
 
-type DiaryMealType = Extract<MealType, "0" | "1" | "2">;
-
 const DIARY_MEALS = [
   {
     type: "0",
@@ -31,8 +29,10 @@ const DIARY_MEALS = [
   },
   { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안먹었어요" },
   { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안먹었어요" },
+  { type: "3", label: "간식", iconSrc: "/icons/snack.svg", emptyStatusText: "안먹었어요" },
+  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg", emptyStatusText: "안먹었어요" },
 ] as const satisfies ReadonlyArray<{
-  type: DiaryMealType;
+  type: MealType;
   label: string;
   iconSrc: string;
   emptyStatusText: string;
@@ -42,7 +42,7 @@ export default function DiaryPage() {
   const selectedDateKey = useSelectedDateKey();
   const setSelectedDate = useSetSelectedDate();
   const selectedDate = parseDateKey(selectedDateKey);
-  const [expandedMealType, setExpandedMealType] = useState<DiaryMealType | null>("1");
+  const [expandedMealType, setExpandedMealType] = useState<MealType | null>(null);
   const navigate = useNavigate();
   const targets = useTargetsState();
 
@@ -94,21 +94,22 @@ export default function DiaryPage() {
             <p className="typo-title2">{formatDiaryRecordTitle(selectedDate)}</p>
 
             <div className={styles.scoreCard}>
-              <div className={styles.scoreContainer}>
-                <p className={styles.scoreText}>
+              <p className={styles.scoreText}>
+                <p className={styles.calorieText}>
                   <span className={`${styles.scoreCurrent} typo-h2`}>
                     {calorieSummary.roundedCurrentCalories.toLocaleString("ko-KR")}
                   </span>
                   <span className="typo-title2">
                     / {roundedTargetCalories.toLocaleString("ko-KR")} kcal
                   </span>
-                  <span className={styles.scoreDivider} aria-hidden="true" />
-                  <span className={`${styles.scorePoint} typo-title4`}>{mealScore}점</span>
                 </p>
-
+                <span className={styles.scoreDivider} aria-hidden="true" />
+                <span className={`${styles.score} typo-title2`}>{mealScore}점</span>
+              </p>
+              <div className={styles.scoreContainer}>
                 <ScoreProgress value={calorieProgress} />
+                <p className={`${styles.calorieMessage} typo-body4`}>{calorieMessage}</p>
               </div>
-              <p className={`${styles.calorieMessage} typo-body4`}>{calorieMessage}</p>
             </div>
           </section>
 
@@ -134,11 +135,6 @@ export default function DiaryPage() {
               );
             })}
           </section>
-
-          <ActionCard className={styles.extraMealCard} onClick={() => handleMoveMealRecord("3")}>
-            <PlusIcon size={24} />
-            <p className="typo-title2">그 외 식사 추가하기</p>
-          </ActionCard>
 
           <div className={styles.bodyCardList}>
             <TodayBodyLogSection date={selectedDateKey} />
@@ -171,11 +167,11 @@ function MealRecordCard({
   const hasRecord = menus.length > 0;
 
   return (
-    <ActionCard className={styles.mealCard}>
+    <ActionCard className={`${styles.mealCard} ${hasRecord ? "" : styles.mealCardEmpty}`}>
       <button type="button" className={styles.mealHeader} onClick={onNavigate}>
         <div className={styles.mealTitleContainer}>
           <img src={iconSrc} alt="" aria-hidden="true" className={styles.mealIcon} />
-          <p className="typo-title2">{title}</p>
+          <p className="typo-title3">{title}</p>
         </div>
 
         {hasRecord ? (
@@ -183,9 +179,12 @@ function MealRecordCard({
             <ChevronRight size={24} />
           </div>
         ) : (
-          <div className={styles.emptyStatusButton} aria-label={`${title} 기록하기`}>
-            <UtensilsCrossed size={16} />
-            <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
+          <div className={styles.emptyMeta} aria-label={`${title} 기록하기`}>
+            <div className={styles.emptyStatusButton}>
+              <UtensilsCrossed size={16} />
+              <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
+            </div>
+            <PlusIcon size={24} className={styles.emptyPlusIcon} />
           </div>
         )}
       </button>
@@ -204,9 +203,7 @@ function MealRecordCard({
             </span>
 
             <span className={styles.mealSummaryMeta}>
-              <span className={`${styles.mealSummaryCalories} typo-title3`}>
-                {formatCalories(calories)} kcal
-              </span>
+              <span className={`${styles.score} typo-title3`}>{formatCalories(calories)} kcal</span>
               <ChevronDown
                 size={24}
                 className={`${styles.mealSummaryArrow} ${isExpanded ? styles.mealSummaryArrowExpanded : ""}`}

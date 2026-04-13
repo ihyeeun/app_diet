@@ -1,11 +1,11 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View, Image } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import KakaoLogo from "../../../assets/images/Icon/kakao-logo.svg";
 
 type KakaoLoginButtonProps = {
   onPress: () => void;
 };
-
-const kakaoLogoImage = require("../../../assets/images/kakaoLogo.png");
 
 export function KakaoLoginButton({ onPress }: KakaoLoginButtonProps) {
   return (
@@ -16,7 +16,7 @@ export function KakaoLoginButton({ onPress }: KakaoLoginButtonProps) {
       onPress={onPress}
     >
       <View style={styles.content}>
-        <Image source={kakaoLogoImage} resizeMode="contain" style={styles.logo} />
+        <KakaoLogo width={20} height={20} />
         <Text style={styles.label}>카카오 로그인</Text>
       </View>
     </Pressable>
@@ -40,10 +40,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-  },
-  logo: {
-    width: 20,
-    height: 20,
   },
   label: {
     color: "#0a0a0a",

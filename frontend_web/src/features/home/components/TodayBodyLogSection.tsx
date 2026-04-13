@@ -2,26 +2,22 @@ import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
+import StepsLogBottomSheet from "@/features/home/components/sheets/StepsLogBottomSheet";
+import WeightLogBottomSheet from "@/features/home/components/sheets/WeightLogBottomSheet";
 import {
   useRegisterStepsMutation,
   useRegisterWeightMutation,
 } from "@/features/home/hooks/mutations/useBodyLogMutation";
 import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
 import style from "@/features/home/styles/TodayBodyLogSection.module.css";
-import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
-import { Button } from "@/shared/commons/button/Button";
-import { EditorInput } from "@/shared/commons/input/EditorInput";
+import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { toast } from "@/shared/commons/toast/toast";
-import { toOneDecimalPlace } from "@/shared/utils/numberFormat";
 
 type TodayMetricType = "weight" | "steps";
 
-function toInteger(value: number) {
-  return Math.trunc(value);
-}
-
 export default function TodayBodyLogSection({ date }: { date: string }) {
   const { data: bodyLog } = useGetBodyLog(date);
+  const { data: profile } = useGetProfileQuery();
 
   const { mutate: registerWeight } = useRegisterWeightMutation({
     onSuccess: () => {
@@ -45,66 +41,24 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
 
   const [editingMetric, setEditingMetric] = useState<TodayMetricType | null>(null);
 
-  // TODO : 여기서 0 대신에 현재 몸무게 값을 넣도록 해줘야한다.
-  const [draftValue, setDraftValue] = useState<number | undefined>(0);
-
-  const isWeightEditing = editingMetric === "weight";
-
-  const openEditor = (metricType: TodayMetricType) => {
-    setEditingMetric(metricType);
-    setDraftValue(metricType === "weight" ? (bodyLog?.weight ?? 0) : (bodyLog?.steps ?? 0));
-  };
-
   const closeEditor = () => {
     setEditingMetric(null);
-    setDraftValue(undefined);
   };
 
-  const inputTitle =
-    editingMetric === "weight" ? "오늘의 체중" : editingMetric === "steps" ? "오늘의 걸음 수" : "";
-
-  const handleDraftChange = (value?: number | undefined) => {
-    if (value === undefined) {
-      setDraftValue(undefined);
-      return;
-    }
-
-    if (isWeightEditing) {
-      setDraftValue(toOneDecimalPlace(value));
-      return;
-    }
-
-    setDraftValue(toInteger(value));
+  const openWeightEditor = () => {
+    setEditingMetric("weight");
   };
 
-  const submitWeight = () => {
-    if (draftValue === undefined) {
-      toast.warning("체중을 입력해주세요");
-      return;
-    }
-
-    const nextWeight = toOneDecimalPlace(draftValue);
-    if (nextWeight < 1 || nextWeight > 999.9) {
-      toast.warning("체중은 1 ~ 999.9kg 사이로 입력해주세요");
-      return;
-    }
-
-    registerWeight({ date, weight: nextWeight });
+  const openStepsEditor = () => {
+    setEditingMetric("steps");
   };
 
-  const submitSteps = () => {
-    if (draftValue === undefined) {
-      toast.warning("걸음 수를 입력해주세요");
-      return;
-    }
+  const submitWeight = (weight: number) => {
+    registerWeight({ date, weight });
+  };
 
-    const nextSteps = toInteger(draftValue);
-    if (nextSteps < 0 || nextSteps > 999999) {
-      toast.warning("걸음 수는 0 ~ 999,999 사이로 입력해주세요");
-      return;
-    }
-
-    registerSteps({ date, steps: nextSteps });
+  const submitSteps = (steps: number) => {
+    registerSteps({ date, steps });
   };
 
   return (
@@ -112,42 +66,31 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
       <div className={style.todayContainer}>
         <TodayMetricCard
           title="체중"
-          value={bodyLog?.weight ?? 0}
+          value={profile?.weight ?? 0}
           unit="kg"
-          onClick={() => openEditor("weight")}
+          onClick={openWeightEditor}
         />
         <TodayMetricCard
           title="걸음 수"
           value={bodyLog?.steps ?? 0}
           unit="걸음"
-          onClick={() => openEditor("steps")}
+          onClick={openStepsEditor}
         />
       </div>
 
-      {editingMetric !== null ? (
-        <BottomSheet isOpen onClose={closeEditor}>
-          <div className={style.sheetContainer}>
-            <h3 className={`${style.sheetTitle} typo-title2`}>{inputTitle}</h3>
-            <EditorInput
-              type="number"
-              inputMode={isWeightEditing ? "decimal" : "numeric"}
-              value={draftValue}
-              min={isWeightEditing ? 1 : 0}
-              max={isWeightEditing ? 999.9 : 999999}
-              step={isWeightEditing ? 0.1 : 1}
-              placeholder={isWeightEditing ? "체중 입력" : "걸음 수 입력"}
-              unit={isWeightEditing ? "kg" : "걸음"}
-              clampOnChange={false}
-              normalizeOnBlur={false}
-              onChange={handleDraftChange}
-            />
-            <div className={style.sheetActions}>
-              <Button onClick={isWeightEditing ? submitWeight : submitSteps} fullWidth>
-                기록하기
-              </Button>
-            </div>
-          </div>
-        </BottomSheet>
+      {editingMetric === "weight" ? (
+        <WeightLogBottomSheet
+          initialWeight={profile?.weight ?? 0}
+          onClose={closeEditor}
+          onSubmit={submitWeight}
+        />
+      ) : null}
+      {editingMetric === "steps" ? (
+        <StepsLogBottomSheet
+          initialSteps={bodyLog?.steps ?? 0}
+          onClose={closeEditor}
+          onSubmit={submitSteps}
+        />
       ) : null}
     </>
   );

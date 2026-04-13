@@ -2,6 +2,9 @@ import type { ApiResponse } from "@/shared/api/types/apiResponse.types";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 export type AppTabName = "home" | "chat" | "diary" | "profile";
+export type BridgeMessageContext = {
+  href?: string;
+};
 
 export type ApiRequestPayload = {
   endpoint: string;
@@ -14,6 +17,7 @@ export type WebToAppApiRequestMessage = {
   id: string;
   type: "API_REQUEST";
   payload: ApiRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type WebToAppTabSyncMessage = {
@@ -22,6 +26,13 @@ export type WebToAppTabSyncMessage = {
   payload: {
     tab: AppTabName;
   };
+  context?: BridgeMessageContext;
+};
+
+export type WebToAppNavigationBackMessage = {
+  id: string;
+  type: "NAVIGATION_BACK";
+  context?: BridgeMessageContext;
 };
 
 export type CameraCaptureRequestPayload = {
@@ -33,6 +44,7 @@ export type WebToAppCameraCaptureMessage = {
   id: string;
   type: "CAMERA_CAPTURE_REQUEST";
   payload?: CameraCaptureRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type GalleryPickRequestPayload = {
@@ -43,6 +55,7 @@ export type WebToAppGalleryPickMessage = {
   id: string;
   type: "GALLERY_PICK_REQUEST";
   payload?: GalleryPickRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type ImageUploadRequestPayload = {
@@ -60,11 +73,13 @@ export type WebToAppImageUploadMessage = {
   id: string;
   type: "IMAGE_UPLOAD_REQUEST";
   payload: ImageUploadRequestPayload;
+  context?: BridgeMessageContext;
 };
 
 export type WebToAppMessage =
   | WebToAppApiRequestMessage
   | WebToAppTabSyncMessage
+  | WebToAppNavigationBackMessage
   | WebToAppCameraCaptureMessage
   | WebToAppGalleryPickMessage
   | WebToAppImageUploadMessage;

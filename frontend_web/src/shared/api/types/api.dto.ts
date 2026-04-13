@@ -237,7 +237,7 @@ export interface ChatHistoryItemResponseDto {
       remaining_macros: TargetRatio; //남은 탄단지 목표량(g)
       target_meal_calories: number; //현재 추천 슬롯의 목표 칼로리
     };
-    recommendation: ChatRecommendItemResponseDto[];
+    recommendations: ChatRecommendItemResponseDto[];
   };
 }
 

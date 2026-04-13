@@ -1,25 +1,28 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
-import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
+import {
+  DELETE_MEAL_RECORD_RESULT,
+  useTodayMealRecordDeleteWithRollbackMutation,
+  useTodayMealRecordRegisterMutation,
+} from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
 import {
   formatMenuDraftKey,
-  type MenuDraftType,
   useMenuDraftClear,
   useMenuDraftInit,
   useMenuDraftMenus,
   useMenuDraftRemove,
   useMenuDraftStore,
+  useMenuDraftUpsert,
+  useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
-import { getMealDetailPath, getMealSearchPath } from "@/router/pathHelpers";
+import { getMealDetailPath, getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
-  MEAL_TIME,
   MEAL_TYPE_OPTIONS,
+  type MealTime,
   type MealType,
   type RegisterMealRequestDto,
 } from "@/shared/api/types/api.dto";
@@ -28,17 +31,10 @@ import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { parseMealRecordTransferState } from "@/shared/types/mealRecordTransfer";
 
 import styles from "./styles/MealRecordPage.module.css";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
-
-const MEAL_TYPE_TO_TIME: Record<MealType, RegisterMealRequestDto["time"]> = {
-  "0": MEAL_TIME.BREAKFAST,
-  "1": MEAL_TIME.LUNCH,
-  "2": MEAL_TIME.DINNER,
-  "3": MEAL_TIME.SNACK,
-  "4": MEAL_TIME.LATE_NIGHT_SNACK,
-};
 
 function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
   return menus
@@ -48,23 +44,48 @@ function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
     .join("|");
 }
 
+type DisplayMenuItem = {
+  id: number;
+  name: string;
+  brand?: string;
+  calories: number;
+  quantity: number;
+  unit_quantity?: string;
+  unit?: number;
+  weight?: number;
+  data_source?: number;
+};
+
 export default function MealRecordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const queryClient = useQueryClient();
   const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+  const hasAppliedTransferRef = useRef(false);
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
   const draftKey = formatMenuDraftKey(dateKey, mealType);
+  const transferState = useMemo(() => parseMealRecordTransferState(location.state), [location.state]);
 
   const { data: currentMenus, isPending: isSummaryReady } = useDayMealsQuery(dateKey);
+
+  const { mutateAsync: registerMealAsync, isPending: isRegisterPending } =
+    useTodayMealRecordRegisterMutation();
+  const { mutateAsync: deleteWithRollbackAsync, isPending: isDeletePending } =
+    useTodayMealRecordDeleteWithRollbackMutation();
   const initDraft = useMenuDraftInit();
+  const upsertMenu = useMenuDraftUpsert();
+  const upsertPreviews = useMenuDraftUpsertPreviews();
   const removeMenu = useMenuDraftRemove();
   const clearDraft = useMenuDraftClear();
   const draftMenus = useMenuDraftMenus(dateKey, mealType);
   const allDrafts = useMenuDraftStore((store) => store.drafts);
   const hasCurrentDraft = Boolean(allDrafts[draftKey]);
+  const draftPreviewsById = useMemo(
+    () => allDrafts[draftKey]?.previewsById ?? {},
+    [allDrafts, draftKey],
+  );
 
   const currentMenuItems = (() => {
     if (!currentMenus) return [];
@@ -100,29 +121,104 @@ export default function MealRecordPage() {
     });
   }, [currentMenus, dateKey, draftKey, initDraft, mealType]);
 
+  useEffect(() => {
+    if (hasAppliedTransferRef.current || !currentMenus || !transferState) {
+      return;
+    }
+
+    if (transferState.dateKey !== dateKey || transferState.mealType !== mealType) {
+      return;
+    }
+
+    const seedMenus = currentMenus.menusByTime[mealType].map((menu) => ({
+      id: menu.id,
+      quantity: menu.quantity,
+    }));
+
+    initDraft({
+      key: draftKey,
+      existingMenuCount: seedMenus.length,
+      seedMenus,
+    });
+
+    transferState.menus.forEach((menu) => {
+      upsertMenu({
+        key: draftKey,
+        id: menu.id,
+        quantity: menu.quantity,
+      });
+    });
+
+    upsertPreviews({
+      key: draftKey,
+      previews: transferState.previews ?? [],
+    });
+
+    hasAppliedTransferRef.current = true;
+    navigate(getMealRecordPath(dateKey, mealType), { replace: true });
+  }, [
+    currentMenus,
+    dateKey,
+    draftKey,
+    initDraft,
+    mealType,
+    navigate,
+    transferState,
+    upsertMenu,
+    upsertPreviews,
+  ]);
+
   const menuById = useMemo(
     () => new Map(normalizedCurrentMenuItems.map((menu) => [menu.id, menu])),
     [normalizedCurrentMenuItems],
   );
 
   const displayMenuItems = useMemo(() => {
+    const toDisplayItem = (menu: (typeof normalizedCurrentMenuItems)[number]): DisplayMenuItem => ({
+      id: menu.id,
+      name: menu.name,
+      brand: menu.brand,
+      calories: menu.calories,
+      quantity: menu.quantity,
+      unit_quantity: menu.unit_quantity,
+      unit: menu.unit,
+      weight: menu.weight,
+      data_source: menu.data_source,
+    });
+
     if (!hasCurrentDraft) {
-      return normalizedCurrentMenuItems;
+      return normalizedCurrentMenuItems.map(toDisplayItem);
     }
 
-    return draftMenus.reduce<typeof normalizedCurrentMenuItems>((menus, draftMenu) => {
+    return draftMenus.reduce<DisplayMenuItem[]>((menus, draftMenu) => {
       const baseMenu = menuById.get(draftMenu.id);
-      if (!baseMenu) {
+      if (baseMenu) {
+        menus.push({
+          ...toDisplayItem(baseMenu),
+          quantity: draftMenu.quantity,
+        });
+        return menus;
+      }
+
+      const preview = draftPreviewsById[draftMenu.id];
+      if (!preview) {
         return menus;
       }
 
       menus.push({
-        ...baseMenu,
+        id: preview.id,
+        name: preview.name,
+        brand: preview.brand,
+        calories: preview.calories,
         quantity: draftMenu.quantity,
+        unit_quantity: preview.unit_quantity,
+        unit: preview.unit,
+        weight: preview.weight,
+        data_source: preview.data_source,
       });
       return menus;
     }, []);
-  }, [draftMenus, hasCurrentDraft, menuById, normalizedCurrentMenuItems]);
+  }, [draftMenus, draftPreviewsById, hasCurrentDraft, menuById, normalizedCurrentMenuItems]);
 
   const changedRequests = useMemo(() => {
     if (!currentMenus) {
@@ -147,7 +243,7 @@ export default function MealRecordPage() {
 
       requests.push({
         date: dateKey,
-        time: MEAL_TYPE_TO_TIME[type],
+        time: Number(type) as MealTime,
         menu_ids: draftMenusByType.map((menu) => menu.id),
         menu_quantities: draftMenusByType.map((menu) => menu.quantity),
       });
@@ -162,9 +258,6 @@ export default function MealRecordPage() {
       return sum + menu.calories * menu.quantity;
     }, 0);
   }, [displayMenuItems]);
-
-  const { mutateAsync: registerMealAsync, isPending: isRegisterPending } =
-    useTodayMealRecordRegisterMutation();
 
   const clearAllDrafts = () => {
     MEAL_TYPE_OPTIONS.forEach((option) => {
@@ -184,22 +277,45 @@ export default function MealRecordPage() {
   };
 
   const handleComplete = async () => {
-    if (changedRequests.length === 0) {
+    if (changedRequests.length === 0 || !currentMenus) {
       return;
     }
 
     try {
       for (const request of changedRequests) {
+        if (request.menu_ids.length === 0) {
+          const deleteResult = await deleteWithRollbackAsync({
+            dateKey,
+            request,
+            currentMenusByTime: currentMenus.menusByTime,
+          });
+
+          if (deleteResult === DELETE_MEAL_RECORD_RESULT.FAILED_RECOVERED) {
+            toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+            return;
+          }
+
+          if (deleteResult === DELETE_MEAL_RECORD_RESULT.FAILED_UNRECOVERED) {
+            clearAllDrafts();
+            toast.warning("서버가 불안정해요. 잠시 후 다시 시도해주세요.");
+            navigate(PATH.DIARY, { replace: true });
+            return;
+          }
+
+          continue;
+        }
+
         await registerMealAsync(request);
       }
 
       clearAllDrafts();
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
       toast.success("식사 기록이 저장되었어요");
     } catch {
-      toast.warning("식사 기록 저장에 실패했어요");
+      toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
     }
   };
+
+  const isSavePending = isRegisterPending || isDeletePending;
 
   const handleMenuDetail = (menuId: number) => {
     navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_RECORD"));
@@ -217,21 +333,24 @@ export default function MealRecordPage() {
 
   const handleExitConfirm = () => {
     clearAllDrafts();
-    navigate(PATH.HOME, { replace: true });
+    navigate(PATH.DIARY, { replace: true });
   };
 
   const handleMealSearchNavigate = () => {
-    const seedMenuMap = new Map<number, MenuDraftType>();
-    displayMenuItems.forEach((menu) => {
-      seedMenuMap.set(menu.id, { id: menu.id, quantity: menu.quantity });
+    const seedMenus = hasCurrentDraft
+      ? draftMenus
+      : currentMenuItems.map((menu) => ({
+          id: menu.id,
+          quantity: menu.quantity,
+        }));
+
+    initDraft({
+      key: draftKey,
+      existingMenuCount: seedMenus.length,
+      seedMenus,
     });
 
-    navigate(getMealSearchPath(dateKey, mealType), {
-      state: {
-        seedMenus: [...seedMenuMap.values()],
-        selectedMenuCount: displayMenuItems.length,
-      },
-    });
+    navigate(getMealSearchPath(dateKey, mealType));
   };
 
   if (isSummaryReady) return <p> 로딩 중</p>;
@@ -322,11 +441,11 @@ export default function MealRecordPage() {
             void handleComplete();
           }}
           variant="filled"
-          state={hasUnsavedChanges && !isRegisterPending ? "default" : "disabled"}
+          state={hasUnsavedChanges && !isSavePending ? "default" : "disabled"}
           size="medium"
           color="primary"
           fullWidth
-          disabled={!hasUnsavedChanges || isRegisterPending}
+          disabled={!hasUnsavedChanges || isSavePending}
         >
           완료하기
         </Button>

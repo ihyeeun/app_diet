@@ -15,7 +15,7 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
         <MenuCard
           title={"메뉴판 촬영하기"}
           description="식당 메뉴판이나 배달 앱 스크린샷도 좋아요"
-          iconSrc="/icons/Camera.svg"
+          iconSrc="/icons/camera-icon.svg"
           onClick={() => {
             navigate(PATH.MENU_BOARD_CAMERA);
           }}
@@ -24,7 +24,7 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
         <MenuCard
           title={"물어보기"}
           description="메뉴판이 없다면 직접 물어봐도 좋아요"
-          iconSrc="/icons/Chat.svg"
+          iconSrc="/icons/chat-icon.svg"
           onClick={() => {
             syncAppTab("chat");
             navigate(PATH.CHAT);

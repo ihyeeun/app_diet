@@ -1,8 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
   getMealType,
@@ -59,7 +57,6 @@ export default function NutrientModifyPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const queryClient = useQueryClient();
 
   const locationState = (location.state ?? {}) as NutrientModifyLocationState;
   const menuInState = locationState.menu;
@@ -212,7 +209,6 @@ export default function NutrientModifyPage() {
         { id: menuId, ...payload },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
             toast.success("영양 성분을 수정했어요");
             navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey), { replace: true });
           },
