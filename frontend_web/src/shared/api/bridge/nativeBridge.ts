@@ -16,6 +16,10 @@ type PendingRequest = {
 };
 
 const pendingRequests = new Map<string, PendingRequest>();
+const MESSAGE_TYPES_REQUIRING_NAV_CONTEXT = new Set<WebToAppMessage["type"]>([
+  "TAB_SYNC",
+  "NAVIGATION_BACK",
+]);
 
 function generateRequestId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -25,19 +29,32 @@ export function isNativeApp() {
   return typeof window !== "undefined" && !!window.ReactNativeWebView;
 }
 
+function getSanitizedCurrentHref() {
+  if (typeof window === "undefined") return undefined;
+
+  try {
+    const currentUrl = new URL(window.location.href);
+    return `${currentUrl.origin}${currentUrl.pathname}`;
+  } catch {
+    return undefined;
+  }
+}
+
 function postMessageToApp(message: WebToAppMessage) {
   if (!isNativeApp()) {
     throw new Error("현재 앱 브리지를 사용할 수 없는 환경입니다.");
   }
 
-  const href = typeof window !== "undefined" ? window.location.href : undefined;
-  const messageWithContext: WebToAppMessage = {
-    ...message,
-    context: {
-      ...message.context,
-      href,
-    },
-  };
+  const shouldAttachNavigationContext = MESSAGE_TYPES_REQUIRING_NAV_CONTEXT.has(message.type);
+  const sanitizedHref = shouldAttachNavigationContext ? getSanitizedCurrentHref() : undefined;
+  const context =
+    sanitizedHref !== undefined
+      ? {
+          ...message.context,
+          href: sanitizedHref,
+        }
+      : message.context;
+  const messageWithContext: WebToAppMessage = context ? { ...message, context } : message;
 
   window.ReactNativeWebView!.postMessage(JSON.stringify(messageWithContext));
 }
