@@ -66,7 +66,10 @@ export default function MealRecordPage() {
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
   const draftKey = formatMenuDraftKey(dateKey, mealType);
-  const transferState = useMemo(() => parseMealRecordTransferState(location.state), [location.state]);
+  const transferState = useMemo(
+    () => parseMealRecordTransferState(location.state),
+    [location.state],
+  );
 
   const { data: currentMenus, isPending: isSummaryReady } = useDayMealsQuery(dateKey);
 
@@ -86,7 +89,7 @@ export default function MealRecordPage() {
     () => allDrafts[draftKey]?.previewsById ?? {},
     [allDrafts, draftKey],
   );
-
+  const mealImage = allDrafts[draftKey]?.image ?? currentMenus?.imagesByTime[mealType] ?? null;
   const currentMenuItems = (() => {
     if (!currentMenus) return [];
     return currentMenus.menusByTime[mealType];
@@ -118,6 +121,7 @@ export default function MealRecordPage() {
       key: draftKey,
       existingMenuCount: seedMenus.length,
       seedMenus,
+      image: currentMenus.imagesByTime[mealType],
     });
   }, [currentMenus, dateKey, draftKey, initDraft, mealType]);
 
@@ -139,6 +143,7 @@ export default function MealRecordPage() {
       key: draftKey,
       existingMenuCount: seedMenus.length,
       seedMenus,
+      image: currentMenus.imagesByTime[mealType],
     });
 
     transferState.menus.forEach((menu) => {
@@ -228,7 +233,8 @@ export default function MealRecordPage() {
     return MEAL_TYPE_OPTIONS.reduce<RegisterMealRequestDto[]>((requests, option) => {
       const type = option.key;
       const key = formatMenuDraftKey(dateKey, type);
-      const draftMenusByType = allDrafts[key]?.existingMenus;
+      const draftByType = allDrafts[key];
+      const draftMenusByType = draftByType?.existingMenus;
       if (!draftMenusByType) {
         return requests;
       }
@@ -241,12 +247,18 @@ export default function MealRecordPage() {
         return requests;
       }
 
-      requests.push({
+      const request: RegisterMealRequestDto = {
         date: dateKey,
         time: Number(type) as MealTime,
         menu_ids: draftMenusByType.map((menu) => menu.id),
         menu_quantities: draftMenusByType.map((menu) => menu.quantity),
-      });
+      };
+
+      if (typeof draftByType.image === "string" && draftByType.image.trim().length > 0) {
+        request.image = draftByType.image;
+      }
+
+      requests.push(request);
       return requests;
     }, []);
   }, [allDrafts, currentMenus, dateKey]);
@@ -348,6 +360,7 @@ export default function MealRecordPage() {
       key: draftKey,
       existingMenuCount: seedMenus.length,
       seedMenus,
+      image: mealImage,
     });
 
     navigate(getMealSearchPath(dateKey, mealType));
@@ -396,6 +409,16 @@ export default function MealRecordPage() {
         </section>
 
         <section className={styles.menuSection}>
+          {mealImage ? (
+            <article className={styles.photoGroupCard}>
+              <div className={styles.imgContainer}>
+                <img src={mealImage} alt="식사 사진" className={styles.photoImage} />
+              </div>
+
+              <div className="divider" />
+            </article>
+          ) : null}
+
           {displayMenuItems.length > 0 ? (
             <div className={styles.menuList}>
               {displayMenuItems.map((menu, index) => (

@@ -257,3 +257,10 @@ export interface ChatRecommendItemResponseDto {
   one_line_summary: string;
   recommendation_reason: string;
 }
+
+// Camera
+export interface FoodImageRecognitionResponseDto {
+  menu_ids: number[];
+  menu_quantities: number[];
+  image_url: string;
+}

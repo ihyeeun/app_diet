@@ -1,49 +1,15 @@
 import { requestNativeImageUpload } from "@/shared/api/bridge/nativeBridge";
-import type { CapturedImage } from "@/shared/api/types/api.dto";
+import type { CapturedImage, FoodImageRecognitionResponseDto } from "@/shared/api/types/api.dto";
+import { type ApiResponse, isApiSuccess } from "@/shared/api/types/apiResponse.types";
 
 const END_POINT = {
   IMAGE_UPLOAD: "/home/uploadMealImage",
   FOOD_ANALYSIS: "/home/recognizeFoodImage",
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function readString(value: unknown) {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-export function resolveUploadedImageUrl(response: unknown) {
-  if (!isRecord(response)) return null;
-
-  const directCandidates = [response.image, response.imageUrl, response.url, response.fileUrl];
-  for (const candidate of directCandidates) {
-    const found = readString(candidate);
-    if (found) return found;
-  }
-
-  if (!isRecord(response.data)) return null;
-
-  const dataCandidates = [
-    response.data.image,
-    response.data.imageUrl,
-    response.data.url,
-    response.data.fileUrl,
-  ];
-  for (const candidate of dataCandidates) {
-    const found = readString(candidate);
-    if (found) return found;
-  }
-
-  return null;
-}
-
 // 서버로 이미지를 전송하는 로직
 export async function uploadCapturedImageToServer(capturedImage: CapturedImage) {
-  const response = await requestNativeImageUpload<string[]>({
+  const response = await requestNativeImageUpload<ApiResponse<FoodImageRecognitionResponseDto>>({
     endpoint: END_POINT.FOOD_ANALYSIS,
     fileUri: capturedImage.uri,
     fileName: capturedImage.fileName,
@@ -52,5 +18,11 @@ export async function uploadCapturedImageToServer(capturedImage: CapturedImage) 
     method: "POST",
   });
 
-  return response;
+  if (!isApiSuccess(response)) {
+    const error = new Error(response.message ?? "음식 이미지 분석 실패");
+    Object.assign(error, response);
+    throw error;
+  }
+
+  return response.data;
 }
