@@ -21,12 +21,15 @@ import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import type { MealTime } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
 
 export default function FoodCameraPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isUploading, setIsUploading] = useState(false);
+  const [captureErrorMessage, setCaptureErrorMessage] = useState<string | null>(null);
+
   const { mutateAsync: uploadImage } = useFoodImageMutation();
   const { mutateAsync: mealRegisterAsync } = useTodayMealRecordRegisterMutation();
 
@@ -50,7 +53,7 @@ export default function FoodCameraPage() {
 
       if (!imageData?.menu_ids?.length) {
         toast.error("서버가 불안정해요.", "메뉴가 인식되지 못했어요. 다시 촬영해주세요.");
-        return setIsUploading(false);
+        return;
       }
 
       imageData.menu_ids.forEach((id, idx) => {
@@ -75,8 +78,7 @@ export default function FoodCameraPage() {
       navigate(getMealRecordPath(dateKey, mealType), { replace: true });
     } catch (error) {
       if (isCameraCaptureCancelled(error)) return;
-
-      toast.warning(getCameraCaptureErrorMessage(error));
+      setCaptureErrorMessage(getCameraCaptureErrorMessage(error));
     } finally {
       setIsUploading(false);
     }
@@ -111,6 +113,15 @@ export default function FoodCameraPage() {
           </div>
         </main>
       )}
+
+      <CheckButtonModal
+        open={captureErrorMessage !== null}
+        onOpenChange={(open) => {
+          if (!open) setCaptureErrorMessage(null);
+        }}
+        title="영양 성분을 인식하기 어려웠어요"
+        description={"선명하게 다시 촬영해주세요" + captureErrorMessage}
+      />
     </section>
   );
 }

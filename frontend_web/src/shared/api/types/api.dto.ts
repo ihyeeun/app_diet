@@ -264,3 +264,23 @@ export interface FoodImageRecognitionResponseDto {
   menu_quantities: number[];
   image_url: string;
 }
+
+export interface NutritionLabelRecognitionResponseDto {
+  unit: number; //중량 단위 (0: g, 1: ml)
+  weight: number;
+  calories: number;
+  carbs?: number;
+  sugars?: number;
+  sugar_alchol?: number;
+  dietary_fiber?: number;
+  protein?: number;
+  fat?: number;
+  sat_fat?: number;
+  trans_fat?: number;
+  un_sat_fat?: number;
+  sodium?: number;
+  caffeine?: number;
+  potassium?: number;
+  cholesterol?: number;
+  alcohol?: number;
+}

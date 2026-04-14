@@ -64,7 +64,7 @@ export default function NutrientAddPage() {
       params.set("brand", brandName.trim());
     }
 
-    navigation(PATH.MENU_BOARD_CAMERA + "?" + params.toString());
+    navigation(PATH.NUTRIENT_CAMERA + "?" + params.toString());
   };
 
   const handleBack = () => {
