@@ -13,11 +13,7 @@ function canGoBackWithLocalHistory() {
   if (typeof window === "undefined") return false;
 
   const historyState = window.history.state as { idx?: number } | null;
-  if (typeof historyState?.idx === "number") {
-    return historyState.idx > 0;
-  }
-
-  return window.history.length > 1;
+  return typeof historyState?.idx === "number" && historyState.idx > 0;
 }
 
 export default function TermsPage() {

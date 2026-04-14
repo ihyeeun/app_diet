@@ -1,4 +1,5 @@
 import { handleWebMessage } from "@/src/shared/api/bridge/handleWebMessage";
+import { subscribeAuthExpired } from "@/src/shared/auth/authSessionEvents";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, Platform, StyleSheet } from "react-native";
@@ -15,7 +16,6 @@ const defaultWebUrl =
 
 const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL ?? defaultWebUrl;
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "10.0.2.2"]);
-const lastKnownTabWebHrefByTab = new Map<AppTabName, string>();
 
 type AppWebViewScreenProps = {
   path?: string;
@@ -239,6 +239,7 @@ export default function AppWebViewScreen({
   currentTab,
   onTabBarVisibilityChange,
 }: AppWebViewScreenProps) {
+  const lastKnownTabWebHrefByTabRef = useRef<Map<AppTabName, string>>(new Map());
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
   const didLoadOnceRef = useRef(false);
@@ -250,15 +251,18 @@ export default function AppWebViewScreen({
   const isTabWebView = Boolean(currentTab);
   const normalizedTabPath = useMemo(() => normalizeTabPath(path), [path]);
   const webAppOrigin = getWebAppOrigin();
-
-  const [tabInitialUrl] = useState<string | null>(() => {
-    if (!isTabWebView) return null;
-    if (currentTab) {
-      const preservedHref = lastKnownTabWebHrefByTab.get(currentTab);
+  const resolvePreferredTabHref = useCallback((tab: AppTabName | undefined, fallbackPath: string) => {
+    if (tab) {
+      const preservedHref = lastKnownTabWebHrefByTabRef.current.get(tab);
       if (preservedHref) return preservedHref;
     }
 
-    return buildWebAppUrl(normalizedTabPath);
+    return buildWebAppUrl(fallbackPath);
+  }, []);
+
+  const [tabInitialUrl] = useState<string | null>(() => {
+    if (!isTabWebView) return null;
+    return resolvePreferredTabHref(currentTab, normalizedTabPath);
   });
 
   const targetUrl = isTabWebView
@@ -345,11 +349,22 @@ export default function AppWebViewScreen({
       const tabFromUrl = resolveTabFromUrl(url, webAppOrigin);
       if (tabFromUrl !== null && tabFromUrl !== currentTab) return;
 
-      lastKnownTabWebHrefByTab.set(currentTab, webHref);
+      lastKnownTabWebHrefByTabRef.current.set(currentTab, webHref);
       latestWebPathRef.current = webHref;
     },
     [currentTab, isTabWebView, webAppOrigin],
   );
+
+  useEffect(() => {
+    if (!isTabWebView) return;
+
+    const unsubscribe = subscribeAuthExpired(() => {
+      lastKnownTabWebHrefByTabRef.current.clear();
+      latestWebPathRef.current = null;
+    });
+
+    return unsubscribe;
+  }, [isTabWebView]);
 
   const canSyncAfterInitialLoad = useCallback(() => {
     return didLoadOnceRef.current && pendingTabPathRef.current === null;
@@ -376,9 +391,9 @@ export default function AppWebViewScreen({
       return;
     }
 
-    pendingTabPathRef.current = normalizedTabPath;
+    pendingTabPathRef.current = resolvePreferredTabHref(currentTab, normalizedTabPath);
     flushPendingTabPathSync();
-  }, [flushPendingTabPathSync, isTabWebView, normalizedTabPath]);
+  }, [currentTab, flushPendingTabPathSync, isTabWebView, normalizedTabPath, resolvePreferredTabHref]);
 
   useEffect(() => {
     if (!isTabWebView) return;

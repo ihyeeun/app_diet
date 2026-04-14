@@ -9,10 +9,7 @@ import {
   useTodayMealRecordDeleteWithRollbackMutation,
   useTodayMealRecordRegisterMutation,
 } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
-import type {
-  MealTime,
-  RegisterMealRequestDto,
-} from "@/shared/api/types/api.dto";
+import type { MealTime, RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 
 type MenuQuantity = {
   id: number;
@@ -33,7 +30,7 @@ export type RegisterDraftResult = (typeof REGISTER_RESULT)[keyof typeof REGISTER
 
 function normalizeQuantity(quantity: number) {
   if (!Number.isFinite(quantity) || quantity <= 0) {
-    return 1;
+    throw new Error("Invalid menu quantity");
   }
 
   return Math.round(quantity * 10000) / 10000;
@@ -109,7 +106,11 @@ function subtractMenus(baseMenus: MenuQuantity[], removeMenus: MenuQuantity[]) {
   }));
 }
 
-function toRegisterRequest(date: string, mealType: string, menus: MenuQuantity[]): RegisterMealRequestDto {
+function toRegisterRequest(
+  date: string,
+  mealType: string,
+  menus: MenuQuantity[],
+): RegisterMealRequestDto {
   return {
     date,
     time: Number(mealType) as MealTime,
@@ -207,7 +208,9 @@ export function useChatMealRecordActions() {
           return REGISTER_RESULT.FAILED;
         }
       } else {
-        await registerMealAsync(toRegisterRequest(committed.dateKey, committed.mealType, nextMenus));
+        await registerMealAsync(
+          toRegisterRequest(committed.dateKey, committed.mealType, nextMenus),
+        );
       }
     } catch {
       return REGISTER_RESULT.FAILED;

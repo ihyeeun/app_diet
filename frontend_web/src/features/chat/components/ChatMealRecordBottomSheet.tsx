@@ -194,6 +194,7 @@ export function ChatMealRecordBottomSheet({
                       className={`${styles.mealTypeButton} ${isActive ? styles.mealTypeButtonActive : ""}`}
                       onClick={() => onMealTypeChange(option.key)}
                       aria-pressed={isActive}
+                      aria-label={option.label}
                     >
                       <img src={iconSrc} width={32} height={32} aria-hidden="true" />
                     </button>

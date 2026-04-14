@@ -5,6 +5,8 @@ import { useMemo } from "react";
 import { getDayMeals } from "@/features/home/api/dayMeal";
 import { getBodyStats } from "@/features/home/api/health";
 import { queryKeys as homeQueryKeys } from "@/features/home/hooks/queries/queryKey";
+import { getUserGoalSnapshot } from "@/features/profile/api/profile";
+import { queryKeys as profileQueryKeys } from "@/features/profile/hooks/queries/queryKey";
 
 type UseWeeklyRecordQueryProps = {
   today: string;
@@ -80,15 +82,26 @@ export function useWeeklyRecordQuery({
     })),
   });
 
+  const goalSnapshotQueries = useQueries({
+    queries: dateKeys.map((dateKey) => ({
+      queryKey: profileQueryKeys.userGoalSnapshot(dateKey),
+      queryFn: () => getUserGoalSnapshot(dateKey),
+      staleTime: Infinity,
+    })),
+  });
+
   const isPending =
     dayMealQueries.some((query) => query.isPending || query.isFetching) ||
-    bodyLogQueries.some((query) => query.isPending || query.isFetching);
+    bodyLogQueries.some((query) => query.isPending || query.isFetching) ||
+    goalSnapshotQueries.some((query) => query.isPending || query.isFetching);
   const hasError =
-    dayMealQueries.some((query) => query.isError) || bodyLogQueries.some((query) => query.isError);
+    dayMealQueries.some((query) => query.isError) ||
+    bodyLogQueries.some((query) => query.isError);
 
   const records = dateKeys.map<WeeklyRecordPoint>((dateKey, index) => {
     const dayMeal = dayMealQueries[index]?.data;
     const bodyLog = bodyLogQueries[index]?.data;
+    const goalSnapshot = goalSnapshotQueries[index]?.data;
     const rawWeight = bodyLog?.weight;
     const rawSteps = bodyLog?.steps;
 
@@ -98,8 +111,8 @@ export function useWeeklyRecordQuery({
       weight: typeof rawWeight === "number" && rawWeight > 0 ? rawWeight : null,
       calories: dayMeal?.totalCalories ?? 0,
       steps: typeof rawSteps === "number" && rawSteps >= 0 ? rawSteps : null,
-      targetWeight,
-      targetCalories,
+      targetWeight: goalSnapshot?.target_weight ?? targetWeight,
+      targetCalories: goalSnapshot?.target_calories ?? targetCalories,
     };
   });
 

@@ -56,6 +56,13 @@ export type DayMealSummary = {
     3: MenuWithQuantity[];
     4: MenuWithQuantity[];
   };
+  imagesByTime: {
+    0: string;
+    1: string;
+    2: string;
+    3: string;
+    4: string;
+  };
 };
 
 export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
@@ -86,6 +93,13 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     3: [],
     4: [],
   };
+  const imagesByTime: Record<MealTimeKey, string> = {
+    0: "",
+    1: "",
+    2: "",
+    3: "",
+    4: "",
+  };
 
   const resolveQuantity = (meal: MealResponseDto, menuIndex: number) => {
     const quantity = meal.menu_quantities[menuIndex];
@@ -93,6 +107,11 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
   };
 
   meals.meal_list.forEach((meal) => {
+    if (typeof meal.image === "string" && meal.image.trim().length > 0) {
+      // 같은 time에 여러 건이면 마지막 이미지로 덮어씀
+      imagesByTime[meal.time] = meal.image;
+    }
+
     meal.menu_list.forEach((menu, menuIndex) => {
       const quantity = resolveQuantity(meal, menuIndex);
       const calories = menu.calories * quantity;
@@ -172,5 +191,6 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     caloriesByTime,
     nutrientsByTime,
     menusByTime,
+    imagesByTime,
   };
 }

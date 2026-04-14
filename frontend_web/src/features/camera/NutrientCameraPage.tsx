@@ -1,6 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
+import { CameraLoading } from "@/features/camera/components/CameraLoading";
+import { useNutritionLabelMutation } from "@/features/camera/hooks/mutations/useImageRecognitionMutation";
 import {
   DEFAULT_CAMERA_CAPTURE_QUALITY,
   getCameraCaptureErrorMessage,
@@ -10,25 +13,47 @@ import { PATH } from "@/router/path";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
 
 export default function NutrientCameraPage() {
   const navigate = useNavigate();
+  const [isUploading, setIsUploading] = useState(false);
+  const [captureErrorMessage, setCaptureErrorMessage] = useState<string | null>(null);
+  const { mutateAsync: uploadImage } = useNutritionLabelMutation();
+  const [searchParams] = useSearchParams();
 
   const handleCameraActions = async () => {
+    if (isUploading) return;
+
     try {
-      await requestNativeCameraCapture({
+      const Image = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "NUTRITION_LABEL",
       });
-      navigate(PATH.NUTRIENT_ADD, {
-        state: {},
+
+      setIsUploading(true);
+      const imageData = await uploadImage(Image);
+
+      navigate(PATH.NUTRIENT_ADD_REGISTER, {
+        state: {
+          ...imageData, // unit, weight, calories, carbs...
+          name: searchParams.get("name") ?? "",
+          brand: searchParams.get("brand") ?? "",
+          dateKey: searchParams.get("date") ?? undefined,
+          mealType: searchParams.get("mealType") ?? undefined,
+        },
       });
-      toast.success("촬영 후 서버 전송이 완료되었어요");
+
+      toast.success("영양성분표 분석이 완료되었어요.");
+
+      return;
     } catch (error) {
       if (isCameraCaptureCancelled(error)) return;
 
-      toast.warning(getCameraCaptureErrorMessage(error));
+      setCaptureErrorMessage(getCameraCaptureErrorMessage(error));
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -36,27 +61,40 @@ export default function NutrientCameraPage() {
     <section className={styles.page}>
       <PageHeader title="영양정보 촬영" onBack={() => navigate(-1)} />
 
-      <main className={styles.main}>
-        <div className={styles.content}>
-          <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
-          <p className="typo-title1">
-            영양성분표 전체가 선명하게
-            <br />
-            보이도록 촬영해주세요
-          </p>
-        </div>
-        <div className={styles.actionButtons}>
-          <Button
-            variant="filled"
-            state="default"
-            size="small"
-            color="primary"
-            onClick={handleCameraActions}
-          >
-            촬영하기
-          </Button>
-        </div>
-      </main>
+      {isUploading ? (
+        <CameraLoading description="촬영한 사진을 분석 중이에요." />
+      ) : (
+        <main className={styles.main}>
+          <div className={styles.content}>
+            <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
+            <p className="typo-title1">
+              영양성분표 전체가 선명하게
+              <br />
+              보이도록 촬영해주세요
+            </p>
+          </div>
+          <div className={styles.actionButtons}>
+            <Button
+              variant="filled"
+              state="default"
+              size="small"
+              color="primary"
+              onClick={handleCameraActions}
+            >
+              촬영하기
+            </Button>
+          </div>
+        </main>
+      )}
+
+      <CheckButtonModal
+        open={captureErrorMessage !== null}
+        onOpenChange={(open) => {
+          if (!open) setCaptureErrorMessage(null);
+        }}
+        title="영양 성분을 인식하기 어려웠어요"
+        description={"선명하게 다시 촬영해주세요" + captureErrorMessage}
+      />
     </section>
   );
 }

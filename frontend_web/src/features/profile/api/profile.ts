@@ -1,5 +1,5 @@
 import { appApiData } from "@/shared/api/appApi";
-import type { ProfileResponseDto } from "@/shared/api/types/api.dto";
+import type { ProfileResponseDto, UserGoalSnapshotResponseDto } from "@/shared/api/types/api.dto";
 
 const END_POINT = {
   GET_PROFILE: "/profile/getProfile",
@@ -14,6 +14,7 @@ const END_POINT = {
   UPDATE_TARGET_RATIO: "/profile/updateTargetRatio",
   REGISTER_SUB_CODE: "/profile/registerSubCode",
   UPDATE_NICKNAME: "/profile/updateNickname",
+  GET_USER_GOAL_SNAPSHOT: "/profile/getUserGoalSnapshot",
 };
 
 export async function getProfile() {
@@ -77,4 +78,12 @@ export function registerSubCode(subCode: string) {
 
 export function updateNickName(nickname: string) {
   return updateProfileField(END_POINT.UPDATE_NICKNAME, { nickname });
+}
+
+export function getUserGoalSnapshot(date: string) {
+  return appApiData<UserGoalSnapshotResponseDto>({
+    endpoint: END_POINT.GET_USER_GOAL_SNAPSHOT,
+    method: "POST",
+    body: { date },
+  });
 }

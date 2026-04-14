@@ -77,6 +77,10 @@ export function useTodayMealRecordDeleteWithRollbackMutation() {
         menu_quantities: menusByTime.map((menu) => menu.quantity),
       };
 
+      if (typeof request.image === "string" && request.image.trim().length > 0) {
+        snapshot.image = request.image;
+      }
+
       try {
         for (const menu of menusByTime) {
           await deleteTodayMealRecord({

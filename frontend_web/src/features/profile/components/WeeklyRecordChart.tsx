@@ -57,7 +57,8 @@ function CustomTooltip({ active, payload, label, unit }: CustomTooltipProps) {
     return null;
   }
 
-  const first = payload[0]?.value;
+  const valuePayload = payload.find((entry) => entry.dataKey === "value");
+  const first = valuePayload?.value;
   const valueText =
     typeof first === "number" ? `${first.toLocaleString("ko-KR")} ${unit}` : `- ${unit}`;
 
@@ -73,19 +74,12 @@ export default function WeeklyRecordChart({ data, unit, yTicks }: WeeklyRecordCh
   const gradientId = useId().replace(/:/g, "");
   const targetGradientId = `${gradientId}-target`;
   const yMax = yTicks[yTicks.length - 1] ?? 100;
-  const target = data[0]?.target;
-  const chartData =
-    typeof target === "number"
-      ? data.map((point) => ({
-          ...point,
-          targetValue: target,
-        }))
-      : data;
+  const hasTarget = data.some((point) => typeof point.target === "number");
 
   return (
     <div className={styles.chartContainer}>
       <ResponsiveContainer>
-        <AreaChart accessibilityLayer={false} data={chartData}>
+        <AreaChart accessibilityLayer={false} data={data}>
           <defs>
             <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="var(--chart-current)" stopOpacity={1} />
@@ -124,11 +118,11 @@ export default function WeeklyRecordChart({ data, unit, yTicks }: WeeklyRecordCh
             wrapperClassName={styles.tooltipWrapper}
           />
 
-          {typeof target === "number" && (
+          {hasTarget && (
             <Area
               activeDot={false}
               connectNulls
-              dataKey="targetValue"
+              dataKey="target"
               dot={false}
               fill={`url(#${targetGradientId})`}
               isAnimationActive={false}

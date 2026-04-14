@@ -58,7 +58,7 @@
 .menuSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding-bottom: 20px;
   padding-top: 16px;
 }
@@ -66,17 +66,13 @@
 .menuList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .photoGroupCard {
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
-  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
 }
 
 .imgContainer {
@@ -87,15 +83,8 @@
 .photoImage {
   aspect-ratio: 1/1;
   border-radius: 8px;
-  max-width: 300px;
   object-fit: cover;
   width: 100%;
-}
-
-.photoGroupMenuList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .emptyState {

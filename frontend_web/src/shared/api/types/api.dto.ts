@@ -205,6 +205,15 @@ export interface ProfileResponseDto {
   target_calories: number;
   target_ratio: TargetRatio;
 }
+export interface UserGoalSnapshotResponseDto {
+  id: number; //목표 스냅샷 id
+  activity: number;
+  goal: number;
+  target_weight: number;
+  target_calories: number;
+  target_ratio: TargetRatio;
+  createdAt: string; //스냅샷 생성 시각
+}
 
 // Chat
 export interface ChatHistoryResponseDto {
@@ -256,4 +265,31 @@ export interface ChatRecommendItemResponseDto {
   score: number; //최종 점수
   one_line_summary: string;
   recommendation_reason: string;
+}
+
+// Camera
+export interface FoodImageRecognitionResponseDto {
+  menu_ids: number[];
+  menu_quantities: number[];
+  image_url: string;
+}
+
+export interface NutritionLabelRecognitionResponseDto {
+  unit: number; //중량 단위 (0: g, 1: ml)
+  weight: number;
+  calories: number;
+  carbs?: number;
+  sugars?: number;
+  sugar_alchol?: number;
+  dietary_fiber?: number;
+  protein?: number;
+  fat?: number;
+  sat_fat?: number;
+  trans_fat?: number;
+  un_sat_fat?: number;
+  sodium?: number;
+  caffeine?: number;
+  potassium?: number;
+  cholesterol?: number;
+  alcohol?: number;
 }

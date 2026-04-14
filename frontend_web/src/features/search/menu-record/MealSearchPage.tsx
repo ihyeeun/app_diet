@@ -1,9 +1,7 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
 import {
   formatMenuDraftKey,
@@ -31,7 +29,6 @@ import styles from "../styles/MealSearch.module.css";
 
 export default function MealSearchPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
 
   const [submittedKeyword, setSubmittedKeyword] = useState("");
@@ -45,7 +42,8 @@ export default function MealSearchPage() {
   const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
-  const hasDraft = useMenuDraftStore((store) => Boolean(store.drafts[draftKey]));
+  const draft = useMenuDraftStore((store) => store.drafts[draftKey]);
+  const hasDraft = Boolean(draft);
 
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
@@ -106,9 +104,12 @@ export default function MealSearchPage() {
       menu_quantities: selectedMenus.map((menu) => menu.quantity),
     };
 
+    if (typeof draft?.image === "string" && draft.image.trim().length > 0) {
+      requestBody.image = draft.image;
+    }
+
     mealRegister(requestBody, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
         navigate(getMealRecordPath(dateKey, mealType));
       },
       onError: () => {
@@ -138,6 +139,14 @@ export default function MealSearchPage() {
   };
 
   const handleCameraClick = () => {
+    if (selectedCount >= MAX_MEAL_RECORD_MENUS) {
+      toast.warning(
+        `최대 ${MAX_MEAL_RECORD_MENUS}개까지 기록할 수 있어요`,
+        "기존 메뉴를 일부 삭제한 뒤 다시 시도해주세요.",
+      );
+      return;
+    }
+
     navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
   };
 

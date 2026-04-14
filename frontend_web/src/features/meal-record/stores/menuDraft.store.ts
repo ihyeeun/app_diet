@@ -18,12 +18,14 @@ type MenusDraft = {
   existingMenuCount: number;
   existingMenus: MenuDraftType[];
   previewsById: Record<number, MealRecordTransferPreview>;
+  image?: string;
 };
 
 type InitDraftParams = {
   key: MenuDraftKey;
   existingMenuCount: number;
   seedMenus?: MenuDraftType[];
+  image?: string | null;
 };
 
 type UpsertMenuParams = {
@@ -57,6 +59,15 @@ const INIT_DRAFT: MenusDraft = {
   previewsById: {},
 };
 
+function normalizeDraftImage(image?: string | null) {
+  if (typeof image !== "string") {
+    return undefined;
+  }
+
+  const trimmedImage = image.trim();
+  return trimmedImage.length > 0 ? trimmedImage : undefined;
+}
+
 function getDraftOrInit(drafts: Record<MenuDraftKey, MenusDraft>, key: MenuDraftKey): MenusDraft {
   return drafts[key] ?? INIT_DRAFT;
 }
@@ -66,10 +77,11 @@ export const useMenuDraftStore = create<MenuDraftStoreState>()(
     (set) => ({
       drafts: {},
 
-      initDraft: ({ key, existingMenuCount, seedMenus }) => {
+      initDraft: ({ key, existingMenuCount, seedMenus, image }) => {
         set((state) => {
           const prev = state.drafts[key];
           const safeCount = Math.max(0, Math.floor(existingMenuCount));
+          const normalizedImage = normalizeDraftImage(image);
 
           if (!prev) {
             return {
@@ -79,6 +91,7 @@ export const useMenuDraftStore = create<MenuDraftStoreState>()(
                   existingMenuCount: safeCount,
                   existingMenus: [...(seedMenus ?? [])],
                   previewsById: {},
+                  image: normalizedImage,
                 },
               },
             };
@@ -90,6 +103,7 @@ export const useMenuDraftStore = create<MenuDraftStoreState>()(
               [key]: {
                 ...prev,
                 existingMenuCount: Math.max(prev.existingMenuCount, safeCount),
+                image: normalizedImage ?? prev.image,
               },
             },
           };
