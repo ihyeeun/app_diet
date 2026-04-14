@@ -205,6 +205,15 @@ export interface ProfileResponseDto {
   target_calories: number;
   target_ratio: TargetRatio;
 }
+export interface UserGoalSnapshotResponseDto {
+  id: number; //목표 스냅샷 id
+  activity: number;
+  goal: number;
+  target_weight: number;
+  target_calories: number;
+  target_ratio: TargetRatio;
+  createdAt: string; //스냅샷 생성 시각
+}
 
 // Chat
 export interface ChatHistoryResponseDto {
