@@ -16,7 +16,7 @@ const config: ExpoConfig = {
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "com.melo.frontend",
+    bundleIdentifier: "com.melo.ai.kr.melo",
     config: {
       usesNonExemptEncryption: false,
     },
