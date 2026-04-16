@@ -1,3 +1,4 @@
+import { Pencil } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
@@ -141,6 +142,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
           <p className={`${styles.onboardingGoalKcalValue} typo-h1`}>
             {formattargetCalories(visibletargetCalories)} kcal
           </p>
+          <Pencil size={24} />
         </button>
 
         <p className={`${styles.onboardingGoalKcalHelper} typo-title3`}>{goalWeekMessage}</p>
