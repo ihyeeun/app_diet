@@ -129,6 +129,10 @@
   gap: 12px;
 }
 
+.stepsInputWrapper {
+  flex: 1;
+}
+
 .stepsNumberInput {
   background: transparent;
   border: 1px solid var(--border-normal);
@@ -136,6 +140,7 @@
   color: var(--text-normal);
   flex: 1;
   padding: 14px 12px;
+  width: 100%;
 }
 
 .stepsNumberInput::placeholder {
