@@ -13,9 +13,22 @@ type Props = {
   max?: number;
   step?: number;
   unit?: string;
+  isInputTextAllowed?: (nextInputValue: string) => boolean;
 };
 
-export default function NumberField({ value, onChange, min, max, step, unit }: Props) {
+type BaseUIPreventableChangeEvent = React.ChangeEvent<HTMLInputElement> & {
+  preventBaseUIHandler?: () => void;
+};
+
+export default function NumberField({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  unit,
+  isInputTextAllowed,
+}: Props) {
   const id = React.useId();
 
   return (
@@ -34,8 +47,19 @@ export default function NumberField({ value, onChange, min, max, step, unit }: P
         <BaseNumberField.Decrement className={styles.decrement} aria-label="값 감소">
           <MinusIcon size={24} />
         </BaseNumberField.Decrement>
-        <BaseNumberField.Input className={styles.input} inputMode="decimal" />
-        {unit && <span className={styles.unit}>{unit}</span>}
+        <div className={`${styles.inputWrapper} typo-body1`}>
+          <BaseNumberField.Input
+            className={styles.input}
+            inputMode="decimal"
+            onChange={(event) => {
+              if (!isInputTextAllowed) return;
+              if (isInputTextAllowed(event.currentTarget.value)) return;
+
+              (event as BaseUIPreventableChangeEvent).preventBaseUIHandler?.();
+            }}
+          />
+          {unit && <span className={styles.unit}>{unit}</span>}
+        </div>
         <BaseNumberField.Increment className={styles.increment} aria-label="값 증가">
           <PlusIcon size={24} />
         </BaseNumberField.Increment>

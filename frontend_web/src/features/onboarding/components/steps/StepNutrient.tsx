@@ -6,6 +6,7 @@ import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import NumberField from "@/shared/commons/input/NumberField";
 
 const INTERNAL_DECIMALS = 4;
+const NUTRIENT_INPUT_PATTERN = /^(?:100(?:\.0?)?|[0-9]{0,2}(?:\.[0-9]?)?)$/;
 const NUTRIENT_ENERGY_PER_GRAM = {
   carbs: 4,
   protein: 4,
@@ -32,6 +33,10 @@ function calculateTargetGram(targetKcal: number, nutrientType: NutrientType) {
 function formatRoundedValue(value?: number) {
   if (value === undefined || Number.isNaN(value)) return "--";
   return Math.round(value).toString();
+}
+
+function isAllowedNutrientInput(nextInputValue: string) {
+  return NUTRIENT_INPUT_PATTERN.test(nextInputValue);
 }
 
 export default function StepNutrient({ data, update }: StepComponentProps) {
@@ -118,14 +123,22 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
 
   return (
     <div className={styles.onboardingNutrientCard}>
-      <label className={styles.onboardingNutrientLabel}>{label}</label>
-      <NumberField value={value} onChange={onChange} min={0} max={100} step={0.5} unit="%" />
+      <label className={`${styles.onboardingNutrientLabel} typo-title3`}>{label}</label>
+      <NumberField
+        value={value}
+        onChange={onChange}
+        min={0}
+        max={100}
+        step={0.5}
+        unit="%"
+        isInputTextAllowed={isAllowedNutrientInput}
+      />
 
       <div className={styles.onboardingNutrientDivider} />
 
       <div className={styles.onboardingNutrientMeta}>
-        <span>{formatRoundedValue(targetGram)}g</span>
-        <span>{formatRoundedValue(targetKcal)}kcal</span>
+        <span className="typo-title2">{formatRoundedValue(targetGram)}g</span>
+        <span className="typo-title2">{formatRoundedValue(targetKcal)}kcal</span>
       </div>
     </div>
   );
