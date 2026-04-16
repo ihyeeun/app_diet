@@ -84,13 +84,15 @@ export default function OnboardingPage() {
       if (
         userData.goal === 0 &&
         userData.goalweight !== undefined &&
-        userData.weight !== undefined
+        userData.weight !== undefined &&
+        userData.goalweight >= userData.weight
       ) {
         toast.warning("다이어트 목표는 현재 몸무게보다 높게 설정할 수 없어요");
       } else if (
         userData.goal === 2 &&
         userData.goalweight !== undefined &&
-        userData.weight !== undefined
+        userData.weight !== undefined &&
+        userData.goalweight <= userData.weight
       ) {
         toast.warning("근육 늘리기 목표는 현재 몸무게보다 높게 설정해야 해요");
       } else {
