@@ -205,9 +205,7 @@
 }
 
 .onboardingNutrientLabel {
-  font-size: 18px;
-  font-weight: var(--fw-medium);
-  line-height: var(--line-height-145);
+  color: var(--text-normal);
 }
 
 .onboardingNutrientDivider {
@@ -218,7 +216,6 @@
 
 .onboardingNutrientMeta {
   display: flex;
-  font-weight: var(--fw-semibold);
   justify-content: space-around;
 }
 
@@ -234,4 +231,10 @@
 .onboardingTitle {
   height: fit-content;
   padding: 16px 0;
+}
+
+.onboardingGoalKcalTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

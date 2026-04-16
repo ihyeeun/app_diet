@@ -2,8 +2,16 @@
   align-items: center;
   display: flex;
   gap: 4px;
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
+  padding: 0 50px;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  justify-content: center;
 }
 
 .input {
@@ -12,8 +20,8 @@
   font-size: 20px;
   margin: 0;
   padding: 0;
-  text-align: center;
   width: 4ch;
+  text-align: end;
 }
 
 .input:focus,
@@ -39,9 +47,7 @@
 .increment {
   align-items: center;
   background: none;
-  border: 0;
   box-sizing: border-box;
-  color: var(--common-1200);
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -49,22 +55,14 @@
   outline: 0;
   padding: 0;
   user-select: none;
-
+  background-color: var(--shadow-3);
+  color: var(--text-white);
+  border-radius: 100px;
   @media (hover: hover) {
     &:hover {
       background-color: gray;
     }
   }
-}
-
-.decrement {
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.increment {
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
 }
 
 .unit {

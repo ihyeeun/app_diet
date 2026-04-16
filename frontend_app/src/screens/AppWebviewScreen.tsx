@@ -7,14 +7,15 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
 
-const defaultWebUrl =
+const devWebUrl =
   Platform.select({
     ios: "http://localhost:5173",
     android: "http://10.0.2.2:5173",
     default: "http://localhost:5173",
   }) ?? "http://localhost:5173";
-
-const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL ?? defaultWebUrl;
+const productionWebUrl = "https://melo-diet.vercel.app";
+const defaultWebUrl = __DEV__ ? devWebUrl : productionWebUrl;
+const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL?.trim() || defaultWebUrl;
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "10.0.2.2"]);
 
 type AppWebViewScreenProps = {

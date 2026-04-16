@@ -1,3 +1,4 @@
+import { Pencil } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
@@ -123,6 +124,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
 
     update({ targetCalories: nexttargetCalories });
     setOpen(false);
+    toast.success("수정되었어요.");
   };
 
   return (
@@ -141,6 +143,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
           <p className={`${styles.onboardingGoalKcalValue} typo-h1`}>
             {formattargetCalories(visibletargetCalories)} kcal
           </p>
+          <Pencil size={24} />
         </button>
 
         <p className={`${styles.onboardingGoalKcalHelper} typo-title3`}>{goalWeekMessage}</p>
@@ -164,7 +167,12 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
             }}
           />
           <div className={styles.onboardingGoalKcalActions}>
-            <Button onClick={handleConfirmtargetCalories} fullWidth>
+            <Button
+              onClick={handleConfirmtargetCalories}
+              fullWidth
+              state={drafttargetCalories ? "default" : "disabled"}
+              disabled={drafttargetCalories === undefined || drafttargetCalories === 0}
+            >
               수정하기
             </Button>
           </div>

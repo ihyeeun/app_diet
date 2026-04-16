@@ -16,7 +16,11 @@ const config: ExpoConfig = {
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "com.melo.ai.kr.melo",
+    bundleIdentifier: "com.melo.ai.kr.melo.app",
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription:
+        "주변 기능 제공 및 위치 기반 화면 표시를 위해 위치 정보 접근 권한이 필요합니다.",
+    },
     config: {
       usesNonExemptEncryption: false,
     },
