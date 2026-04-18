@@ -10,10 +10,14 @@ import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecor
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
-import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
+import {
+  getMealTypeFromChatMealTime,
+  getMealTypeFromCurrentTime,
+} from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
+import { formatMenuDraftKey, useMenuDraftInit } from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
-import { getMealRecordPath } from "@/router/pathHelpers";
+import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import { AppApiError } from "@/shared/api/appApi";
 import {
   type ChatHistoryItemResponseDto,
@@ -63,6 +67,7 @@ export default function ChatPage() {
   const ensureDraft = useChatMealDraftStore((state) => state.ensureDraft);
   const setDraftMenus = useChatMealDraftStore((state) => state.setDraftMenus);
   const setDraftMealType = useChatMealDraftStore((state) => state.setDraftMealType);
+  const initMenuDraft = useMenuDraftInit();
 
   const {
     registerDraft,
@@ -312,6 +317,18 @@ export default function ChatPage() {
     });
   };
 
+  const handleNavigateDirectMenuRecord = () => {
+    const mealType = getMealTypeFromCurrentTime(new Date());
+
+    initMenuDraft({
+      key: formatMenuDraftKey(selectedDateKey, mealType),
+      existingMenuCount: 0,
+      seedMenus: [],
+    });
+
+    navigate(getMealSearchPath(selectedDateKey, mealType));
+  };
+
   return (
     <div className={styles.page}>
       <PageHeader title="채팅" onBack={() => navigate(PATH.HOME)} />
@@ -431,6 +448,7 @@ export default function ChatPage() {
           isSendPending={isSendPending}
           onChange={setInputValue}
           onSubmit={handleSubmit}
+          onDirectMenuRecordClick={handleNavigateDirectMenuRecord}
           onSelectChip={(chip) => {
             void sendChatMessage(chip);
           }}
@@ -493,6 +511,7 @@ function ChatInput({
   isSendPending,
   onChange,
   onSubmit,
+  onDirectMenuRecordClick,
   onSelectChip,
 }: {
   value: string;
@@ -500,6 +519,7 @@ function ChatInput({
   isSendPending: boolean;
   onChange: (value: string) => void;
   onSubmit: (event?: FormEvent<HTMLFormElement>) => void | Promise<void>;
+  onDirectMenuRecordClick: () => void;
   onSelectChip: (chip: string) => void;
 }) {
   const [isAddActionOpen, setIsAddActionOpen] = useState(false);
@@ -573,7 +593,7 @@ function ChatInput({
         <button
           type="button"
           className={styles.addActionItemButton}
-          onClick={() => {}}
+          onClick={onDirectMenuRecordClick}
           disabled={!isAddActionOpen}
         >
           <img src="/icons/search-icon.svg" className={styles.addActionItemIcon} />
