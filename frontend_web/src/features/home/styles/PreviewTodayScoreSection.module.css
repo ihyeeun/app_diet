@@ -9,6 +9,7 @@
 .scoreDescription {
   display: flex;
   justify-content: space-between;
+  width: 100%;
 }
 
 .scoreTitleText {
@@ -19,6 +20,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
 }
 
 .scoreTextContainer {

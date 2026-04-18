@@ -21,8 +21,13 @@ export default function Calendar({ initialDate, summaries = [], onSelectDate }: 
       summaries,
     });
 
-  const handleSelectDate = (date: Date) => {
+  const handleSelectDateInWeek = (date: Date) => {
     selectDate(date);
+    onSelectDate?.(date);
+  };
+
+  const handleSelectDateInMonth = (date: Date) => {
+    selectDate(date, { switchToWeek: true });
     onSelectDate?.(date);
   };
 
@@ -41,14 +46,14 @@ export default function Calendar({ initialDate, summaries = [], onSelectDate }: 
         {viewMode === "week" ? (
           <WeeklyCalendar
             days={weekDays}
-            onSelectDate={handleSelectDate}
+            onSelectDate={handleSelectDateInWeek}
             onSwipePrev={goPrev}
             onSwipeNext={goNext}
           />
         ) : (
           <MonthlyCalendar
             days={monthDays}
-            onSelectDate={handleSelectDate}
+            onSelectDate={handleSelectDateInMonth}
             onSwipePrev={goPrev}
             onSwipeNext={goNext}
           />

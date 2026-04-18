@@ -90,10 +90,8 @@
   display: grid;
   gap: 9px;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  height: 100%;
   padding-bottom: 16px;
   touch-action: pan-y;
-  will-change: transform, opacity;
   width: 100%;
 }
 
@@ -102,7 +100,6 @@
   flex-direction: column;
   padding-bottom: 16px;
   touch-action: pan-y;
-  will-change: transform, opacity;
   width: 100%;
 }
 

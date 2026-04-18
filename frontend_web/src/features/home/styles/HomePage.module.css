@@ -6,6 +6,11 @@
   width: 100%;
 }
 
+.calendarWrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
 .homeContainer {
   background-color: var(--bg-normal-normal);
   display: flex;

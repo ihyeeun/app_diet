@@ -88,10 +88,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .activeCardTitle {
   color: var(--text-normal);
+  flex-shrink: 0;
 }
 
 .activeCardValueRow {
@@ -99,6 +101,7 @@
   display: flex;
   gap: 3px;
   justify-content: flex-end;
+  width: 100%;
 }
 
 .activeCardValue {
@@ -151,7 +154,7 @@
 }
 
 .legendTarget {
-  background-color: var(--etc-1);
+  background-color: var(--status-error);
 }
 
 .legendCurrent {
