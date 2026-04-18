@@ -15,7 +15,10 @@ import {
   getMealTypeFromCurrentTime,
 } from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
-import { formatMenuDraftKey, useMenuDraftInit } from "@/features/meal-record/stores/menuDraft.store";
+import {
+  formatMenuDraftKey,
+  useMenuDraftInit,
+} from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
 import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import { AppApiError } from "@/shared/api/appApi";
@@ -27,6 +30,7 @@ import {
 } from "@/shared/api/types/api.dto";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
@@ -62,6 +66,7 @@ export default function ChatPage() {
   const [activeSheetChatId, setActiveSheetChatId] = useState<number | null>(null);
   const [sheetMenus, setSheetMenus] = useState<Array<{ id: number; quantity: number }>>([]);
   const [sheetMealType, setSheetMealType] = useState<MealType>(DEFAULT_MEAL_TYPE);
+  const [cancelTargetChatId, setCancelTargetChatId] = useState<number | null>(null);
 
   const committedByChatId = useChatMealDraftStore((state) => state.committedByChatId);
   const ensureDraft = useChatMealDraftStore((state) => state.ensureDraft);
@@ -267,6 +272,24 @@ export default function ChatPage() {
     }
   };
 
+  const handleRecordCancelRequest = (chatId: number) => {
+    setCancelTargetChatId(chatId);
+  };
+
+  const handleCancelConfirmOpenChange = (open: boolean) => {
+    if (!open) {
+      setCancelTargetChatId(null);
+    }
+  };
+
+  const handleRecordCancelConfirm = async () => {
+    if (cancelTargetChatId === null) {
+      return;
+    }
+
+    await handleRecordCancel(cancelTargetChatId);
+  };
+
   const handleCloseBottomSheet = () => {
     setActiveSheetChatId(null);
     setSheetMenus([]);
@@ -395,7 +418,7 @@ export default function ChatPage() {
                         menus={recordedMenus}
                         expanded={isCompleteCardExpanded}
                         onToggleExpanded={() => handleToggleCompleteExpanded(chatItem.id)}
-                        onCancel={() => handleRecordCancel(chatItem.id)}
+                        onCancel={() => handleRecordCancelRequest(chatItem.id)}
                         onEdit={() => handleOpenBottomSheet(chatItem, { fromCommitted: true })}
                         isActionPending={isRecordPending}
                       />
@@ -483,6 +506,16 @@ export default function ChatPage() {
         isSubmitPending={isRecordPending}
         submitLabel={activeSheetCommitted ? "수정하기" : "등록하기"}
         onAddMore={handleNavigateMealRecordAddMore}
+      />
+
+      <ConfirmModal
+        open={cancelTargetChatId !== null}
+        onOpenChange={handleCancelConfirmOpenChange}
+        title="기록 취소"
+        description="기록을 취소할까요?"
+        confirmText="확인"
+        confirmDisabled={isRecordPending}
+        onConfirm={handleRecordCancelConfirm}
       />
     </div>
   );
