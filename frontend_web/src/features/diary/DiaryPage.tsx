@@ -76,6 +76,7 @@ export default function DiaryPage() {
   const calorieProgress =
     nutritionMetrics?.calorieProgressPercent ??
     getCalorieProgressPercent(totalCalories, targetCalories);
+  const isCalorieExceeded = totalCalories > targetCalories;
   const mealScore = nutritionMetrics?.score.totalScore ?? 0;
 
   const calorieMessage = isPending ? "식사 데이터를 불러오는 중이에요" : calorieSummary.message;
@@ -107,7 +108,10 @@ export default function DiaryPage() {
                 <span className={`${styles.score} typo-title2`}>{mealScore}점</span>
               </p>
               <div className={styles.scoreContainer}>
-                <ScoreProgress value={calorieProgress} />
+                <ScoreProgress
+                  value={calorieProgress}
+                  variant={isCalorieExceeded ? "danger-white" : "primary-white"}
+                />
                 <p className={`${styles.calorieMessage} typo-body4`}>{calorieMessage}</p>
               </div>
             </div>

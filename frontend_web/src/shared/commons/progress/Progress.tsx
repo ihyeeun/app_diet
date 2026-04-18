@@ -2,7 +2,11 @@ import { Progress } from "@base-ui/react/progress";
 
 import styles from "./Progress.module.css";
 
-export type ProgressVariant = "primary-white" | "primary-gray" | "black-gray";
+export type ProgressVariant =
+  | "primary-white"
+  | "primary-gray"
+  | "black-gray"
+  | "danger-white";
 
 type ScoreProgressProps = {
   value: number;
