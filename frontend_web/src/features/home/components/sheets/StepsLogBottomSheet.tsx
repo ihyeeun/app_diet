@@ -50,7 +50,7 @@ export default function StepsLogBottomSheet({
   };
 
   return (
-    <BottomSheet isOpen onClose={onClose} className={style.bodyLogBottomSheet}>
+    <BottomSheet isOpen onClose={onClose}>
       <div className={style.sheetContainer}>
         <h3 className={`${style.sheetTitle} typo-title2`}>오늘의 걸음 수</h3>
         <NumberField

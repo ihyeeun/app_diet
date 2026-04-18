@@ -126,7 +126,10 @@ export default function NumberField({
           return;
         }
 
-        const normalizedValue = clampValue(normalizeValue(nextValue), min, max);
+        const normalizedValue = normalizeValue(nextValue);
+        const nextNormalizedValue = allowOutOfRange
+          ? normalizedValue
+          : clampValue(normalizedValue, min, max);
         const isDirectInputReason =
           eventDetails.reason === "input-change" ||
           eventDetails.reason === "input-paste" ||
@@ -135,12 +138,12 @@ export default function NumberField({
         if (
           isDirectInputReason &&
           isInputTextAllowed &&
-          !isInputTextAllowed(String(normalizedValue))
+          !isInputTextAllowed(String(nextNormalizedValue))
         ) {
           return;
         }
 
-        onChange(normalizedValue);
+        onChange(nextNormalizedValue);
       }}
     >
       <BaseNumberField.Group className={cx(unstyled ? undefined : styles.group, classNames?.group)}>

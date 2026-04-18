@@ -41,7 +41,12 @@ export default function WeightLogBottomSheet({
     }
 
     const nextWeight = toOneDecimalPlace(draftWeight);
-    if (nextWeight < 1 || nextWeight > MAX_WEIGHT) {
+    if (nextWeight < 1) {
+      toast.warning("정확한 값을 입력해주세요");
+      return;
+    }
+
+    if (nextWeight > MAX_WEIGHT) {
       toast.warning("체중은 1 ~ 999.9kg 사이로 입력해주세요");
       return;
     }
@@ -50,7 +55,7 @@ export default function WeightLogBottomSheet({
   };
 
   return (
-    <BottomSheet isOpen onClose={onClose} className={style.bodyLogBottomSheet}>
+    <BottomSheet isOpen onClose={onClose}>
       <div className={style.sheetContainer}>
         <h3 className={`${style.sheetTitle} typo-title2`}>오늘의 체중</h3>
         <NumberField
@@ -59,6 +64,7 @@ export default function WeightLogBottomSheet({
           min={1}
           max={MAX_WEIGHT}
           step={0.1}
+          allowOutOfRange
           normalizeValue={toOneDecimalPlace}
           isInputTextAllowed={isWeightInputAllowed}
           classNames={{
@@ -89,7 +95,13 @@ export default function WeightLogBottomSheet({
           }}
         />
         <div className={style.sheetActions}>
-          <Button onClick={handleSubmit} fullWidth size="large">
+          <Button
+            onClick={handleSubmit}
+            fullWidth
+            size="large"
+            state={draftWeight !== undefined && draftWeight !== 0 ? "default" : "disabled"}
+            disabled={draftWeight === undefined || draftWeight === 0}
+          >
             기록하기
           </Button>
         </div>
