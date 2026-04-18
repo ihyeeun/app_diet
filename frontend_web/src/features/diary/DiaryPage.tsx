@@ -8,10 +8,16 @@ import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import type { MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
-import { getCalorieSummary } from "@/features/home/utils/todayMealFeedback";
+import {
+  getCalorieSummary,
+  getHomeMealFeedback,
+  hasValidTargets,
+} from "@/features/home/utils/todayMealFeedback";
+import { PATH } from "@/router/path";
 import { getMealRecordPath } from "@/router/pathHelpers";
 import type { MealType } from "@/shared/api/types/api.dto";
 import ScoreProgress from "@/shared/commons/progress/Progress";
+import { toast } from "@/shared/commons/toast/toast";
 import { useSelectedDateKey, useSetSelectedDate } from "@/shared/stores/selectedDate.store";
 import { useTargetsState } from "@/shared/stores/targetNutrient.store";
 import { parseDateKey } from "@/shared/utils/dateFormat";
@@ -80,9 +86,26 @@ export default function DiaryPage() {
   const mealScore = nutritionMetrics?.score.totalScore ?? 0;
 
   const calorieMessage = isPending ? "식사 데이터를 불러오는 중이에요" : calorieSummary.message;
-
   const handleMoveMealRecord = (mealType: MealType) => {
     navigate(getMealRecordPath(selectedDateKey, mealType));
+  };
+  const mealFeedback = getHomeMealFeedback(dayMeals, targets);
+
+  const handleTodayMealScoreClick = () => {
+    if (!hasValidTargets(targets)) {
+      toast.warning("목표 칼로리 설정 후 이용할 수 있어요");
+      return;
+    }
+
+    navigate(PATH.TODAY_MEAL_SCORE, {
+      state: {
+        score: mealScore,
+        targets: targets,
+        currents: dayMeals,
+        calorieMessage: calorieSummary.message,
+        mealFeedback,
+      },
+    });
   };
 
   return (
@@ -91,7 +114,7 @@ export default function DiaryPage() {
         <Calendar initialDate={selectedDate} onSelectDate={setSelectedDate} />
 
         <div className={styles.content}>
-          <section className={styles.summaryCard}>
+          <ActionCard onClick={handleTodayMealScoreClick} className={styles.summaryCard}>
             <p className="typo-title2">{formatDiaryRecordTitle(selectedDate)}</p>
 
             <div className={styles.scoreCard}>
@@ -115,7 +138,7 @@ export default function DiaryPage() {
                 <p className={`${styles.calorieMessage} typo-body4`}>{calorieMessage}</p>
               </div>
             </div>
-          </section>
+          </ActionCard>
 
           <section className={styles.actionCardList}>
             {DIARY_MEALS.map((meal) => {
