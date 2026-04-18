@@ -46,9 +46,11 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const selectedDateKey = useSelectedDateKey();
   const endAnchorRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
 
   const [inputValue, setInputValue] = useState("");
   const [pendingInput, setPendingInput] = useState<string | null>(null);
+  const [floatingBottomOffset, setFloatingBottomOffset] = useState(135);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
   const [expandedCompleteCardByChatId, setExpandedCompleteCardByChatId] = useState<
     Record<number, boolean>
@@ -114,6 +116,29 @@ export default function ChatPage() {
       block: "end",
     });
   }, [chatList, isTypingPending, pendingInput]);
+
+  useEffect(() => {
+    const footerElement = footerRef.current;
+
+    if (!footerElement || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const updateOffset = () => {
+      const nextOffset = footerElement.offsetHeight + 8;
+      setFloatingBottomOffset((prev) => (prev === nextOffset ? prev : nextOffset));
+    };
+
+    const observer = new ResizeObserver(updateOffset);
+    observer.observe(footerElement);
+
+    const initialFrameId = window.requestAnimationFrame(updateOffset);
+
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(initialFrameId);
+    };
+  }, []);
 
   const sendChatMessage = async (rawInput: string) => {
     const text = rawInput.trim();
@@ -387,7 +412,7 @@ export default function ChatPage() {
         ) : null}
       </main>
 
-      <footer className={styles.footer}>
+      <footer ref={footerRef} className={styles.footer}>
         <div
           className={`${styles.floatingCameraButtonWrapper} ${isInputEmpty ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
           aria-hidden={!isInputEmpty}
@@ -396,7 +421,7 @@ export default function ChatPage() {
             onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
             ariaLabel="메뉴판 사진 찍기"
             tone="primary"
-            bottomOffset={135}
+            bottomOffset={floatingBottomOffset}
           />
         </div>
 
@@ -477,7 +502,15 @@ function ChatInput({
   onSubmit: (event?: FormEvent<HTMLFormElement>) => void | Promise<void>;
   onSelectChip: (chip: string) => void;
 }) {
+  const [isAddActionOpen, setIsAddActionOpen] = useState(false);
   const isSendDisabled = isInputEmpty || isSendPending;
+
+  const handleInputChange = (nextValue: string) => {
+    if (isAddActionOpen && nextValue.trim().length > 0) {
+      setIsAddActionOpen(false);
+    }
+    onChange(nextValue);
+  };
 
   return (
     <div className={styles.chatInputContainer}>
@@ -501,11 +534,14 @@ function ChatInput({
       <form className={styles.textInputContainer} onSubmit={onSubmit}>
         <button
           type="button"
-          className={styles.plusIconContainer}
-          onClick={() => {}}
+          className={`${styles.plusIconContainer} ${isAddActionOpen ? styles.plusIconContainerActive : ""}`}
+          onClick={() => setIsAddActionOpen((prev) => !prev)}
           aria-label="첨부 기능 준비 중"
         >
-          <Plus size={24} />
+          <Plus
+            size={24}
+            className={`${styles.plusIcon} ${isAddActionOpen ? styles.plusIconOpen : ""}`}
+          />
         </button>
 
         <div className={styles.textInputWrapper}>
@@ -513,7 +549,7 @@ function ChatInput({
             value={value}
             className={`${styles.textInput} typo-body3`}
             placeholder="맥도날드에 왔는데 뭐 먹을까?"
-            onChange={(event) => onChange(event.target.value.slice(0, 500))}
+            onChange={(event) => handleInputChange(event.target.value.slice(0, 500))}
             maxLength={500}
             disabled={isSendPending}
           />
@@ -529,6 +565,21 @@ function ChatInput({
           )}
         </div>
       </form>
+
+      <div
+        className={`${styles.addActionPanel} ${isAddActionOpen ? styles.addActionPanelVisible : styles.addActionPanelHidden}`}
+        aria-hidden={!isAddActionOpen}
+      >
+        <button
+          type="button"
+          className={styles.addActionItemButton}
+          onClick={() => {}}
+          disabled={!isAddActionOpen}
+        >
+          <img src="/icons/search-icon.svg" className={styles.addActionItemIcon} />
+          <span className="typo-body3">직접 메뉴 기록하기</span>
+        </button>
+      </div>
     </div>
   );
 }

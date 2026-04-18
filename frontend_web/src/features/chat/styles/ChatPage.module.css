@@ -434,6 +434,19 @@
   color: var(--text-white);
 }
 
+.plusIconContainerActive {
+  background-color: var(--gray-300);
+  color: var(--text-white);
+}
+
+.plusIcon {
+  transition: transform 180ms ease;
+}
+
+.plusIconOpen {
+  transform: rotate(45deg);
+}
+
 .sendIconContainer {
   background-color: var(--primary-strong);
   width: 40px;
@@ -467,9 +480,48 @@
   width: 100%;
 }
 
+.addActionPanel {
+  overflow: hidden;
+  transition:
+    max-height 220ms ease,
+    opacity 180ms ease,
+    padding-bottom 220ms ease;
+}
+
+.addActionPanelVisible {
+  opacity: 1;
+  padding: 0 20px;
+  min-height: 200px;
+}
+
+.addActionPanelHidden {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.addActionItemButton {
+  align-items: center;
+  background-color: var(--bg-normal-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  display: inline-flex;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 16px 20px;
+  width: 100%;
+}
+
+.addActionItemIcon {
+  width: 30px;
+  height: 30px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .floatingCameraButtonWrapper,
-  .chipSection {
+  .chipSection,
+  .plusIcon,
+  .addActionPanel {
     transition: none;
   }
 }
