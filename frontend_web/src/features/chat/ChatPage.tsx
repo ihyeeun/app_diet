@@ -90,6 +90,7 @@ export default function ChatPage() {
 
   const hasAnyConversation = chatList.length > 0 || pendingInput !== null;
   const isTypingPending = pendingInput !== null && (isSendPending || isAwaitingHistory);
+  const isInputEmpty = inputValue.trim().length === 0;
 
   const activeSheetChatItem = useMemo(() => {
     if (activeSheetChatId === null) {
@@ -387,15 +388,21 @@ export default function ChatPage() {
       </main>
 
       <footer className={styles.footer}>
-        <FloatingCameraButton
-          onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
-          ariaLabel="메뉴판 사진 찍기"
-          tone="primary"
-          bottomOffset={135}
-        />
+        <div
+          className={`${styles.floatingCameraButtonWrapper} ${isInputEmpty ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
+          aria-hidden={!isInputEmpty}
+        >
+          <FloatingCameraButton
+            onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
+            ariaLabel="메뉴판 사진 찍기"
+            tone="primary"
+            bottomOffset={135}
+          />
+        </div>
 
         <ChatInput
           value={inputValue}
+          isInputEmpty={isInputEmpty}
           isSendPending={isSendPending}
           onChange={setInputValue}
           onSubmit={handleSubmit}
@@ -457,29 +464,34 @@ function EmptySection() {
 
 function ChatInput({
   value,
+  isInputEmpty,
   isSendPending,
   onChange,
   onSubmit,
   onSelectChip,
 }: {
   value: string;
+  isInputEmpty: boolean;
   isSendPending: boolean;
   onChange: (value: string) => void;
   onSubmit: (event?: FormEvent<HTMLFormElement>) => void | Promise<void>;
   onSelectChip: (chip: string) => void;
 }) {
-  const isSendDisabled = value.trim().length === 0 || isSendPending;
+  const isSendDisabled = isInputEmpty || isSendPending;
 
   return (
     <div className={styles.chatInputContainer}>
-      <section className={styles.chipSection}>
+      <section
+        className={`${styles.chipSection} ${isInputEmpty ? styles.chipSectionVisible : styles.chipSectionHidden}`}
+        aria-hidden={!isInputEmpty}
+      >
         {QUICK_CHIP_LIST.map((chip) => (
           <button
             key={chip}
             type="button"
             className={styles.chipContainer}
             onClick={() => onSelectChip(chip)}
-            disabled={isSendPending}
+            disabled={isSendPending || !isInputEmpty}
           >
             <p className="typo-body3">{chip}</p>
           </button>
@@ -505,15 +517,16 @@ function ChatInput({
             maxLength={500}
             disabled={isSendPending}
           />
-
-          <button
-            type="submit"
-            className={`${styles.sendIconContainer} ${isSendDisabled ? styles.sendIconContainerDisabled : ""}`}
-            disabled={isSendDisabled}
-            aria-label="메시지 전송"
-          >
-            <ChevronUp size={24} />
-          </button>
+          {value.trim() !== "" && (
+            <button
+              type="submit"
+              className={`${styles.sendIconContainer} ${isSendDisabled ? styles.sendIconContainerDisabled : ""}`}
+              disabled={isSendDisabled}
+              aria-label="메시지 전송"
+            >
+              <ChevronUp size={24} />
+            </button>
+          )}
         </div>
       </form>
     </div>
@@ -590,13 +603,6 @@ function RecommendationSection({
           </div>
         )}
       </button>
-
-      {/* {selectedMenuIds.length > 0 ? (
-        <button type="button" className={styles.recordNowButton} onClick={onOpenBottomSheet}>
-          <span className="typo-label3">{selectedMenuIds.length}개 담겼어요</span>
-          <span className="typo-label3">기록하기</span>
-        </button>
-      ) : null} */}
 
       {remaining.length > 0 ? (
         <button

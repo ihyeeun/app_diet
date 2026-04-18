@@ -18,6 +18,20 @@
   padding-bottom: var(--safe-area-bottom);
 }
 
+.floatingCameraButtonWrapper {
+  transition: opacity 180ms ease;
+}
+
+.floatingCameraButtonVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.floatingCameraButtonHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .emptySection {
   display: flex;
   flex-direction: column;
@@ -368,12 +382,28 @@
 
 .chipSection {
   background-color: var(--bg-normal-normal);
-  overflow-x: auto;
   height: 58px;
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition:
+    height 220ms ease,
+    opacity 180ms ease;
+}
+
+.chipSectionVisible {
+  height: 58px;
+  opacity: 1;
+}
+
+.chipSectionHidden {
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .chipContainer {
@@ -435,4 +465,11 @@
   gap: 8px;
   min-width: 0;
   width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floatingCameraButtonWrapper,
+  .chipSection {
+    transition: none;
+  }
 }
