@@ -272,6 +272,21 @@ export function calculateDailyNutritionMetrics({
   };
 }
 
+/**
+ * UI 표시 정책용 영양 지표 계산.
+ * - 식사 기록이 없으면(총 칼로리 0 이하) 점수는 0점으로 노출되므로 null을 반환한다.
+ */
+export function calculateDailyNutritionMetricsForDisplay(
+  input: DailyNutritionMetricsInput,
+): DailyNutritionMetrics | null {
+  const safeActualCalories = Number.isFinite(input.actualCalories) ? input.actualCalories : 0;
+  if (safeActualCalories <= 0) {
+    return null;
+  }
+
+  return calculateDailyNutritionMetrics(input);
+}
+
 export function calculateMacroPercentToGram({
   nutrientType,
   totalCalories,

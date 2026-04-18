@@ -16,7 +16,7 @@ import { useSelectedDateKey, useSetSelectedDate } from "@/shared/stores/selected
 import { useTargetsState } from "@/shared/stores/targetNutrient.store";
 import { parseDateKey } from "@/shared/utils/dateFormat";
 import {
-  calculateDailyNutritionMetrics,
+  calculateDailyNutritionMetricsForDisplay,
   getCalorieProgressPercent,
 } from "@/shared/utils/nutrientScore";
 
@@ -49,11 +49,11 @@ export default function DiaryPage() {
   const { data: dayMeals, isPending } = useDayMealsQuery(selectedDateKey);
 
   const nutritionMetrics = useMemo(() => {
-    if (isPending || !dayMeals || !targets || dayMeals.totalCalories <= 0) {
+    if (isPending || !dayMeals || !targets) {
       return null;
     }
 
-    return calculateDailyNutritionMetrics({
+    return calculateDailyNutritionMetricsForDisplay({
       actualCalories: dayMeals.totalCalories,
       targetCalories: targets.target_calories,
       actualMacrosInGram: {

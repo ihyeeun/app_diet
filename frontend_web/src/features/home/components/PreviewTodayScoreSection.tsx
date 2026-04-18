@@ -25,7 +25,7 @@ import {
   useTargetsState,
 } from "@/shared/stores/targetNutrient.store";
 import {
-  calculateDailyNutritionMetrics,
+  calculateDailyNutritionMetricsForDisplay,
   getCalorieProgressPercent,
 } from "@/shared/utils/nutrientScore";
 
@@ -58,9 +58,9 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
     });
   }, [hasTargetCalories, profile, setTargets]);
 
-  const nutritionMetrics =
+  const nutritionInput =
     hasValidTargets(targets) && dayMealSummary
-      ? calculateDailyNutritionMetrics({
+      ? {
           actualCalories: dayMealSummary.totalCalories,
           targetCalories: targets.target_calories,
           actualMacrosInGram: {
@@ -73,10 +73,13 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
             protein: targets.target_ratio[1],
             fat: targets.target_ratio[2],
           },
-        })
+        }
       : null;
 
-  const score = nutritionMetrics?.score.totalScore ?? null;
+  const nutritionMetrics = nutritionInput
+    ? calculateDailyNutritionMetricsForDisplay(nutritionInput)
+    : null;
+  const score = nutritionInput ? (nutritionMetrics?.score.totalScore ?? 0) : null;
   const calorieSummary = getCalorieSummary(dayMealSummary?.totalCalories ?? 0, targetCalories);
   const isCalorieExceeded =
     targetCalories !== null && (dayMealSummary?.totalCalories ?? 0) > targetCalories;
