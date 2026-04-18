@@ -122,6 +122,7 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   place-items: center;
+  width: 100%;
 }
 
 .calendar-day-cell {
@@ -144,8 +145,10 @@
 }
 
 .calendar-day-cell--month {
-  min-height: 48px;
-  width: 48px;
+  aspect-ratio: 1 / 1;
+  max-width: 48px;
+  min-height: 40px;
+  width: 100%;
 }
 
 .calendar-day-cell.is-outside {
@@ -191,7 +194,7 @@
   align-items: center;
   border-radius: 100px;
   display: flex;
-  height: 40px;
+  height: min(40px, 100%);
   justify-content: center;
-  width: 40px;
+  width: min(40px, 100%);
 }
