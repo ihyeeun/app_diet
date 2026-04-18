@@ -25,7 +25,7 @@ import {
   useTargetsState,
 } from "@/shared/stores/targetNutrient.store";
 import {
-  calculateDailyNutritionMetrics,
+  calculateDailyNutritionMetricsForDisplay,
   getCalorieProgressPercent,
 } from "@/shared/utils/nutrientScore";
 
@@ -58,9 +58,9 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
     });
   }, [hasTargetCalories, profile, setTargets]);
 
-  const nutritionMetrics =
+  const nutritionInput =
     hasValidTargets(targets) && dayMealSummary
-      ? calculateDailyNutritionMetrics({
+      ? {
           actualCalories: dayMealSummary.totalCalories,
           targetCalories: targets.target_calories,
           actualMacrosInGram: {
@@ -73,11 +73,16 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
             protein: targets.target_ratio[1],
             fat: targets.target_ratio[2],
           },
-        })
+        }
       : null;
 
-  const score = nutritionMetrics?.score.totalScore ?? null;
+  const nutritionMetrics = nutritionInput
+    ? calculateDailyNutritionMetricsForDisplay(nutritionInput)
+    : null;
+  const score = nutritionInput ? (nutritionMetrics?.score.totalScore ?? 0) : null;
   const calorieSummary = getCalorieSummary(dayMealSummary?.totalCalories ?? 0, targetCalories);
+  const isCalorieExceeded =
+    targetCalories !== null && (dayMealSummary?.totalCalories ?? 0) > targetCalories;
   const mealFeedback = getHomeMealFeedback(dayMealSummary, targets);
   const statusMessage =
     shouldFetchProfile && isProfilePending ? "목표 정보를 불러오는 중이에요" : null;
@@ -144,7 +149,7 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
               nutritionMetrics?.calorieProgressPercent ??
               getCalorieProgressPercent(dayMealSummary?.totalCalories || 0, targetCalories ?? 0)
             }
-            variant="primary-white"
+            variant={isCalorieExceeded ? "danger-white" : "primary-white"}
           />
         </div>
 

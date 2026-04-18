@@ -20,6 +20,8 @@ body,
 html,
 body {
   height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 #root {
@@ -29,6 +31,7 @@ body {
   margin: 0 auto;
 
   /* width: min(100%, 375px); */
+  min-height: 100vh;
   min-height: 100dvh;
   padding: 0;
 }
@@ -104,4 +107,16 @@ select {
 
 input:focus {
   outline: 1px solid var(--border-primary);
+}
+
+/* Keep scrolling behavior, but hide visible scrollbars globally. */
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
 }

@@ -73,7 +73,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
         <TodayMetricCard
           title="걸음 수"
           value={bodyLog?.steps ?? 0}
-          unit="걸음"
+          unit="보"
           onClick={openStepsEditor}
         />
       </div>

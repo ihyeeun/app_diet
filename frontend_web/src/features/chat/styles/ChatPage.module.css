@@ -18,6 +18,20 @@
   padding-bottom: var(--safe-area-bottom);
 }
 
+.floatingCameraButtonWrapper {
+  transition: opacity 180ms ease;
+}
+
+.floatingCameraButtonVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.floatingCameraButtonHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .emptySection {
   display: flex;
   flex-direction: column;
@@ -368,12 +382,28 @@
 
 .chipSection {
   background-color: var(--bg-normal-normal);
-  overflow-x: auto;
   height: 58px;
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition:
+    height 220ms ease,
+    opacity 180ms ease;
+}
+
+.chipSectionVisible {
+  height: 58px;
+  opacity: 1;
+}
+
+.chipSectionHidden {
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .chipContainer {
@@ -402,6 +432,19 @@
   align-items: center;
   justify-content: center;
   color: var(--text-white);
+}
+
+.plusIconContainerActive {
+  background-color: var(--gray-300);
+  color: var(--text-white);
+}
+
+.plusIcon {
+  transition: transform 180ms ease;
+}
+
+.plusIconOpen {
+  transform: rotate(45deg);
 }
 
 .sendIconContainer {
@@ -435,4 +478,50 @@
   gap: 8px;
   min-width: 0;
   width: 100%;
+}
+
+.addActionPanel {
+  overflow: hidden;
+  transition:
+    max-height 220ms ease,
+    opacity 180ms ease,
+    padding-bottom 220ms ease;
+}
+
+.addActionPanelVisible {
+  opacity: 1;
+  padding: 0 20px;
+  min-height: 200px;
+}
+
+.addActionPanelHidden {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.addActionItemButton {
+  align-items: center;
+  background-color: var(--bg-normal-normal);
+  border-radius: 8px;
+  color: var(--text-normal);
+  display: inline-flex;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 16px 20px;
+  width: 100%;
+}
+
+.addActionItemIcon {
+  width: 30px;
+  height: 30px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floatingCameraButtonWrapper,
+  .chipSection,
+  .plusIcon,
+  .addActionPanel {
+    transition: none;
+  }
 }

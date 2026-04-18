@@ -1,3 +1,4 @@
+import { startOfWeek, subWeeks } from "date-fns";
 import { useMemo, useState } from "react";
 
 import {
@@ -15,11 +16,16 @@ type UseCalendarParams = {
   summaries?: DayRecordSummary[];
 };
 
+type SelectDateOptions = {
+  switchToWeek?: boolean;
+};
+
 export function useCalendar({
   initialDate = new Date(),
   initialViewMode = "week",
   summaries = [],
 }: UseCalendarParams = {}) {
+  const weekStartsOn = 1 as const;
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [viewDate, setViewDate] = useState(initialDate);
@@ -29,35 +35,67 @@ export function useCalendar({
       baseDate: viewDate,
       selectedDate,
       summaries,
-      weekStartsOn: 1,
+      weekStartsOn,
     });
-  }, [viewDate, selectedDate, summaries]);
+  }, [viewDate, selectedDate, summaries, weekStartsOn]);
 
   const monthDays = useMemo(() => {
     return buildMonthCalendarDays({
       baseDate: viewDate,
       selectedDate,
       summaries,
-      weekStartsOn: 1,
+      weekStartsOn,
     });
-  }, [viewDate, selectedDate, summaries]);
+  }, [viewDate, selectedDate, summaries, weekStartsOn]);
 
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === "week" ? "month" : "week"));
     setViewDate(selectedDate);
   };
 
-  const selectDate = (date: Date) => {
+  const selectDate = (date: Date, { switchToWeek = false }: SelectDateOptions = {}) => {
     setSelectedDate(date);
     setViewDate(date);
+
+    if (switchToWeek) {
+      setViewMode("week");
+    }
+  };
+
+  const clampWeekNavigationDate = (candidateDate: Date, currentDate: Date) => {
+    const candidateWeekStart = startOfWeek(candidateDate, { weekStartsOn });
+    const currentWeekStart = startOfWeek(new Date(), { weekStartsOn });
+    const previousWeekStart = subWeeks(currentWeekStart, 1);
+    const candidateTime = candidateWeekStart.getTime();
+
+    if (
+      candidateTime < previousWeekStart.getTime() ||
+      candidateTime > currentWeekStart.getTime()
+    ) {
+      return currentDate;
+    }
+
+    return candidateDate;
   };
 
   const goPrev = () => {
-    setViewDate((prev) => movePrev(prev, viewMode));
+    setViewDate((prev) => {
+      const candidateDate = movePrev(prev, viewMode);
+
+      if (viewMode !== "week") return candidateDate;
+
+      return clampWeekNavigationDate(candidateDate, prev);
+    });
   };
 
   const goNext = () => {
-    setViewDate((prev) => moveNext(prev, viewMode));
+    setViewDate((prev) => {
+      const candidateDate = moveNext(prev, viewMode);
+
+      if (viewMode !== "week") return candidateDate;
+
+      return clampWeekNavigationDate(candidateDate, prev);
+    });
   };
 
   return {

@@ -131,6 +131,7 @@ export default function TodayMealScorePage() {
     calorieSummary.roundedCurrentCalories,
     roundedTargetCalories,
   );
+  const isCalorieExceeded = calorieSummary.roundedCurrentCalories > roundedTargetCalories;
 
   return (
     <section className={styles.page}>
@@ -172,7 +173,10 @@ export default function TodayMealScorePage() {
                   </p>
                 </div>
                 <div className={styles.calorieProgressContainer}>
-                  <NutrientProgress value={calorieProgress} />
+                  <NutrientProgress
+                    value={calorieProgress}
+                    status={isCalorieExceeded ? "excess" : undefined}
+                  />
                   <p className={`${styles.nutrientAmount} typo-label3`}>
                     {calorieSummary.message}
                   </p>

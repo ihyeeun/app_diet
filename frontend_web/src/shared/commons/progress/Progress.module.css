@@ -19,6 +19,11 @@
   --progress-indicator-color: var(--etc-1);
 }
 
+.Progress[data-variant="danger-white"] {
+  --progress-track-color: var(--bg-normal-white);
+  --progress-indicator-color: var(--status-error);
+}
+
 .Label {
   color: var(--gray-900);
   font-size: 0.875rem;

@@ -489,6 +489,8 @@ export default function AppWebViewScreen({
         originWhitelist={["*"]}
         style={styles.webview}
         webviewDebuggingEnabled={true}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );

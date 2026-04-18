@@ -22,7 +22,7 @@
   align-items: baseline;
   display: flex;
   gap: 4px;
-  justify-content: end;
+  justify-content: flex-end;
 }
 
 .highlightValue {
@@ -33,14 +33,6 @@
   display: flex;
   flex-direction: column;
   padding: 0 24px;
-  padding-bottom: var(--safe-area-bottom);
-}
-
-.sheetContent {
-  padding-bottom: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .sheetTitle {
@@ -66,7 +58,7 @@
 }
 
 .weightValueDisplay {
-  align-items: baseline;
+  align-items: flex-end;
   display: flex;
   gap: 4px;
   justify-content: center;
@@ -124,9 +116,13 @@
 }
 
 .stepsNumberFieldGroup {
-  align-items: end;
+  align-items: flex-end;
   display: flex;
   gap: 12px;
+}
+
+.stepsInputWrapper {
+  flex: 1;
 }
 
 .stepsNumberInput {
@@ -136,6 +132,7 @@
   color: var(--text-normal);
   flex: 1;
   padding: 14px 12px;
+  width: 100%;
 }
 
 .stepsNumberInput::placeholder {
@@ -156,5 +153,5 @@
 
 .stepsUnit {
   color: var(--text-normal);
-  padding-bottom: 2px;
+  padding-bottom: 4px;
 }

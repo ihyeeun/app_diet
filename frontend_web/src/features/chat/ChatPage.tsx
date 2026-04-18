@@ -10,10 +10,17 @@ import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecor
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
-import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
+import {
+  getMealTypeFromChatMealTime,
+  getMealTypeFromCurrentTime,
+} from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
+import {
+  formatMenuDraftKey,
+  useMenuDraftInit,
+} from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
-import { getMealRecordPath } from "@/router/pathHelpers";
+import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import { AppApiError } from "@/shared/api/appApi";
 import {
   type ChatHistoryItemResponseDto,
@@ -23,6 +30,7 @@ import {
 } from "@/shared/api/types/api.dto";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
@@ -46,9 +54,11 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const selectedDateKey = useSelectedDateKey();
   const endAnchorRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
 
   const [inputValue, setInputValue] = useState("");
   const [pendingInput, setPendingInput] = useState<string | null>(null);
+  const [floatingBottomOffset, setFloatingBottomOffset] = useState(0);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
   const [expandedCompleteCardByChatId, setExpandedCompleteCardByChatId] = useState<
     Record<number, boolean>
@@ -56,11 +66,13 @@ export default function ChatPage() {
   const [activeSheetChatId, setActiveSheetChatId] = useState<number | null>(null);
   const [sheetMenus, setSheetMenus] = useState<Array<{ id: number; quantity: number }>>([]);
   const [sheetMealType, setSheetMealType] = useState<MealType>(DEFAULT_MEAL_TYPE);
+  const [cancelTargetChatId, setCancelTargetChatId] = useState<number | null>(null);
 
   const committedByChatId = useChatMealDraftStore((state) => state.committedByChatId);
   const ensureDraft = useChatMealDraftStore((state) => state.ensureDraft);
   const setDraftMenus = useChatMealDraftStore((state) => state.setDraftMenus);
   const setDraftMealType = useChatMealDraftStore((state) => state.setDraftMealType);
+  const initMenuDraft = useMenuDraftInit();
 
   const {
     registerDraft,
@@ -90,6 +102,7 @@ export default function ChatPage() {
 
   const hasAnyConversation = chatList.length > 0 || pendingInput !== null;
   const isTypingPending = pendingInput !== null && (isSendPending || isAwaitingHistory);
+  const isInputEmpty = inputValue.trim().length === 0;
 
   const activeSheetChatItem = useMemo(() => {
     if (activeSheetChatId === null) {
@@ -113,6 +126,29 @@ export default function ChatPage() {
       block: "end",
     });
   }, [chatList, isTypingPending, pendingInput]);
+
+  useEffect(() => {
+    const footerElement = footerRef.current;
+
+    if (!footerElement || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const updateOffset = () => {
+      const nextOffset = footerElement.offsetHeight - 25;
+      setFloatingBottomOffset((prev) => (prev === nextOffset ? prev : nextOffset));
+    };
+
+    const observer = new ResizeObserver(updateOffset);
+    observer.observe(footerElement);
+
+    const initialFrameId = window.requestAnimationFrame(updateOffset);
+
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(initialFrameId);
+    };
+  }, []);
 
   const sendChatMessage = async (rawInput: string) => {
     const text = rawInput.trim();
@@ -236,6 +272,24 @@ export default function ChatPage() {
     }
   };
 
+  const handleRecordCancelRequest = (chatId: number) => {
+    setCancelTargetChatId(chatId);
+  };
+
+  const handleCancelConfirmOpenChange = (open: boolean) => {
+    if (!open) {
+      setCancelTargetChatId(null);
+    }
+  };
+
+  const handleRecordCancelConfirm = async () => {
+    if (cancelTargetChatId === null) {
+      return;
+    }
+
+    await handleRecordCancel(cancelTargetChatId);
+  };
+
   const handleCloseBottomSheet = () => {
     setActiveSheetChatId(null);
     setSheetMenus([]);
@@ -284,6 +338,18 @@ export default function ChatPage() {
     navigate(getMealRecordPath(selectedDateKey, sheetMealType), {
       state: transferState,
     });
+  };
+
+  const handleNavigateDirectMenuRecord = () => {
+    const mealType = getMealTypeFromCurrentTime(new Date());
+
+    initMenuDraft({
+      key: formatMenuDraftKey(selectedDateKey, mealType),
+      existingMenuCount: 0,
+      seedMenus: [],
+    });
+
+    navigate(getMealSearchPath(selectedDateKey, mealType));
   };
 
   return (
@@ -352,7 +418,7 @@ export default function ChatPage() {
                         menus={recordedMenus}
                         expanded={isCompleteCardExpanded}
                         onToggleExpanded={() => handleToggleCompleteExpanded(chatItem.id)}
-                        onCancel={() => handleRecordCancel(chatItem.id)}
+                        onCancel={() => handleRecordCancelRequest(chatItem.id)}
                         onEdit={() => handleOpenBottomSheet(chatItem, { fromCommitted: true })}
                         isActionPending={isRecordPending}
                       />
@@ -386,19 +452,26 @@ export default function ChatPage() {
         ) : null}
       </main>
 
-      <footer className={styles.footer}>
-        <FloatingCameraButton
-          onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
-          ariaLabel="메뉴판 사진 찍기"
-          tone="primary"
-          bottomOffset={135}
-        />
+      <footer ref={footerRef} className={styles.footer}>
+        <div
+          className={`${styles.floatingCameraButtonWrapper} ${isInputEmpty ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
+          aria-hidden={!isInputEmpty}
+        >
+          <FloatingCameraButton
+            onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
+            ariaLabel="메뉴판 사진 찍기"
+            tone="primary"
+            bottomOffset={floatingBottomOffset}
+          />
+        </div>
 
         <ChatInput
           value={inputValue}
+          isInputEmpty={isInputEmpty}
           isSendPending={isSendPending}
           onChange={setInputValue}
           onSubmit={handleSubmit}
+          onDirectMenuRecordClick={handleNavigateDirectMenuRecord}
           onSelectChip={(chip) => {
             void sendChatMessage(chip);
           }}
@@ -434,6 +507,16 @@ export default function ChatPage() {
         submitLabel={activeSheetCommitted ? "수정하기" : "등록하기"}
         onAddMore={handleNavigateMealRecordAddMore}
       />
+
+      <ConfirmModal
+        open={cancelTargetChatId !== null}
+        onOpenChange={handleCancelConfirmOpenChange}
+        title="기록 취소"
+        description="기록을 취소할까요?"
+        confirmText="확인"
+        confirmDisabled={isRecordPending}
+        onConfirm={handleRecordCancelConfirm}
+      />
     </div>
   );
 }
@@ -457,29 +540,44 @@ function EmptySection() {
 
 function ChatInput({
   value,
+  isInputEmpty,
   isSendPending,
   onChange,
   onSubmit,
+  onDirectMenuRecordClick,
   onSelectChip,
 }: {
   value: string;
+  isInputEmpty: boolean;
   isSendPending: boolean;
   onChange: (value: string) => void;
   onSubmit: (event?: FormEvent<HTMLFormElement>) => void | Promise<void>;
+  onDirectMenuRecordClick: () => void;
   onSelectChip: (chip: string) => void;
 }) {
-  const isSendDisabled = value.trim().length === 0 || isSendPending;
+  const [isAddActionOpen, setIsAddActionOpen] = useState(false);
+  const isSendDisabled = isInputEmpty || isSendPending;
+
+  const handleInputChange = (nextValue: string) => {
+    if (isAddActionOpen && nextValue.trim().length > 0) {
+      setIsAddActionOpen(false);
+    }
+    onChange(nextValue);
+  };
 
   return (
     <div className={styles.chatInputContainer}>
-      <section className={styles.chipSection}>
+      <section
+        className={`${styles.chipSection} ${isInputEmpty ? styles.chipSectionVisible : styles.chipSectionHidden}`}
+        aria-hidden={!isInputEmpty}
+      >
         {QUICK_CHIP_LIST.map((chip) => (
           <button
             key={chip}
             type="button"
             className={styles.chipContainer}
             onClick={() => onSelectChip(chip)}
-            disabled={isSendPending}
+            disabled={isSendPending || !isInputEmpty}
           >
             <p className="typo-body3">{chip}</p>
           </button>
@@ -489,11 +587,14 @@ function ChatInput({
       <form className={styles.textInputContainer} onSubmit={onSubmit}>
         <button
           type="button"
-          className={styles.plusIconContainer}
-          onClick={() => {}}
+          className={`${styles.plusIconContainer} ${isAddActionOpen ? styles.plusIconContainerActive : ""}`}
+          onClick={() => setIsAddActionOpen((prev) => !prev)}
           aria-label="첨부 기능 준비 중"
         >
-          <Plus size={24} />
+          <Plus
+            size={24}
+            className={`${styles.plusIcon} ${isAddActionOpen ? styles.plusIconOpen : ""}`}
+          />
         </button>
 
         <div className={styles.textInputWrapper}>
@@ -501,21 +602,37 @@ function ChatInput({
             value={value}
             className={`${styles.textInput} typo-body3`}
             placeholder="맥도날드에 왔는데 뭐 먹을까?"
-            onChange={(event) => onChange(event.target.value.slice(0, 500))}
+            onChange={(event) => handleInputChange(event.target.value.slice(0, 500))}
             maxLength={500}
             disabled={isSendPending}
           />
-
-          <button
-            type="submit"
-            className={`${styles.sendIconContainer} ${isSendDisabled ? styles.sendIconContainerDisabled : ""}`}
-            disabled={isSendDisabled}
-            aria-label="메시지 전송"
-          >
-            <ChevronUp size={24} />
-          </button>
+          {value.trim() !== "" && (
+            <button
+              type="submit"
+              className={`${styles.sendIconContainer} ${isSendDisabled ? styles.sendIconContainerDisabled : ""}`}
+              disabled={isSendDisabled}
+              aria-label="메시지 전송"
+            >
+              <ChevronUp size={24} />
+            </button>
+          )}
         </div>
       </form>
+
+      <div
+        className={`${styles.addActionPanel} ${isAddActionOpen ? styles.addActionPanelVisible : styles.addActionPanelHidden}`}
+        aria-hidden={!isAddActionOpen}
+      >
+        <button
+          type="button"
+          className={styles.addActionItemButton}
+          onClick={onDirectMenuRecordClick}
+          disabled={!isAddActionOpen}
+        >
+          <img src="/icons/search-icon.svg" className={styles.addActionItemIcon} />
+          <span className="typo-body3">직접 메뉴 기록하기</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -590,13 +707,6 @@ function RecommendationSection({
           </div>
         )}
       </button>
-
-      {/* {selectedMenuIds.length > 0 ? (
-        <button type="button" className={styles.recordNowButton} onClick={onOpenBottomSheet}>
-          <span className="typo-label3">{selectedMenuIds.length}개 담겼어요</span>
-          <span className="typo-label3">기록하기</span>
-        </button>
-      ) : null} */}
 
       {remaining.length > 0 ? (
         <button

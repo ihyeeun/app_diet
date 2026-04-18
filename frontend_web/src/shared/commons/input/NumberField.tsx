@@ -12,8 +12,32 @@ type Props = {
   min?: number;
   max?: number;
   step?: number;
-  unit?: string;
+  smallStep?: number;
+  largeStep?: number;
+  format?: Intl.NumberFormatOptions;
+  allowOutOfRange?: boolean;
+  unit?: React.ReactNode;
+  suffix?: React.ReactNode;
+  showControls?: boolean;
+  unstyled?: boolean;
+  decrementDisabled?: boolean;
+  incrementDisabled?: boolean;
+  decrementAriaLabel?: string;
+  incrementAriaLabel?: string;
+  decrementIcon?: React.ReactNode;
+  incrementIcon?: React.ReactNode;
+  normalizeValue?: (value: number) => number;
   isInputTextAllowed?: (nextInputValue: string) => boolean;
+  inputProps?: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type">;
+  classNames?: {
+    root?: string;
+    group?: string;
+    decrement?: string;
+    increment?: string;
+    inputWrapper?: string;
+    input?: string;
+    unit?: string;
+  };
 };
 
 const NON_CHARACTER_KEYS = new Set([
@@ -46,33 +70,66 @@ function clampValue(value: number, min?: number, max?: number) {
   return max === undefined ? minClampedValue : Math.min(max, minClampedValue);
 }
 
+function cx(...classNames: Array<string | undefined>) {
+  return classNames.filter(Boolean).join(" ");
+}
+
 export default function NumberField({
   value,
   onChange,
   min,
   max,
   step,
+  smallStep,
+  largeStep,
+  format,
+  allowOutOfRange = false,
   unit,
+  suffix,
+  showControls = true,
+  unstyled = false,
+  decrementDisabled,
+  incrementDisabled,
+  decrementAriaLabel = "값 감소",
+  incrementAriaLabel = "값 증가",
+  decrementIcon,
+  incrementIcon,
+  normalizeValue = toOneDecimalPlace,
   isInputTextAllowed,
+  inputProps,
+  classNames,
 }: Props) {
   const id = React.useId();
+  const {
+    className: inputClassName,
+    inputMode,
+    onKeyDown: onInputKeyDown,
+    onPaste: onInputPaste,
+    ...restInputProps
+  } = inputProps ?? {};
 
   return (
     <BaseNumberField.Root
       id={id}
+      className={classNames?.root}
       value={value}
       min={min}
       max={max}
       step={step}
-      allowOutOfRange={false}
+      smallStep={smallStep}
+      largeStep={largeStep}
+      format={format}
+      allowOutOfRange={allowOutOfRange}
       onValueChange={(nextValue, eventDetails) => {
         if (nextValue == null) {
           onChange(undefined);
           return;
         }
 
-        const roundedValue = toOneDecimalPlace(nextValue);
-        const normalizedValue = clampValue(roundedValue, min, max);
+        const normalizedValue = normalizeValue(nextValue);
+        const nextNormalizedValue = allowOutOfRange
+          ? normalizedValue
+          : clampValue(normalizedValue, min, max);
         const isDirectInputReason =
           eventDetails.reason === "input-change" ||
           eventDetails.reason === "input-paste" ||
@@ -81,23 +138,38 @@ export default function NumberField({
         if (
           isDirectInputReason &&
           isInputTextAllowed &&
-          !isInputTextAllowed(String(normalizedValue))
+          !isInputTextAllowed(String(nextNormalizedValue))
         ) {
           return;
         }
 
-        onChange(normalizedValue);
+        onChange(nextNormalizedValue);
       }}
     >
-      <BaseNumberField.Group className={styles.group}>
-        <BaseNumberField.Decrement className={styles.decrement} aria-label="값 감소">
-          <MinusIcon size={24} />
-        </BaseNumberField.Decrement>
-        <div className={`${styles.inputWrapper} typo-body1`}>
+      <BaseNumberField.Group className={cx(unstyled ? undefined : styles.group, classNames?.group)}>
+        {showControls && (
+          <BaseNumberField.Decrement
+            className={cx(unstyled ? undefined : styles.decrement, classNames?.decrement)}
+            aria-label={decrementAriaLabel}
+            disabled={decrementDisabled}
+          >
+            {decrementIcon ?? <MinusIcon size={24} />}
+          </BaseNumberField.Decrement>
+        )}
+        <div
+          className={cx(
+            unstyled ? undefined : styles.inputWrapper,
+            unstyled ? undefined : "typo-body1",
+            classNames?.inputWrapper,
+          )}
+        >
           <BaseNumberField.Input
-            className={styles.input}
-            inputMode="decimal"
+            className={cx(unstyled ? undefined : styles.input, classNames?.input, inputClassName)}
+            inputMode={inputMode ?? "decimal"}
+            {...restInputProps}
             onKeyDown={(event) => {
+              onInputKeyDown?.(event);
+              if (event.defaultPrevented) return;
               if (!isInputTextAllowed) return;
               if (event.nativeEvent.isComposing) return;
               if (event.ctrlKey || event.metaKey || event.altKey) return;
@@ -115,6 +187,8 @@ export default function NumberField({
               event.preventDefault();
             }}
             onPaste={(event) => {
+              onInputPaste?.(event);
+              if (event.defaultPrevented) return;
               if (!isInputTextAllowed) return;
 
               const pastedText = event.clipboardData.getData("text");
@@ -129,11 +203,18 @@ export default function NumberField({
               event.preventDefault();
             }}
           />
-          {unit && <span className={styles.unit}>{unit}</span>}
+          {unit && <span className={cx(unstyled ? undefined : styles.unit, classNames?.unit)}>{unit}</span>}
         </div>
-        <BaseNumberField.Increment className={styles.increment} aria-label="값 증가">
-          <PlusIcon size={24} />
-        </BaseNumberField.Increment>
+        {suffix}
+        {showControls && (
+          <BaseNumberField.Increment
+            className={cx(unstyled ? undefined : styles.increment, classNames?.increment)}
+            aria-label={incrementAriaLabel}
+            disabled={incrementDisabled}
+          >
+            {incrementIcon ?? <PlusIcon size={24} />}
+          </BaseNumberField.Increment>
+        )}
       </BaseNumberField.Group>
     </BaseNumberField.Root>
   );

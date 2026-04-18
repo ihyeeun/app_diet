@@ -12,7 +12,9 @@ export default function HomePage() {
 
   return (
     <div className={style.container}>
-      <Calendar initialDate={selectedDate} onSelectDate={setSelectedDate} />
+      <div className={style.calendarWrapper}>
+        <Calendar initialDate={selectedDate} onSelectDate={setSelectedDate} />
+      </div>
       <section className={style.homeContainer}>
         <PreviewTodayScoreSection selectedDate={selectedDateKey} />
         <MenuActionSection selectedDate={selectedDateKey} />
