@@ -13,8 +13,9 @@ import {
   getHomeMealFeedback,
   hasValidTargets,
 } from "@/features/home/utils/todayMealFeedback";
+import { formatMenuDraftKey, useMenuDraftInit } from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
-import { getMealRecordPath } from "@/router/pathHelpers";
+import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import type { MealType } from "@/shared/api/types/api.dto";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { toast } from "@/shared/commons/toast/toast";
@@ -51,6 +52,7 @@ export default function DiaryPage() {
   const [expandedMealType, setExpandedMealType] = useState<MealType | null>(null);
   const navigate = useNavigate();
   const targets = useTargetsState();
+  const initDraft = useMenuDraftInit();
 
   const { data: dayMeals, isPending } = useDayMealsQuery(selectedDateKey);
 
@@ -87,7 +89,26 @@ export default function DiaryPage() {
 
   const calorieMessage = isPending ? "식사 데이터를 불러오는 중이에요" : calorieSummary.message;
   const handleMoveMealRecord = (mealType: MealType) => {
-    navigate(getMealRecordPath(selectedDateKey, mealType));
+    const hasRecord = (dayMeals?.menusByTime[mealType]?.length ?? 0) > 0;
+
+    if (hasRecord) {
+      navigate(getMealRecordPath(selectedDateKey, mealType));
+      return;
+    }
+
+    const seedMenus = (dayMeals?.menusByTime[mealType] ?? []).map((menu) => ({
+      id: menu.id,
+      quantity: menu.quantity,
+    }));
+
+    initDraft({
+      key: formatMenuDraftKey(selectedDateKey, mealType),
+      existingMenuCount: seedMenus.length,
+      seedMenus,
+      image: dayMeals?.imagesByTime[mealType],
+    });
+
+    navigate(getMealSearchPath(selectedDateKey, mealType));
   };
   const mealFeedback = getHomeMealFeedback(dayMeals, targets);
 
