@@ -50,7 +50,7 @@ export default function ChatPage() {
 
   const [inputValue, setInputValue] = useState("");
   const [pendingInput, setPendingInput] = useState<string | null>(null);
-  const [floatingBottomOffset, setFloatingBottomOffset] = useState(135);
+  const [floatingBottomOffset, setFloatingBottomOffset] = useState(0);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
   const [expandedCompleteCardByChatId, setExpandedCompleteCardByChatId] = useState<
     Record<number, boolean>
@@ -125,7 +125,7 @@ export default function ChatPage() {
     }
 
     const updateOffset = () => {
-      const nextOffset = footerElement.offsetHeight + 8;
+      const nextOffset = footerElement.offsetHeight - 25;
       setFloatingBottomOffset((prev) => (prev === nextOffset ? prev : nextOffset));
     };
 
