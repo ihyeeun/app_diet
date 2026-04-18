@@ -1,13 +1,22 @@
 import { loadAccessToken } from "@/features/auth/store/tokenStore";
 import { subscribeAuthExpired } from "@/src/shared/auth/authSessionEvents";
 import { router, Stack, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function RootLayout() {
   const segments = useSegments();
+  const segmentRef = useRef<string[]>([]);
+  const didBootstrapRef = useRef(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+
+  useEffect(() => {
+    segmentRef.current = segments as string[];
+  }, [segments]);
 
   useEffect(() => {
     const unsubscribe = subscribeAuthExpired(() => {
+      const isAuthRoute = segmentRef.current[0] === "(auth)";
+      if (isAuthRoute) return;
       router.replace("/(auth)/login");
     });
 
@@ -20,7 +29,16 @@ export default function RootLayout() {
     (async () => {
       const currentRoute = segments.join("/");
       const shouldBootstrapRoute = currentRoute === "" || currentRoute === "index";
-      if (!shouldBootstrapRoute) return;
+      if (!shouldBootstrapRoute) {
+        if (!cancelled) setIsBootstrapping(false);
+        return;
+      }
+
+      if (didBootstrapRef.current) {
+        if (!cancelled) setIsBootstrapping(false);
+        return;
+      }
+      didBootstrapRef.current = true;
 
       const token = await loadAccessToken();
 
@@ -31,12 +49,15 @@ export default function RootLayout() {
       } else {
         router.replace("/(auth)/login");
       }
+      setIsBootstrapping(false);
     })();
 
     return () => {
       cancelled = true;
     };
   }, [segments]);
+
+  if (isBootstrapping) return null;
 
   return (
     <Stack>
