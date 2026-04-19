@@ -5,8 +5,10 @@ import styles from "@/features/camera/CameraPage.module.css";
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
 import { useFoodImageMutation } from "@/features/camera/hooks/mutations/useImageRecognitionMutation";
 import {
+  type CameraCaptureErrorFeedback,
   DEFAULT_CAMERA_CAPTURE_QUALITY,
-  getCameraCaptureErrorMessage,
+  getCameraCaptureErrorFeedback,
+  getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
 import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
@@ -28,7 +30,9 @@ export default function FoodCameraPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isUploading, setIsUploading] = useState(false);
-  const [captureErrorMessage, setCaptureErrorMessage] = useState<string | null>(null);
+  const [captureErrorFeedback, setCaptureErrorFeedback] = useState<CameraCaptureErrorFeedback | null>(
+    null,
+  );
 
   const { mutateAsync: uploadImage } = useFoodImageMutation();
   const { mutateAsync: mealRegisterAsync } = useTodayMealRecordRegisterMutation();
@@ -42,17 +46,26 @@ export default function FoodCameraPage() {
   const handleCameraActions = async () => {
     if (isUploading) return;
 
+    let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
-      const Image = await requestNativeCameraCapture({
+      capturedImage = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "FOOD",
       });
+    } catch (error) {
+      if (isCameraCaptureCancelled(error)) return;
+      setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
+      return;
+    }
 
+    try {
       setIsUploading(true);
-      const imageData = await uploadImage(Image);
+      const imageData = await uploadImage(capturedImage);
 
       if (!imageData?.menu_ids?.length) {
-        toast.error("서버가 불안정해요.", "메뉴가 인식되지 못했어요. 다시 촬영해주세요.");
+        setCaptureErrorFeedback(
+          getRecognitionErrorFeedback(new Error("메뉴를 인식하지 못했어요."), "FOOD"),
+        );
         return;
       }
 
@@ -77,8 +90,7 @@ export default function FoodCameraPage() {
       toast.success("촬영한 사진의 메뉴가 기록되었어요.");
       navigate(getMealRecordPath(dateKey, mealType), { replace: true });
     } catch (error) {
-      if (isCameraCaptureCancelled(error)) return;
-      setCaptureErrorMessage(getCameraCaptureErrorMessage(error));
+      setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "FOOD"));
     } finally {
       setIsUploading(false);
     }
@@ -115,12 +127,12 @@ export default function FoodCameraPage() {
       )}
 
       <CheckButtonModal
-        open={captureErrorMessage !== null}
+        open={captureErrorFeedback !== null}
         onOpenChange={(open) => {
-          if (!open) setCaptureErrorMessage(null);
+          if (!open) setCaptureErrorFeedback(null);
         }}
-        title="영양 성분을 인식하기 어려웠어요"
-        description={"선명하게 다시 촬영해주세요" + captureErrorMessage}
+        title={captureErrorFeedback?.title ?? ""}
+        description={captureErrorFeedback?.description}
       />
     </section>
   );

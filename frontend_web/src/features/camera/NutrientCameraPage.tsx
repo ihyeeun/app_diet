@@ -5,8 +5,10 @@ import styles from "@/features/camera/CameraPage.module.css";
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
 import { useNutritionLabelMutation } from "@/features/camera/hooks/mutations/useImageRecognitionMutation";
 import {
+  type CameraCaptureErrorFeedback,
   DEFAULT_CAMERA_CAPTURE_QUALITY,
-  getCameraCaptureErrorMessage,
+  getCameraCaptureErrorFeedback,
+  getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
 import { PATH } from "@/router/path";
@@ -19,21 +21,30 @@ import { toast } from "@/shared/commons/toast/toast";
 export default function NutrientCameraPage() {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
-  const [captureErrorMessage, setCaptureErrorMessage] = useState<string | null>(null);
+  const [captureErrorFeedback, setCaptureErrorFeedback] = useState<CameraCaptureErrorFeedback | null>(
+    null,
+  );
   const { mutateAsync: uploadImage } = useNutritionLabelMutation();
   const [searchParams] = useSearchParams();
 
   const handleCameraActions = async () => {
     if (isUploading) return;
 
+    let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
-      const Image = await requestNativeCameraCapture({
+      capturedImage = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "NUTRITION_LABEL",
       });
+    } catch (error) {
+      if (isCameraCaptureCancelled(error)) return;
+      setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
+      return;
+    }
 
+    try {
       setIsUploading(true);
-      const imageData = await uploadImage(Image);
+      const imageData = await uploadImage(capturedImage);
 
       navigate(PATH.NUTRIENT_ADD_REGISTER, {
         state: {
@@ -46,12 +57,8 @@ export default function NutrientCameraPage() {
       });
 
       toast.success("영양성분표 분석이 완료되었어요.");
-
-      return;
     } catch (error) {
-      if (isCameraCaptureCancelled(error)) return;
-
-      setCaptureErrorMessage(getCameraCaptureErrorMessage(error));
+      setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "NUTRITION_LABEL"));
     } finally {
       setIsUploading(false);
     }
@@ -88,12 +95,12 @@ export default function NutrientCameraPage() {
       )}
 
       <CheckButtonModal
-        open={captureErrorMessage !== null}
+        open={captureErrorFeedback !== null}
         onOpenChange={(open) => {
-          if (!open) setCaptureErrorMessage(null);
+          if (!open) setCaptureErrorFeedback(null);
         }}
-        title="영양 성분을 인식하기 어려웠어요"
-        description={"선명하게 다시 촬영해주세요" + captureErrorMessage}
+        title={captureErrorFeedback?.title ?? ""}
+        description={captureErrorFeedback?.description}
       />
     </section>
   );
