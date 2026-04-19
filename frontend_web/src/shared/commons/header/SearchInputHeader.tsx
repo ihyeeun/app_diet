@@ -1,5 +1,5 @@
 import { ChevronLeft } from "lucide-react";
-import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
+import type { ChangeEvent, InputHTMLAttributes, KeyboardEvent, RefObject } from "react";
 
 import styles from "./SearchInputHeader.module.css";
 
@@ -15,6 +15,7 @@ type Props = {
   safeAreaTop?: boolean;
   className?: string;
   inputRef?: RefObject<HTMLInputElement | null>;
+  enterKeyHint?: InputHTMLAttributes<HTMLInputElement>["enterKeyHint"];
 };
 
 export function SearchInputHeader({
@@ -29,6 +30,7 @@ export function SearchInputHeader({
   safeAreaTop = true,
   className,
   inputRef,
+  enterKeyHint = "search",
 }: Props) {
   const classes = [styles.root, safeAreaTop ? styles.safeAreaTop : "", className ?? ""]
     .filter(Boolean)
@@ -72,13 +74,14 @@ export function SearchInputHeader({
           <input
             ref={inputRef}
             className={`${styles.input} typo-body3`}
-            type="text"
+            type="search"
             value={value}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             aria-label={inputAriaLabel}
             maxLength={300}
+            enterKeyHint={enterKeyHint}
           />
 
           {value && (

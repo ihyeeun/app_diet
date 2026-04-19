@@ -57,6 +57,7 @@ export default function ChatPage() {
   const footerRef = useRef<HTMLElement>(null);
 
   const [inputValue, setInputValue] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [pendingInput, setPendingInput] = useState<string | null>(null);
   const [floatingBottomOffset, setFloatingBottomOffset] = useState(0);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
@@ -103,6 +104,7 @@ export default function ChatPage() {
   const hasAnyConversation = chatList.length > 0 || pendingInput !== null;
   const isTypingPending = pendingInput !== null && (isSendPending || isAwaitingHistory);
   const isInputEmpty = inputValue.trim().length === 0;
+  const isQuickActionVisible = isInputEmpty && !isInputFocused;
 
   const activeSheetChatItem = useMemo(() => {
     if (activeSheetChatId === null) {
@@ -454,8 +456,8 @@ export default function ChatPage() {
 
       <footer ref={footerRef} className={styles.footer}>
         <div
-          className={`${styles.floatingCameraButtonWrapper} ${isInputEmpty ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
-          aria-hidden={!isInputEmpty}
+          className={`${styles.floatingCameraButtonWrapper} ${isQuickActionVisible ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
+          aria-hidden={!isQuickActionVisible}
         >
           <FloatingCameraButton
             onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
@@ -468,8 +470,10 @@ export default function ChatPage() {
         <ChatInput
           value={inputValue}
           isInputEmpty={isInputEmpty}
+          isInputFocused={isInputFocused}
           isSendPending={isSendPending}
           onChange={setInputValue}
+          onInputFocusChange={setIsInputFocused}
           onSubmit={handleSubmit}
           onDirectMenuRecordClick={handleNavigateDirectMenuRecord}
           onSelectChip={(chip) => {
@@ -541,22 +545,27 @@ function EmptySection() {
 function ChatInput({
   value,
   isInputEmpty,
+  isInputFocused,
   isSendPending,
   onChange,
+  onInputFocusChange,
   onSubmit,
   onDirectMenuRecordClick,
   onSelectChip,
 }: {
   value: string;
   isInputEmpty: boolean;
+  isInputFocused: boolean;
   isSendPending: boolean;
   onChange: (value: string) => void;
+  onInputFocusChange: (isFocused: boolean) => void;
   onSubmit: (event?: FormEvent<HTMLFormElement>) => void | Promise<void>;
   onDirectMenuRecordClick: () => void;
   onSelectChip: (chip: string) => void;
 }) {
   const [isAddActionOpen, setIsAddActionOpen] = useState(false);
   const isSendDisabled = isInputEmpty || isSendPending;
+  const isQuickChipVisible = isInputEmpty && !isInputFocused;
 
   const handleInputChange = (nextValue: string) => {
     if (isAddActionOpen && nextValue.trim().length > 0) {
@@ -568,8 +577,8 @@ function ChatInput({
   return (
     <div className={styles.chatInputContainer}>
       <section
-        className={`${styles.chipSection} ${isInputEmpty ? styles.chipSectionVisible : styles.chipSectionHidden}`}
-        aria-hidden={!isInputEmpty}
+        className={`${styles.chipSection} ${isQuickChipVisible ? styles.chipSectionVisible : styles.chipSectionHidden}`}
+        aria-hidden={!isQuickChipVisible}
       >
         {QUICK_CHIP_LIST.map((chip) => (
           <button
@@ -577,7 +586,7 @@ function ChatInput({
             type="button"
             className={styles.chipContainer}
             onClick={() => onSelectChip(chip)}
-            disabled={isSendPending || !isInputEmpty}
+            disabled={isSendPending || !isQuickChipVisible}
           >
             <p className="typo-body3">{chip}</p>
           </button>
@@ -603,6 +612,8 @@ function ChatInput({
             className={`${styles.textInput} typo-body3`}
             placeholder="맥도날드에 왔는데 뭐 먹을까?"
             onChange={(event) => handleInputChange(event.target.value.slice(0, 500))}
+            onFocus={() => onInputFocusChange(true)}
+            onBlur={() => onInputFocusChange(false)}
             maxLength={500}
             disabled={isSendPending}
           />

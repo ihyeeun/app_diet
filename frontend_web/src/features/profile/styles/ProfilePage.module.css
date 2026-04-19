@@ -183,12 +183,9 @@
 
 .input {
   padding: 14px 12px;
+  border: 1px solid var(--border-normal);
 }
 
 .input::placeholder {
   color: var(--text-assistive2);
-}
-
-.input:focus {
-  outline: none;
 }

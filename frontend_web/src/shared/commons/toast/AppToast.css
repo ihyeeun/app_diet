@@ -1,5 +1,5 @@
 .app-toast-viewport {
-  bottom: max(16px, var(--safe-area-bottom));
+  bottom: max(30px, var(--safe-area-bottom));
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -20,7 +20,7 @@
   color: var(--text-normal);
   display: flex;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 20px;
   pointer-events: auto;
 }
 
@@ -29,22 +29,25 @@
   min-width: 0;
 }
 
+.app-toast-icon {
+  align-items: center;
+  color: var(--status-link);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 24px;
+  justify-content: center;
+  margin-top: 1px;
+  width: 24px;
+}
+
 .app-toast-title {
-  font-size: var(--fs-label3);
-  font-weight: var(--fw-semibold);
-  letter-spacing: var(--letter-spacing-body);
-  line-height: var(--line-height-140);
   margin: 0;
 }
 
 .app-toast-description {
-  color: var(--text-assistive1);
-  font-size: var(--fs-label6);
-  font-weight: var(--fw-medium);
-  letter-spacing: var(--letter-spacing-body);
-  line-height: var(--line-height-140);
   margin: 4px 0 0;
   word-break: keep-all;
+  color: var(--text-assistive1);
 }
 
 .app-toast-action {
@@ -61,28 +64,38 @@
 .app-toast-close {
   border-radius: 6px;
   color: var(--text-assistive1);
-  font-size: 16px;
-  height: 20px;
-  line-height: 20px;
+  height: 24px;
+  line-height: 24px;
   margin-right: -2px;
-  margin-top: -2px;
   text-align: center;
-  width: 20px;
+  width: 24px;
 }
 
 .app-toast[data-type="warning"] {
-  background: var(--bg-normal-white);
-  border-color: var(--yellow-700);
+  background: var(--yellow-100);
+  border-color: var(--yellow-500);
+}
+
+.app-toast[data-type="warning"] .app-toast-icon {
+  color: var(--yellow-700);
 }
 
 .app-toast[data-type="error"] {
-  background: var(--bg-normal-white);
-  border-color: var(--red-400);
+  background: var(--red-100);
+  border-color: var(--red-500);
+}
+
+.app-toast[data-type="error"] .app-toast-icon {
+  color: var(--red-500);
 }
 
 .app-toast[data-type="success"] {
-  background: var(--bg-normal-white);
+  background: var(--green-100);
   border-color: var(--green-500);
+}
+
+.app-toast[data-type="success"] .app-toast-icon {
+  color: var(--green-500);
 }
 
 .app-toast[data-starting-style] {

@@ -1,21 +1,30 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { registerStep, registerWeight } from "@/features/home/api/health";
-import { queryKeys } from "@/features/home/hooks/queries/queryKey";
-import type { WeightStepsResponseDto } from "@/shared/api/types/api.dto";
+import { queryKeys as homeQueryKeys } from "@/features/home/hooks/queries/queryKey";
+import { updateWeight } from "@/features/profile/api/profile";
+import { queryKeys as profileQueryKeys } from "@/features/profile/hooks/queries/queryKey";
+import type { ProfileResponseDto, WeightStepsResponseDto } from "@/shared/api/types/api.dto";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
 
 export function useRegisterWeightMutation(callbacks?: UseMutationCallback) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ date, weight }: { date: string; weight: number }) =>
-      registerWeight({ date, weight }),
-    onSuccess: (_data, { date, weight }) => {
-      queryClient.setQueryData<WeightStepsResponseDto>(queryKeys.bodyStats(date), (previous) => ({
+    mutationFn: async ({ date, weight }: { date: string; weight: number }) => {
+      const [, updatedProfile] = await Promise.all([
+        registerWeight({ date, weight }),
+        updateWeight(weight),
+      ]);
+
+      return updatedProfile;
+    },
+    onSuccess: (updatedProfile, { date, weight }) => {
+      queryClient.setQueryData<WeightStepsResponseDto>(homeQueryKeys.bodyStats(date), (previous) => ({
         weight,
         steps: previous?.steps ?? 0,
       }));
+      queryClient.setQueryData<ProfileResponseDto>(profileQueryKeys.profile, updatedProfile);
       callbacks?.onSuccess?.();
     },
     onError: (error) => callbacks?.onError?.(error),
@@ -28,7 +37,7 @@ export function useRegisterStepsMutation(callbacks?: UseMutationCallback) {
   return useMutation({
     mutationFn: ({ date, steps }: { date: string; steps: number }) => registerStep({ date, steps }),
     onSuccess: (_data, { date, steps }) => {
-      queryClient.setQueryData<WeightStepsResponseDto>(queryKeys.bodyStats(date), (previous) => ({
+      queryClient.setQueryData<WeightStepsResponseDto>(homeQueryKeys.bodyStats(date), (previous) => ({
         weight: previous?.weight ?? 0,
         steps,
       }));

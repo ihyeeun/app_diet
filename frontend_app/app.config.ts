@@ -36,6 +36,7 @@ const config: ExpoConfig = {
     predictiveBackGestureEnabled: false,
     package: "com.melo.frontend",
     permissions: ["CAMERA"],
+    blockedPermissions: ["android.permission.RECORD_AUDIO"],
   },
   web: {
     output: "static",

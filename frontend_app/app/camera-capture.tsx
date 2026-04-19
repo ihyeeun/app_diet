@@ -3,7 +3,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { Camera, useCameraDevice } from "react-native-vision-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BridgeHandledError } from "@/src/shared/api/bridge/bridgeError";
@@ -16,6 +16,7 @@ import {
 import type { BridgeCameraCaptureRequestPayload } from "@/src/shared/api/bridge/bridge.types";
 
 type CameraCaptureMode = NonNullable<BridgeCameraCaptureRequestPayload["mode"]>;
+type CameraPermissionStatus = Awaited<ReturnType<typeof Camera.getCameraPermissionStatus>>;
 
 const DEFAULT_CAPTURE_MODE: CameraCaptureMode = "NUTRITION_LABEL";
 
@@ -81,6 +82,10 @@ export default function CameraCaptureScreen() {
   const isFocused = useIsFocused();
   const cameraRef = useRef<Camera>(null);
   const [isPreparing, setIsPreparing] = useState(true);
+  const [cameraPermissionStatus, setCameraPermissionStatus] = useState<CameraPermissionStatus | null>(
+    null,
+  );
+  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const [isDeviceDetectionFinished, setIsDeviceDetectionFinished] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const capturePayload = useMemo(() => getPendingCameraCapturePayload(), []);
@@ -99,6 +104,15 @@ export default function CameraCaptureScreen() {
   );
   const device = useCameraDevice("back");
 
+  const getCameraPermissionStatus = useCallback(async (shouldRequestPermission: boolean) => {
+    const currentStatus = await Camera.getCameraPermissionStatus();
+    if (!shouldRequestPermission || currentStatus === "granted") {
+      return currentStatus;
+    }
+
+    return await Camera.requestCameraPermission();
+  }, []);
+
   const closeWithCancellation = useCallback(() => {
     rejectCameraCaptureSession(
       new BridgeHandledError("촬영이 취소되었어요.", 499, "CAMERA_CAPTURE_CANCELLED"),
@@ -116,20 +130,11 @@ export default function CameraCaptureScreen() {
           return;
         }
 
-        const currentStatus = await Camera.getCameraPermissionStatus();
-        const nextStatus =
-          currentStatus === "granted" ? currentStatus : await Camera.requestCameraPermission();
+        const nextStatus = await getCameraPermissionStatus(true);
 
         if (!isMounted) return;
 
-        if (nextStatus !== "granted") {
-          rejectCameraCaptureSession(
-            new BridgeHandledError("카메라 권한이 필요해요.", 403, "CAMERA_PERMISSION_DENIED"),
-          );
-          router.back();
-          return;
-        }
-
+        setCameraPermissionStatus(nextStatus);
         setIsPreparing(false);
       } catch {
         if (!isMounted) return;
@@ -149,10 +154,31 @@ export default function CameraCaptureScreen() {
         new BridgeHandledError("촬영이 취소되었어요.", 499, "CAMERA_CAPTURE_CANCELLED"),
       );
     };
-  }, []);
+  }, [getCameraPermissionStatus]);
 
   useEffect(() => {
-    if (isPreparing) {
+    if (!isFocused) return;
+    if (cameraPermissionStatus === null || cameraPermissionStatus === "granted") return;
+
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const nextStatus = await getCameraPermissionStatus(false);
+        if (!isMounted) return;
+        setCameraPermissionStatus(nextStatus);
+      } catch {
+        // Ignore background re-check failures. User can retry manually.
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cameraPermissionStatus, getCameraPermissionStatus, isFocused]);
+
+  useEffect(() => {
+    if (isPreparing || cameraPermissionStatus !== "granted") {
       setIsDeviceDetectionFinished(false);
       return;
     }
@@ -170,10 +196,11 @@ export default function CameraCaptureScreen() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [device, isPreparing]);
+  }, [cameraPermissionStatus, device, isPreparing]);
 
   useEffect(() => {
-    if (isPreparing || device || !isDeviceDetectionFinished) return;
+    if (isPreparing || cameraPermissionStatus !== "granted" || device || !isDeviceDetectionFinished)
+      return;
 
     rejectCameraCaptureSession(
       new BridgeHandledError(
@@ -183,7 +210,30 @@ export default function CameraCaptureScreen() {
       ),
     );
     router.back();
-  }, [device, isDeviceDetectionFinished, isPreparing]);
+  }, [cameraPermissionStatus, device, isDeviceDetectionFinished, isPreparing]);
+
+  const handlePermissionRetryPress = useCallback(async () => {
+    if (isCheckingPermission) return;
+
+    setIsCheckingPermission(true);
+
+    try {
+      const nextStatus = await getCameraPermissionStatus(true);
+      setCameraPermissionStatus(nextStatus);
+    } catch {
+      Alert.alert("카메라 권한을 확인하지 못했어요.", "잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsCheckingPermission(false);
+    }
+  }, [getCameraPermissionStatus, isCheckingPermission]);
+
+  const handleOpenSettingsPress = useCallback(async () => {
+    try {
+      await Linking.openSettings();
+    } catch {
+      Alert.alert("설정을 열지 못했어요.", "기기 설정에서 카메라 권한을 직접 허용해주세요.");
+    }
+  }, []);
 
   const handleCapturePress = useCallback(async () => {
     if (!cameraRef.current || isProcessing) return;
@@ -288,6 +338,62 @@ export default function CameraCaptureScreen() {
     return <LoadingView />;
   }
 
+  if (cameraPermissionStatus !== "granted") {
+    return (
+      <View style={styles.permissionContainer}>
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <View style={styles.spacer} />
+          <Pressable
+            style={styles.closeButton}
+            onPress={closeWithCancellation}
+            accessibilityRole="button"
+            accessibilityLabel="카메라 닫기"
+          >
+            <Ionicons name="close" size={24} color="#ffffff" />
+          </Pressable>
+        </View>
+
+        <View style={styles.permissionCard}>
+          <Ionicons name="camera-outline" size={36} color="#ff8a00" />
+          <Text style={styles.permissionTitle}>카메라 권한이 꺼져 있어요.</Text>
+          <Text style={styles.permissionDescription}>
+            기기 설정에서 카메라 접근을 허용한 뒤 다시 시도해주세요.
+          </Text>
+        </View>
+
+        <View style={[styles.permissionActionGroup, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+          <Pressable
+            style={[
+              styles.permissionPrimaryButton,
+              isCheckingPermission && styles.disabledButton,
+            ]}
+            onPress={handleOpenSettingsPress}
+            accessibilityRole="button"
+            accessibilityLabel="설정으로 이동"
+            disabled={isCheckingPermission}
+          >
+            <Text style={styles.permissionPrimaryButtonText}>설정으로 이동</Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.permissionSecondaryButton,
+              isCheckingPermission && styles.disabledButton,
+            ]}
+            onPress={handlePermissionRetryPress}
+            accessibilityRole="button"
+            accessibilityLabel="권한 다시 확인"
+            disabled={isCheckingPermission}
+          >
+            <Text style={styles.permissionSecondaryButtonText}>
+              {isCheckingPermission ? "권한 확인 중..." : "다시 확인"}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
   if (!device) {
     return <LoadingView />;
   }
@@ -300,6 +406,7 @@ export default function CameraCaptureScreen() {
         device={device}
         isActive={isFocused && !isProcessing}
         photo={true}
+        audio={false}
         photoQualityBalance={photoQualityBalance}
       />
 
@@ -365,6 +472,65 @@ export default function CameraCaptureScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  permissionContainer: {
+    flex: 1,
+    backgroundColor: "#111111",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+  },
+  permissionCard: {
+    marginTop: 120,
+    marginBottom: 24,
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+    alignItems: "center",
+    gap: 10,
+  },
+  permissionTitle: {
+    marginTop: 4,
+    color: "#141414",
+    fontSize: 21,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  permissionDescription: {
+    color: "#5f5f5f",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+  },
+  permissionActionGroup: {
+    paddingBottom: 20,
+    gap: 10,
+  },
+  permissionPrimaryButton: {
+    minHeight: 54,
+    borderRadius: 14,
+    backgroundColor: "#ff8a00",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  permissionPrimaryButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  permissionSecondaryButton: {
+    minHeight: 54,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#5f5f5f",
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  permissionSecondaryButtonText: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "600",
   },
   loadingContainer: {
     flex: 1,

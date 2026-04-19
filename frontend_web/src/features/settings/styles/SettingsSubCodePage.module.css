@@ -1,5 +1,5 @@
 .page {
-  background-color: var(--bg-normal-normal);
+  background-color: var(--bg-normal-white);
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -17,11 +17,6 @@
 
 .title {
   color: var(--text-normal);
-  font-size: 35px;
-  font-weight: var(--fw-semibold);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: var(--line-height-120);
-  margin: 0;
   word-break: keep-all;
 }
 
@@ -34,15 +29,13 @@
   border: 1px solid var(--border-normal);
   border-radius: 8px;
   color: var(--text-normal);
-  font-size: 40px;
-  line-height: var(--line-height-120);
   padding: 12px 20px;
   text-align: right;
   width: 100%;
 }
 
 .input::placeholder {
-  color: var(--text-assistive1);
+  color: var(--text-assistive2);
 }
 
 .footer {

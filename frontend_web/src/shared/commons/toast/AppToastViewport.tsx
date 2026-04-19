@@ -1,6 +1,22 @@
 import "./AppToast.css";
 
 import { Toast } from "@base-ui/react/toast";
+import { CircleAlert, CircleCheck, CircleX, Info } from "lucide-react";
+
+type AppToastType = "default" | "success" | "warning" | "error";
+
+function ToastStatusIcon({ type }: { type?: string }) {
+  switch (type as AppToastType) {
+    case "success":
+      return <CircleCheck size={24} />;
+    case "warning":
+      return <CircleAlert size={24} />;
+    case "error":
+      return <CircleX size={24} />;
+    default:
+      return <Info size={24} />;
+  }
+}
 
 export function AppToastViewport() {
   const { toasts } = Toast.useToastManager();
@@ -15,14 +31,17 @@ export function AppToastViewport() {
             className="app-toast"
             swipeDirection={["right", "down"]}
           >
+            <span className="app-toast-icon" aria-hidden="true">
+              <ToastStatusIcon type={item.type} />
+            </span>
             <Toast.Content className="app-toast-content">
-              {item.title ? <Toast.Title className="app-toast-title" /> : null}
+              {item.title ? <Toast.Title className="app-toast-title typo-title3" /> : null}
               {item.description ? (
-                <Toast.Description className="app-toast-description" />
+                <Toast.Description className="app-toast-description typo-body2" />
               ) : null}
             </Toast.Content>
             {item.actionProps ? <Toast.Action className="app-toast-action" /> : null}
-            <Toast.Close className="app-toast-close" aria-label="알림 닫기">
+            <Toast.Close className="app-toast-close typo-body1" aria-label="알림 닫기">
               ×
             </Toast.Close>
           </Toast.Root>

@@ -34,6 +34,10 @@
   gap: 8px;
 }
 
+.textareaWrapper {
+  position: relative;
+}
+
 .textarea {
   background: var(--bg-normal-white);
   border: 1px solid var(--border-normal);
@@ -52,6 +56,18 @@
 
 .textarea::placeholder {
   color: var(--text-assistive1);
+  white-space: pre-line;
+}
+
+.textareaPlaceholder {
+  color: var(--text-assistive1);
+  left: 20px;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 16px;
+  user-select: none;
+  z-index: 1;
 }
 
 .textarea:focus,
