@@ -1,4 +1,4 @@
-import { Check, Plus, X } from "lucide-react";
+import { CheckCircle2, PlusCircle, X } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 
 import styles from "./MealMenuCard.module.css";
@@ -35,8 +35,8 @@ function getActionAriaLabel(icon: MealMenuCardIcon) {
 }
 
 function ActionIcon({ icon }: { icon: MealMenuCardIcon }) {
-  if (icon === "add") return <Plus size={24} strokeWidth={2} />;
-  if (icon === "check") return <Check size={24} strokeWidth={2} />;
+  if (icon === "add") return <PlusCircle size={24} strokeWidth={2} />;
+  if (icon === "check") return <CheckCircle2 size={24} strokeWidth={2} />;
   return <X size={24} strokeWidth={2} />;
 }
 
