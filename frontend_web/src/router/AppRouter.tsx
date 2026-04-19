@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 
+import AccountDeletePage from "@/features/account-delete/AccountDeletePage";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
 import {
@@ -66,6 +67,7 @@ export default function AppRouter() {
       <Suspense fallback={null}>
         <Routes>
           <Route path={PATH.TERMS} element={<TermsPage />} />
+          <Route path="/account-delete" element={<AccountDeletePage />} />
 
           <Route element={<PrivateRouteLayout />}>
             <Route path={PATH.ROOT} element={<HomePage />} />
