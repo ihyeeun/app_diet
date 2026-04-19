@@ -6,7 +6,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 
-import styles from "./styles/SettingsDetail.module.css";
+import styles from "./styles/SettingsSubCodePage.module.css";
 
 const MAX_SUB_CODE_LENGTH = 40;
 
@@ -53,7 +53,7 @@ export default function SettingsSubCodePage() {
               value={subCode}
               onChange={(event) => setSubCode(event.target.value.slice(0, MAX_SUB_CODE_LENGTH))}
               className={`${styles.input} typo-h1`}
-              placeholder="구독코드"
+              placeholder="구독 코드"
               aria-label="구독 코드"
             />
           </section>

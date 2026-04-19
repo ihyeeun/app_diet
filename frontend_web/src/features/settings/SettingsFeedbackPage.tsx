@@ -49,13 +49,23 @@ export default function SettingsFeedbackPage() {
           </section>
 
           <section className={styles.inputSection}>
-            <textarea
-              value={feedback}
-              onChange={(event) => setFeedback(event.target.value.slice(0, MAX_FEEDBACK_LENGTH))}
-              className={`${styles.textarea} typo-body3`}
-              placeholder={"예) 검색이 잘 안 돼요\n이런 기능이 있으면 좋겠어요"}
-              aria-label="문의 내용"
-            />
+            <div className={styles.textareaWrapper}>
+              {feedback.length === 0 && (
+                <p className={`${styles.textareaPlaceholder} typo-body3`} aria-hidden="true">
+                  예) 검색이 잘 안 돼요
+                  <br />
+                  이런 기능이 있으면 좋겠어요
+                </p>
+              )}
+              <textarea
+                value={feedback}
+                onChange={(event) =>
+                  setFeedback(event.target.value.slice(0, MAX_FEEDBACK_LENGTH))
+                }
+                className={`${styles.textarea} typo-body3`}
+                aria-label="문의 내용"
+              />
+            </div>
             <p className={`${styles.lengthText} typo-label4`}>최대 {MAX_FEEDBACK_LENGTH}자 이내</p>
           </section>
         </div>

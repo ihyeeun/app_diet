@@ -39,7 +39,10 @@ export default function SettingsPage() {
             className={styles.menuItem}
             onClick={() => navigate(PATH.SETTINGS_FEEDBACK)}
           >
-            <span className={`${styles.menuLabel} typo-title3`}>문의하기</span>
+            <div className={styles.labelContainer}>
+              <img src="/icons/question.svg" alt="Feedback Icon" className={styles.img} />
+              <span className={`${styles.menuLabel} typo-title3`}>문의하기 / 아이디어 보내기</span>
+            </div>
             <ChevronRight size={24} className={styles.menuChevron} />
           </button>
 
@@ -48,7 +51,10 @@ export default function SettingsPage() {
             className={styles.menuItem}
             onClick={() => navigate(PATH.SETTINGS_SUB_CODE)}
           >
-            <span className={`${styles.menuLabel} typo-title3`}>쿠폰 코드 입력</span>
+            <div className={styles.labelContainer}>
+              <img src="/icons/coupon.svg" alt="Coupon Icon" className={styles.img} />
+              <span className={`${styles.menuLabel} typo-title3`}>쿠폰 코드 입력</span>
+            </div>
             <ChevronRight size={24} className={styles.menuChevron} />
           </button>
 
