@@ -343,7 +343,7 @@ export default function MealRecordPage() {
     navigate(PATH.DIARY, { replace: true });
   };
 
-  const handleExitConfirm = () => {
+  const handleExit = () => {
     clearAllDrafts();
     navigate(PATH.DIARY, { replace: true });
   };
@@ -478,10 +478,10 @@ export default function MealRecordPage() {
         open={isExitConfirmOpen}
         onOpenChange={setIsExitConfirmOpen}
         title="변경사항을 저장하지 않고 나갈까요?"
-        description="완료하기를 누르지 않으면 수정 내용이 사라져요."
-        cancelText="계속 수정"
-        confirmText="나가기"
-        onConfirm={handleExitConfirm}
+        cancelText="나가기"
+        confirmText="계속 수정"
+        onCancel={handleExit}
+        onConfirm={() => {}}
       />
     </section>
   );

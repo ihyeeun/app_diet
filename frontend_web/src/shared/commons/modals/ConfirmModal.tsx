@@ -23,6 +23,7 @@ type ConfirmModalProps = {
    */
   closeOnConfirm?: boolean;
 
+  onCancel?: () => void | Promise<void>;
   onConfirm: () => void | Promise<void>;
 };
 
@@ -35,6 +36,7 @@ export function ConfirmModal({
   confirmText = "확인",
   confirmDisabled = false,
   closeOnConfirm = true,
+  onCancel,
   onConfirm,
 }: ConfirmModalProps) {
   return (
@@ -42,7 +44,23 @@ export function ConfirmModal({
       {/* 취소는 무조건 닫기 */}
       <AlertDialog.Close
         render={(props) => (
-          <Button {...props} variant="outlined" state="default" size="small" color="primary">
+          <Button
+            {...props}
+            onClick={(e) => {
+              props.onClick?.(e); // 닫기 동작 유지
+              if (!onCancel) {
+                return;
+              }
+
+              void Promise.resolve(onCancel()).catch((error) => {
+                console.error(error);
+              });
+            }}
+            variant="outlined"
+            state="default"
+            size="small"
+            color="primary"
+          >
             {cancelText}
           </Button>
         )}
