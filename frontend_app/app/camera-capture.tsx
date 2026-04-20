@@ -300,7 +300,7 @@ export default function CameraCaptureScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        quality: capturePayload?.quality ?? 0.8,
+        quality: capturePayload?.quality ?? 1,
         allowsEditing: false,
         allowsMultipleSelection: false,
         exif: false,
