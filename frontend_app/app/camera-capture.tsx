@@ -275,7 +275,26 @@ export default function CameraCaptureScreen() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        //  권한 거부 시 사용자에게 알림
+        if (!permission.canAskAgain) {
+          Alert.alert(
+            "갤러리 접근 권한이 꺼져 있어요.",
+            "설정에서 사진 접근 권한을 허용한 뒤 다시 시도해주세요.",
+            [
+              {
+                text: "취소",
+                style: "cancel",
+              },
+              {
+                text: "설정으로 이동",
+                onPress: () => {
+                  void handleOpenSettingsPress();
+                },
+              },
+            ],
+          );
+          return;
+        }
+
         Alert.alert("갤러리 접근 권한이 필요해요.");
         return;
       }
@@ -332,7 +351,7 @@ export default function CameraCaptureScreen() {
     } finally {
       setIsProcessing(false);
     }
-  }, [capturePayload?.quality, isProcessing]);
+  }, [capturePayload?.quality, handleOpenSettingsPress, isProcessing]);
 
   if (isPreparing) {
     return <LoadingView />;
