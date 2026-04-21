@@ -1,6 +1,6 @@
-import { NumberField, Tabs } from "@base-ui/react";
+import { Tabs } from "@base-ui/react";
 import { Popover } from "@base-ui/react/popover";
-import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { NUTRIENT_FORM_CONFIG } from "@/features/nutrient-entry/constants/nutrientDetailForm";
@@ -12,6 +12,7 @@ import {
   type MenuNutrientFieldKey,
 } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
+import NumberField from "@/shared/commons/input/NumberField";
 
 import styles from "../styles/MealMenuNutrientDetail.module.css";
 
@@ -35,7 +36,9 @@ type MealMenuNutrientDetailProps = {
 
 const DEFAULT_QUANTITY = 1;
 const MIN_QUANTITY = 0.1;
+const MAX_QUANTITY = 9999.9;
 const QUANTITY_STEP = 0.5;
+const QUANTITY_INPUT_PATTERN = /^\d{0,3}(?:\.\d?)?$/;
 const UNIT_QUANTITY_PATTERN = /^\s*([\d.]+)\s*[^()]*\(([^)]+)\)\s*$/i;
 const WEIGHT_TOKEN_PATTERN = /([\d.]+)\s*(g|ml)\b/i;
 const DETAIL_WARNING_MESSAGE = [
@@ -104,32 +107,26 @@ function roundDecimal(value: number, digits = 2) {
   return Math.round(value * factor) / factor;
 }
 
-function formatDecimal(value: number) {
-  const rounded = roundDecimal(value);
-  if (Number.isInteger(rounded)) {
-    return String(rounded);
-  }
-
-  return String(rounded).replace(/\.?0+$/, "");
+function clampQuantityValue(value: number) {
+  return Math.min(MAX_QUANTITY, Math.max(MIN_QUANTITY, roundDecimal(value, 1)));
 }
 
-function parseQuantityInput(input: string) {
-  const numeric = Number(input);
-  if (!Number.isFinite(numeric) || numeric <= 0) {
-    return null;
+function isQuantityInputAllowed(inputValue: string) {
+  const normalized = inputValue.trim();
+  if (normalized === "") {
+    return true;
   }
 
-  return roundDecimal(numeric, 1);
-}
-
-function sanitizeQuantityInput(value: string) {
-  const cleaned = value.replace(/[^0-9.]/g, "");
-  const [integerPart = "", ...decimalParts] = cleaned.split(".");
-  if (decimalParts.length === 0) {
-    return cleaned;
+  if (!QUANTITY_INPUT_PATTERN.test(normalized)) {
+    return false;
   }
 
-  return `${integerPart}.${decimalParts.join("").slice(0, 1)}`;
+  const numeric = Number(normalized);
+  if (!Number.isFinite(numeric)) {
+    return false;
+  }
+
+  return numeric <= MAX_QUANTITY;
 }
 
 function scaleNutrientValue(value: number | null | undefined, scaleFactor: number) {
@@ -278,8 +275,8 @@ export function MealMenuNutrientDetail({
     initialMode === "weight" || initialMode === "unit" ? initialMode : menuInitialMode;
 
   const [inputMode, setInputMode] = useState<MealServingInputMode>(fallbackMode);
-  const [quantityInput, setQuantityInput] = useState(() => {
-    return formatDecimal(getModeFallbackValue(servingContext, fallbackMode, fallbackQuantity));
+  const [quantityInput, setQuantityInput] = useState<number | undefined>(() => {
+    return clampQuantityValue(getModeFallbackValue(servingContext, fallbackMode, fallbackQuantity));
   });
 
   useEffect(() => {
@@ -296,7 +293,7 @@ export function MealMenuNutrientDetail({
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputMode(fallbackMode);
-    setQuantityInput(formatDecimal(nextFallbackValue));
+    setQuantityInput(clampQuantityValue(nextFallbackValue));
   }, [
     fallbackMode,
     fallbackQuantity,
@@ -306,7 +303,7 @@ export function MealMenuNutrientDetail({
     servingWeightUnit,
   ]);
 
-  const quantity = useMemo(() => parseQuantityInput(quantityInput), [quantityInput]);
+  const quantity = useMemo(() => toPositiveNumber(quantityInput), [quantityInput]);
   const resolvedServing = useMemo(() => {
     if (quantity === null) {
       return null;
@@ -386,7 +383,7 @@ export function MealMenuNutrientDetail({
   }, [inputMode, onSelectionChange, previewMenu, resolvedServing]);
 
   const getCurrentFallbackValue = (mode: MealServingInputMode) => {
-    return getModeFallbackValue(servingContext, mode, fallbackQuantity);
+    return clampQuantityValue(getModeFallbackValue(servingContext, mode, fallbackQuantity));
   };
 
   const handleModeChange = (nextMode: MealServingInputMode) => {
@@ -397,49 +394,31 @@ export function MealMenuNutrientDetail({
     const fallbackValue = getCurrentFallbackValue(nextMode);
     if (quantity === null) {
       setInputMode(nextMode);
-      setQuantityInput(formatDecimal(fallbackValue));
+      setQuantityInput(fallbackValue);
       return;
     }
 
     const currentResolved = resolveServingValues(servingContext, inputMode, quantity);
     if (!Number.isFinite(currentResolved.scaleFactor) || currentResolved.scaleFactor <= 0) {
       setInputMode(nextMode);
-      setQuantityInput(formatDecimal(fallbackValue));
+      setQuantityInput(fallbackValue);
       return;
     }
 
     const convertedValue =
       nextMode === "weight" ? currentResolved.totalWeight : currentResolved.unitCount;
     setInputMode(nextMode);
-    setQuantityInput(formatDecimal(Math.max(MIN_QUANTITY, convertedValue)));
-  };
-
-  const handleInputStep = (delta: number) => {
-    const baseValue = quantity ?? getCurrentFallbackValue(inputMode);
-    const nextValue = Math.max(MIN_QUANTITY, roundDecimal(baseValue + delta, 1));
-    setQuantityInput(formatDecimal(nextValue));
-  };
-
-  const handleInputChange = (nextValue: string) => {
-    setQuantityInput(sanitizeQuantityInput(nextValue));
+    setQuantityInput(clampQuantityValue(convertedValue));
   };
 
   const handleInputBlur = () => {
     const fallbackValue = getCurrentFallbackValue(inputMode);
-    const trimmedValue = quantityInput.trim();
-
-    if (!trimmedValue || trimmedValue === ".") {
-      setQuantityInput(formatDecimal(fallbackValue));
+    if (quantityInput === undefined || !Number.isFinite(quantityInput) || quantityInput <= 0) {
+      setQuantityInput(fallbackValue);
       return;
     }
 
-    const parsedValue = Number(trimmedValue);
-    if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
-      setQuantityInput(formatDecimal(fallbackValue));
-      return;
-    }
-
-    setQuantityInput(formatDecimal(Math.max(MIN_QUANTITY, roundDecimal(parsedValue, 1))));
+    setQuantityInput(clampQuantityValue(quantityInput));
   };
 
   return (
@@ -504,65 +483,69 @@ export function MealMenuNutrientDetail({
           </Tabs.List>
 
           <Tabs.Panel value="unit" className={styles.TabsPanel}>
-            <NumberField.Root>
-              <NumberField.Group className={styles.FieldGroup}>
-                <NumberField.Decrement
-                  className={styles.StepButton}
-                  aria-label="입력값 감소"
-                  onClick={() => handleInputStep(-QUANTITY_STEP)}
-                >
-                  <MinusIcon size={24} />
-                </NumberField.Decrement>
-                <NumberField.Input
-                  className={`typo-body1 ${styles.FieldInput}`}
-                  inputMode="decimal"
-                  value={quantityInput}
-                  onChange={(event) => {
-                    handleInputChange(event.target.value);
-                  }}
-                  onBlur={handleInputBlur}
-                  aria-label="단위량 또는 중량 입력"
-                />
-                <NumberField.Increment
-                  className={styles.StepButton}
-                  aria-label="입력값 증가"
-                  onClick={() => handleInputStep(QUANTITY_STEP)}
-                >
-                  <PlusIcon size={24} />
-                </NumberField.Increment>
-              </NumberField.Group>
-            </NumberField.Root>
+            <NumberField
+              value={quantityInput}
+              onChange={setQuantityInput}
+              min={MIN_QUANTITY}
+              max={MAX_QUANTITY}
+              step={QUANTITY_STEP}
+              allowOutOfRange
+              normalizeValue={(value) => roundDecimal(value, 1)}
+              isInputTextAllowed={isQuantityInputAllowed}
+              unstyled
+              classNames={{
+                group: styles.FieldGroup,
+                decrement: styles.StepButton,
+                increment: styles.StepButton,
+                inputWrapper: styles.FieldInputWrapper,
+                input: `typo-body1 ${styles.FieldInput}`,
+              }}
+              decrementAriaLabel="입력값 감소"
+              incrementAriaLabel="입력값 증가"
+              format={{
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 1,
+                useGrouping: false,
+              }}
+              inputProps={{
+                inputMode: "decimal",
+                "aria-label": "단위량 또는 중량 입력",
+                onBlur: handleInputBlur,
+              }}
+            />
           </Tabs.Panel>
 
           <Tabs.Panel value="weight" className={styles.TabsPanel}>
-            <NumberField.Root>
-              <NumberField.Group className={styles.FieldGroup}>
-                <NumberField.Decrement
-                  className={styles.StepButton}
-                  aria-label="입력값 감소"
-                  onClick={() => handleInputStep(-QUANTITY_STEP)}
-                >
-                  <MinusIcon size={24} />
-                </NumberField.Decrement>
-                <NumberField.Input
-                  className={`typo-body1 ${styles.FieldInput}`}
-                  inputMode="decimal"
-                  value={quantityInput}
-                  onChange={(event) => {
-                    handleInputChange(event.target.value);
-                  }}
-                  onBlur={handleInputBlur}
-                  aria-label="단위량 또는 중량 입력"
-                />
-                <NumberField.Increment
-                  className={styles.StepButton}
-                  aria-label="입력값 증가"
-                  onClick={() => handleInputStep(QUANTITY_STEP)}
-                >
-                  <PlusIcon size={24} />
-                </NumberField.Increment>
-              </NumberField.Group>
-            </NumberField.Root>
+            <NumberField
+              value={quantityInput}
+              onChange={setQuantityInput}
+              min={MIN_QUANTITY}
+              max={MAX_QUANTITY}
+              step={QUANTITY_STEP}
+              allowOutOfRange
+              normalizeValue={(value) => roundDecimal(value, 1)}
+              isInputTextAllowed={isQuantityInputAllowed}
+              unstyled
+              classNames={{
+                group: styles.FieldGroup,
+                decrement: styles.StepButton,
+                increment: styles.StepButton,
+                inputWrapper: styles.FieldInputWrapper,
+                input: `typo-body1 ${styles.FieldInput}`,
+              }}
+              decrementAriaLabel="입력값 감소"
+              incrementAriaLabel="입력값 증가"
+              format={{
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 1,
+                useGrouping: false,
+              }}
+              inputProps={{
+                inputMode: "decimal",
+                "aria-label": "단위량 또는 중량 입력",
+                onBlur: handleInputBlur,
+              }}
+            />
           </Tabs.Panel>
         </Tabs.Root>
       </section>

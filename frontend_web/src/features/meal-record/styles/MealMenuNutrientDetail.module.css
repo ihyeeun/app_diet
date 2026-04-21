@@ -127,6 +127,13 @@
   width: 100%;
 }
 
+.FieldInputWrapper {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
 .FieldInput {
   background-color: transparent;
   border: 0;
