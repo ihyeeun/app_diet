@@ -12,6 +12,7 @@ type Props = {
   min?: number;
   max?: number;
   step?: number;
+  snapOnStep?: boolean;
   smallStep?: number;
   largeStep?: number;
   format?: Intl.NumberFormatOptions;
@@ -80,6 +81,7 @@ export default function NumberField({
   min,
   max,
   step,
+  snapOnStep,
   smallStep,
   largeStep,
   format,
@@ -116,6 +118,7 @@ export default function NumberField({
       min={min}
       max={max}
       step={step}
+      snapOnStep={snapOnStep}
       smallStep={smallStep}
       largeStep={largeStep}
       format={format}

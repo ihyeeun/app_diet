@@ -1,6 +1,6 @@
 import { Tabs } from "@base-ui/react";
 import { Popover } from "@base-ui/react/popover";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { NUTRIENT_FORM_CONFIG } from "@/features/nutrient-entry/constants/nutrientDetailForm";
@@ -38,7 +38,8 @@ const DEFAULT_QUANTITY = 1;
 const MIN_QUANTITY = 0.1;
 const MAX_QUANTITY = 9999.9;
 const QUANTITY_STEP = 0.5;
-const QUANTITY_INPUT_PATTERN = /^\d{0,3}(?:\.\d?)?$/;
+const QUANTITY_STEP_BASE = 0;
+const QUANTITY_INPUT_PATTERN = /^\d{0,4}(?:\.\d?)?$/;
 const UNIT_QUANTITY_PATTERN = /^\s*([\d.]+)\s*[^()]*\(([^)]+)\)\s*$/i;
 const WEIGHT_TOKEN_PATTERN = /([\d.]+)\s*(g|ml)\b/i;
 const DETAIL_WARNING_MESSAGE = [
@@ -109,6 +110,16 @@ function roundDecimal(value: number, digits = 2) {
 
 function clampQuantityValue(value: number) {
   return Math.min(MAX_QUANTITY, Math.max(MIN_QUANTITY, roundDecimal(value, 1)));
+}
+
+function getSteppedQuantity(currentValue: number, direction: -1 | 1) {
+  const stepOffset = (currentValue - QUANTITY_STEP_BASE) / QUANTITY_STEP;
+  const nextStepCount =
+    direction > 0
+      ? Math.floor(stepOffset + Number.EPSILON) + 1
+      : Math.ceil(stepOffset - Number.EPSILON) - 1;
+  const nextValue = QUANTITY_STEP_BASE + nextStepCount * QUANTITY_STEP;
+  return clampQuantityValue(nextValue);
 }
 
 function isQuantityInputAllowed(inputValue: string) {
@@ -421,6 +432,11 @@ export function MealMenuNutrientDetail({
     setQuantityInput(clampQuantityValue(quantityInput));
   };
 
+  const handleInputStep = (direction: -1 | 1) => {
+    const baseValue = quantity ?? getCurrentFallbackValue(inputMode);
+    setQuantityInput(getSteppedQuantity(baseValue, direction));
+  };
+
   return (
     <>
       <section className={styles.summarySection}>
@@ -483,69 +499,99 @@ export function MealMenuNutrientDetail({
           </Tabs.List>
 
           <Tabs.Panel value="unit" className={styles.TabsPanel}>
-            <NumberField
-              value={quantityInput}
-              onChange={setQuantityInput}
-              min={MIN_QUANTITY}
-              max={MAX_QUANTITY}
-              step={QUANTITY_STEP}
-              allowOutOfRange
-              normalizeValue={(value) => roundDecimal(value, 1)}
-              isInputTextAllowed={isQuantityInputAllowed}
-              unstyled
-              classNames={{
-                group: styles.FieldGroup,
-                decrement: styles.StepButton,
-                increment: styles.StepButton,
-                inputWrapper: styles.FieldInputWrapper,
-                input: `typo-body1 ${styles.FieldInput}`,
-              }}
-              decrementAriaLabel="입력값 감소"
-              incrementAriaLabel="입력값 증가"
-              format={{
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 1,
-                useGrouping: false,
-              }}
-              inputProps={{
-                inputMode: "decimal",
-                "aria-label": "단위량 또는 중량 입력",
-                onBlur: handleInputBlur,
-              }}
-            />
+            <div className={styles.FieldGroup}>
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 감소"
+                onClick={() => handleInputStep(-1)}
+              >
+                <MinusIcon size={24} />
+              </button>
+              <NumberField
+                value={quantityInput}
+                onChange={setQuantityInput}
+                min={MIN_QUANTITY}
+                max={MAX_QUANTITY}
+                step={QUANTITY_STEP}
+                showControls={false}
+                allowOutOfRange
+                normalizeValue={(value) => roundDecimal(value, 1)}
+                isInputTextAllowed={isQuantityInputAllowed}
+                unstyled
+                classNames={{
+                  group: styles.FieldInputGroup,
+                  inputWrapper: styles.FieldInputWrapper,
+                  input: `typo-body1 ${styles.FieldInput}`,
+                }}
+                format={{
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 1,
+                  useGrouping: false,
+                }}
+                inputProps={{
+                  inputMode: "decimal",
+                  "aria-label": "단위량 또는 중량 입력",
+                  onBlur: handleInputBlur,
+                }}
+              />
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 증가"
+                onClick={() => handleInputStep(1)}
+              >
+                <PlusIcon size={24} />
+              </button>
+            </div>
           </Tabs.Panel>
 
           <Tabs.Panel value="weight" className={styles.TabsPanel}>
-            <NumberField
-              value={quantityInput}
-              onChange={setQuantityInput}
-              min={MIN_QUANTITY}
-              max={MAX_QUANTITY}
-              step={QUANTITY_STEP}
-              allowOutOfRange
-              normalizeValue={(value) => roundDecimal(value, 1)}
-              isInputTextAllowed={isQuantityInputAllowed}
-              unstyled
-              classNames={{
-                group: styles.FieldGroup,
-                decrement: styles.StepButton,
-                increment: styles.StepButton,
-                inputWrapper: styles.FieldInputWrapper,
-                input: `typo-body1 ${styles.FieldInput}`,
-              }}
-              decrementAriaLabel="입력값 감소"
-              incrementAriaLabel="입력값 증가"
-              format={{
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 1,
-                useGrouping: false,
-              }}
-              inputProps={{
-                inputMode: "decimal",
-                "aria-label": "단위량 또는 중량 입력",
-                onBlur: handleInputBlur,
-              }}
-            />
+            <div className={styles.FieldGroup}>
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 감소"
+                onClick={() => handleInputStep(-1)}
+              >
+                <MinusIcon size={24} />
+              </button>
+              <NumberField
+                value={quantityInput}
+                onChange={setQuantityInput}
+                min={MIN_QUANTITY}
+                max={MAX_QUANTITY}
+                step={QUANTITY_STEP}
+                showControls={false}
+                allowOutOfRange
+                normalizeValue={(value) => roundDecimal(value, 1)}
+                isInputTextAllowed={isQuantityInputAllowed}
+                unstyled
+                classNames={{
+                  group: styles.FieldInputGroup,
+                  inputWrapper: styles.FieldInputWrapper,
+                  input: `typo-body1 ${styles.FieldInput}`,
+                }}
+                format={{
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 1,
+                  useGrouping: false,
+                }}
+                inputProps={{
+                  inputMode: "decimal",
+                  "aria-label": "단위량 또는 중량 입력",
+                  onBlur: handleInputBlur,
+                }}
+              />
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 증가"
+                onClick={() => handleInputStep(1)}
+              >
+                <PlusIcon size={24} />
+              </button>
+            </div>
           </Tabs.Panel>
         </Tabs.Root>
       </section>

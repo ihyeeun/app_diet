@@ -134,6 +134,11 @@
   justify-content: center;
 }
 
+.FieldInputGroup {
+  display: flex;
+  flex: 1;
+}
+
 .FieldInput {
   background-color: transparent;
   border: 0;
