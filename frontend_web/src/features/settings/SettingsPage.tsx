@@ -52,7 +52,12 @@ export default function SettingsPage() {
             onClick={() => navigate(PATH.SETTINGS_SUB_CODE)}
           >
             <div className={styles.labelContainer}>
-              <img src="/icons/coupon.svg" alt="Coupon Icon" className={styles.img} />
+              <img
+                src="/icons/coupon.svg"
+                aria-hidden="true"
+                alt="구독 코드 입력"
+                className={styles.img}
+              />
               <span className={`${styles.menuLabel} typo-title3`}>구독 코드 입력</span>
             </div>
             <ChevronRight size={24} className={styles.menuChevron} />
