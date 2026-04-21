@@ -44,7 +44,8 @@ export default function SettingsFeedbackPage() {
         <div className={styles.content}>
           <section className={styles.titleSection}>
             <h1 className={`${styles.title} typo-title1`}>
-              서비스 이용 중 불편했던 점이나 개선점을 알려주세요
+              서비스 이용 중 불편했던 점이나 <br />
+              개선점을 알려주세요
             </h1>
           </section>
 
@@ -59,9 +60,7 @@ export default function SettingsFeedbackPage() {
               )}
               <textarea
                 value={feedback}
-                onChange={(event) =>
-                  setFeedback(event.target.value.slice(0, MAX_FEEDBACK_LENGTH))
-                }
+                onChange={(event) => setFeedback(event.target.value.slice(0, MAX_FEEDBACK_LENGTH))}
                 className={`${styles.textarea} typo-body3`}
                 aria-label="문의 내용"
               />

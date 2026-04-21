@@ -30,7 +30,9 @@
 }
 
 .modal-description {
-  color: var(--text-assistive2);
+  color: var(--text-assistive1);
+  white-space: pre-line;
+  text-align: center;
 }
 
 .modal-actions {
