@@ -18,7 +18,7 @@ export default function DirectInputBottomSheet({
   onSelectNumberInput,
   onSelectCameraInput,
   title = "등록 방법을 골라주세요",
-  numberInputLabel = "숫자 입력하기",
+  numberInputLabel = "영양정보 직접 적기",
   cameraInputLabel = "영양성분표 촬영하기",
 }: DirectInputBottomSheetProps) {
   return (
