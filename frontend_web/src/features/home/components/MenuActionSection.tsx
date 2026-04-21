@@ -17,7 +17,11 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
           description="식당 메뉴판이나 배달 앱 스크린샷도 좋아요"
           iconSrc="/icons/camera-icon.svg"
           onClick={() => {
-            navigate(PATH.MENU_BOARD_CAMERA);
+            navigate(PATH.MENU_BOARD_CAMERA, {
+              state: {
+                autoOpenCamera: true,
+              },
+            });
           }}
           type="camera"
         />

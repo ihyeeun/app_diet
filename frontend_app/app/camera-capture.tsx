@@ -35,7 +35,7 @@ const CAMERA_MODE_CONFIG: Record<
   },
   MENU_BOARD: {
     guideText: "메뉴판을 화면에 맞춰주세요",
-    showGalleryButton: false,
+    showGalleryButton: true,
     frameAspectRatio: 0.68,
   },
   FOOD: {

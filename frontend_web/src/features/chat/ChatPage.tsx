@@ -11,7 +11,6 @@ import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatD
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
 import {
-  getMealTypeFromChatMealTime,
   getMealTypeFromCurrentTime,
 } from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
@@ -82,7 +81,7 @@ export default function ChatPage() {
     REGISTER_RESULT,
   } = useChatMealRecordActions();
 
-  const { data, isPending: isHistoryPending, refetch } = useGetChatHistoryQuery();
+  const { data, isPending: isHistoryPending } = useGetChatHistoryQuery();
   const { mutateAsync: sendMessageMutation, isPending: isSendPending } = useSendMessageMutation();
 
   const chatList = useMemo(() => {
@@ -162,7 +161,6 @@ export default function ChatPage() {
 
     try {
       await sendMessageMutation({ input: text });
-      await refetch();
     } catch (error) {
       toast.warning(resolveErrorMessage(error));
       setInputValue(text);
@@ -191,9 +189,8 @@ export default function ChatPage() {
     const fromCommitted = options?.fromCommitted ?? false;
     const initialMenuId = options?.initialMenuId;
     const committed = committedByChatId[chatItem.id];
-    const defaultMealType = getMealTypeFromChatMealTime(
-      chatItem.response_payload.parsed_request.meal_time,
-    );
+    const chatCreatedAt = parseDate(chatItem.createdAt) ?? new Date();
+    const defaultMealType = getMealTypeFromCurrentTime(chatCreatedAt);
 
     const baseMealType = fromCommitted && committed ? committed.mealType : defaultMealType;
     const quantityByMenuId = new Map<number, number>();
@@ -460,7 +457,13 @@ export default function ChatPage() {
           aria-hidden={!isQuickActionVisible}
         >
           <FloatingCameraButton
-            onClick={() => navigate(PATH.MENU_BOARD_CAMERA)}
+            onClick={() =>
+              navigate(PATH.MENU_BOARD_CAMERA, {
+                state: {
+                  autoOpenCamera: true,
+                },
+              })
+            }
             ariaLabel="메뉴판 사진 찍기"
             tone="primary"
             bottomOffset={floatingBottomOffset}

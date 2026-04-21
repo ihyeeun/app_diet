@@ -11,7 +11,31 @@ export type CameraCaptureErrorFeedback = {
   title: string;
   description: string;
 };
-type RecognitionDomain = "NUTRITION_LABEL" | "FOOD";
+type RecognitionDomain = "NUTRITION_LABEL" | "FOOD" | "MENU_BOARD";
+
+type RecognitionErrorCopy = {
+  title: string;
+  fallbackMessage: string;
+  retryGuide: string;
+};
+
+const RECOGNITION_ERROR_COPY: Record<RecognitionDomain, RecognitionErrorCopy> = {
+  NUTRITION_LABEL: {
+    title: "영양성분 인식에 실패했어요",
+    fallbackMessage: "영양성분 분석에 실패했어요.",
+    retryGuide: "영양성분표 전체가 선명하게 보이도록 다시 촬영해주세요.",
+  },
+  FOOD: {
+    title: "음식 인식에 실패했어요",
+    fallbackMessage: "음식 메뉴 분석에 실패했어요.",
+    retryGuide: "음식이 잘 보이도록 다시 촬영해주세요.",
+  },
+  MENU_BOARD: {
+    title: "메뉴판 인식에 실패했어요",
+    fallbackMessage: "메뉴판 분석에 실패했어요.",
+    retryGuide: "메뉴판 전체가 선명하게 보이도록 다시 촬영해주세요.",
+  },
+};
 
 export function isCameraCaptureCancelled(error: unknown) {
   return (error as BridgeCameraError)?.error === CAMERA_CAPTURE_CANCELLED_CODE;
@@ -61,17 +85,11 @@ export function getRecognitionErrorFeedback(
   //   };
   // }
 
-  const message = getErrorMessage(
-    error,
-    domain === "NUTRITION_LABEL" ? "영양성분 분석에 실패했어요." : "음식 메뉴 분석에 실패했어요.",
-  );
-  const retryGuide =
-    domain === "NUTRITION_LABEL"
-      ? "영양성분표 전체가 선명하게 보이도록 다시 촬영해주세요."
-      : "음식이 잘 보이도록 다시 촬영해주세요.";
+  const copy = RECOGNITION_ERROR_COPY[domain];
+  const message = getErrorMessage(error, copy.fallbackMessage);
 
   return {
-    title: domain === "NUTRITION_LABEL" ? "영양성분 인식에 실패했어요" : "음식 인식에 실패했어요",
-    description: `${message} ${retryGuide}`,
+    title: copy.title,
+    description: `${message} ${copy.retryGuide}`,
   };
 }
