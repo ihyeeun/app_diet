@@ -322,6 +322,7 @@ export default function MealRecordPage() {
 
       clearAllDrafts();
       toast.success("식사 기록이 저장되었어요");
+      navigate(PATH.DIARY, { replace: true });
     } catch {
       toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
     }
