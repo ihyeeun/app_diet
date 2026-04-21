@@ -20,7 +20,7 @@ import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
 import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
 import { PATH } from "@/router/path";
 import type { PageKey } from "@/router/pathHelpers";
-import { MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
+import { type MealMenuItem, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
@@ -145,26 +145,35 @@ export default function MealDetailPage() {
   };
 
   const handleModify = () => {
+    moveToNutrientModify(meal, existingSelection?.quantity ?? 1);
+  };
+
+  const handleEditAndAdd = () => {
+    moveToNutrientModify(selection?.menu ?? meal, selection?.quantity ?? 1);
+  };
+
+  const moveToNutrientModify = (menuToModify: MealMenuItem, quantity: number) => {
     const nextPageKey = pageKey ?? "MEAL_RECORD";
     const modifyQueryParams = new URLSearchParams({
       date: dateKey,
       mealType,
-      menuId: String(meal.id),
+      menuId: String(menuToModify.id),
       pageKey: nextPageKey,
     });
+    const normalizedUnit = menuToModify.unit ?? meal.unit;
 
     const state: NutrientModifyLocationState = {
-      dataSource: meal.data_source,
+      dataSource: menuToModify.data_source ?? meal.data_source,
       source: "meal-record",
-      menuId: meal.id,
-      menu: meal,
-      quantity: existingSelection?.quantity ?? 1,
+      menuId: menuToModify.id,
+      menu: menuToModify,
+      quantity,
       dateKey,
       mealType,
       pageKey: nextPageKey,
-      brandName: meal.brand,
-      foodName: meal.name,
-      servingUnit: meal.unit === MENU_UNIT.MILLILITER ? "ml" : "g",
+      brandName: menuToModify.brand ?? meal.brand,
+      foodName: menuToModify.name ?? meal.name,
+      servingUnit: normalizedUnit === MENU_UNIT.MILLILITER ? "ml" : "g",
     };
 
     navigate(`${PATH.NUTRIENT_ADD_MODIFY}?${modifyQueryParams.toString()}`, { state });
@@ -224,7 +233,7 @@ export default function MealDetailPage() {
             isDetailOpen={isDetailOpen}
             onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
             onSelectionChange={setSelection}
-            onEditAndAdd={() => {}}
+            onEditAndAdd={handleEditAndAdd}
             showEditSection={!isPersonalMenuData}
           />
         </div>
