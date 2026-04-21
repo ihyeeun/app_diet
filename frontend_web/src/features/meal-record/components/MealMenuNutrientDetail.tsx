@@ -87,6 +87,13 @@ type ResolvedServingValues = {
   scaleFactor: number;
 };
 
+type MainNutrientKey = "carbs" | "protein" | "fat";
+type MainNutrientState = {
+  value: number | null;
+  isEstimated: boolean;
+};
+type NutrientValues = Partial<Record<MenuNutrientFieldKey, number | null>>;
+
 function toPositiveNumber(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
     return null;
@@ -163,34 +170,89 @@ function formatNutrientValue(value: number | null | undefined) {
   });
 }
 
-const REQUIRED_NUTRIENT_KEYS: ReadonlySet<MenuNutrientFieldKey> = new Set([
-  "carbs",
-  "protein",
-  "fat",
-]);
 const DETAIL_LABEL_OVERRIDES: Partial<Record<MenuNutrientFieldKey, string>> = {
   sugars: "당류",
   sugar_alchol: "당알코올(대체당)",
 };
 
+const MAIN_NUTRIENT_KEYS: ReadonlyArray<MainNutrientKey> = ["carbs", "protein", "fat"];
+const MAIN_NUTRIENT_KEY_SET: ReadonlySet<MenuNutrientFieldKey> = new Set(MAIN_NUTRIENT_KEYS);
+const SUMMARY_MACROS: ReadonlyArray<{ key: MainNutrientKey; label: string }> = [
+  { key: "carbs", label: "탄수화물" },
+  { key: "protein", label: "단백질" },
+  { key: "fat", label: "지방" },
+];
+const CHILD_NUTRIENT_KEYS_BY_PARENT: Record<MainNutrientKey, ReadonlyArray<MenuNutrientFieldKey>> =
+  {
+    carbs: ["sugars", "sugar_alchol", "dietary_fiber"],
+    protein: [],
+    fat: ["sat_fat", "trans_fat", "un_sat_fat"],
+  };
+
+function isMainNutrientKey(key: MenuNutrientFieldKey): key is MainNutrientKey {
+  return MAIN_NUTRIENT_KEY_SET.has(key);
+}
+
+function resolveMainNutrientStates(
+  nutrientValues: NutrientValues,
+): Record<MainNutrientKey, MainNutrientState> {
+  return MAIN_NUTRIENT_KEYS.reduce(
+    (acc, key) => {
+      const directValue = toNullableNumber(nutrientValues[key]);
+      if (directValue !== null) {
+        acc[key] = { value: directValue, isEstimated: false };
+        return acc;
+      }
+
+      const childValues = CHILD_NUTRIENT_KEYS_BY_PARENT[key]
+        .map((childKey) => toNullableNumber(nutrientValues[childKey]))
+        .filter((value): value is number => value !== null);
+      if (childValues.length === 0) {
+        acc[key] = { value: null, isEstimated: false };
+        return acc;
+      }
+
+      acc[key] = {
+        value: roundDecimal(childValues.reduce((sum, value) => sum + value, 0)),
+        isEstimated: true,
+      };
+      return acc;
+    },
+    {} as Record<MainNutrientKey, MainNutrientState>,
+  );
+}
+
 function buildDetailRows({
-  menu,
+  nutrientValues,
+  mainNutrientStates,
 }: {
-  menu: MealMenuItem;
-  fallbackWeight: number;
-  fallbackWeightUnit: "g" | "ml";
+  nutrientValues: NutrientValues;
+  mainNutrientStates: Record<MainNutrientKey, MainNutrientState>;
 }): DetailRow[] {
-  return [
-    ...NUTRIENT_FORM_CONFIG.map((field) => ({
+  return NUTRIENT_FORM_CONFIG.map((field) => {
+    if (field.variant === "main" && isMainNutrientKey(field.key)) {
+      const resolvedMainNutrient = mainNutrientStates[field.key];
+      return {
+        key: field.key,
+        label: DETAIL_LABEL_OVERRIDES[field.key] ?? field.label,
+        unit: field.unit,
+        value: resolvedMainNutrient.value,
+        variant: field.variant,
+        group: field.group,
+        showWarning: resolvedMainNutrient.isEstimated,
+      };
+    }
+
+    return {
       key: field.key,
       label: DETAIL_LABEL_OVERRIDES[field.key] ?? field.label,
       unit: field.unit,
-      value: toNullableNumber(menu[field.key]),
+      value: toNullableNumber(nutrientValues[field.key]),
       variant: field.variant,
       group: field.group,
-      showWarning: field.variant === "main" && REQUIRED_NUTRIENT_KEYS.has(field.key),
-    })),
-  ];
+      showWarning: false,
+    };
+  });
 }
 
 function buildDetailGroups(rows: DetailRow[]): DetailGroupSection[] {
@@ -328,51 +390,61 @@ export function MealMenuNutrientDetail({
     return resolved;
   }, [inputMode, quantity, servingContext]);
 
-  const previewMenu = useMemo<MealMenuItem>(() => {
+  const nutrientValues = useMemo<NutrientValues>(() => {
     if (!resolvedServing) {
-      return menu;
+      return MENU_NUTRIENT_FIELD_KEYS.reduce<NutrientValues>((acc, key) => {
+        acc[key] = toNullableNumber(menu[key]);
+        return acc;
+      }, {});
     }
 
-    const { scaleFactor } = resolvedServing;
-    const scaledOptionalNutrients: Partial<Record<MenuNutrientFieldKey, number | null>> = {};
-    MENU_NUTRIENT_FIELD_KEYS.forEach((key) => {
-      if (REQUIRED_NUTRIENT_KEYS.has(key)) {
-        return;
-      }
+    return MENU_NUTRIENT_FIELD_KEYS.reduce<NutrientValues>((acc, key) => {
+      acc[key] = scaleNutrientValue(menu[key], resolvedServing.scaleFactor);
+      return acc;
+    }, {});
+  }, [menu, resolvedServing]);
 
-      scaledOptionalNutrients[key] = scaleNutrientValue(menu[key], scaleFactor);
-    });
+  const mainNutrientStates = useMemo(
+    () => resolveMainNutrientStates(nutrientValues),
+    [nutrientValues],
+  );
 
-    const scaledWeight = scaleNutrientValue(menu.weight, scaleFactor);
+  const previewMenu = useMemo<MealMenuItem>(() => {
+    const resolvedCarbs = mainNutrientStates.carbs.value ?? 0;
+    const resolvedProtein = mainNutrientStates.protein.value ?? 0;
+    const resolvedFat = mainNutrientStates.fat.value ?? 0;
+
+    if (!resolvedServing) {
+      return {
+        ...menu,
+        ...nutrientValues,
+        carbs: resolvedCarbs,
+        protein: resolvedProtein,
+        fat: resolvedFat,
+      };
+    }
+
+    const scaledWeight = scaleNutrientValue(menu.weight, resolvedServing.scaleFactor);
     return {
       ...menu,
-      ...scaledOptionalNutrients,
-      calories: scaleRequiredValue(menu.calories, scaleFactor),
-      carbs: scaleRequiredValue(
-        typeof menu.carbs === "number" && Number.isFinite(menu.carbs) ? menu.carbs : 0,
-        scaleFactor,
-      ),
-      protein: scaleRequiredValue(
-        typeof menu.protein === "number" && Number.isFinite(menu.protein) ? menu.protein : 0,
-        scaleFactor,
-      ),
-      fat: scaleRequiredValue(
-        typeof menu.fat === "number" && Number.isFinite(menu.fat) ? menu.fat : 0,
-        scaleFactor,
-      ),
+      ...nutrientValues,
+      calories: scaleRequiredValue(menu.calories, resolvedServing.scaleFactor),
+      carbs: resolvedCarbs,
+      protein: resolvedProtein,
+      fat: resolvedFat,
       weight: scaledWeight ?? resolvedServing.totalWeight,
       serving_input_mode: inputMode,
       serving_input_value: resolvedServing.unitCount,
     };
-  }, [inputMode, menu, resolvedServing]);
+  }, [inputMode, mainNutrientStates, menu, nutrientValues, resolvedServing]);
+
   const detailRows = useMemo(
     () =>
       buildDetailRows({
-        menu: previewMenu,
-        fallbackWeight: servingBaseWeight,
-        fallbackWeightUnit: servingWeightUnit,
+        nutrientValues,
+        mainNutrientStates,
       }),
-    [previewMenu, servingBaseWeight, servingWeightUnit],
+    [mainNutrientStates, nutrientValues],
   );
   const detailGroups = useMemo(() => buildDetailGroups(detailRows), [detailRows]);
 
@@ -436,6 +508,14 @@ export function MealMenuNutrientDetail({
     const baseValue = quantity ?? getCurrentFallbackValue(inputMode);
     setQuantityInput(getSteppedQuantity(baseValue, direction));
   };
+  const summaryMacroItems = SUMMARY_MACROS.map((macro) => ({
+    ...macro,
+    value: mainNutrientStates[macro.key].value,
+  }));
+  const isEditAndAddEnabled = typeof onEditAndAdd === "function";
+  const handleEditAndAddClick = () => {
+    onEditAndAdd?.();
+  };
 
   return (
     <>
@@ -454,29 +534,15 @@ export function MealMenuNutrientDetail({
         </div>
 
         <div className={styles.macroRow}>
-          <article className={styles.macroItem}>
-            <p className={`typo-label3 ${styles.macroLabel}`}>탄수화물</p>
-            <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutrientValue(previewMenu.carbs ?? 0)}
-              <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
-            </p>
-          </article>
-
-          <article className={styles.macroItem}>
-            <p className={`typo-label3 ${styles.macroLabel}`}>단백질</p>
-            <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutrientValue(previewMenu.protein ?? 0)}
-              <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
-            </p>
-          </article>
-
-          <article className={styles.macroItem}>
-            <p className={`typo-label3 ${styles.macroLabel}`}>지방</p>
-            <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutrientValue(previewMenu.fat ?? 0)}
-              <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
-            </p>
-          </article>
+          {summaryMacroItems.map((macro) => (
+            <article key={macro.key} className={styles.macroItem}>
+              <p className={`typo-label3 ${styles.macroLabel}`}>{macro.label}</p>
+              <p className={`typo-body1 ${styles.macroValue}`}>
+                {formatNutrientValue(macro.value)}
+                <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
+              </p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -617,10 +683,11 @@ export function MealMenuNutrientDetail({
                 <p className={`typo-label3 ${styles.editDescription}`}>영양성분이 잘못되었나요?</p>
                 <Button
                   variant="text"
-                  state="default"
+                  state={isEditAndAddEnabled ? "default" : "disabled"}
                   size="small"
                   color="assistive"
-                  onClick={onEditAndAdd}
+                  onClick={handleEditAndAddClick}
+                  disabled={!isEditAndAddEnabled}
                 >
                   수정해서 담기
                 </Button>
@@ -677,7 +744,7 @@ export function MealMenuNutrientDetail({
                                       side="left"
                                       align="center"
                                       sideOffset={12}
-                                      collisionPadding={12}
+                                      collisionPadding={50}
                                     >
                                       <Popover.Popup
                                         className={`${styles.warningTooltip} typo-label3`}
