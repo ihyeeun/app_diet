@@ -538,7 +538,7 @@ export function MealMenuNutrientDetail({
             <article key={macro.key} className={styles.macroItem}>
               <p className={`typo-label3 ${styles.macroLabel}`}>{macro.label}</p>
               <p className={`typo-body1 ${styles.macroValue}`}>
-                {formatNutrientValue(macro.value)}
+                <span className={styles.macroNumber}>{formatNutrientValue(macro.value)}</span>
                 <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
               </p>
             </article>
