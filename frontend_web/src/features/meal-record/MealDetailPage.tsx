@@ -205,14 +205,14 @@ export default function MealDetailPage() {
                     <Menu.Popup>
                       <Menu.Item
                         onClick={handleModify}
-                        className={`${styles.menuItem} typo-lebel3}`}
+                        className={`${styles.menuItem} typo-label3`}
                       >
                         수정
                       </Menu.Item>
                       <Menu.Separator className="divider" />
                       <Menu.Item
                         onClick={handleDelete}
-                        className={`${styles.menuItem} typo-lebel3}`}
+                        className={`${styles.menuItem} typo-label3`}
                       >
                         삭제
                       </Menu.Item>
