@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
@@ -67,6 +68,16 @@ function resolveFileNameFromUri(uri: string) {
   const fileName = segments[segments.length - 1];
   if (!fileName) return null;
   return fileName;
+}
+
+async function readBase64FromUri(uri: string) {
+  try {
+    return await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+  } catch {
+    return null;
+  }
 }
 
 function LoadingView() {
@@ -245,6 +256,7 @@ export default function CameraCaptureScreen() {
         flash: "off",
       });
       const uri = resolvePhotoUri(photo.path);
+      const base64 = await readBase64FromUri(uri);
 
       resolveCameraCaptureSession({
         uri,
@@ -253,7 +265,7 @@ export default function CameraCaptureScreen() {
         fileName: resolveFileNameFromUri(uri),
         fileSize: null,
         mimeType: "image/jpeg",
-        base64: null,
+        base64,
       });
 
       router.back();
@@ -328,6 +340,7 @@ export default function CameraCaptureScreen() {
         router.back();
         return;
       }
+      const base64 = asset.base64 ?? (await readBase64FromUri(asset.uri));
 
       resolveCameraCaptureSession({
         uri: asset.uri,
@@ -336,7 +349,7 @@ export default function CameraCaptureScreen() {
         fileName: asset.fileName,
         fileSize: asset.fileSize,
         mimeType: asset.mimeType,
-        base64: asset.base64,
+        base64,
       });
       router.back();
     } catch {

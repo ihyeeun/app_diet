@@ -19,6 +19,12 @@ type RecognitionErrorCopy = {
   retryGuide: string;
 };
 
+type CapturedImagePreviewSource = {
+  uri: string;
+  mimeType: string | null;
+  base64: string | null;
+};
+
 const RECOGNITION_ERROR_COPY: Record<RecognitionDomain, RecognitionErrorCopy> = {
   NUTRITION_LABEL: {
     title: "영양성분 인식에 실패했어요",
@@ -92,4 +98,13 @@ export function getRecognitionErrorFeedback(
     title: copy.title,
     description: `${message} ${copy.retryGuide}`,
   };
+}
+
+export function getCapturedImagePreviewSrc(source: CapturedImagePreviewSource) {
+  if (source.base64 && source.base64.trim().length > 0) {
+    const mimeType = source.mimeType ?? "image/jpeg";
+    return `data:${mimeType};base64,${source.base64}`;
+  }
+
+  return source.uri;
 }

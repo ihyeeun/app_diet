@@ -8,6 +8,7 @@ import {
   type CameraCaptureErrorFeedback,
   DEFAULT_CAMERA_CAPTURE_QUALITY,
   getCameraCaptureErrorFeedback,
+  getCapturedImagePreviewSrc,
   getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
@@ -30,9 +31,9 @@ export default function FoodCameraPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isUploading, setIsUploading] = useState(false);
-  const [captureErrorFeedback, setCaptureErrorFeedback] = useState<CameraCaptureErrorFeedback | null>(
-    null,
-  );
+  const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
+  const [captureErrorFeedback, setCaptureErrorFeedback] =
+    useState<CameraCaptureErrorFeedback | null>(null);
 
   const { mutateAsync: uploadImage } = useFoodImageMutation();
   const { mutateAsync: mealRegisterAsync } = useTodayMealRecordRegisterMutation();
@@ -45,6 +46,7 @@ export default function FoodCameraPage() {
 
   const handleCameraActions = async () => {
     if (isUploading) return;
+    setCaptureErrorFeedback(null);
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
@@ -54,15 +56,18 @@ export default function FoodCameraPage() {
       });
     } catch (error) {
       if (isCameraCaptureCancelled(error)) return;
+      setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
       return;
     }
 
     try {
+      setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
       setIsUploading(true);
       const imageData = await uploadImage(capturedImage);
 
       if (!imageData?.menu_ids?.length) {
+        setCapturedPreviewSrc(null);
         setCaptureErrorFeedback(
           getRecognitionErrorFeedback(new Error("메뉴를 인식하지 못했어요."), "FOOD"),
         );
@@ -90,6 +95,7 @@ export default function FoodCameraPage() {
       toast.success("촬영한 사진의 메뉴가 기록되었어요.");
       navigate(getMealRecordPath(dateKey, mealType), { replace: true });
     } catch (error) {
+      setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "FOOD"));
     } finally {
       setIsUploading(false);
@@ -98,10 +104,10 @@ export default function FoodCameraPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="음식촬영" onBack={() => navigate(-1)} />
+      <PageHeader title="음식 촬영" onBack={() => navigate(-1)} />
 
       {isUploading ? (
-        <CameraLoading description="촬영한 사진을 분석 중이에요." />
+        <CameraLoading description="음식을 분석하고 있어요" previewSrc={capturedPreviewSrc} />
       ) : (
         <main className={styles.main}>
           <div className={styles.content}>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
@@ -8,6 +8,7 @@ import {
   type CameraCaptureErrorFeedback,
   DEFAULT_CAMERA_CAPTURE_QUALITY,
   getCameraCaptureErrorFeedback,
+  getCapturedImagePreviewSrc,
   getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
@@ -33,6 +34,7 @@ export default function MenuBoardCameraPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
   const [captureErrorFeedback, setCaptureErrorFeedback] =
     useState<CameraCaptureErrorFeedback | null>(null);
   const autoTriggeredRef = useRef(false);
@@ -41,28 +43,26 @@ export default function MenuBoardCameraPage() {
   const locationState = (location.state ?? {}) as MenuBoardCameraLocationState;
   const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
 
-  const handleCameraActions = async () => {
+  const handleCameraActions = useCallback(async () => {
     if (isProcessing) return;
+    setCaptureErrorFeedback(null);
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
-      setIsProcessing(true);
       capturedImage = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "MENU_BOARD",
       });
     } catch (error) {
-      if (isCameraCaptureCancelled(error)) {
-        setIsProcessing(false);
-        return;
-      }
-
+      if (isCameraCaptureCancelled(error)) return;
+      setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
-      setIsProcessing(false);
       return;
     }
 
     try {
+      setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
+      setIsProcessing(true);
       const response = await uploadMenuBoardImage(capturedImage);
       syncAppTab("chat");
 
@@ -76,11 +76,12 @@ export default function MenuBoardCameraPage() {
 
       toast.success("메뉴판 분석이 완료되었어요");
     } catch (error) {
+      setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "MENU_BOARD"));
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, navigate, uploadMenuBoardImage]);
 
   useEffect(() => {
     if (!shouldAutoOpenCamera || autoTriggeredRef.current) {
@@ -89,14 +90,14 @@ export default function MenuBoardCameraPage() {
 
     autoTriggeredRef.current = true;
     void handleCameraActions();
-  }, [shouldAutoOpenCamera]);
+  }, [handleCameraActions, shouldAutoOpenCamera]);
 
   return (
     <section className={styles.page}>
       <PageHeader title="메뉴판 촬영" onBack={() => navigate(-1)} />
 
       {isProcessing ? (
-        <CameraLoading description="메뉴판을 분석 중이에요." />
+        <CameraLoading description="메뉴판을 분석 중이에요." previewSrc={capturedPreviewSrc} />
       ) : (
         <main className={styles.main}>
           <div className={styles.content}>
