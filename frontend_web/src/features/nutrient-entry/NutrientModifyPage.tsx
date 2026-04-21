@@ -71,7 +71,13 @@ export default function NutrientModifyPage() {
     isError: isMenuError,
   } = useMealDetatilQuery(menuId);
 
-  const resolvedMenu = (fetchedMenu ?? menuInState ?? null) as MealMenuItem | null;
+  const resolvedMenu = useMemo<MealMenuItem | null>(() => {
+    if (menuInState && fetchedMenu) {
+      return { ...fetchedMenu, ...menuInState };
+    }
+
+    return (menuInState ?? fetchedMenu ?? null) as MealMenuItem | null;
+  }, [fetchedMenu, menuInState]);
   const baseFormState = useMemo(() => buildInitialFormState(resolvedMenu), [resolvedMenu]);
   const [editedFormState, setEditedFormState] = useState<Partial<RegisterMenuRequestDto>>({});
   const formState = useMemo(

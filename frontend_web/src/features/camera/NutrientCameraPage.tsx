@@ -8,6 +8,7 @@ import {
   type CameraCaptureErrorFeedback,
   DEFAULT_CAMERA_CAPTURE_QUALITY,
   getCameraCaptureErrorFeedback,
+  getCapturedImagePreviewSrc,
   getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
@@ -21,14 +22,15 @@ import { toast } from "@/shared/commons/toast/toast";
 export default function NutrientCameraPage() {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
-  const [captureErrorFeedback, setCaptureErrorFeedback] = useState<CameraCaptureErrorFeedback | null>(
-    null,
-  );
+  const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
+  const [captureErrorFeedback, setCaptureErrorFeedback] =
+    useState<CameraCaptureErrorFeedback | null>(null);
   const { mutateAsync: uploadImage } = useNutritionLabelMutation();
   const [searchParams] = useSearchParams();
 
   const handleCameraActions = async () => {
     if (isUploading) return;
+    setCaptureErrorFeedback(null);
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
@@ -38,11 +40,13 @@ export default function NutrientCameraPage() {
       });
     } catch (error) {
       if (isCameraCaptureCancelled(error)) return;
+      setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
       return;
     }
 
     try {
+      setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
       setIsUploading(true);
       const imageData = await uploadImage(capturedImage);
 
@@ -58,6 +62,7 @@ export default function NutrientCameraPage() {
 
       toast.success("영양성분표 분석이 완료되었어요.");
     } catch (error) {
+      setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "NUTRITION_LABEL"));
     } finally {
       setIsUploading(false);
@@ -69,7 +74,7 @@ export default function NutrientCameraPage() {
       <PageHeader title="영양정보 촬영" onBack={() => navigate(-1)} />
 
       {isUploading ? (
-        <CameraLoading description="촬영한 사진을 분석 중이에요." />
+        <CameraLoading description="영양 성분을 확인하고 있어요" previewSrc={capturedPreviewSrc} />
       ) : (
         <main className={styles.main}>
           <div className={styles.content}>

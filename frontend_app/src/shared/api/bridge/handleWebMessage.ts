@@ -268,7 +268,7 @@ async function pickPhotoFromGallery(payload?: BridgeGalleryPickRequestPayload) {
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    quality: payload?.quality ?? 0.8,
+    quality: payload?.quality ?? 1,
     allowsEditing: false,
     allowsMultipleSelection: false,
     exif: false,

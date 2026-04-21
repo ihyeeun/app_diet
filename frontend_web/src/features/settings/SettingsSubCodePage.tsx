@@ -39,12 +39,12 @@ export default function SettingsSubCodePage() {
 
   return (
     <div className={styles.page}>
-      <PageHeader onBack={() => navigate(-1)} title="쿠폰 코드 입력" />
+      <PageHeader onBack={() => navigate(-1)} title="구독 코드 입력" />
 
       <main className={styles.main}>
         <div className={styles.content}>
           <section className={styles.titleSection}>
-            <h1 className={`${styles.title} typo-title1`}>구독 코드가 있다면 입력해주세요</h1>
+            <h1 className={`${styles.title} typo-title1`}>구독 코드를 입력해주세요</h1>
           </section>
 
           <section className={styles.inputSection}>

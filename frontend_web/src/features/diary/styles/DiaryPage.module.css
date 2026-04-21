@@ -17,7 +17,7 @@
   background-color: var(--bg-normal-normal);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   padding: 20px;
 }
 
@@ -27,7 +27,7 @@
   gap: 10px;
   padding: 24px 20px;
   border-radius: 8px;
-  background-color: var(--bg-normal-primary2);
+  background-color: var(--bg-normal-white);
 }
 
 .scoreCard {
@@ -75,7 +75,7 @@
 .calorieMessage {
   color: var(--text-assistive1);
   padding: 6px 16px;
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-normal-primary2);
   border-radius: 100px;
   width: fit-content;
 }

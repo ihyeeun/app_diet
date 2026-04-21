@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
@@ -35,7 +36,7 @@ const CAMERA_MODE_CONFIG: Record<
   },
   MENU_BOARD: {
     guideText: "메뉴판을 화면에 맞춰주세요",
-    showGalleryButton: false,
+    showGalleryButton: true,
     frameAspectRatio: 0.68,
   },
   FOOD: {
@@ -67,6 +68,16 @@ function resolveFileNameFromUri(uri: string) {
   const fileName = segments[segments.length - 1];
   if (!fileName) return null;
   return fileName;
+}
+
+async function readBase64FromUri(uri: string) {
+  try {
+    return await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+  } catch {
+    return null;
+  }
 }
 
 function LoadingView() {
@@ -245,6 +256,7 @@ export default function CameraCaptureScreen() {
         flash: "off",
       });
       const uri = resolvePhotoUri(photo.path);
+      const base64 = await readBase64FromUri(uri);
 
       resolveCameraCaptureSession({
         uri,
@@ -253,7 +265,7 @@ export default function CameraCaptureScreen() {
         fileName: resolveFileNameFromUri(uri),
         fileSize: null,
         mimeType: "image/jpeg",
-        base64: null,
+        base64,
       });
 
       router.back();
@@ -275,13 +287,32 @@ export default function CameraCaptureScreen() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        //  권한 거부 시 사용자에게 알림
+        if (!permission.canAskAgain) {
+          Alert.alert(
+            "갤러리 접근 권한이 꺼져 있어요.",
+            "설정에서 사진 접근 권한을 허용한 뒤 다시 시도해주세요.",
+            [
+              {
+                text: "취소",
+                style: "cancel",
+              },
+              {
+                text: "설정으로 이동",
+                onPress: () => {
+                  void handleOpenSettingsPress();
+                },
+              },
+            ],
+          );
+          return;
+        }
+
         Alert.alert("갤러리 접근 권한이 필요해요.");
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        quality: capturePayload?.quality ?? 0.8,
+        quality: capturePayload?.quality ?? 1,
         allowsEditing: false,
         allowsMultipleSelection: false,
         exif: false,
@@ -309,6 +340,7 @@ export default function CameraCaptureScreen() {
         router.back();
         return;
       }
+      const base64 = asset.base64 ?? (await readBase64FromUri(asset.uri));
 
       resolveCameraCaptureSession({
         uri: asset.uri,
@@ -317,7 +349,7 @@ export default function CameraCaptureScreen() {
         fileName: asset.fileName,
         fileSize: asset.fileSize,
         mimeType: asset.mimeType,
-        base64: asset.base64,
+        base64,
       });
       router.back();
     } catch {
@@ -332,7 +364,7 @@ export default function CameraCaptureScreen() {
     } finally {
       setIsProcessing(false);
     }
-  }, [capturePayload?.quality, isProcessing]);
+  }, [capturePayload?.quality, handleOpenSettingsPress, isProcessing]);
 
   if (isPreparing) {
     return <LoadingView />;

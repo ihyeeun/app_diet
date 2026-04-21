@@ -1,4 +1,4 @@
-import { NumberField, Tabs } from "@base-ui/react";
+import { Tabs } from "@base-ui/react";
 import { Popover } from "@base-ui/react/popover";
 import { ChevronDown, ChevronUp, MinusIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -12,6 +12,7 @@ import {
   type MenuNutrientFieldKey,
 } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
+import NumberField from "@/shared/commons/input/NumberField";
 
 import styles from "../styles/MealMenuNutrientDetail.module.css";
 
@@ -35,7 +36,10 @@ type MealMenuNutrientDetailProps = {
 
 const DEFAULT_QUANTITY = 1;
 const MIN_QUANTITY = 0.1;
+const MAX_QUANTITY = 9999.9;
 const QUANTITY_STEP = 0.5;
+const QUANTITY_STEP_BASE = 0;
+const QUANTITY_INPUT_PATTERN = /^\d{0,4}(?:\.\d?)?$/;
 const UNIT_QUANTITY_PATTERN = /^\s*([\d.]+)\s*[^()]*\(([^)]+)\)\s*$/i;
 const WEIGHT_TOKEN_PATTERN = /([\d.]+)\s*(g|ml)\b/i;
 const DETAIL_WARNING_MESSAGE = [
@@ -83,6 +87,13 @@ type ResolvedServingValues = {
   scaleFactor: number;
 };
 
+type MainNutrientKey = "carbs" | "protein" | "fat";
+type MainNutrientState = {
+  value: number | null;
+  isEstimated: boolean;
+};
+type NutrientValues = Partial<Record<MenuNutrientFieldKey, number | null>>;
+
 function toPositiveNumber(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
     return null;
@@ -104,32 +115,36 @@ function roundDecimal(value: number, digits = 2) {
   return Math.round(value * factor) / factor;
 }
 
-function formatDecimal(value: number) {
-  const rounded = roundDecimal(value);
-  if (Number.isInteger(rounded)) {
-    return String(rounded);
-  }
-
-  return String(rounded).replace(/\.?0+$/, "");
+function clampQuantityValue(value: number) {
+  return Math.min(MAX_QUANTITY, Math.max(MIN_QUANTITY, roundDecimal(value, 1)));
 }
 
-function parseQuantityInput(input: string) {
-  const numeric = Number(input);
-  if (!Number.isFinite(numeric) || numeric <= 0) {
-    return null;
-  }
-
-  return roundDecimal(numeric, 1);
+function getSteppedQuantity(currentValue: number, direction: -1 | 1) {
+  const stepOffset = (currentValue - QUANTITY_STEP_BASE) / QUANTITY_STEP;
+  const nextStepCount =
+    direction > 0
+      ? Math.floor(stepOffset + Number.EPSILON) + 1
+      : Math.ceil(stepOffset - Number.EPSILON) - 1;
+  const nextValue = QUANTITY_STEP_BASE + nextStepCount * QUANTITY_STEP;
+  return clampQuantityValue(nextValue);
 }
 
-function sanitizeQuantityInput(value: string) {
-  const cleaned = value.replace(/[^0-9.]/g, "");
-  const [integerPart = "", ...decimalParts] = cleaned.split(".");
-  if (decimalParts.length === 0) {
-    return cleaned;
+function isQuantityInputAllowed(inputValue: string) {
+  const normalized = inputValue.trim();
+  if (normalized === "") {
+    return true;
   }
 
-  return `${integerPart}.${decimalParts.join("").slice(0, 1)}`;
+  if (!QUANTITY_INPUT_PATTERN.test(normalized)) {
+    return false;
+  }
+
+  const numeric = Number(normalized);
+  if (!Number.isFinite(numeric)) {
+    return false;
+  }
+
+  return numeric <= MAX_QUANTITY;
 }
 
 function scaleNutrientValue(value: number | null | undefined, scaleFactor: number) {
@@ -155,34 +170,89 @@ function formatNutrientValue(value: number | null | undefined) {
   });
 }
 
-const REQUIRED_NUTRIENT_KEYS: ReadonlySet<MenuNutrientFieldKey> = new Set([
-  "carbs",
-  "protein",
-  "fat",
-]);
 const DETAIL_LABEL_OVERRIDES: Partial<Record<MenuNutrientFieldKey, string>> = {
   sugars: "당류",
   sugar_alchol: "당알코올(대체당)",
 };
 
+const MAIN_NUTRIENT_KEYS: ReadonlyArray<MainNutrientKey> = ["carbs", "protein", "fat"];
+const MAIN_NUTRIENT_KEY_SET: ReadonlySet<MenuNutrientFieldKey> = new Set(MAIN_NUTRIENT_KEYS);
+const SUMMARY_MACROS: ReadonlyArray<{ key: MainNutrientKey; label: string }> = [
+  { key: "carbs", label: "탄수화물" },
+  { key: "protein", label: "단백질" },
+  { key: "fat", label: "지방" },
+];
+const CHILD_NUTRIENT_KEYS_BY_PARENT: Record<MainNutrientKey, ReadonlyArray<MenuNutrientFieldKey>> =
+  {
+    carbs: ["sugars", "sugar_alchol", "dietary_fiber"],
+    protein: [],
+    fat: ["sat_fat", "trans_fat", "un_sat_fat"],
+  };
+
+function isMainNutrientKey(key: MenuNutrientFieldKey): key is MainNutrientKey {
+  return MAIN_NUTRIENT_KEY_SET.has(key);
+}
+
+function resolveMainNutrientStates(
+  nutrientValues: NutrientValues,
+): Record<MainNutrientKey, MainNutrientState> {
+  return MAIN_NUTRIENT_KEYS.reduce(
+    (acc, key) => {
+      const directValue = toNullableNumber(nutrientValues[key]);
+      if (directValue !== null) {
+        acc[key] = { value: directValue, isEstimated: false };
+        return acc;
+      }
+
+      const childValues = CHILD_NUTRIENT_KEYS_BY_PARENT[key]
+        .map((childKey) => toNullableNumber(nutrientValues[childKey]))
+        .filter((value): value is number => value !== null);
+      if (childValues.length === 0) {
+        acc[key] = { value: null, isEstimated: false };
+        return acc;
+      }
+
+      acc[key] = {
+        value: roundDecimal(childValues.reduce((sum, value) => sum + value, 0)),
+        isEstimated: true,
+      };
+      return acc;
+    },
+    {} as Record<MainNutrientKey, MainNutrientState>,
+  );
+}
+
 function buildDetailRows({
-  menu,
+  nutrientValues,
+  mainNutrientStates,
 }: {
-  menu: MealMenuItem;
-  fallbackWeight: number;
-  fallbackWeightUnit: "g" | "ml";
+  nutrientValues: NutrientValues;
+  mainNutrientStates: Record<MainNutrientKey, MainNutrientState>;
 }): DetailRow[] {
-  return [
-    ...NUTRIENT_FORM_CONFIG.map((field) => ({
+  return NUTRIENT_FORM_CONFIG.map((field) => {
+    if (field.variant === "main" && isMainNutrientKey(field.key)) {
+      const resolvedMainNutrient = mainNutrientStates[field.key];
+      return {
+        key: field.key,
+        label: DETAIL_LABEL_OVERRIDES[field.key] ?? field.label,
+        unit: field.unit,
+        value: resolvedMainNutrient.value,
+        variant: field.variant,
+        group: field.group,
+        showWarning: resolvedMainNutrient.isEstimated,
+      };
+    }
+
+    return {
       key: field.key,
       label: DETAIL_LABEL_OVERRIDES[field.key] ?? field.label,
       unit: field.unit,
-      value: toNullableNumber(menu[field.key]),
+      value: toNullableNumber(nutrientValues[field.key]),
       variant: field.variant,
       group: field.group,
-      showWarning: field.variant === "main" && REQUIRED_NUTRIENT_KEYS.has(field.key),
-    })),
-  ];
+      showWarning: false,
+    };
+  });
 }
 
 function buildDetailGroups(rows: DetailRow[]): DetailGroupSection[] {
@@ -278,8 +348,8 @@ export function MealMenuNutrientDetail({
     initialMode === "weight" || initialMode === "unit" ? initialMode : menuInitialMode;
 
   const [inputMode, setInputMode] = useState<MealServingInputMode>(fallbackMode);
-  const [quantityInput, setQuantityInput] = useState(() => {
-    return formatDecimal(getModeFallbackValue(servingContext, fallbackMode, fallbackQuantity));
+  const [quantityInput, setQuantityInput] = useState<number | undefined>(() => {
+    return clampQuantityValue(getModeFallbackValue(servingContext, fallbackMode, fallbackQuantity));
   });
 
   useEffect(() => {
@@ -296,7 +366,7 @@ export function MealMenuNutrientDetail({
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputMode(fallbackMode);
-    setQuantityInput(formatDecimal(nextFallbackValue));
+    setQuantityInput(clampQuantityValue(nextFallbackValue));
   }, [
     fallbackMode,
     fallbackQuantity,
@@ -306,7 +376,7 @@ export function MealMenuNutrientDetail({
     servingWeightUnit,
   ]);
 
-  const quantity = useMemo(() => parseQuantityInput(quantityInput), [quantityInput]);
+  const quantity = useMemo(() => toPositiveNumber(quantityInput), [quantityInput]);
   const resolvedServing = useMemo(() => {
     if (quantity === null) {
       return null;
@@ -320,51 +390,61 @@ export function MealMenuNutrientDetail({
     return resolved;
   }, [inputMode, quantity, servingContext]);
 
-  const previewMenu = useMemo<MealMenuItem>(() => {
+  const nutrientValues = useMemo<NutrientValues>(() => {
     if (!resolvedServing) {
-      return menu;
+      return MENU_NUTRIENT_FIELD_KEYS.reduce<NutrientValues>((acc, key) => {
+        acc[key] = toNullableNumber(menu[key]);
+        return acc;
+      }, {});
     }
 
-    const { scaleFactor } = resolvedServing;
-    const scaledOptionalNutrients: Partial<Record<MenuNutrientFieldKey, number | null>> = {};
-    MENU_NUTRIENT_FIELD_KEYS.forEach((key) => {
-      if (REQUIRED_NUTRIENT_KEYS.has(key)) {
-        return;
-      }
+    return MENU_NUTRIENT_FIELD_KEYS.reduce<NutrientValues>((acc, key) => {
+      acc[key] = scaleNutrientValue(menu[key], resolvedServing.scaleFactor);
+      return acc;
+    }, {});
+  }, [menu, resolvedServing]);
 
-      scaledOptionalNutrients[key] = scaleNutrientValue(menu[key], scaleFactor);
-    });
+  const mainNutrientStates = useMemo(
+    () => resolveMainNutrientStates(nutrientValues),
+    [nutrientValues],
+  );
 
-    const scaledWeight = scaleNutrientValue(menu.weight, scaleFactor);
+  const previewMenu = useMemo<MealMenuItem>(() => {
+    const resolvedCarbs = mainNutrientStates.carbs.value ?? 0;
+    const resolvedProtein = mainNutrientStates.protein.value ?? 0;
+    const resolvedFat = mainNutrientStates.fat.value ?? 0;
+
+    if (!resolvedServing) {
+      return {
+        ...menu,
+        ...nutrientValues,
+        carbs: resolvedCarbs,
+        protein: resolvedProtein,
+        fat: resolvedFat,
+      };
+    }
+
+    const scaledWeight = scaleNutrientValue(menu.weight, resolvedServing.scaleFactor);
     return {
       ...menu,
-      ...scaledOptionalNutrients,
-      calories: scaleRequiredValue(menu.calories, scaleFactor),
-      carbs: scaleRequiredValue(
-        typeof menu.carbs === "number" && Number.isFinite(menu.carbs) ? menu.carbs : 0,
-        scaleFactor,
-      ),
-      protein: scaleRequiredValue(
-        typeof menu.protein === "number" && Number.isFinite(menu.protein) ? menu.protein : 0,
-        scaleFactor,
-      ),
-      fat: scaleRequiredValue(
-        typeof menu.fat === "number" && Number.isFinite(menu.fat) ? menu.fat : 0,
-        scaleFactor,
-      ),
+      ...nutrientValues,
+      calories: scaleRequiredValue(menu.calories, resolvedServing.scaleFactor),
+      carbs: resolvedCarbs,
+      protein: resolvedProtein,
+      fat: resolvedFat,
       weight: scaledWeight ?? resolvedServing.totalWeight,
       serving_input_mode: inputMode,
       serving_input_value: resolvedServing.unitCount,
     };
-  }, [inputMode, menu, resolvedServing]);
+  }, [inputMode, mainNutrientStates, menu, nutrientValues, resolvedServing]);
+
   const detailRows = useMemo(
     () =>
       buildDetailRows({
-        menu: previewMenu,
-        fallbackWeight: servingBaseWeight,
-        fallbackWeightUnit: servingWeightUnit,
+        nutrientValues,
+        mainNutrientStates,
       }),
-    [previewMenu, servingBaseWeight, servingWeightUnit],
+    [mainNutrientStates, nutrientValues],
   );
   const detailGroups = useMemo(() => buildDetailGroups(detailRows), [detailRows]);
 
@@ -386,7 +466,7 @@ export function MealMenuNutrientDetail({
   }, [inputMode, onSelectionChange, previewMenu, resolvedServing]);
 
   const getCurrentFallbackValue = (mode: MealServingInputMode) => {
-    return getModeFallbackValue(servingContext, mode, fallbackQuantity);
+    return clampQuantityValue(getModeFallbackValue(servingContext, mode, fallbackQuantity));
   };
 
   const handleModeChange = (nextMode: MealServingInputMode) => {
@@ -397,49 +477,44 @@ export function MealMenuNutrientDetail({
     const fallbackValue = getCurrentFallbackValue(nextMode);
     if (quantity === null) {
       setInputMode(nextMode);
-      setQuantityInput(formatDecimal(fallbackValue));
+      setQuantityInput(fallbackValue);
       return;
     }
 
     const currentResolved = resolveServingValues(servingContext, inputMode, quantity);
     if (!Number.isFinite(currentResolved.scaleFactor) || currentResolved.scaleFactor <= 0) {
       setInputMode(nextMode);
-      setQuantityInput(formatDecimal(fallbackValue));
+      setQuantityInput(fallbackValue);
       return;
     }
 
     const convertedValue =
       nextMode === "weight" ? currentResolved.totalWeight : currentResolved.unitCount;
     setInputMode(nextMode);
-    setQuantityInput(formatDecimal(Math.max(MIN_QUANTITY, convertedValue)));
-  };
-
-  const handleInputStep = (delta: number) => {
-    const baseValue = quantity ?? getCurrentFallbackValue(inputMode);
-    const nextValue = Math.max(MIN_QUANTITY, roundDecimal(baseValue + delta, 1));
-    setQuantityInput(formatDecimal(nextValue));
-  };
-
-  const handleInputChange = (nextValue: string) => {
-    setQuantityInput(sanitizeQuantityInput(nextValue));
+    setQuantityInput(clampQuantityValue(convertedValue));
   };
 
   const handleInputBlur = () => {
     const fallbackValue = getCurrentFallbackValue(inputMode);
-    const trimmedValue = quantityInput.trim();
-
-    if (!trimmedValue || trimmedValue === ".") {
-      setQuantityInput(formatDecimal(fallbackValue));
+    if (quantityInput === undefined || !Number.isFinite(quantityInput) || quantityInput <= 0) {
+      setQuantityInput(fallbackValue);
       return;
     }
 
-    const parsedValue = Number(trimmedValue);
-    if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
-      setQuantityInput(formatDecimal(fallbackValue));
-      return;
-    }
+    setQuantityInput(clampQuantityValue(quantityInput));
+  };
 
-    setQuantityInput(formatDecimal(Math.max(MIN_QUANTITY, roundDecimal(parsedValue, 1))));
+  const handleInputStep = (direction: -1 | 1) => {
+    const baseValue = quantity ?? getCurrentFallbackValue(inputMode);
+    setQuantityInput(getSteppedQuantity(baseValue, direction));
+  };
+  const summaryMacroItems = SUMMARY_MACROS.map((macro) => ({
+    ...macro,
+    value: mainNutrientStates[macro.key].value,
+  }));
+  const isEditAndAddEnabled = typeof onEditAndAdd === "function";
+  const handleEditAndAddClick = () => {
+    onEditAndAdd?.();
   };
 
   return (
@@ -459,29 +534,15 @@ export function MealMenuNutrientDetail({
         </div>
 
         <div className={styles.macroRow}>
-          <article className={styles.macroItem}>
-            <p className={`typo-label3 ${styles.macroLabel}`}>탄수화물</p>
-            <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutrientValue(previewMenu.carbs ?? 0)}
-              <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
-            </p>
-          </article>
-
-          <article className={styles.macroItem}>
-            <p className={`typo-label3 ${styles.macroLabel}`}>단백질</p>
-            <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutrientValue(previewMenu.protein ?? 0)}
-              <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
-            </p>
-          </article>
-
-          <article className={styles.macroItem}>
-            <p className={`typo-label3 ${styles.macroLabel}`}>지방</p>
-            <p className={`typo-body1 ${styles.macroValue}`}>
-              {formatNutrientValue(previewMenu.fat ?? 0)}
-              <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
-            </p>
-          </article>
+          {summaryMacroItems.map((macro) => (
+            <article key={macro.key} className={styles.macroItem}>
+              <p className={`typo-label3 ${styles.macroLabel}`}>{macro.label}</p>
+              <p className={`typo-body1 ${styles.macroValue}`}>
+                <span className={styles.macroNumber}>{formatNutrientValue(macro.value)}</span>
+                <span className={`typo-body1 ${styles.macroUnit}`}>g</span>
+              </p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -504,65 +565,99 @@ export function MealMenuNutrientDetail({
           </Tabs.List>
 
           <Tabs.Panel value="unit" className={styles.TabsPanel}>
-            <NumberField.Root>
-              <NumberField.Group className={styles.FieldGroup}>
-                <NumberField.Decrement
-                  className={styles.StepButton}
-                  aria-label="입력값 감소"
-                  onClick={() => handleInputStep(-QUANTITY_STEP)}
-                >
-                  <MinusIcon size={24} />
-                </NumberField.Decrement>
-                <NumberField.Input
-                  className={`typo-body1 ${styles.FieldInput}`}
-                  inputMode="decimal"
-                  value={quantityInput}
-                  onChange={(event) => {
-                    handleInputChange(event.target.value);
-                  }}
-                  onBlur={handleInputBlur}
-                  aria-label="단위량 또는 중량 입력"
-                />
-                <NumberField.Increment
-                  className={styles.StepButton}
-                  aria-label="입력값 증가"
-                  onClick={() => handleInputStep(QUANTITY_STEP)}
-                >
-                  <PlusIcon size={24} />
-                </NumberField.Increment>
-              </NumberField.Group>
-            </NumberField.Root>
+            <div className={styles.FieldGroup}>
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 감소"
+                onClick={() => handleInputStep(-1)}
+              >
+                <MinusIcon size={24} />
+              </button>
+              <NumberField
+                value={quantityInput}
+                onChange={setQuantityInput}
+                min={MIN_QUANTITY}
+                max={MAX_QUANTITY}
+                step={QUANTITY_STEP}
+                showControls={false}
+                allowOutOfRange
+                normalizeValue={(value) => roundDecimal(value, 1)}
+                isInputTextAllowed={isQuantityInputAllowed}
+                unstyled
+                classNames={{
+                  group: styles.FieldInputGroup,
+                  inputWrapper: styles.FieldInputWrapper,
+                  input: `typo-body1 ${styles.FieldInput}`,
+                }}
+                format={{
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 1,
+                  useGrouping: false,
+                }}
+                inputProps={{
+                  inputMode: "decimal",
+                  "aria-label": "단위량 또는 중량 입력",
+                  onBlur: handleInputBlur,
+                }}
+              />
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 증가"
+                onClick={() => handleInputStep(1)}
+              >
+                <PlusIcon size={24} />
+              </button>
+            </div>
           </Tabs.Panel>
 
           <Tabs.Panel value="weight" className={styles.TabsPanel}>
-            <NumberField.Root>
-              <NumberField.Group className={styles.FieldGroup}>
-                <NumberField.Decrement
-                  className={styles.StepButton}
-                  aria-label="입력값 감소"
-                  onClick={() => handleInputStep(-QUANTITY_STEP)}
-                >
-                  <MinusIcon size={24} />
-                </NumberField.Decrement>
-                <NumberField.Input
-                  className={`typo-body1 ${styles.FieldInput}`}
-                  inputMode="decimal"
-                  value={quantityInput}
-                  onChange={(event) => {
-                    handleInputChange(event.target.value);
-                  }}
-                  onBlur={handleInputBlur}
-                  aria-label="단위량 또는 중량 입력"
-                />
-                <NumberField.Increment
-                  className={styles.StepButton}
-                  aria-label="입력값 증가"
-                  onClick={() => handleInputStep(QUANTITY_STEP)}
-                >
-                  <PlusIcon size={24} />
-                </NumberField.Increment>
-              </NumberField.Group>
-            </NumberField.Root>
+            <div className={styles.FieldGroup}>
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 감소"
+                onClick={() => handleInputStep(-1)}
+              >
+                <MinusIcon size={24} />
+              </button>
+              <NumberField
+                value={quantityInput}
+                onChange={setQuantityInput}
+                min={MIN_QUANTITY}
+                max={MAX_QUANTITY}
+                step={QUANTITY_STEP}
+                showControls={false}
+                allowOutOfRange
+                normalizeValue={(value) => roundDecimal(value, 1)}
+                isInputTextAllowed={isQuantityInputAllowed}
+                unstyled
+                classNames={{
+                  group: styles.FieldInputGroup,
+                  inputWrapper: styles.FieldInputWrapper,
+                  input: `typo-body1 ${styles.FieldInput}`,
+                }}
+                format={{
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 1,
+                  useGrouping: false,
+                }}
+                inputProps={{
+                  inputMode: "decimal",
+                  "aria-label": "단위량 또는 중량 입력",
+                  onBlur: handleInputBlur,
+                }}
+              />
+              <button
+                type="button"
+                className={styles.StepButton}
+                aria-label="입력값 증가"
+                onClick={() => handleInputStep(1)}
+              >
+                <PlusIcon size={24} />
+              </button>
+            </div>
           </Tabs.Panel>
         </Tabs.Root>
       </section>
@@ -588,10 +683,11 @@ export function MealMenuNutrientDetail({
                 <p className={`typo-label3 ${styles.editDescription}`}>영양성분이 잘못되었나요?</p>
                 <Button
                   variant="text"
-                  state="default"
+                  state={isEditAndAddEnabled ? "default" : "disabled"}
                   size="small"
                   color="assistive"
-                  onClick={onEditAndAdd}
+                  onClick={handleEditAndAddClick}
+                  disabled={!isEditAndAddEnabled}
                 >
                   수정해서 담기
                 </Button>
@@ -648,7 +744,7 @@ export function MealMenuNutrientDetail({
                                       side="left"
                                       align="center"
                                       sideOffset={12}
-                                      collisionPadding={12}
+                                      collisionPadding={50}
                                     >
                                       <Popover.Popup
                                         className={`${styles.warningTooltip} typo-label3`}

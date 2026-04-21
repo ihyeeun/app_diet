@@ -8,7 +8,7 @@ import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecor
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/RecommendResultPage.module.css";
-import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
+import { getMealTypeFromCurrentTime } from "@/features/chat/utils/chatMeal";
 import { getRecommendDetailPath, getSafeChatId } from "@/features/chat/utils/recommendNavigation";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { PATH } from "@/router/path";
@@ -59,7 +59,11 @@ export default function RecommendResultPage() {
       return DEFAULT_MEAL_TYPE;
     }
 
-    return getMealTypeFromChatMealTime(chatItem.response_payload.parsed_request.meal_time);
+    const chatCreatedAt = new Date(chatItem.createdAt);
+    if (Number.isNaN(chatCreatedAt.getTime())) {
+      return DEFAULT_MEAL_TYPE;
+    }
+    return getMealTypeFromCurrentTime(chatCreatedAt);
   }, [chatItem]);
 
   const selectedMenuIds = useMemo(() => {

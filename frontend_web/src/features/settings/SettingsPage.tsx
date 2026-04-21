@@ -52,15 +52,20 @@ export default function SettingsPage() {
             onClick={() => navigate(PATH.SETTINGS_SUB_CODE)}
           >
             <div className={styles.labelContainer}>
-              <img src="/icons/coupon.svg" alt="Coupon Icon" className={styles.img} />
-              <span className={`${styles.menuLabel} typo-title3`}>쿠폰 코드 입력</span>
+              <img
+                src="/icons/coupon.svg"
+                aria-hidden="true"
+                alt="구독 코드 입력"
+                className={styles.img}
+              />
+              <span className={`${styles.menuLabel} typo-title3`}>구독 코드 입력</span>
             </div>
             <ChevronRight size={24} className={styles.menuChevron} />
           </button>
 
           <button type="button" className={styles.menuItem} onClick={() => navigate(PATH.TERMS)}>
             <span className={`${styles.menuLabel} typo-title3`}>
-              서비스 이용 약관/ 개인정보처리방침
+              서비스이용약관 / 개인정보처리방침
             </span>
             <ChevronRight size={24} className={styles.menuChevron} />
           </button>
@@ -107,7 +112,7 @@ export default function SettingsPage() {
         open={isWithdrawModalOpen}
         onOpenChange={setIsWithdrawModalOpen}
         title="정말 탈퇴하시겠어요?"
-        description="기록한 데이터가 완전히 삭제되며 복구할 수 없어요"
+        description={"기록한 데이터가 완전히 삭제되며\n복구할 수 없어요"}
         cancelText="취소"
         confirmText="확인"
         confirmDisabled={isWithdrawPending}

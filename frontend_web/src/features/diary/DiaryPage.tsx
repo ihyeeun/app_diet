@@ -13,7 +13,10 @@ import {
   getHomeMealFeedback,
   hasValidTargets,
 } from "@/features/home/utils/todayMealFeedback";
-import { formatMenuDraftKey, useMenuDraftInit } from "@/features/meal-record/stores/menuDraft.store";
+import {
+  formatMenuDraftKey,
+  useMenuDraftInit,
+} from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
 import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import type { MealType } from "@/shared/api/types/api.dto";
@@ -160,6 +163,8 @@ export default function DiaryPage() {
               </div>
             </div>
           </ActionCard>
+
+          <div className="divider" />
 
           <section className={styles.actionCardList}>
             {DIARY_MEALS.map((meal) => {

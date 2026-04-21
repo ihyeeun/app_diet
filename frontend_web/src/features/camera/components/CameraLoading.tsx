@@ -1,10 +1,21 @@
 import styles from "@/features/camera/CameraPage.module.css";
 
-export function CameraLoading({ description }: { description: string }) {
+type CameraLoadingProps = {
+  description: string;
+  previewSrc?: string | null;
+};
+
+export function CameraLoading({ description, previewSrc = null }: CameraLoadingProps) {
   return (
-    <main className={styles.main}>
-      <div className={styles.content}>
-        <img src="/icons/search-icon.svg" alt="카메라 아이콘" className={styles.image} />
+    <main className={styles.mainLoading}>
+      <div className={styles.loadingContent}>
+        {previewSrc ? (
+          <div className={styles.previewFrame}>
+            <img src={previewSrc} alt="촬영한 사진 미리보기" className={styles.previewImage} />
+            <div className={styles.scanOverlay} aria-hidden />
+            <div className={styles.scanLine} aria-hidden />
+          </div>
+        ) : null}
         <p className="typo-title1">
           {description}
           <br />

@@ -29,3 +29,14 @@
   align-items: end;
   gap: 10px;
 }
+
+.menuPositioner {
+  background-color: var(--bg-normal-white);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.menuItem {
+  padding: 10px 100px 10px 12px;
+  color: var(--text-assistive1);
+}
