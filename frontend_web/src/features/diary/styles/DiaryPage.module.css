@@ -51,7 +51,7 @@
 }
 
 .calorieText {
-  align-items: baseline;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -62,7 +62,7 @@
 }
 
 .scoreDivider {
-  background-color: var(--static-white);
+  background-color: var(--gray-500);
   height: 28px;
   margin: 0 4px;
   width: 1px;

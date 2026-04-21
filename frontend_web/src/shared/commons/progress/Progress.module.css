@@ -10,7 +10,7 @@
 }
 
 .Progress[data-variant="primary-gray"] {
-  --progress-track-color: var(--gray-400);
+  --progress-track-color: var(--bg-normal-normal);
   --progress-indicator-color: var(--primary-normal);
 }
 
