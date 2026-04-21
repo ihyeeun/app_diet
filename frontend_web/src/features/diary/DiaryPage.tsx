@@ -157,7 +157,7 @@ export default function DiaryPage() {
               <div className={styles.scoreContainer}>
                 <ScoreProgress
                   value={calorieProgress}
-                  variant={isCalorieExceeded ? "danger-white" : "primary-white"}
+                  variant={isCalorieExceeded ? "danger-white" : "primary-gray"}
                 />
                 <p className={`${styles.calorieMessage} typo-body4`}>{calorieMessage}</p>
               </div>
