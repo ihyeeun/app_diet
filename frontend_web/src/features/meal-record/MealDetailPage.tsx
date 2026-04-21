@@ -1,3 +1,5 @@
+import { Menu } from "@base-ui/react/menu";
+import { EllipsisVertical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -184,24 +186,31 @@ export default function MealDetailPage() {
         rightSlot={
           isPersonalMenuData && (
             <div className={styles.headerButtons}>
-              <Button
-                variant="text"
-                state="default"
-                size="small"
-                color="assistive"
-                onClick={handleModify}
-              >
-                수정
-              </Button>
-              <Button
-                variant="text"
-                state="default"
-                size="small"
-                color="assistive"
-                onClick={handleDelete}
-              >
-                삭제
-              </Button>
+              <Menu.Root>
+                <Menu.Trigger>
+                  <EllipsisVertical size={20} />
+                </Menu.Trigger>
+
+                <Menu.Portal>
+                  <Menu.Positioner className={styles.menuPositioner} sideOffset={8}>
+                    <Menu.Popup>
+                      <Menu.Item
+                        onClick={handleModify}
+                        className={`${styles.menuItem} typo-lebel3}`}
+                      >
+                        수정
+                      </Menu.Item>
+                      <Menu.Separator className="divider" />
+                      <Menu.Item
+                        onClick={handleDelete}
+                        className={`${styles.menuItem} typo-lebel3}`}
+                      >
+                        삭제
+                      </Menu.Item>
+                    </Menu.Popup>
+                  </Menu.Positioner>
+                </Menu.Portal>
+              </Menu.Root>
             </div>
           )
         }
@@ -231,7 +240,7 @@ export default function MealDetailPage() {
           state={selection ? "default" : "disabled"}
           disabled={!selection}
         >
-          {isAlreadyQueued ? "수정해서 담기" : "담기"}
+          {isAlreadyQueued ? "수정하기" : "담기"}
         </Button>
       </footer>
 
