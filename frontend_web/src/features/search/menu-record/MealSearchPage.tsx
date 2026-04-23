@@ -190,6 +190,8 @@ export default function MealSearchPage() {
                         unit_quantity={menu.unit_quantity}
                         brand={menu.brand}
                         data_source={menu.data_source}
+                        weight={menu.weight}
+                        unit={menu.unit}
                         icon={isSelected ? "check" : "add"}
                         state={isSelected ? "select" : "default"}
                         onClick={() => handleMenuDetailPageOpen(menu.id)}
@@ -260,6 +262,8 @@ export default function MealSearchPage() {
                               name={menu.name}
                               calories={menu.calories}
                               unit_quantity={menu.unit_quantity}
+                              weight={menu.weight}
+                              unit={menu.unit}
                               brand={menu.brand}
                               data_source={menu.data_source}
                               icon={isSelected ? "check" : "add"}
