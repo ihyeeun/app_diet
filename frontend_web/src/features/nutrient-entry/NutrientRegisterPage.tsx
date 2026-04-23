@@ -43,7 +43,9 @@ export default function NutrientRegisterPage() {
   const locationState = (location.state ?? {}) as NutrientRegisterLocationState;
   const dateKey = getSafeDateKey(searchParams.get("date") ?? locationState.dateKey ?? null);
   const mealType = getMealType(searchParams.get("mealType") ?? locationState.mealType ?? null);
-  const searchKeyword = getSafeKeyword(searchParams.get("keyword") ?? locationState.keyword ?? null);
+  const searchKeyword = getSafeKeyword(
+    searchParams.get("keyword") ?? locationState.keyword ?? null,
+  );
 
   const [formState, setFormState] = useState<Partial<RegisterMenuRequestDto>>(() => ({
     ...locationState,
@@ -83,11 +85,16 @@ export default function NutrientRegisterPage() {
   const isSubmitDisabled =
     isSubmitting ||
     (formState.name ?? "").trim().length === 0 ||
-    (formState.weight ?? 0) <= 0 ||
-    (formState.calories ?? 0) <= 0;
+    formState.weight === undefined ||
+    formState.calories === undefined;
 
   const handleSubmit = () => {
     if (isSubmitDisabled) {
+      return;
+    }
+
+    if (formState.weight === 0) {
+      toast.warning("중량을 다시 확인해주세요");
       return;
     }
 
