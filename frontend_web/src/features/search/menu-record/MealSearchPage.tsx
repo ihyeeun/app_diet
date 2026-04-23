@@ -10,15 +10,15 @@ import {
   useMenuDraftSelectedCount,
   useMenuDraftStore,
   useMenuDraftUpsert,
+  useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import RegisterBottomSheet from "@/features/search/components/RegisterBottomSheet";
-import { useTodayMealRecordRegisterMutation } from "@/features/search/menu-record/hooks/mutations/useTodayMealRecordMutation";
 import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealRecordPath } from "@/router/pathHelpers";
 import { getPathWithMeal } from "@/router/pathHelpers";
-import { type MealTime, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import { type MenuSimpleResponseDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
@@ -39,6 +39,7 @@ export default function MealSearchPage() {
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const upsertMenu = useMenuDraftUpsert();
+  const upsertPreviews = useMenuDraftUpsertPreviews();
   const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
@@ -51,7 +52,6 @@ export default function MealSearchPage() {
   );
 
   const { mutate: mealSearchMutation, data: searchResults } = useMealSearchMutation();
-  const { mutate: mealRegister } = useTodayMealRecordRegisterMutation();
 
   useEffect(() => {
     if (hasDraft) {
@@ -72,7 +72,9 @@ export default function MealSearchPage() {
     };
   }, []);
 
-  const handleToggleMenuSelection = (menuId: number) => {
+  const handleToggleMenuSelection = (menu: MenuSimpleResponseDto) => {
+    const menuId = menu.id;
+
     if (selectedMenuIdSet.has(menuId)) {
       removeMenu({ key: draftKey, id: menuId });
       return;
@@ -88,6 +90,22 @@ export default function MealSearchPage() {
       id: menuId,
       quantity: 1,
     });
+
+    upsertPreviews({
+      key: draftKey,
+      previews: [
+        {
+          id: menu.id,
+          name: menu.name,
+          brand: menu.brand,
+          unit_quantity: menu.unit_quantity,
+          calories: menu.calories,
+          weight: menu.weight,
+          unit: menu.unit,
+          data_source: menu.data_source,
+        },
+      ],
+    });
   };
 
   const handleMenuDetailPageOpen = (menuId: number) => {
@@ -97,25 +115,7 @@ export default function MealSearchPage() {
   const handleApplySelectedMenus = () => {
     if (selectedMenus.length === 0) return;
 
-    const requestBody: RegisterMealRequestDto = {
-      date: dateKey,
-      time: Number(mealType) as MealTime,
-      menu_ids: selectedMenus.map((menu) => menu.id),
-      menu_quantities: selectedMenus.map((menu) => menu.quantity),
-    };
-
-    if (typeof draft?.image === "string" && draft.image.trim().length > 0) {
-      requestBody.image = draft.image;
-    }
-
-    mealRegister(requestBody, {
-      onSuccess: () => {
-        navigate(getMealRecordPath(dateKey, mealType));
-      },
-      onError: () => {
-        toast.warning("메뉴 등록 실패");
-      },
-    });
+    navigate(getMealRecordPath(dateKey, mealType));
   };
 
   const handleClearKeyword = () => {
@@ -193,7 +193,7 @@ export default function MealSearchPage() {
                         icon={isSelected ? "check" : "add"}
                         state={isSelected ? "select" : "default"}
                         onClick={() => handleMenuDetailPageOpen(menu.id)}
-                        onIconClick={() => handleToggleMenuSelection(menu.id)}
+                        onIconClick={() => handleToggleMenuSelection(menu)}
                       />
                     );
                   })}
@@ -264,7 +264,7 @@ export default function MealSearchPage() {
                               icon={isSelected ? "check" : "add"}
                               state={isSelected ? "select" : "default"}
                               onClick={() => handleMenuDetailPageOpen(menu.id)}
-                              onIconClick={() => handleToggleMenuSelection(menu.id)}
+                              onIconClick={() => handleToggleMenuSelection(menu)}
                             />
                           );
                         })}
