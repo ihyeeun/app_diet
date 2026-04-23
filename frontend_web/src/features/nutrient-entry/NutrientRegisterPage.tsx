@@ -34,6 +34,7 @@ type NutrientRegisterLocationState = Partial<RegisterMenuRequestDto> & {
   dateKey?: string;
   mealType?: MealType;
   keyword?: string;
+  entrySource?: "camera" | "manual";
 };
 
 export default function NutrientRegisterPage() {
@@ -53,6 +54,7 @@ export default function NutrientRegisterPage() {
     brand: (locationState.brand ?? locationState.brandName ?? "").trim(),
   }));
   const { mutate: registerManualMenu, isPending: isSubmitting } = useRegisterMenuMutation();
+  const isCameraEntry = locationState.entrySource === "camera";
 
   const brandName = (formState.brand ?? "").trim();
   const nutrientForm = buildNutrientFormFields(formState);
@@ -147,43 +149,49 @@ export default function NutrientRegisterPage() {
       <main className={styles.main}>
         <div className={styles.content}>
           <section className={styles.topSection}>
-            <div className={styles.fieldWrap}>
-              <div className={styles.labelRow}>
-                <p className={`typo-title3 ${styles.labelText}`}>음식명</p>
-                <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
-              </div>
+            {isCameraEntry ? (
+              <p className={`typo-title3 ${styles.recognizedInfoText}`}>사진에서 인식한 영양정보</p>
+            ) : (
+              <>
+                <div className={styles.fieldWrap}>
+                  <div className={styles.labelRow}>
+                    <p className={`typo-title3 ${styles.labelText}`}>음식명</p>
+                    <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
+                  </div>
 
-              <input
-                className={`typo-body3 ${styles.textInput}`}
-                type="text"
-                value={formState.name ?? ""}
-                onChange={handleFoodNameChange}
-                placeholder="음식명 입력"
-                aria-label="음식명 입력"
-              />
-            </div>
+                  <input
+                    className={`typo-body3 ${styles.textInput}`}
+                    type="text"
+                    value={formState.name ?? ""}
+                    onChange={handleFoodNameChange}
+                    placeholder="음식명 입력"
+                    aria-label="음식명 입력"
+                  />
+                </div>
 
-            <div className={styles.fieldWrap}>
-              <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>
-              <button
-                type="button"
-                className={styles.brandButton}
-                onClick={handleOpenBrandSearch}
-                aria-label="브랜드명 검색 열기"
-              >
-                <span
-                  className={`typo-body3 ${brandName ? styles.brandValue : styles.brandPlaceholder}`}
-                >
-                  {brandName || "브랜드명 입력"}
-                </span>
-                <Search size={20} className={styles.brandSearchIcon} />
-              </button>
-            </div>
+                <div className={styles.fieldWrap}>
+                  <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>
+                  <button
+                    type="button"
+                    className={styles.brandButton}
+                    onClick={handleOpenBrandSearch}
+                    aria-label="브랜드명 검색 열기"
+                  >
+                    <span
+                      className={`typo-body3 ${brandName ? styles.brandValue : styles.brandPlaceholder}`}
+                    >
+                      {brandName || "브랜드명 입력"}
+                    </span>
+                    <Search size={20} className={styles.brandSearchIcon} />
+                  </button>
+                </div>
+              </>
+            )}
           </section>
 
           <section className={styles.nutrientSection}>
             <div className={styles.nutrientHeader}>
-              <p className={`typo-title3 ${styles.labelText}`}>영양정보</p>
+              {isCameraEntry && <p className={`typo-title3 ${styles.labelText}`}>영양정보</p>}
               <div className="divider dividerMargin20" />
             </div>
 

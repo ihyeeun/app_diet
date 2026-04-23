@@ -72,6 +72,7 @@ export default function NutrientCameraPage() {
           ...imageData, // unit, weight, calories, carbs...
           name: searchParams.get("name") ?? "",
           brand: searchParams.get("brand") ?? "",
+          entrySource: "camera" as const,
           dateKey: dateKey ?? undefined,
           mealType: mealType ?? undefined,
           keyword: keyword ?? undefined,

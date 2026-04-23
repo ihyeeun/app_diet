@@ -25,6 +25,10 @@
   gap: 28px;
 }
 
+.recognizedInfoText {
+  color: var(--text-normal);
+}
+
 .fieldWrap {
   display: flex;
   flex-direction: column;
