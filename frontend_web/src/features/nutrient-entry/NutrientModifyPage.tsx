@@ -40,6 +40,10 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "./styles/NutrientModifyPage.module.css";
 
+type MealDetailLocationState = {
+  replaceMenuId?: number;
+};
+
 function buildInitialFormState(
   menu?: Partial<MealMenuItem> | null,
 ): Partial<RegisterMenuRequestDto> {
@@ -149,8 +153,8 @@ export default function NutrientModifyPage() {
     menuId === null ||
     !hasFormChanges ||
     foodName.length === 0 ||
-    (formState.weight ?? 0) <= 0 ||
-    (formState.calories ?? 0) <= 0;
+    formState.weight === undefined ||
+    formState.calories === undefined;
 
   const handleFieldChange = (key: keyof MenuNutrientFields, nextValue: string) => {
     const parsedValue = nextValue === "" ? undefined : Number(nextValue);
@@ -190,6 +194,11 @@ export default function NutrientModifyPage() {
       return;
     }
 
+    if (formState.weight === 0 || formState.weight === undefined) {
+      toast.warning("중량을 다시 확인해주세요");
+      return;
+    }
+
     if (hasChildNutrientOverflow(formState)) {
       toast.warning("하위 항목 합이 상위 항목을 초과했어요");
       return;
@@ -199,7 +208,7 @@ export default function NutrientModifyPage() {
       name: foodName,
       brand: brandName,
       unit,
-      weight: formState.weight ?? 0,
+      weight: formState.weight,
       calories: formState.calories ?? 0,
       ...buildNullableNutrientFields(formState),
     };
@@ -235,7 +244,12 @@ export default function NutrientModifyPage() {
         }
 
         toast.success("개인 메뉴로 등록했어요");
-        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey), { replace: true });
+        const detailPageState: MealDetailLocationState | undefined =
+          menuId !== null && menuId !== createdMenuId ? { replaceMenuId: menuId } : undefined;
+        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey), {
+          replace: true,
+          state: detailPageState,
+        });
       },
       onError: () => {
         toast.warning("공용 데이터를 개인 데이터 등록하는데 실패했어요");

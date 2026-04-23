@@ -1,7 +1,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { EllipsisVertical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   MealMenuNutrientDetail,
@@ -13,8 +13,9 @@ import {
   formatMenuDraftKey,
   useMenuDraftInit,
   useMenuDraftMenus,
-  useMenuDraftSelectedCount,
+  useMenuDraftRemove,
   useMenuDraftUpsert,
+  useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
 import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
 import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
@@ -30,8 +31,13 @@ import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
+type MealDetailLocationState = {
+  replaceMenuId?: number;
+};
+
 export default function MealDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selection, setSelection] = useState<MealMenuNutrientSelection | null>(null);
@@ -53,8 +59,17 @@ export default function MealDetailPage() {
 
   const initDraft = useMenuDraftInit();
   const upsertMenu = useMenuDraftUpsert();
+  const upsertPreviews = useMenuDraftUpsertPreviews();
+  const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
-  const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
+  const replaceMenuIdCandidate = (location.state as MealDetailLocationState | null)?.replaceMenuId;
+  const replaceMenuId =
+    typeof replaceMenuIdCandidate === "number" &&
+    Number.isInteger(replaceMenuIdCandidate) &&
+    replaceMenuIdCandidate > 0 &&
+    replaceMenuIdCandidate !== menuId
+      ? replaceMenuIdCandidate
+      : null;
 
   const { data: meal, isPending, isError } = useMealDetatilQuery(menuId);
   const { mutate: deleteMealMutation, isPending: isDeletePending } = useMealDeleteMutation({
@@ -105,15 +120,50 @@ export default function MealDetailPage() {
       return;
     }
 
-    if (!isAlreadyQueued && selectedCount + 1 > MAX_MEAL_RECORD_MENUS) {
+    const nextMenuId = selection.menu.id;
+    const shouldReplaceMenu =
+      replaceMenuId !== null &&
+      replaceMenuId !== nextMenuId &&
+      selectedMenus.some((item) => item.id === replaceMenuId);
+
+    const nextSelectedMenuIds = new Set(selectedMenus.map((item) => item.id));
+    if (shouldReplaceMenu) {
+      nextSelectedMenuIds.delete(replaceMenuId);
+    }
+    nextSelectedMenuIds.add(nextMenuId);
+
+    if (nextSelectedMenuIds.size > MAX_MEAL_RECORD_MENUS) {
       toast.warning("최대 100개까지 기록할 수 있어요");
       return;
     }
 
+    if (shouldReplaceMenu) {
+      removeMenu({ key: draftKey, id: replaceMenuId });
+    }
+
     upsertMenu({
       key: draftKey,
-      id: selection.menu.id,
+      id: nextMenuId,
       quantity: selection.quantity,
+    });
+
+    // MealRecordPage는 현재 식단 목록에 없는 id를 렌더링할 때 draft preview를 사용한다.
+    // 새로 생성된 개인 메뉴(id 변경)는 summary 목록에 아직 없으므로 preview를 함께 저장해야 즉시 보인다.
+    const previewMenu = selection.menu.id === meal.id ? meal : selection.menu;
+    upsertPreviews({
+      key: draftKey,
+      previews: [
+        {
+          id: nextMenuId,
+          name: previewMenu.name,
+          brand: previewMenu.brand,
+          unit_quantity: previewMenu.unit_quantity,
+          calories: previewMenu.calories,
+          weight: previewMenu.weight ?? undefined,
+          unit: previewMenu.unit,
+          data_source: previewMenu.data_source,
+        },
+      ],
     });
 
     handleGoBack();
