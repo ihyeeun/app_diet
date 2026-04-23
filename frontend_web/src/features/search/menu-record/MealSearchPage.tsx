@@ -243,10 +243,11 @@ export default function MealSearchPage() {
                     </div>
                   </section>
 
-                  {(searchResults.menu_list.length > 0 || searchResults.brand_list.length > 0) && (
+                  {(searchResults.menu_list.length >= 0 ||
+                    searchResults.brand_list.length >= 0) && (
                     <section className={styles.similarSection}>
                       <p className={`${styles.similarSectionTitle} typo-title3`}>
-                        비슷한 메뉴는 어때요?
+                        비슷한 메뉴 / 브랜드는 어때요?
                       </p>
 
                       <div className={styles.resultList}>
