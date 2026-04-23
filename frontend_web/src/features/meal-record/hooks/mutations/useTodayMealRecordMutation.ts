@@ -14,11 +14,11 @@ export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallba
   return useMutation({
     mutationFn: postTodayMealRecordRegister,
     onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(variables.date) });
       callbacks?.onSuccess?.();
     },
     onError: async (error, variables) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(variables.date) });
       callbacks?.onError?.(error);
     },
   });
@@ -30,11 +30,11 @@ export function useTodayMealRecordDeleteMutation(callbacks?: UseMutationCallback
   return useMutation({
     mutationFn: deleteTodayMealRecord,
     onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(variables.date) });
       callbacks?.onSuccess?.();
     },
     onError: async (error, variables) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(variables.date) });
       callbacks?.onError?.(error);
     },
   });
@@ -90,7 +90,7 @@ export function useTodayMealRecordDeleteWithRollbackMutation() {
           });
         }
 
-        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(dateKey) });
         return DELETE_MEAL_RECORD_RESULT.DELETED;
       } catch {
         let rollbackSucceeded = true;
@@ -103,7 +103,7 @@ export function useTodayMealRecordDeleteWithRollbackMutation() {
           rollbackSucceeded = false;
         }
 
-        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(dateKey) });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(dateKey) });
 
         return rollbackSucceeded
           ? DELETE_MEAL_RECORD_RESULT.FAILED_RECOVERED

@@ -11,7 +11,7 @@ export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallba
     mutationFn: postTodayMealRecordRegister,
     onSuccess: (_, variables) => {
       if (callbacks?.onSuccess) callbacks.onSuccess();
-      queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals(variables.date) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dayMeals.byDate(variables.date) });
     },
     onError: (error) => {
       if (callbacks?.onError) callbacks.onError(error);
