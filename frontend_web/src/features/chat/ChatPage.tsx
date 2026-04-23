@@ -10,9 +10,7 @@ import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecor
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
-import {
-  getMealTypeFromCurrentTime,
-} from "@/features/chat/utils/chatMeal";
+import { getMealTypeFromCurrentTime } from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
 import {
   formatMenuDraftKey,
@@ -689,19 +687,23 @@ function RecommendationSection({
             {topRecommendation.one_line_summary}
           </p>
           <div className={styles.recommendMetaRow}>
-            {topRecommendation.brand && (
-              <span className={`${styles.recommendBrand} typo-label4`}>
-                {topRecommendation.brand}
+            <p className={styles.menuInfoRow}>
+              {topRecommendation.brand && (
+                <span className={`${styles.recommendBrand} typo-label4`}>
+                  {topRecommendation.brand}
+                </span>
+              )}
+              <span className={`${styles.recommendAmount} typo-label4`}>
+                1{topRecommendation.amount}
               </span>
-            )}
-            <span className={`${styles.recommendAmount} typo-label4`}>
-              1{topRecommendation.amount}
-            </span>
+            </p>
             <span className={`${styles.recommendCalories} typo-title2`}>
               {formatCalories(topRecommendation.calories)} kcal
             </span>
           </div>
         </div>
+
+        {/* TODO 여기에 개인용 뱃지 추가 */}
 
         <div className="divider" />
 
