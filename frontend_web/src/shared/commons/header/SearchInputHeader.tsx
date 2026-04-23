@@ -1,5 +1,12 @@
 import { ChevronLeft } from "lucide-react";
-import type { ChangeEvent, InputHTMLAttributes, KeyboardEvent, RefObject } from "react";
+import {
+  type ChangeEvent,
+  type InputHTMLAttributes,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import styles from "./SearchInputHeader.module.css";
 
@@ -9,6 +16,7 @@ type Props = {
   onBack?: () => void;
   onClear?: () => void;
   onEnter?: (value: string) => void;
+  debounceMs?: number;
   placeholder?: string;
   backButtonAriaLabel?: string;
   inputAriaLabel?: string;
@@ -24,6 +32,7 @@ export function SearchInputHeader({
   onBack,
   onClear,
   onEnter,
+  debounceMs = 300,
   placeholder = "검색어를 입력하세요",
   backButtonAriaLabel = "뒤로가기",
   inputAriaLabel = "검색어 입력",
@@ -32,6 +41,26 @@ export function SearchInputHeader({
   inputRef,
   enterKeyHint = "search",
 }: Props) {
+  const [isComposing, setIsComposing] = useState(false);
+  const onEnterRef = useRef(onEnter);
+
+  useEffect(() => {
+    onEnterRef.current = onEnter;
+  }, [onEnter]);
+
+  useEffect(() => {
+    if (!onEnterRef.current) return;
+    if (isComposing) return;
+
+    const timeoutId = window.setTimeout(() => {
+      onEnterRef.current?.(value);
+    }, debounceMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [value, debounceMs, isComposing]);
+
   const classes = [styles.root, safeAreaTop ? styles.safeAreaTop : "", className ?? ""]
     .filter(Boolean)
     .join(" ");
@@ -47,14 +76,6 @@ export function SearchInputHeader({
     }
 
     onValueChange("");
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (!onEnter) return;
-    if (event.nativeEvent.isComposing) return;
-    if (event.key !== "Enter") return;
-
-    onEnter(value);
   };
 
   return (
@@ -77,7 +98,8 @@ export function SearchInputHeader({
             type="search"
             value={value}
             onChange={handleChange}
-            onKeyDown={handleKeyDown}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={() => setIsComposing(false)}
             placeholder={placeholder}
             aria-label={inputAriaLabel}
             maxLength={300}
