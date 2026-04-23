@@ -12,7 +12,11 @@ import {
   useMenuDraftUpsert,
   useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import {
+  getMealType,
+  getSafeDateKey,
+  getSafeKeyword,
+} from "@/features/meal-record/utils/mealRecord.queryParams";
 import RegisterBottomSheet from "@/features/search/components/RegisterBottomSheet";
 import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
 import { PATH } from "@/router/path";
@@ -31,11 +35,11 @@ export default function MealSearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [submittedKeyword, setSubmittedKeyword] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const initialKeyword = getSafeKeyword(searchParams.get("keyword"));
+  const [submittedKeyword, setSubmittedKeyword] = useState(initialKeyword);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const upsertMenu = useMenuDraftUpsert();
@@ -109,7 +113,7 @@ export default function MealSearchPage() {
   };
 
   const handleMenuDetailPageOpen = (menuId: number) => {
-    navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_SEARCH"));
+    navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_SEARCH", submittedKeyword));
   };
 
   const handleApplySelectedMenus = () => {
@@ -129,13 +133,13 @@ export default function MealSearchPage() {
   };
   const handleNavigateNutrientAdd = () => {
     setIsDirectInputSheetOpen(false);
-    navigate(getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType));
+    navigate(getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType, submittedKeyword));
   };
 
   const handleNavigateNutrientCamera = () => {
     setIsDirectInputSheetOpen(false);
 
-    navigate(getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType));
+    navigate(getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType, submittedKeyword));
   };
 
   const handleCameraClick = () => {

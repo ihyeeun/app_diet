@@ -9,6 +9,7 @@ import {
 import {
   getMealType,
   getSafeDateKey,
+  getSafeKeyword,
   getSafeMenuId,
   getSafePageKey,
 } from "@/features/meal-record/utils/mealRecord.queryParams";
@@ -71,6 +72,7 @@ export default function NutrientModifyPage() {
   const menuId = getSafeMenuId(searchParams.get("menuId"));
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const searchKeyword = getSafeKeyword(searchParams.get("keyword"));
   const pageKey = getSafePageKey(searchParams.get("pageKey")) ?? "MEAL_RECORD";
   const draftKey = formatMenuDraftKey(dateKey, mealType);
   const upsertPreviews = useMenuDraftUpsertPreviews();
@@ -173,12 +175,12 @@ export default function NutrientModifyPage() {
 
   const handleBack = () => {
     if (menuId !== null) {
-      navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey));
+      navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey, searchKeyword));
       return;
     }
 
     if (pageKey === "MEAL_SEARCH") {
-      navigate(getMealSearchPath(dateKey, mealType));
+      navigate(getMealSearchPath(dateKey, mealType, searchKeyword));
       return;
     }
 
@@ -261,7 +263,9 @@ export default function NutrientModifyPage() {
               return;
             }
 
-            navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey), { replace: true });
+            navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey, searchKeyword), {
+              replace: true,
+            });
           },
           onError: () => {
             toast.warning("영양 성분 수정에 실패했어요");
@@ -282,7 +286,7 @@ export default function NutrientModifyPage() {
         toast.success("개인 메뉴로 등록했어요");
         const detailPageState: MealDetailLocationState | undefined =
           menuId !== null && menuId !== createdMenuId ? { replaceMenuId: menuId } : undefined;
-        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey), {
+        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey, searchKeyword), {
           replace: true,
           state: detailPageState,
         });

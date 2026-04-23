@@ -2,10 +2,12 @@ import { Search } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
-  type RegisterManualMenuPayload,
-} from "@/features/nutrient-entry/api/nutrient";
+  getMealType,
+  getSafeDateKey,
+  getSafeKeyword,
+} from "@/features/meal-record/utils/mealRecord.queryParams";
+import { type RegisterManualMenuPayload } from "@/features/nutrient-entry/api/nutrient";
 import { NutrientDetailForm } from "@/features/nutrient-entry/components/NutrientDetailForm";
 import { useRegisterMenuMutation } from "@/features/nutrient-entry/hooks/mutations/useNutrientMutation";
 import {
@@ -16,6 +18,7 @@ import {
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealSearchPath, getPathWithMeal } from "@/router/pathHelpers";
 import type {
+  MealType,
   MenuNutrientFields,
   MenuUnit,
   RegisterMenuRequestDto,
@@ -28,6 +31,9 @@ import styles from "./styles/NutrientRegisterPage.module.css";
 
 type NutrientRegisterLocationState = Partial<RegisterMenuRequestDto> & {
   brandName?: string;
+  dateKey?: string;
+  mealType?: MealType;
+  keyword?: string;
 };
 
 export default function NutrientRegisterPage() {
@@ -35,8 +41,9 @@ export default function NutrientRegisterPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const locationState = (location.state ?? {}) as NutrientRegisterLocationState;
-  const dateKey = getSafeDateKey(searchParams.get("date"));
-  const mealType = getMealType(searchParams.get("mealType"));
+  const dateKey = getSafeDateKey(searchParams.get("date") ?? locationState.dateKey ?? null);
+  const mealType = getMealType(searchParams.get("mealType") ?? locationState.mealType ?? null);
+  const searchKeyword = getSafeKeyword(searchParams.get("keyword") ?? locationState.keyword ?? null);
 
   const [formState, setFormState] = useState<Partial<RegisterMenuRequestDto>>(() => ({
     ...locationState,
@@ -68,7 +75,7 @@ export default function NutrientRegisterPage() {
     navigation(PATH.BRAND_SEARCH, {
       state: {
         ...formState,
-        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType),
+        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType, searchKeyword),
       },
     });
   };
@@ -106,7 +113,13 @@ export default function NutrientRegisterPage() {
 
     registerManualMenu(payload, {
       onSuccess: (savedMenuId) => {
-        const returnPath = getMealDetailPath(dateKey, mealType, savedMenuId, "MEAL_SEARCH");
+        const returnPath = getMealDetailPath(
+          dateKey,
+          mealType,
+          savedMenuId,
+          "MEAL_SEARCH",
+          searchKeyword,
+        );
         toast.success("메뉴가 등록되었어요");
         navigation(returnPath, { replace: true });
       },
@@ -117,7 +130,7 @@ export default function NutrientRegisterPage() {
   };
 
   const handleBack = () => {
-    navigation(getMealSearchPath(dateKey, mealType));
+    navigation(getMealSearchPath(dateKey, mealType, searchKeyword));
   };
 
   return (

@@ -29,7 +29,7 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
-import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
+import { getMealType, getSafeDateKey, getSafeKeyword } from "./utils/mealRecord.queryParams";
 
 type MealDetailLocationState = {
   replaceMenuId?: number;
@@ -45,6 +45,7 @@ export default function MealDetailPage() {
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const searchKeyword = getSafeKeyword(searchParams.get("keyword"));
   const rawPageKey = searchParams.get("pageKey");
   const pageKey: PageKey | null =
     rawPageKey === "MEAL_SEARCH" || rawPageKey === "MEAL_RECORD" ? rawPageKey : null;
@@ -204,8 +205,7 @@ export default function MealDetailPage() {
 
   const handleGoBack = () => {
     if (pageKey === "MEAL_SEARCH") {
-      // TODO 검색어까지 같이 넘겨주면 더 좋을 거 같음
-      navigate(getMealRecordAddSearchPath(dateKey, mealType));
+      navigate(getMealRecordAddSearchPath(dateKey, mealType, searchKeyword));
       return;
     }
 
@@ -237,6 +237,9 @@ export default function MealDetailPage() {
       menuId: String(menuToModify.id),
       pageKey: nextPageKey,
     });
+    if (searchKeyword.length > 0) {
+      modifyQueryParams.set("keyword", searchKeyword);
+    }
     const normalizedUnit = menuToModify.unit ?? meal.unit;
 
     const state: NutrientModifyLocationState = {
