@@ -3,6 +3,10 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
+  formatMenuDraftKey,
+  useMenuDraftUpsertPreviews,
+} from "@/features/meal-record/stores/menuDraft.store";
+import {
   getMealType,
   getSafeDateKey,
   getSafeMenuId,
@@ -68,6 +72,8 @@ export default function NutrientModifyPage() {
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
   const pageKey = getSafePageKey(searchParams.get("pageKey")) ?? "MEAL_RECORD";
+  const draftKey = formatMenuDraftKey(dateKey, mealType);
+  const upsertPreviews = useMenuDraftUpsertPreviews();
 
   const {
     data: fetchedMenu,
@@ -225,6 +231,36 @@ export default function NutrientModifyPage() {
         {
           onSuccess: () => {
             toast.success("영양 성분을 수정했어요");
+            const shouldBackToMealRecord =
+              locationState.source === "meal-record" && locationState.wasQueuedInDraft === true;
+
+            if (shouldBackToMealRecord) {
+              const unitQuantity =
+                typeof resolvedMenu?.unit_quantity === "string" &&
+                resolvedMenu.unit_quantity.trim().length > 0
+                  ? resolvedMenu.unit_quantity.trim()
+                  : `1회(${payload.weight}${payload.unit === MENU_UNIT.GRAM ? "g" : "ml"})`;
+
+              upsertPreviews({
+                key: draftKey,
+                previews: [
+                  {
+                    id: menuId,
+                    name: payload.name,
+                    brand: payload.brand,
+                    unit_quantity: unitQuantity,
+                    calories: payload.calories,
+                    weight: payload.weight,
+                    unit: payload.unit,
+                    data_source: MENU_DATA_SOURCE.PERSONAL,
+                  },
+                ],
+              });
+
+              navigate(getMealRecordPath(dateKey, mealType), { replace: true });
+              return;
+            }
+
             navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey), { replace: true });
           },
           onError: () => {

@@ -21,7 +21,14 @@ export function useModifyNutrientMutation(callbacks?: UseMutationCallback) {
 
   return useMutation({
     mutationFn: modifyNutrient,
-    onSuccess: async () => {
+    onSuccess: async (_response, variables) => {
+      await queryClient.cancelQueries({ queryKey: ["meal-detail", variables.id] });
+      queryClient.removeQueries({ queryKey: ["meal-detail", variables.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["meal-detail", variables.id],
+        refetchType: "active",
+      });
+
       await queryClient.cancelQueries({ queryKey: queryKeys.dayMeals.all });
       queryClient.removeQueries({ queryKey: queryKeys.dayMeals.all });
       await queryClient.invalidateQueries({

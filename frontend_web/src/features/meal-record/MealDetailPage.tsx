@@ -114,6 +114,29 @@ export default function MealDetailPage() {
   }, [menuId, selectedMenus]);
   const isAlreadyQueued = existingSelection !== null;
 
+  useEffect(() => {
+    // 이미 draft에 담긴 메뉴를 수정한 경우, "담기"를 다시 누르지 않아도 preview를 최신 데이터로 동기화한다.
+    if (!meal || menuId === null || !existingSelection) {
+      return;
+    }
+
+    upsertPreviews({
+      key: draftKey,
+      previews: [
+        {
+          id: meal.id,
+          name: meal.name,
+          brand: meal.brand,
+          unit_quantity: meal.unit_quantity,
+          calories: meal.calories,
+          weight: meal.weight ?? undefined,
+          unit: meal.unit,
+          data_source: meal.data_source,
+        },
+      ],
+    });
+  }, [draftKey, existingSelection, meal, menuId, upsertPreviews]);
+
   const handleAddMenu = () => {
     if (!meal || !selection) {
       toast.warning("입력값을 다시 확인해주세요");
@@ -195,14 +218,18 @@ export default function MealDetailPage() {
   };
 
   const handleModify = () => {
-    moveToNutrientModify(meal, existingSelection?.quantity ?? 1);
+    moveToNutrientModify(meal, existingSelection?.quantity ?? 1, existingSelection !== null);
   };
 
   const handleEditAndAdd = () => {
-    moveToNutrientModify(selection?.menu ?? meal, selection?.quantity ?? 1);
+    moveToNutrientModify(selection?.menu ?? meal, selection?.quantity ?? 1, false);
   };
 
-  const moveToNutrientModify = (menuToModify: MealMenuItem, quantity: number) => {
+  const moveToNutrientModify = (
+    menuToModify: MealMenuItem,
+    quantity: number,
+    wasQueuedInDraft: boolean,
+  ) => {
     const nextPageKey = pageKey ?? "MEAL_RECORD";
     const modifyQueryParams = new URLSearchParams({
       date: dateKey,
@@ -221,6 +248,7 @@ export default function MealDetailPage() {
       dateKey,
       mealType,
       pageKey: nextPageKey,
+      wasQueuedInDraft,
       brandName: menuToModify.brand ?? meal.brand,
       foodName: menuToModify.name ?? meal.name,
       servingUnit: normalizedUnit === MENU_UNIT.MILLILITER ? "ml" : "g",
