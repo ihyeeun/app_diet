@@ -2,7 +2,11 @@ import { Search } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import {
+  getMealType,
+  getSafeDateKey,
+  getSafeKeyword,
+} from "@/features/meal-record/utils/mealRecord.queryParams";
 import { PATH } from "@/router/path";
 import { getMealSearchPath } from "@/router/pathHelpers";
 import { getPathWithMeal } from "@/router/pathHelpers";
@@ -17,6 +21,7 @@ type NutrientAddLocationState = Partial<RegisterMenuRequestDto> & {
   mealType?: MealType;
   brandName?: string;
   returnPath?: string;
+  keyword?: string;
 };
 
 export default function NutrientAddPage() {
@@ -27,6 +32,7 @@ export default function NutrientAddPage() {
 
   const dateKey = getSafeDateKey(searchParams.get("date") ?? locationState.dateKey ?? null);
   const mealType = getMealType(searchParams.get("mealType") ?? locationState.mealType ?? null);
+  const searchKeyword = getSafeKeyword(searchParams.get("keyword") ?? locationState.keyword ?? null);
   const [foodName, setFoodName] = useState(locationState.name ?? "");
   const brandName = (locationState.brand ?? locationState.brandName ?? "").trim();
 
@@ -42,7 +48,8 @@ export default function NutrientAddPage() {
         brand: brandName,
         dateKey,
         mealType,
-        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType),
+        keyword: searchKeyword,
+        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType, searchKeyword),
       },
     });
   };
@@ -63,12 +70,15 @@ export default function NutrientAddPage() {
     if (brandName.trim()) {
       params.set("brand", brandName.trim());
     }
+    if (searchKeyword.length > 0) {
+      params.set("keyword", searchKeyword);
+    }
 
     navigation(PATH.NUTRIENT_CAMERA + "?" + params.toString());
   };
 
   const handleBack = () => {
-    navigation(getMealSearchPath(dateKey, mealType));
+    navigation(getMealSearchPath(dateKey, mealType, searchKeyword));
   };
 
   return (

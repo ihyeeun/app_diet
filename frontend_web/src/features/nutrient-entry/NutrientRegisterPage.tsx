@@ -2,10 +2,12 @@ import { Search } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import {
-  type RegisterManualMenuPayload,
-} from "@/features/nutrient-entry/api/nutrient";
+  getMealType,
+  getSafeDateKey,
+  getSafeKeyword,
+} from "@/features/meal-record/utils/mealRecord.queryParams";
+import { type RegisterManualMenuPayload } from "@/features/nutrient-entry/api/nutrient";
 import { NutrientDetailForm } from "@/features/nutrient-entry/components/NutrientDetailForm";
 import { useRegisterMenuMutation } from "@/features/nutrient-entry/hooks/mutations/useNutrientMutation";
 import {
@@ -16,6 +18,7 @@ import {
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealSearchPath, getPathWithMeal } from "@/router/pathHelpers";
 import type {
+  MealType,
   MenuNutrientFields,
   MenuUnit,
   RegisterMenuRequestDto,
@@ -28,6 +31,10 @@ import styles from "./styles/NutrientRegisterPage.module.css";
 
 type NutrientRegisterLocationState = Partial<RegisterMenuRequestDto> & {
   brandName?: string;
+  dateKey?: string;
+  mealType?: MealType;
+  keyword?: string;
+  entrySource?: "camera" | "manual";
 };
 
 export default function NutrientRegisterPage() {
@@ -35,8 +42,11 @@ export default function NutrientRegisterPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const locationState = (location.state ?? {}) as NutrientRegisterLocationState;
-  const dateKey = getSafeDateKey(searchParams.get("date"));
-  const mealType = getMealType(searchParams.get("mealType"));
+  const dateKey = getSafeDateKey(searchParams.get("date") ?? locationState.dateKey ?? null);
+  const mealType = getMealType(searchParams.get("mealType") ?? locationState.mealType ?? null);
+  const searchKeyword = getSafeKeyword(
+    searchParams.get("keyword") ?? locationState.keyword ?? null,
+  );
 
   const [formState, setFormState] = useState<Partial<RegisterMenuRequestDto>>(() => ({
     ...locationState,
@@ -44,6 +54,7 @@ export default function NutrientRegisterPage() {
     brand: (locationState.brand ?? locationState.brandName ?? "").trim(),
   }));
   const { mutate: registerManualMenu, isPending: isSubmitting } = useRegisterMenuMutation();
+  const isCameraEntry = locationState.entrySource === "camera";
 
   const brandName = (formState.brand ?? "").trim();
   const nutrientForm = buildNutrientFormFields(formState);
@@ -68,7 +79,7 @@ export default function NutrientRegisterPage() {
     navigation(PATH.BRAND_SEARCH, {
       state: {
         ...formState,
-        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType),
+        returnPath: getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType, searchKeyword),
       },
     });
   };
@@ -76,11 +87,16 @@ export default function NutrientRegisterPage() {
   const isSubmitDisabled =
     isSubmitting ||
     (formState.name ?? "").trim().length === 0 ||
-    (formState.weight ?? 0) <= 0 ||
-    (formState.calories ?? 0) <= 0;
+    formState.weight === undefined ||
+    formState.calories === undefined;
 
   const handleSubmit = () => {
     if (isSubmitDisabled) {
+      return;
+    }
+
+    if (formState.weight === 0) {
+      toast.warning("중량을 다시 확인해주세요");
       return;
     }
 
@@ -106,7 +122,13 @@ export default function NutrientRegisterPage() {
 
     registerManualMenu(payload, {
       onSuccess: (savedMenuId) => {
-        const returnPath = getMealDetailPath(dateKey, mealType, savedMenuId, "MEAL_SEARCH");
+        const returnPath = getMealDetailPath(
+          dateKey,
+          mealType,
+          savedMenuId,
+          "MEAL_SEARCH",
+          searchKeyword,
+        );
         toast.success("메뉴가 등록되었어요");
         navigation(returnPath, { replace: true });
       },
@@ -117,7 +139,7 @@ export default function NutrientRegisterPage() {
   };
 
   const handleBack = () => {
-    navigation(getMealSearchPath(dateKey, mealType));
+    navigation(getMealSearchPath(dateKey, mealType, searchKeyword));
   };
 
   return (
@@ -127,46 +149,52 @@ export default function NutrientRegisterPage() {
       <main className={styles.main}>
         <div className={styles.content}>
           <section className={styles.topSection}>
-            <div className={styles.fieldWrap}>
-              <div className={styles.labelRow}>
-                <p className={`typo-title3 ${styles.labelText}`}>음식명</p>
-                <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
-              </div>
+            {isCameraEntry ? (
+              <p className={`typo-title3 ${styles.recognizedInfoText}`}>사진에서 인식한 영양정보</p>
+            ) : (
+              <>
+                <div className={styles.fieldWrap}>
+                  <div className={styles.labelRow}>
+                    <p className={`typo-title3 ${styles.labelText}`}>음식명</p>
+                    <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
+                  </div>
 
-              <input
-                className={`typo-body3 ${styles.textInput}`}
-                type="text"
-                value={formState.name ?? ""}
-                onChange={handleFoodNameChange}
-                placeholder="음식명 입력"
-                aria-label="음식명 입력"
-              />
-            </div>
+                  <input
+                    className={`typo-body3 ${styles.textInput}`}
+                    type="text"
+                    value={formState.name ?? ""}
+                    onChange={handleFoodNameChange}
+                    placeholder="음식명 입력"
+                    aria-label="음식명 입력"
+                  />
+                </div>
 
-            <div className={styles.fieldWrap}>
-              <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>
-              <button
-                type="button"
-                className={styles.brandButton}
-                onClick={handleOpenBrandSearch}
-                aria-label="브랜드명 검색 열기"
-              >
-                <span
-                  className={`typo-body3 ${brandName ? styles.brandValue : styles.brandPlaceholder}`}
-                >
-                  {brandName || "브랜드명 입력"}
-                </span>
-                <Search size={20} className={styles.brandSearchIcon} />
-              </button>
-            </div>
+                <div className={styles.fieldWrap}>
+                  <p className={`typo-title3 ${styles.labelText}`}>브랜드명</p>
+                  <button
+                    type="button"
+                    className={styles.brandButton}
+                    onClick={handleOpenBrandSearch}
+                    aria-label="브랜드명 검색 열기"
+                  >
+                    <span
+                      className={`typo-body3 ${brandName ? styles.brandValue : styles.brandPlaceholder}`}
+                    >
+                      {brandName || "브랜드명 입력"}
+                    </span>
+                    <Search size={20} className={styles.brandSearchIcon} />
+                  </button>
+                </div>
+
+                <div className={styles.nutrientHeader}>
+                  <p className={`typo-title3 ${styles.labelText}`}>영양정보</p>
+                </div>
+              </>
+            )}
+            <div className="divider" />
           </section>
 
           <section className={styles.nutrientSection}>
-            <div className={styles.nutrientHeader}>
-              <p className={`typo-title3 ${styles.labelText}`}>영양정보</p>
-              <div className="divider dividerMargin20" />
-            </div>
-
             <section className={styles.nutrientFormWrap}>
               <NutrientDetailForm
                 totalWeight={formState.weight}

@@ -49,14 +49,33 @@ export default function NutrientCameraPage() {
       setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
       setIsUploading(true);
       const imageData = await uploadImage(capturedImage);
+      const dateKey = searchParams.get("date");
+      const mealType = searchParams.get("mealType");
+      const keyword = searchParams.get("keyword");
+      const registerParams = new URLSearchParams();
 
-      navigate(PATH.NUTRIENT_ADD_REGISTER, {
+      if (dateKey) {
+        registerParams.set("date", dateKey);
+      }
+      if (mealType) {
+        registerParams.set("mealType", mealType);
+      }
+      if (keyword && keyword.trim().length > 0) {
+        registerParams.set("keyword", keyword.trim());
+      }
+      const registerPath = registerParams.toString().length
+        ? `${PATH.NUTRIENT_ADD_REGISTER}?${registerParams.toString()}`
+        : PATH.NUTRIENT_ADD_REGISTER;
+
+      navigate(registerPath, {
         state: {
           ...imageData, // unit, weight, calories, carbs...
           name: searchParams.get("name") ?? "",
           brand: searchParams.get("brand") ?? "",
-          dateKey: searchParams.get("date") ?? undefined,
-          mealType: searchParams.get("mealType") ?? undefined,
+          entrySource: "camera" as const,
+          dateKey: dateKey ?? undefined,
+          mealType: mealType ?? undefined,
+          keyword: keyword ?? undefined,
         },
       });
 

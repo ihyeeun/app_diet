@@ -128,7 +128,7 @@ export function useChatMealRecordActions() {
 
   const fetchDayMeals = async (date: string) => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.dayMeals(date),
+      queryKey: queryKeys.dayMeals.byDate(date),
       queryFn: () => getDayMeals({ date }),
     });
   };

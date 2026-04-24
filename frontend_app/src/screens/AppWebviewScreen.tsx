@@ -348,10 +348,16 @@ export default function AppWebViewScreen({
       if (!webHref) return;
 
       const tabFromUrl = resolveTabFromUrl(url, webAppOrigin);
-      if (tabFromUrl !== null && tabFromUrl !== currentTab) return;
+      latestWebPathRef.current = webHref;
+
+      if (tabFromUrl !== null) {
+        // Keep each tab's latest root URL in sync even when web navigation
+        // moves across tabs before native tab state catches up.
+        lastKnownTabWebHrefByTabRef.current.set(tabFromUrl, webHref);
+        return;
+      }
 
       lastKnownTabWebHrefByTabRef.current.set(currentTab, webHref);
-      latestWebPathRef.current = webHref;
     },
     [currentTab, isTabWebView, webAppOrigin],
   );

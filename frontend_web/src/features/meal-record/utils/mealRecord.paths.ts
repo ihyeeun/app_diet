@@ -8,6 +8,7 @@ function buildMealRecordQuery(
   mealType: MealType,
   menuId?: number,
   pageKey?: PageKey,
+  keyword?: string,
 ) {
   const params = new URLSearchParams({
     date: dateKey,
@@ -20,6 +21,9 @@ function buildMealRecordQuery(
   if (pageKey !== undefined) {
     params.set("pageKey", pageKey);
   }
+  if (typeof keyword === "string" && keyword.trim().length > 0) {
+    params.set("keyword", keyword.trim());
+  }
 
   return params.toString();
 }
@@ -28,6 +32,12 @@ export function getMealRecordPath(dateKey: string, mealType: MealType) {
   return `${PATH.MEAL_RECORD}?${buildMealRecordQuery(dateKey, mealType)}`;
 }
 
-export function getMealRecordAddSearchPath(dateKey: string, mealType: MealType) {
-  return `${PATH.MEAL_RECORD_ADD_SEARCH}?${buildMealRecordQuery(dateKey, mealType)}`;
+export function getMealRecordAddSearchPath(dateKey: string, mealType: MealType, keyword?: string) {
+  return `${PATH.MEAL_RECORD_ADD_SEARCH}?${buildMealRecordQuery(
+    dateKey,
+    mealType,
+    undefined,
+    undefined,
+    keyword,
+  )}`;
 }

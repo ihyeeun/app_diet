@@ -6,7 +6,7 @@ import { isValidDateKey } from "@/shared/utils/dateFormat";
 
 export function useDayMealsQuery(date: string) {
   return useQuery({
-    queryKey: queryKeys.dayMeals(date),
+    queryKey: queryKeys.dayMeals.byDate(date),
     queryFn: () => getDayMeals({ date }),
     enabled: isValidDateKey(date),
     staleTime: Infinity,

@@ -68,7 +68,7 @@ export function useWeeklyRecordQuery({
 
   const dayMealQueries = useQueries({
     queries: dateKeys.map((dateKey) => ({
-      queryKey: homeQueryKeys.dayMeals(dateKey),
+      queryKey: homeQueryKeys.dayMeals.byDate(dateKey),
       queryFn: () => getDayMeals({ date: dateKey }),
       staleTime: Infinity,
     })),

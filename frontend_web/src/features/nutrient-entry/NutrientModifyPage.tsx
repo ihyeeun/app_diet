@@ -3,8 +3,13 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
+  formatMenuDraftKey,
+  useMenuDraftUpsertPreviews,
+} from "@/features/meal-record/stores/menuDraft.store";
+import {
   getMealType,
   getSafeDateKey,
+  getSafeKeyword,
   getSafeMenuId,
   getSafePageKey,
 } from "@/features/meal-record/utils/mealRecord.queryParams";
@@ -40,6 +45,10 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "./styles/NutrientModifyPage.module.css";
 
+type MealDetailLocationState = {
+  replaceMenuId?: number;
+};
+
 function buildInitialFormState(
   menu?: Partial<MealMenuItem> | null,
 ): Partial<RegisterMenuRequestDto> {
@@ -63,7 +72,10 @@ export default function NutrientModifyPage() {
   const menuId = getSafeMenuId(searchParams.get("menuId"));
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const searchKeyword = getSafeKeyword(searchParams.get("keyword"));
   const pageKey = getSafePageKey(searchParams.get("pageKey")) ?? "MEAL_RECORD";
+  const draftKey = formatMenuDraftKey(dateKey, mealType);
+  const upsertPreviews = useMenuDraftUpsertPreviews();
 
   const {
     data: fetchedMenu,
@@ -149,8 +161,8 @@ export default function NutrientModifyPage() {
     menuId === null ||
     !hasFormChanges ||
     foodName.length === 0 ||
-    (formState.weight ?? 0) <= 0 ||
-    (formState.calories ?? 0) <= 0;
+    formState.weight === undefined ||
+    formState.calories === undefined;
 
   const handleFieldChange = (key: keyof MenuNutrientFields, nextValue: string) => {
     const parsedValue = nextValue === "" ? undefined : Number(nextValue);
@@ -163,12 +175,12 @@ export default function NutrientModifyPage() {
 
   const handleBack = () => {
     if (menuId !== null) {
-      navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey));
+      navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey, searchKeyword));
       return;
     }
 
     if (pageKey === "MEAL_SEARCH") {
-      navigate(getMealSearchPath(dateKey, mealType));
+      navigate(getMealSearchPath(dateKey, mealType, searchKeyword));
       return;
     }
 
@@ -190,6 +202,11 @@ export default function NutrientModifyPage() {
       return;
     }
 
+    if (formState.weight === 0 || formState.weight === undefined) {
+      toast.warning("중량을 다시 확인해주세요");
+      return;
+    }
+
     if (hasChildNutrientOverflow(formState)) {
       toast.warning("하위 항목 합이 상위 항목을 초과했어요");
       return;
@@ -199,7 +216,7 @@ export default function NutrientModifyPage() {
       name: foodName,
       brand: brandName,
       unit,
-      weight: formState.weight ?? 0,
+      weight: formState.weight,
       calories: formState.calories ?? 0,
       ...buildNullableNutrientFields(formState),
     };
@@ -216,7 +233,39 @@ export default function NutrientModifyPage() {
         {
           onSuccess: () => {
             toast.success("영양 성분을 수정했어요");
-            navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey), { replace: true });
+            const shouldBackToMealRecord =
+              locationState.source === "meal-record" && locationState.wasQueuedInDraft === true;
+
+            if (shouldBackToMealRecord) {
+              const unitQuantity =
+                typeof resolvedMenu?.unit_quantity === "string" &&
+                resolvedMenu.unit_quantity.trim().length > 0
+                  ? resolvedMenu.unit_quantity.trim()
+                  : `1회(${payload.weight}${payload.unit === MENU_UNIT.GRAM ? "g" : "ml"})`;
+
+              upsertPreviews({
+                key: draftKey,
+                previews: [
+                  {
+                    id: menuId,
+                    name: payload.name,
+                    brand: payload.brand,
+                    unit_quantity: unitQuantity,
+                    calories: payload.calories,
+                    weight: payload.weight,
+                    unit: payload.unit,
+                    data_source: MENU_DATA_SOURCE.PERSONAL,
+                  },
+                ],
+              });
+
+              navigate(getMealRecordPath(dateKey, mealType), { replace: true });
+              return;
+            }
+
+            navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey, searchKeyword), {
+              replace: true,
+            });
           },
           onError: () => {
             toast.warning("영양 성분 수정에 실패했어요");
@@ -235,7 +284,12 @@ export default function NutrientModifyPage() {
         }
 
         toast.success("개인 메뉴로 등록했어요");
-        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey), { replace: true });
+        const detailPageState: MealDetailLocationState | undefined =
+          menuId !== null && menuId !== createdMenuId ? { replaceMenuId: menuId } : undefined;
+        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey, searchKeyword), {
+          replace: true,
+          state: detailPageState,
+        });
       },
       onError: () => {
         toast.warning("공용 데이터를 개인 데이터 등록하는데 실패했어요");

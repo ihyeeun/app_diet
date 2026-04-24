@@ -22,7 +22,11 @@
 .topSection {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 20px;
+}
+
+.recognizedInfoText {
+  color: var(--text-normal);
 }
 
 .fieldWrap {

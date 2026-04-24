@@ -10,15 +10,19 @@ import {
   useMenuDraftSelectedCount,
   useMenuDraftStore,
   useMenuDraftUpsert,
+  useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
-import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
+import {
+  getMealType,
+  getSafeDateKey,
+  getSafeKeyword,
+} from "@/features/meal-record/utils/mealRecord.queryParams";
 import RegisterBottomSheet from "@/features/search/components/RegisterBottomSheet";
-import { useTodayMealRecordRegisterMutation } from "@/features/search/menu-record/hooks/mutations/useTodayMealRecordMutation";
 import { useMealSearchMutation } from "@/features/search/menu-record/hooks/useMealSearchMutation";
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealRecordPath } from "@/router/pathHelpers";
 import { getPathWithMeal } from "@/router/pathHelpers";
-import { type MealTime, type RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import { type MenuSimpleResponseDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
@@ -31,14 +35,15 @@ export default function MealSearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [submittedKeyword, setSubmittedKeyword] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const initialKeyword = getSafeKeyword(searchParams.get("keyword"));
+  const [submittedKeyword, setSubmittedKeyword] = useState(initialKeyword);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const upsertMenu = useMenuDraftUpsert();
+  const upsertPreviews = useMenuDraftUpsertPreviews();
   const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
@@ -51,7 +56,6 @@ export default function MealSearchPage() {
   );
 
   const { mutate: mealSearchMutation, data: searchResults } = useMealSearchMutation();
-  const { mutate: mealRegister } = useTodayMealRecordRegisterMutation();
 
   useEffect(() => {
     if (hasDraft) {
@@ -72,7 +76,9 @@ export default function MealSearchPage() {
     };
   }, []);
 
-  const handleToggleMenuSelection = (menuId: number) => {
+  const handleToggleMenuSelection = (menu: MenuSimpleResponseDto) => {
+    const menuId = menu.id;
+
     if (selectedMenuIdSet.has(menuId)) {
       removeMenu({ key: draftKey, id: menuId });
       return;
@@ -88,34 +94,32 @@ export default function MealSearchPage() {
       id: menuId,
       quantity: 1,
     });
+
+    upsertPreviews({
+      key: draftKey,
+      previews: [
+        {
+          id: menu.id,
+          name: menu.name,
+          brand: menu.brand,
+          unit_quantity: menu.unit_quantity,
+          calories: menu.calories,
+          weight: menu.weight,
+          unit: menu.unit,
+          data_source: menu.data_source,
+        },
+      ],
+    });
   };
 
   const handleMenuDetailPageOpen = (menuId: number) => {
-    navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_SEARCH"));
+    navigate(getMealDetailPath(dateKey, mealType, menuId, "MEAL_SEARCH", submittedKeyword));
   };
 
   const handleApplySelectedMenus = () => {
     if (selectedMenus.length === 0) return;
 
-    const requestBody: RegisterMealRequestDto = {
-      date: dateKey,
-      time: Number(mealType) as MealTime,
-      menu_ids: selectedMenus.map((menu) => menu.id),
-      menu_quantities: selectedMenus.map((menu) => menu.quantity),
-    };
-
-    if (typeof draft?.image === "string" && draft.image.trim().length > 0) {
-      requestBody.image = draft.image;
-    }
-
-    mealRegister(requestBody, {
-      onSuccess: () => {
-        navigate(getMealRecordPath(dateKey, mealType));
-      },
-      onError: () => {
-        toast.warning("메뉴 등록 실패");
-      },
-    });
+    navigate(getMealRecordPath(dateKey, mealType));
   };
 
   const handleClearKeyword = () => {
@@ -129,13 +133,13 @@ export default function MealSearchPage() {
   };
   const handleNavigateNutrientAdd = () => {
     setIsDirectInputSheetOpen(false);
-    navigate(getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType));
+    navigate(getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType, submittedKeyword));
   };
 
   const handleNavigateNutrientCamera = () => {
     setIsDirectInputSheetOpen(false);
 
-    navigate(getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType));
+    navigate(getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType, submittedKeyword));
   };
 
   const handleCameraClick = () => {
@@ -190,10 +194,12 @@ export default function MealSearchPage() {
                         unit_quantity={menu.unit_quantity}
                         brand={menu.brand}
                         data_source={menu.data_source}
+                        weight={menu.weight}
+                        unit={menu.unit}
                         icon={isSelected ? "check" : "add"}
                         state={isSelected ? "select" : "default"}
                         onClick={() => handleMenuDetailPageOpen(menu.id)}
-                        onIconClick={() => handleToggleMenuSelection(menu.id)}
+                        onIconClick={() => handleToggleMenuSelection(menu)}
                       />
                     );
                   })}
@@ -243,7 +249,8 @@ export default function MealSearchPage() {
                     </div>
                   </section>
 
-                  {(searchResults.menu_list.length > 0 || searchResults.brand_list.length > 0) && (
+                  {(searchResults.menu_list.length >= 0 ||
+                    searchResults.brand_list.length >= 0) && (
                     <section className={styles.similarSection}>
                       <p className={`${styles.similarSectionTitle} typo-title3`}>
                         비슷한 메뉴는 어때요?
@@ -259,12 +266,14 @@ export default function MealSearchPage() {
                               name={menu.name}
                               calories={menu.calories}
                               unit_quantity={menu.unit_quantity}
+                              weight={menu.weight}
+                              unit={menu.unit}
                               brand={menu.brand}
                               data_source={menu.data_source}
                               icon={isSelected ? "check" : "add"}
                               state={isSelected ? "select" : "default"}
                               onClick={() => handleMenuDetailPageOpen(menu.id)}
-                              onIconClick={() => handleToggleMenuSelection(menu.id)}
+                              onIconClick={() => handleToggleMenuSelection(menu)}
                             />
                           );
                         })}

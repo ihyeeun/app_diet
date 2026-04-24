@@ -1,7 +1,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { EllipsisVertical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   MealMenuNutrientDetail,
@@ -13,8 +13,9 @@ import {
   formatMenuDraftKey,
   useMenuDraftInit,
   useMenuDraftMenus,
-  useMenuDraftSelectedCount,
+  useMenuDraftRemove,
   useMenuDraftUpsert,
+  useMenuDraftUpsertPreviews,
 } from "@/features/meal-record/stores/menuDraft.store";
 import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
 import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
@@ -28,10 +29,15 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
-import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
+import { getMealType, getSafeDateKey, getSafeKeyword } from "./utils/mealRecord.queryParams";
+
+type MealDetailLocationState = {
+  replaceMenuId?: number;
+};
 
 export default function MealDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selection, setSelection] = useState<MealMenuNutrientSelection | null>(null);
@@ -39,6 +45,7 @@ export default function MealDetailPage() {
 
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
+  const searchKeyword = getSafeKeyword(searchParams.get("keyword"));
   const rawPageKey = searchParams.get("pageKey");
   const pageKey: PageKey | null =
     rawPageKey === "MEAL_SEARCH" || rawPageKey === "MEAL_RECORD" ? rawPageKey : null;
@@ -53,8 +60,17 @@ export default function MealDetailPage() {
 
   const initDraft = useMenuDraftInit();
   const upsertMenu = useMenuDraftUpsert();
+  const upsertPreviews = useMenuDraftUpsertPreviews();
+  const removeMenu = useMenuDraftRemove();
   const selectedMenus = useMenuDraftMenus(dateKey, mealType);
-  const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
+  const replaceMenuIdCandidate = (location.state as MealDetailLocationState | null)?.replaceMenuId;
+  const replaceMenuId =
+    typeof replaceMenuIdCandidate === "number" &&
+    Number.isInteger(replaceMenuIdCandidate) &&
+    replaceMenuIdCandidate > 0 &&
+    replaceMenuIdCandidate !== menuId
+      ? replaceMenuIdCandidate
+      : null;
 
   const { data: meal, isPending, isError } = useMealDetatilQuery(menuId);
   const { mutate: deleteMealMutation, isPending: isDeletePending } = useMealDeleteMutation({
@@ -99,21 +115,79 @@ export default function MealDetailPage() {
   }, [menuId, selectedMenus]);
   const isAlreadyQueued = existingSelection !== null;
 
+  useEffect(() => {
+    // 이미 draft에 담긴 메뉴를 수정한 경우, "담기"를 다시 누르지 않아도 preview를 최신 데이터로 동기화한다.
+    if (!meal || menuId === null || !existingSelection) {
+      return;
+    }
+
+    upsertPreviews({
+      key: draftKey,
+      previews: [
+        {
+          id: meal.id,
+          name: meal.name,
+          brand: meal.brand,
+          unit_quantity: meal.unit_quantity,
+          calories: meal.calories,
+          weight: meal.weight ?? undefined,
+          unit: meal.unit,
+          data_source: meal.data_source,
+        },
+      ],
+    });
+  }, [draftKey, existingSelection, meal, menuId, upsertPreviews]);
+
   const handleAddMenu = () => {
     if (!meal || !selection) {
       toast.warning("입력값을 다시 확인해주세요");
       return;
     }
 
-    if (!isAlreadyQueued && selectedCount + 1 > MAX_MEAL_RECORD_MENUS) {
+    const nextMenuId = selection.menu.id;
+    const shouldReplaceMenu =
+      replaceMenuId !== null &&
+      replaceMenuId !== nextMenuId &&
+      selectedMenus.some((item) => item.id === replaceMenuId);
+
+    const nextSelectedMenuIds = new Set(selectedMenus.map((item) => item.id));
+    if (shouldReplaceMenu) {
+      nextSelectedMenuIds.delete(replaceMenuId);
+    }
+    nextSelectedMenuIds.add(nextMenuId);
+
+    if (nextSelectedMenuIds.size > MAX_MEAL_RECORD_MENUS) {
       toast.warning("최대 100개까지 기록할 수 있어요");
       return;
     }
 
+    if (shouldReplaceMenu) {
+      removeMenu({ key: draftKey, id: replaceMenuId });
+    }
+
     upsertMenu({
       key: draftKey,
-      id: selection.menu.id,
+      id: nextMenuId,
       quantity: selection.quantity,
+    });
+
+    // MealRecordPage는 현재 식단 목록에 없는 id를 렌더링할 때 draft preview를 사용한다.
+    // 새로 생성된 개인 메뉴(id 변경)는 summary 목록에 아직 없으므로 preview를 함께 저장해야 즉시 보인다.
+    const previewMenu = selection.menu.id === meal.id ? meal : selection.menu;
+    upsertPreviews({
+      key: draftKey,
+      previews: [
+        {
+          id: nextMenuId,
+          name: previewMenu.name,
+          brand: previewMenu.brand,
+          unit_quantity: previewMenu.unit_quantity,
+          calories: previewMenu.calories,
+          weight: previewMenu.weight ?? undefined,
+          unit: previewMenu.unit,
+          data_source: previewMenu.data_source,
+        },
+      ],
     });
 
     handleGoBack();
@@ -131,8 +205,7 @@ export default function MealDetailPage() {
 
   const handleGoBack = () => {
     if (pageKey === "MEAL_SEARCH") {
-      // TODO 검색어까지 같이 넘겨주면 더 좋을 거 같음
-      navigate(getMealRecordAddSearchPath(dateKey, mealType));
+      navigate(getMealRecordAddSearchPath(dateKey, mealType, searchKeyword));
       return;
     }
 
@@ -145,14 +218,18 @@ export default function MealDetailPage() {
   };
 
   const handleModify = () => {
-    moveToNutrientModify(meal, existingSelection?.quantity ?? 1);
+    moveToNutrientModify(meal, existingSelection?.quantity ?? 1, existingSelection !== null);
   };
 
   const handleEditAndAdd = () => {
-    moveToNutrientModify(selection?.menu ?? meal, selection?.quantity ?? 1);
+    moveToNutrientModify(selection?.menu ?? meal, selection?.quantity ?? 1, false);
   };
 
-  const moveToNutrientModify = (menuToModify: MealMenuItem, quantity: number) => {
+  const moveToNutrientModify = (
+    menuToModify: MealMenuItem,
+    quantity: number,
+    wasQueuedInDraft: boolean,
+  ) => {
     const nextPageKey = pageKey ?? "MEAL_RECORD";
     const modifyQueryParams = new URLSearchParams({
       date: dateKey,
@@ -160,6 +237,9 @@ export default function MealDetailPage() {
       menuId: String(menuToModify.id),
       pageKey: nextPageKey,
     });
+    if (searchKeyword.length > 0) {
+      modifyQueryParams.set("keyword", searchKeyword);
+    }
     const normalizedUnit = menuToModify.unit ?? meal.unit;
 
     const state: NutrientModifyLocationState = {
@@ -171,6 +251,7 @@ export default function MealDetailPage() {
       dateKey,
       mealType,
       pageKey: nextPageKey,
+      wasQueuedInDraft,
       brandName: menuToModify.brand ?? meal.brand,
       foodName: menuToModify.name ?? meal.name,
       servingUnit: normalizedUnit === MENU_UNIT.MILLILITER ? "ml" : "g",

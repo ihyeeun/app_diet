@@ -34,3 +34,11 @@ export function getSafeMenuId(value: unknown): number | null {
 
   return parsed;
 }
+
+export function getSafeKeyword(value: string | null): string {
+  if (!value) {
+    return "";
+  }
+
+  return value.trim();
+}

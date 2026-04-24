@@ -35,7 +35,7 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
   const { isPending: isSummaryPending } = useDayMealsQuery(selectedDate);
 
   const queryClient = useQueryClient();
-  const dayMealSummary = queryClient.getQueryData<DayMealSummary>(queryKeys.dayMeals(selectedDate));
+  const dayMealSummary = queryClient.getQueryData<DayMealSummary>(queryKeys.dayMeals.byDate(selectedDate));
 
   const targets = useTargetsState();
   const setTargets = useSetTargets();

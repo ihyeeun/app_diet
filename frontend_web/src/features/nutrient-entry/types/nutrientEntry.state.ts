@@ -22,6 +22,7 @@ type NutrientModifyFlowLocationState = {
   dateKey?: string;
   mealType?: MealType;
   pageKey?: "MEAL_SEARCH" | "MEAL_RECORD";
+  wasQueuedInDraft?: boolean;
   foodName?: string;
   brandName?: string;
   servingUnit?: NutrientServingUnit;
