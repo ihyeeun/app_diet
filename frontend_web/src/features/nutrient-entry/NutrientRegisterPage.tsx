@@ -185,16 +185,16 @@ export default function NutrientRegisterPage() {
                     <Search size={20} className={styles.brandSearchIcon} />
                   </button>
                 </div>
+
+                <div className={styles.nutrientHeader}>
+                  <p className={`typo-title3 ${styles.labelText}`}>영양정보</p>
+                </div>
               </>
             )}
+            <div className="divider" />
           </section>
 
           <section className={styles.nutrientSection}>
-            <div className={styles.nutrientHeader}>
-              {isCameraEntry && <p className={`typo-title3 ${styles.labelText}`}>영양정보</p>}
-              <div className="divider dividerMargin20" />
-            </div>
-
             <section className={styles.nutrientFormWrap}>
               <NutrientDetailForm
                 totalWeight={formState.weight}
