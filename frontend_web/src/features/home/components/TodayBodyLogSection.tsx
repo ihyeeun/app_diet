@@ -66,7 +66,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
       <div className={style.todayContainer}>
         <TodayMetricCard
           title="체중"
-          value={profile?.weight ?? 0}
+          value={bodyLog?.weight ?? profile?.weight ?? 0}
           unit="kg"
           onClick={openWeightEditor}
         />
@@ -80,7 +80,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
 
       {editingMetric === "weight" ? (
         <WeightLogBottomSheet
-          initialWeight={profile?.weight ?? 0}
+          initialWeight={bodyLog?.weight ?? profile?.weight ?? 0}
           onClose={closeEditor}
           onSubmit={submitWeight}
         />
