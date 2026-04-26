@@ -308,14 +308,14 @@ function resolveServingValues(
 function getModeFallbackValue(
   serving: ParsedServingContext,
   mode: MealServingInputMode,
-  fallbackUnitCount: number,
+  fallbackConsumedWeight: number,
 ) {
-  if (mode === "unit") {
-    return fallbackUnitCount;
+  if (mode === "weight") {
+    return fallbackConsumedWeight;
   }
 
-  const scaleFactor = fallbackUnitCount / serving.baseUnitCount;
-  return roundDecimal(serving.baseWeight * scaleFactor, 1);
+  const scaleFactor = fallbackConsumedWeight / serving.baseWeight;
+  return roundDecimal(serving.baseUnitCount * scaleFactor, 1);
 }
 
 export function MealMenuNutrientDetail({
@@ -334,13 +334,28 @@ export function MealMenuNutrientDetail({
   const servingBaseWeight = servingContext.baseWeight;
   const servingWeightUnit = servingContext.weightUnit;
 
-  const fallbackQuantity = useMemo(() => {
-    return (
-      toPositiveNumber(initialQuantity) ??
-      toPositiveNumber(menu.serving_input_value) ??
-      DEFAULT_QUANTITY
-    );
-  }, [initialQuantity, menu.serving_input_value]);
+  const fallbackConsumedWeight = useMemo(() => {
+    const selectedConsumedWeight = toPositiveNumber(initialQuantity);
+    if (selectedConsumedWeight !== null) {
+      return selectedConsumedWeight;
+    }
+
+    const storedServingValue = toPositiveNumber(menu.serving_input_value);
+    if (storedServingValue !== null) {
+      if (menu.serving_input_mode === "weight") {
+        return storedServingValue;
+      }
+
+      return resolveServingValues(servingContext, "unit", storedServingValue).totalWeight;
+    }
+
+    return servingContext.baseWeight;
+  }, [
+    initialQuantity,
+    menu.serving_input_mode,
+    menu.serving_input_value,
+    servingContext,
+  ]);
 
   const menuInitialMode: MealServingInputMode =
     menu.serving_input_mode === "weight" ? "weight" : "unit";
@@ -349,7 +364,9 @@ export function MealMenuNutrientDetail({
 
   const [inputMode, setInputMode] = useState<MealServingInputMode>(fallbackMode);
   const [quantityInput, setQuantityInput] = useState<number | undefined>(() => {
-    return clampQuantityValue(getModeFallbackValue(servingContext, fallbackMode, fallbackQuantity));
+    return clampQuantityValue(
+      getModeFallbackValue(servingContext, fallbackMode, fallbackConsumedWeight),
+    );
   });
 
   useEffect(() => {
@@ -361,7 +378,7 @@ export function MealMenuNutrientDetail({
         weightUnit: servingWeightUnit,
       },
       fallbackMode,
-      fallbackQuantity,
+      fallbackConsumedWeight,
     );
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -369,7 +386,7 @@ export function MealMenuNutrientDetail({
     setQuantityInput(clampQuantityValue(nextFallbackValue));
   }, [
     fallbackMode,
-    fallbackQuantity,
+    fallbackConsumedWeight,
     menu.id,
     servingBaseUnitCount,
     servingBaseWeight,
@@ -434,7 +451,8 @@ export function MealMenuNutrientDetail({
       fat: resolvedFat,
       weight: scaledWeight ?? resolvedServing.totalWeight,
       serving_input_mode: inputMode,
-      serving_input_value: resolvedServing.unitCount,
+      serving_input_value:
+        inputMode === "weight" ? resolvedServing.totalWeight : resolvedServing.unitCount,
     };
   }, [inputMode, mainNutrientStates, menu, nutrientValues, resolvedServing]);
 
@@ -460,13 +478,13 @@ export function MealMenuNutrientDetail({
 
     onSelectionChange({
       menu: previewMenu,
-      quantity: resolvedServing.unitCount,
+      quantity: resolvedServing.totalWeight,
       mode: inputMode,
     });
   }, [inputMode, onSelectionChange, previewMenu, resolvedServing]);
 
   const getCurrentFallbackValue = (mode: MealServingInputMode) => {
-    return clampQuantityValue(getModeFallbackValue(servingContext, mode, fallbackQuantity));
+    return clampQuantityValue(getModeFallbackValue(servingContext, mode, fallbackConsumedWeight));
   };
 
   const handleModeChange = (nextMode: MealServingInputMode) => {

@@ -3,7 +3,10 @@ import { ChevronDown, Minus, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import styles from "@/features/chat/styles/ChatMealRecordBottomSheet.module.css";
-import { formatQuantityText } from "@/features/chat/utils/chatMeal";
+import {
+  formatQuantityText,
+  parseRecommendationServingContext,
+} from "@/features/chat/utils/chatMeal";
 import type { ChatRecommendItemResponseDto, MealType } from "@/shared/api/types/api.dto";
 import { MEAL_TYPE_OPTIONS } from "@/shared/api/types/api.dto";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
@@ -19,6 +22,7 @@ type ServingInputMode = "unit" | "weight";
 
 type ServingContext = {
   baseWeight: number;
+  baseUnitCount: number;
   unitLabel: string;
   weightUnit: ServingWeightUnit;
 };
@@ -48,9 +52,7 @@ type ChatMealRecordBottomSheetProps = {
 
 const QUANTITY_STEP = 0.5;
 const MIN_QUANTITY = 0.1;
-const UNIT_QUANTITY_PRECISION = 4;
-const WEIGHT_TOKEN_PATTERN = /([\d.]+)\s*(g|ml)\b/i;
-const PARENTHESIS_PATTERN = /\(([^)]+)\)/;
+const CONSUMED_WEIGHT_PRECISION = 4;
 
 function formatCalories(value: number) {
   return value.toLocaleString("ko-KR", {
@@ -63,64 +65,42 @@ function roundDecimal(value: number, digits = 1) {
   return Math.round(value * factor) / factor;
 }
 
-function toPositiveNumber(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return null;
-  }
-
-  return value;
-}
-
-function parseUnitLabel(amount: string) {
-  const beforeParenthesis = amount.split("(")[0]?.trim() ?? "";
-  const cleaned = beforeParenthesis.replace(/^[\d.\s]+/, "").trim();
-  return cleaned || "인분";
-}
-
 function parseServingContext(amount: string): ServingContext {
-  const unitLabel = parseUnitLabel(amount);
-  const parenthesisContent = amount.match(PARENTHESIS_PATTERN)?.[1] ?? "";
-  const weightToken =
-    parenthesisContent.match(WEIGHT_TOKEN_PATTERN) ?? amount.match(WEIGHT_TOKEN_PATTERN);
-  if (!weightToken) {
-    return {
-      baseWeight: 1,
-      unitLabel,
-      weightUnit: "g",
-    };
-  }
-
-  const parsedWeight = toPositiveNumber(Number(weightToken[1]));
-
-  return {
-    baseWeight: parsedWeight ?? 1,
-    unitLabel,
-    weightUnit: weightToken[2].toLowerCase() === "ml" ? "ml" : "g",
-  };
+  return parseRecommendationServingContext(amount);
 }
 
 function getDisplayValue(
-  unitQuantity: number,
+  consumedWeight: number,
   mode: ServingInputMode,
   servingContext: ServingContext,
 ) {
   if (mode === "unit") {
-    return roundDecimal(unitQuantity, 1);
+    return roundDecimal(
+      (consumedWeight / servingContext.baseWeight) * servingContext.baseUnitCount,
+      1,
+    );
   }
 
-  return roundDecimal(unitQuantity * servingContext.baseWeight, 1);
+  return roundDecimal(consumedWeight, 1);
 }
 
-function toUnitQuantity(
+function toConsumedWeight(
   displayValue: number,
   mode: ServingInputMode,
   servingContext: ServingContext,
 ) {
-  if (mode === "unit") {
-    return roundDecimal(displayValue, 1);
+  if (mode === "weight") {
+    return roundDecimal(displayValue, CONSUMED_WEIGHT_PRECISION);
   }
 
-  return roundDecimal(displayValue / servingContext.baseWeight, UNIT_QUANTITY_PRECISION);
+  return roundDecimal(
+    (displayValue / servingContext.baseUnitCount) * servingContext.baseWeight,
+    CONSUMED_WEIGHT_PRECISION,
+  );
+}
+
+function getScaledCalories(baseCalories: number, consumedWeight: number, servingContext: ServingContext) {
+  return baseCalories * (consumedWeight / servingContext.baseWeight);
 }
 
 export function ChatMealRecordBottomSheet({
@@ -163,7 +143,7 @@ export function ChatMealRecordBottomSheet({
   }, [modeByMenuId, recommendationById, selectedMenus]);
 
   const totalCalories = selectedItems.reduce((sum, item) => {
-    return sum + item.recommendation.calories * item.quantity;
+    return sum + getScaledCalories(item.recommendation.calories, item.quantity, item.servingContext);
   }, 0);
 
   return (
@@ -236,7 +216,7 @@ export function ChatMealRecordBottomSheet({
                         aria-label={`${item.recommendation.menu} 수량 감소`}
                         onClick={() => {
                           const nextDisplayValue = roundDecimal(displayValue - QUANTITY_STEP, 1);
-                          const nextUnitQuantity = toUnitQuantity(
+                          const nextConsumedWeight = toConsumedWeight(
                             nextDisplayValue,
                             item.mode,
                             item.servingContext,
@@ -247,7 +227,7 @@ export function ChatMealRecordBottomSheet({
                             return;
                           }
 
-                          onQuantityChange(item.id, nextUnitQuantity);
+                          onQuantityChange(item.id, nextConsumedWeight);
                         }}
                       >
                         <Minus size={24} />
@@ -263,13 +243,13 @@ export function ChatMealRecordBottomSheet({
                         aria-label={`${item.recommendation.menu} 수량 증가`}
                         onClick={() => {
                           const nextDisplayValue = roundDecimal(displayValue + QUANTITY_STEP, 1);
-                          const nextUnitQuantity = toUnitQuantity(
+                          const nextConsumedWeight = toConsumedWeight(
                             nextDisplayValue,
                             item.mode,
                             item.servingContext,
                           );
 
-                          onQuantityChange(item.id, nextUnitQuantity);
+                          onQuantityChange(item.id, nextConsumedWeight);
                         }}
                       >
                         <Plus size={24} />

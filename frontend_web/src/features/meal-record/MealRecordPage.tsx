@@ -36,6 +36,25 @@ import { parseMealRecordTransferState } from "@/shared/types/mealRecordTransfer"
 import styles from "./styles/MealRecordPage.module.css";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
+function toPositiveNumber(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function scaleCaloriesByWeight(calories: number, nextWeight: number, currentWeight: number) {
+  const safeCalories = toPositiveNumber(calories) ?? 0;
+  const safeNextWeight = toPositiveNumber(nextWeight);
+  const safeCurrentWeight = toPositiveNumber(currentWeight);
+  if (safeNextWeight === null || safeCurrentWeight === null) {
+    return safeCalories;
+  }
+
+  return safeCalories * (safeNextWeight / safeCurrentWeight);
+}
+
 function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
   return menus
     .map((menu) => [menu.id, menu.quantity] as const)
@@ -94,18 +113,6 @@ export default function MealRecordPage() {
     if (!currentMenus) return [];
     return currentMenus.menusByTime[mealType];
   })();
-
-  const normalizedCurrentMenuItems = useMemo(
-    () =>
-      currentMenuItems.map((menu) => ({
-        ...menu,
-        calories:
-          menu.quantity > 0 && Number.isFinite(menu.quantity)
-            ? menu.calories / menu.quantity
-            : menu.calories,
-      })),
-    [currentMenuItems],
-  );
 
   useEffect(() => {
     if (!currentMenus) {
@@ -174,12 +181,12 @@ export default function MealRecordPage() {
   ]);
 
   const menuById = useMemo(
-    () => new Map(normalizedCurrentMenuItems.map((menu) => [menu.id, menu])),
-    [normalizedCurrentMenuItems],
+    () => new Map(currentMenuItems.map((menu) => [menu.id, menu])),
+    [currentMenuItems],
   );
 
   const displayMenuItems = useMemo(() => {
-    const toDisplayItem = (menu: (typeof normalizedCurrentMenuItems)[number]): DisplayMenuItem => ({
+    const toDisplayItem = (menu: (typeof currentMenuItems)[number]): DisplayMenuItem => ({
       id: menu.id,
       name: menu.name,
       brand: menu.brand,
@@ -192,14 +199,20 @@ export default function MealRecordPage() {
     });
 
     if (!hasCurrentDraft) {
-      return normalizedCurrentMenuItems.map(toDisplayItem);
+      return currentMenuItems.map(toDisplayItem);
     }
 
     return draftMenus.reduce<DisplayMenuItem[]>((menus, draftMenu) => {
       const baseMenu = menuById.get(draftMenu.id);
       if (baseMenu) {
+        const scaledCalories = scaleCaloriesByWeight(
+          baseMenu.calories,
+          draftMenu.quantity,
+          baseMenu.quantity,
+        );
         menus.push({
           ...toDisplayItem(baseMenu),
+          calories: scaledCalories,
           quantity: draftMenu.quantity,
         });
         return menus;
@@ -223,7 +236,7 @@ export default function MealRecordPage() {
       });
       return menus;
     }, []);
-  }, [draftMenus, draftPreviewsById, hasCurrentDraft, menuById, normalizedCurrentMenuItems]);
+  }, [currentMenuItems, draftMenus, draftPreviewsById, hasCurrentDraft, menuById]);
 
   const changedRequests = useMemo(() => {
     if (!currentMenus) {
@@ -267,7 +280,7 @@ export default function MealRecordPage() {
 
   const totalCalories = useMemo(() => {
     return displayMenuItems.reduce((sum, menu) => {
-      return sum + menu.calories * menu.quantity;
+      return sum + menu.calories;
     }, 0);
   }, [displayMenuItems]);
 
