@@ -116,13 +116,8 @@ export function MealMenuCard({
     safeWeight !== null
       ? (resolvedConsumedWeight / safeWeight) * parseBaseUnitCount(unit_quantity)
       : resolvedConsumedWeight;
-  const calorieScaleFactor = safeWeight !== null ? resolvedConsumedWeight / safeWeight : 1;
   const displayedCalories =
-    typeof calories === "number" && Number.isFinite(calories)
-      ? weight === quantity
-        ? calories
-        : calories * calorieScaleFactor
-      : null;
+    typeof calories === "number" && Number.isFinite(calories) ? calories : null;
   const weightUnitText = unit === 1 ? "ml" : "g";
 
   return (
