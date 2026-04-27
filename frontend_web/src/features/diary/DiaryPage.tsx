@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, PlusIcon, UtensilsCrossed } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,12 +35,12 @@ const DIARY_MEALS = [
     type: "0",
     label: "아침",
     iconSrc: "/icons/breakfast.svg",
-    emptyStatusText: "안먹었어요",
+    emptyStatusText: "안 먹었어요",
   },
-  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안먹었어요" },
-  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안먹었어요" },
-  { type: "3", label: "간식", iconSrc: "/icons/snack.svg", emptyStatusText: "안먹었어요" },
-  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg", emptyStatusText: "안먹었어요" },
+  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안 먹었어요" },
+  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안 먹었어요" },
+  { type: "3", label: "간식", iconSrc: "/icons/snack.svg", emptyStatusText: "안 먹었어요" },
+  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg", emptyStatusText: "안 먹었어요" },
 ] as const satisfies ReadonlyArray<{
   type: MealType;
   label: string;
@@ -222,26 +222,36 @@ function MealRecordCard({
 
   return (
     <ActionCard className={`${styles.mealCard} ${hasRecord ? "" : styles.mealCardEmpty}`}>
-      <button type="button" className={styles.mealHeader} onClick={onNavigate}>
-        <div className={styles.mealTitleContainer}>
+      <div className={styles.mealHeader}>
+        <button type="button" onClick={onNavigate} className={styles.mealTitleContainer}>
           <img src={iconSrc} alt="" aria-hidden="true" className={styles.mealIcon} />
           <p className="typo-title3">{title}</p>
-        </div>
+        </button>
 
         {hasRecord ? (
-          <div className={styles.navigateButton} aria-label={`${title} 기록으로 이동`}>
+          <button
+            type="button"
+            onClick={onNavigate}
+            className={styles.navigateButton}
+            aria-label={`${title} 기록으로 이동`}
+          >
             <ChevronRight size={24} />
-          </div>
+          </button>
         ) : (
           <div className={styles.emptyMeta} aria-label={`${title} 기록하기`}>
-            <div className={styles.emptyStatusButton}>
-              <UtensilsCrossed size={16} />
+            <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
+              <div className={styles.emptyStatusIcon}>
+                <Check size={13} strokeWidth={3} />
+              </div>
               <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
-            </div>
-            <PlusIcon size={24} className={styles.emptyPlusIcon} />
+            </button>
+
+            <button type="button" onClick={onNavigate}>
+              <PlusIcon size={24} className={styles.emptyPlusIcon} />
+            </button>
           </div>
         )}
-      </button>
+      </div>
 
       {hasRecord ? (
         <div className={styles.mealSummaryCard}>

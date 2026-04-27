@@ -150,6 +150,7 @@
   align-items: center;
   display: flex;
   gap: 8px;
+  flex: 1;
 }
 
 .mealIcon {
@@ -178,8 +179,19 @@
   gap: 6px;
 }
 
+.emptyStatusIcon {
+  color: var(--static-white);
+  background-color: var(--bg-shadow-3);
+  border-radius: 100px;
+  height: 20px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .emptyStatusText {
-  color: var(--text-assistive1);
+  color: var(--text-assistive2);
 }
 
 .emptyPlusIcon {
