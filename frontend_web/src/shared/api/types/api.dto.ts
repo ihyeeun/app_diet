@@ -8,6 +8,11 @@ export const MENU_UNIT = {
   MILLILITER: 1,
 } as const;
 
+export const MENU_INPUT_MODE = {
+  UNIT: 0,
+  WEIGHT: 1,
+} as const;
+
 export const MEAL_TIME = {
   BREAKFAST: 0,
   LUNCH: 1,
@@ -19,6 +24,7 @@ export const MEAL_TIME = {
 export type MenuId = number;
 export type MenuDataSource = (typeof MENU_DATA_SOURCE)[keyof typeof MENU_DATA_SOURCE];
 export type MenuUnit = (typeof MENU_UNIT)[keyof typeof MENU_UNIT];
+export type MealMenuInputMode = (typeof MENU_INPUT_MODE)[keyof typeof MENU_INPUT_MODE];
 export type MealTime = (typeof MEAL_TIME)[keyof typeof MEAL_TIME];
 export type ApiDate = string;
 
@@ -114,6 +120,7 @@ export interface RegisterMealRequestDto extends DateField, MealTimeField {
   image?: string;
   menu_ids: MenuId[];
   menu_quantities: number[];
+  menu_input_modes?: MealMenuInputMode[];
 }
 
 export interface DeleteMealRequestDto extends DateField, MealTimeField {
@@ -124,6 +131,7 @@ export interface MealResponseDto extends MealTimeField {
   image: string;
   menu_list: MenuSimpleResponseDto[];
   menu_quantities: number[];
+  menu_input_modes: MealMenuInputMode[];
 }
 
 export interface MealRecordResponseDto {

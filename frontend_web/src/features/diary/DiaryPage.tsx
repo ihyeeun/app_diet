@@ -102,6 +102,7 @@ export default function DiaryPage() {
     const seedMenus = (dayMeals?.menusByTime[mealType] ?? []).map((menu) => ({
       id: menu.id,
       quantity: menu.quantity,
+      mode: menu.serving_input_mode,
     }));
 
     initDraft({

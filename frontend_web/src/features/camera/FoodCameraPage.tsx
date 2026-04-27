@@ -21,7 +21,7 @@ import {
 import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { getMealRecordPath } from "@/router/pathHelpers";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
-import type { MealTime } from "@/shared/api/types/api.dto";
+import { type MealTime, MENU_INPUT_MODE } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
@@ -89,6 +89,9 @@ export default function FoodCameraPage() {
         time: Number(mealType) as MealTime,
         menu_ids: latestMenus.map((m) => m.id),
         menu_quantities: latestMenus.map((m) => m.quantity),
+        menu_input_modes: latestMenus.map((menu) =>
+          menu.mode === "unit" ? MENU_INPUT_MODE.UNIT : MENU_INPUT_MODE.WEIGHT,
+        ),
         image: imageData.image_url,
       });
 

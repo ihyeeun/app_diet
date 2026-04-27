@@ -1,12 +1,18 @@
 import type {
+  MealMenuInputMode,
   MealRecordResponseDto,
   MealResponseDto,
+  MealServingInputMode,
   MenuSimpleResponseDto,
 } from "@/shared/api/types/api.dto";
+import { MENU_INPUT_MODE } from "@/shared/api/types/api.dto";
 
 type MealTimeKey = 0 | 1 | 2 | 3 | 4;
 
-export type MenuWithQuantity = MenuSimpleResponseDto & { quantity: number };
+export type MenuWithQuantity = MenuSimpleResponseDto & {
+  quantity: number;
+  serving_input_mode: MealServingInputMode;
+};
 
 export type DayMealSummary = {
   totalCalories: number;
@@ -101,6 +107,14 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     4: "",
   };
 
+  const resolveServingInputMode = (meal: MealResponseDto, menuIndex: number): MealServingInputMode => {
+    const menuInputModes = Array.isArray(meal.menu_input_modes)
+      ? (meal.menu_input_modes as MealMenuInputMode[])
+      : [];
+
+    return menuInputModes[menuIndex] === MENU_INPUT_MODE.WEIGHT ? "weight" : "unit";
+  };
+
   const resolveConsumedWeight = (meal: MealResponseDto, menu: MenuSimpleResponseDto, menuIndex: number) => {
     const consumedWeight = meal.menu_quantities[menuIndex];
     if (typeof consumedWeight === "number" && Number.isFinite(consumedWeight) && consumedWeight > 0) {
@@ -122,6 +136,7 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     }
 
     meal.menu_list.forEach((menu, menuIndex) => {
+      const servingInputMode = resolveServingInputMode(meal, menuIndex);
       const consumedWeight = resolveConsumedWeight(meal, menu, menuIndex);
       const baseWeight =
         typeof menu.weight === "number" && Number.isFinite(menu.weight) && menu.weight > 0
@@ -147,6 +162,7 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
         protein,
         fat,
         quantity: consumedWeight,
+        serving_input_mode: servingInputMode,
       };
 
       menusByTime[meal.time].push(menuItem);
