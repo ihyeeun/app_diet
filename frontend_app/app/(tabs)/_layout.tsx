@@ -26,7 +26,7 @@ const TAB_ITEMS: {
   FocusedIcon: typeof HomeFillIcon;
 }[] = [
   { tab: "home", label: "홈", Icon: HomeIcon, FocusedIcon: HomeFillIcon },
-  { tab: "chat", label: "채팅", Icon: ChatIcon, FocusedIcon: ChatFillIcon },
+  { tab: "chat", label: "AI 코치", Icon: ChatIcon, FocusedIcon: ChatFillIcon },
   { tab: "diary", label: "다이어리", Icon: DiaryIcon, FocusedIcon: DiaryFillIcon },
   { tab: "profile", label: "프로필", Icon: UserIcon, FocusedIcon: UserFillIcon },
 ];
