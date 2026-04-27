@@ -26,8 +26,8 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
           type="camera"
         />
         <MenuCard
-          title={"물어보기"}
-          description="메뉴판이 없다면 직접 물어봐도 좋아요"
+          title={"AI 코치"}
+          description="오늘의 식단 고민을 해결해드려요"
           iconSrc="/icons/chat-icon.svg"
           onClick={() => {
             syncAppTab("chat");
