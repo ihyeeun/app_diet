@@ -11,7 +11,6 @@ import style from "@/features/home/styles/PreviewTodayScoreSection.module.css";
 import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
 import {
   getCalorieSummary,
-  getHomeMealFeedback,
   hasValidTargets,
   resolveTargetCalories,
 } from "@/features/home/utils/todayMealFeedback";
@@ -35,7 +34,9 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
   const { isPending: isSummaryPending } = useDayMealsQuery(selectedDate);
 
   const queryClient = useQueryClient();
-  const dayMealSummary = queryClient.getQueryData<DayMealSummary>(queryKeys.dayMeals.byDate(selectedDate));
+  const dayMealSummary = queryClient.getQueryData<DayMealSummary>(
+    queryKeys.dayMeals.byDate(selectedDate),
+  );
 
   const targets = useTargetsState();
   const setTargets = useSetTargets();
@@ -83,7 +84,6 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
   const calorieSummary = getCalorieSummary(dayMealSummary?.totalCalories ?? 0, targetCalories);
   const isCalorieExceeded =
     targetCalories !== null && (dayMealSummary?.totalCalories ?? 0) > targetCalories;
-  const mealFeedback = getHomeMealFeedback(dayMealSummary, targets);
   const statusMessage =
     shouldFetchProfile && isProfilePending ? "목표 정보를 불러오는 중이에요" : null;
 
@@ -104,7 +104,6 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
         targets: targets,
         currents: dayMealSummary,
         calorieMessage: calorieSummary.message,
-        mealFeedback,
       },
     });
   };
@@ -116,15 +115,6 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
 
   return (
     <ActionCard className={style.content} onClick={handleTodayMealScoreClick}>
-      <div className={style.scoreDescription}>
-        <div className={style.scoreTitleText}>
-          <p className="typo-title3">{mealFeedback.primary}</p>
-          <p className="typo-title3">{mealFeedback.secondary}</p>
-        </div>
-
-        <ChevronRight size={24} />
-      </div>
-
       <div className={style.scoreContainer}>
         <div className={style.scoreTextContainer}>
           <div className={style.scoreText}>
@@ -142,6 +132,8 @@ export default function PreviewTodayScoreSection({ selectedDate }: { selectedDat
             <div className={style.dividerContainer} />
 
             <span className={`typo-title2`}>{score ?? "--"}점</span>
+
+            <ChevronRight size={24} className={style.icon} />
           </div>
 
           <ScoreProgress

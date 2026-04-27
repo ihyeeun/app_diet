@@ -5,7 +5,6 @@ import styles from "@/features/home/styles/TodayMealScorePage.module.css";
 import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
 import {
   getCalorieSummary,
-  getHomeMealFeedback,
   getNutrientStatus,
   getNutrientStatusLabel,
   hasValidTargets,
@@ -74,8 +73,6 @@ export default function TodayMealScorePage() {
   }
 
   const calorieSummary = getCalorieSummary(pageState.currents.totalCalories, targetCalories);
-  const mealFeedback =
-    pageState.mealFeedback ?? getHomeMealFeedback(pageState.currents, pageState.targets);
   const roundedTargetCalories = calorieSummary.roundedTargetCalories ?? Math.round(targetCalories);
   const nutrientBaseItems: Array<Omit<NutrientItem, "status" | "progressPercent">> = [
     {
@@ -142,10 +139,6 @@ export default function TodayMealScorePage() {
           <section className={styles.mealScoreCard}>
             <div className={styles.scoreDescription}>
               <p className="typo-title2">오늘의 식사 점수</p>
-              <div>
-                <p className={`${styles.feedbackText} typo-label3`}>{mealFeedback.primary}</p>
-                <p className={`${styles.feedbackText} typo-label3`}>{mealFeedback.secondary}</p>
-              </div>
             </div>
             <p className={styles.scoreValue}>
               <span className={`${styles.score} typo-h2`}>{score}</span>
@@ -177,9 +170,7 @@ export default function TodayMealScorePage() {
                     value={calorieProgress}
                     status={isCalorieExceeded ? "excess" : undefined}
                   />
-                  <p className={`${styles.nutrientAmount} typo-label3`}>
-                    {calorieSummary.message}
-                  </p>
+                  <p className={`${styles.nutrientAmount} typo-label3`}>{calorieSummary.message}</p>
                 </div>
               </div>
             </div>
