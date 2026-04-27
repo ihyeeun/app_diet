@@ -6,16 +6,6 @@
   padding: 24px 20px;
 }
 
-.scoreDescription {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.scoreTitleText {
-  color: var(--text-normal);
-}
-
 .scoreContainer {
   display: flex;
   flex-direction: column;
@@ -33,7 +23,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 }
 
 .score {
@@ -44,7 +34,7 @@
   color: var(--text-normal);
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .dividerContainer {
@@ -60,4 +50,8 @@
   padding: 6px 16px;
   white-space: nowrap;
   width: fit-content;
+}
+
+.icon {
+  margin-left: auto;
 }

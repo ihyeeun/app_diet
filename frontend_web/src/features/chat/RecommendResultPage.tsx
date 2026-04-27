@@ -8,7 +8,10 @@ import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecor
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/RecommendResultPage.module.css";
-import { getMealTypeFromCurrentTime } from "@/features/chat/utils/chatMeal";
+import {
+  getMealTypeFromCurrentTime,
+  parseRecommendationServingContext,
+} from "@/features/chat/utils/chatMeal";
 import { getRecommendDetailPath, getSafeChatId } from "@/features/chat/utils/recommendNavigation";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { PATH } from "@/router/path";
@@ -44,7 +47,6 @@ export default function RecommendResultPage() {
     chatId === null ? null : (state.committedByChatId[chatId] ?? null),
   );
   const ensureDraft = useChatMealDraftStore((state) => state.ensureDraft);
-  const toggleDraftMenu = useChatMealDraftStore((state) => state.toggleDraftMenu);
   const setDraftMealType = useChatMealDraftStore((state) => state.setDraftMealType);
   const upsertDraftMenu = useChatMealDraftStore((state) => state.upsertDraftMenu);
   const removeDraftMenu = useChatMealDraftStore((state) => state.removeDraftMenu);
@@ -105,7 +107,26 @@ export default function RecommendResultPage() {
       mealType: defaultMealType,
     });
 
-    toggleDraftMenu(chatItem.id, menuId);
+    if (selectedMenuIds.has(menuId)) {
+      removeDraftMenu({
+        chatId: chatItem.id,
+        id: menuId,
+      });
+      return;
+    }
+
+    const recommendation = chatItem.response_payload.recommendations.find(
+      (item) => item.menu_id === menuId,
+    );
+    const defaultConsumedWeight = recommendation
+      ? parseRecommendationServingContext(recommendation.amount).baseWeight
+      : 1;
+
+    upsertDraftMenu({
+      chatId: chatItem.id,
+      id: menuId,
+      quantity: defaultConsumedWeight,
+    });
   };
 
   const handleSubmit = async () => {
@@ -151,13 +172,16 @@ export default function RecommendResultPage() {
         if (!recommendation) {
           return acc;
         }
+        const servingContext = parseRecommendationServingContext(recommendation.amount);
 
         acc.push({
           id: menu.id,
           name: recommendation.menu,
           brand: recommendation.brand,
           unit_quantity: recommendation.amount,
-          calories: recommendation.calories,
+          calories: recommendation.calories * (menu.quantity / servingContext.baseWeight),
+          weight: servingContext.baseWeight,
+          unit: servingContext.weightUnit === "ml" ? 1 : 0,
         });
         return acc;
       },

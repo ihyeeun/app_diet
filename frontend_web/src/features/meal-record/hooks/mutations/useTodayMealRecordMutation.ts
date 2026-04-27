@@ -5,7 +5,12 @@ import {
   deleteTodayMealRecord,
   postTodayMealRecordRegister,
 } from "@/features/meal-record/api/DayMeal";
-import type { MealTime, RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import {
+  type MealServingInputMode,
+  type MealTime,
+  MENU_INPUT_MODE,
+  type RegisterMealRequestDto,
+} from "@/shared/api/types/api.dto";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
 
 export function useTodayMealRecordRegisterMutation(callbacks?: UseMutationCallback) {
@@ -43,6 +48,8 @@ export function useTodayMealRecordDeleteMutation(callbacks?: UseMutationCallback
 type MenuSnapshot = {
   id: number;
   quantity: number;
+  serving_input_mode?: MealServingInputMode;
+  mode?: MealServingInputMode;
 };
 
 type DeleteWithRollbackParams = {
@@ -75,6 +82,11 @@ export function useTodayMealRecordDeleteWithRollbackMutation() {
         time: request.time,
         menu_ids: menusByTime.map((menu) => menu.id),
         menu_quantities: menusByTime.map((menu) => menu.quantity),
+        menu_input_modes: menusByTime.map((menu) =>
+          (menu.serving_input_mode ?? menu.mode) === "unit"
+            ? MENU_INPUT_MODE.UNIT
+            : MENU_INPUT_MODE.WEIGHT,
+        ),
       };
 
       if (typeof request.image === "string" && request.image.trim().length > 0) {

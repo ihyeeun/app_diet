@@ -169,6 +169,7 @@ export default function MealDetailPage() {
       key: draftKey,
       id: nextMenuId,
       quantity: selection.quantity,
+      mode: selection.mode,
     });
 
     // MealRecordPage는 현재 식단 목록에 없는 id를 렌더링할 때 draft preview를 사용한다.
@@ -311,6 +312,7 @@ export default function MealDetailPage() {
           <MealMenuNutrientDetail
             menu={meal}
             initialQuantity={existingSelection?.quantity}
+            initialMode={existingSelection?.mode}
             isDetailOpen={isDetailOpen}
             onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
             onSelectionChange={setSelection}

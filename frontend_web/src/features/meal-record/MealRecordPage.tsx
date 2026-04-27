@@ -22,8 +22,10 @@ import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
   MEAL_TYPE_OPTIONS,
+  type MealServingInputMode,
   type MealTime,
   type MealType,
+  MENU_INPUT_MODE,
   type RegisterMealRequestDto,
 } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
@@ -36,11 +38,40 @@ import { parseMealRecordTransferState } from "@/shared/types/mealRecordTransfer"
 import styles from "./styles/MealRecordPage.module.css";
 import { getMealType, getSafeDateKey } from "./utils/mealRecord.queryParams";
 
-function buildMenuSignature(menus: Array<{ id: number; quantity: number }>) {
+function toPositiveNumber(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function scaleCaloriesByWeight(calories: number, nextWeight: number, currentWeight: number) {
+  const safeCalories = toPositiveNumber(calories) ?? 0;
+  const safeNextWeight = toPositiveNumber(nextWeight);
+  const safeCurrentWeight = toPositiveNumber(currentWeight);
+  if (safeNextWeight === null || safeCurrentWeight === null) {
+    return safeCalories;
+  }
+
+  return safeCalories * (safeNextWeight / safeCurrentWeight);
+}
+
+function normalizeServingInputMode(mode: MealServingInputMode | undefined) {
+  return mode === "unit" ? "unit" : "weight";
+}
+
+function toMenuInputMode(mode: MealServingInputMode | undefined) {
+  return mode === "unit" ? MENU_INPUT_MODE.UNIT : MENU_INPUT_MODE.WEIGHT;
+}
+
+function buildMenuSignature(
+  menus: Array<{ id: number; quantity: number; mode?: MealServingInputMode }>,
+) {
   return menus
-    .map((menu) => [menu.id, menu.quantity] as const)
+    .map((menu) => [menu.id, menu.quantity, normalizeServingInputMode(menu.mode)] as const)
     .sort((a, b) => a[0] - b[0])
-    .map(([id, quantity]) => `${id}:${quantity}`)
+    .map(([id, quantity, mode]) => `${id}:${quantity}:${mode}`)
     .join("|");
 }
 
@@ -95,18 +126,6 @@ export default function MealRecordPage() {
     return currentMenus.menusByTime[mealType];
   })();
 
-  const normalizedCurrentMenuItems = useMemo(
-    () =>
-      currentMenuItems.map((menu) => ({
-        ...menu,
-        calories:
-          menu.quantity > 0 && Number.isFinite(menu.quantity)
-            ? menu.calories / menu.quantity
-            : menu.calories,
-      })),
-    [currentMenuItems],
-  );
-
   useEffect(() => {
     if (!currentMenus) {
       return;
@@ -115,6 +134,7 @@ export default function MealRecordPage() {
     const seedMenus = currentMenus.menusByTime[mealType].map((menu) => ({
       id: menu.id,
       quantity: menu.quantity,
+      mode: menu.serving_input_mode,
     }));
 
     initDraft({
@@ -137,6 +157,7 @@ export default function MealRecordPage() {
     const seedMenus = currentMenus.menusByTime[mealType].map((menu) => ({
       id: menu.id,
       quantity: menu.quantity,
+      mode: menu.serving_input_mode,
     }));
 
     initDraft({
@@ -174,12 +195,12 @@ export default function MealRecordPage() {
   ]);
 
   const menuById = useMemo(
-    () => new Map(normalizedCurrentMenuItems.map((menu) => [menu.id, menu])),
-    [normalizedCurrentMenuItems],
+    () => new Map(currentMenuItems.map((menu) => [menu.id, menu])),
+    [currentMenuItems],
   );
 
   const displayMenuItems = useMemo(() => {
-    const toDisplayItem = (menu: (typeof normalizedCurrentMenuItems)[number]): DisplayMenuItem => ({
+    const toDisplayItem = (menu: (typeof currentMenuItems)[number]): DisplayMenuItem => ({
       id: menu.id,
       name: menu.name,
       brand: menu.brand,
@@ -192,14 +213,20 @@ export default function MealRecordPage() {
     });
 
     if (!hasCurrentDraft) {
-      return normalizedCurrentMenuItems.map(toDisplayItem);
+      return currentMenuItems.map(toDisplayItem);
     }
 
     return draftMenus.reduce<DisplayMenuItem[]>((menus, draftMenu) => {
       const baseMenu = menuById.get(draftMenu.id);
       if (baseMenu) {
+        const scaledCalories = scaleCaloriesByWeight(
+          baseMenu.calories,
+          draftMenu.quantity,
+          baseMenu.quantity,
+        );
         menus.push({
           ...toDisplayItem(baseMenu),
+          calories: scaledCalories,
           quantity: draftMenu.quantity,
         });
         return menus;
@@ -223,7 +250,7 @@ export default function MealRecordPage() {
       });
       return menus;
     }, []);
-  }, [draftMenus, draftPreviewsById, hasCurrentDraft, menuById, normalizedCurrentMenuItems]);
+  }, [currentMenuItems, draftMenus, draftPreviewsById, hasCurrentDraft, menuById]);
 
   const changedRequests = useMemo(() => {
     if (!currentMenus) {
@@ -242,6 +269,7 @@ export default function MealRecordPage() {
       const currentMenusByType = currentMenus.menusByTime[type].map((menu) => ({
         id: menu.id,
         quantity: menu.quantity,
+        mode: menu.serving_input_mode,
       }));
       if (buildMenuSignature(currentMenusByType) === buildMenuSignature(draftMenusByType)) {
         return requests;
@@ -252,6 +280,7 @@ export default function MealRecordPage() {
         time: Number(type) as MealTime,
         menu_ids: draftMenusByType.map((menu) => menu.id),
         menu_quantities: draftMenusByType.map((menu) => menu.quantity),
+        menu_input_modes: draftMenusByType.map((menu) => toMenuInputMode(menu.mode)),
       };
 
       if (typeof draftByType.image === "string" && draftByType.image.trim().length > 0) {
@@ -267,7 +296,7 @@ export default function MealRecordPage() {
 
   const totalCalories = useMemo(() => {
     return displayMenuItems.reduce((sum, menu) => {
-      return sum + menu.calories * menu.quantity;
+      return sum + menu.calories;
     }, 0);
   }, [displayMenuItems]);
 
@@ -355,6 +384,7 @@ export default function MealRecordPage() {
       : currentMenuItems.map((menu) => ({
           id: menu.id,
           quantity: menu.quantity,
+          mode: menu.serving_input_mode,
         }));
 
     initDraft({

@@ -9,11 +9,17 @@ import {
   useTodayMealRecordDeleteWithRollbackMutation,
   useTodayMealRecordRegisterMutation,
 } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
-import type { MealTime, RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import {
+  type MealServingInputMode,
+  type MealTime,
+  MENU_INPUT_MODE,
+  type RegisterMealRequestDto,
+} from "@/shared/api/types/api.dto";
 
 type MenuQuantity = {
   id: number;
   quantity: number;
+  mode?: MealServingInputMode;
 };
 
 type RegisterDraftParams = {
@@ -48,6 +54,7 @@ function toMenuQuantities(menus: MenuWithQuantity[]): MenuQuantity[] {
   return menus.map((menu) => ({
     id: menu.id,
     quantity: normalizeQuantity(menu.quantity),
+    mode: menu.serving_input_mode,
   }));
 }
 
@@ -62,48 +69,58 @@ function toMenusByTime(summary: DayMealSummary): Record<MealTime, MenuQuantity[]
 }
 
 function mergeMenus(baseMenus: MenuQuantity[], addMenus: MenuQuantity[]) {
-  const quantityByMenuId = new Map<number, number>();
+  const menuById = new Map<number, MenuQuantity>();
 
   baseMenus.forEach((menu) => {
-    quantityByMenuId.set(menu.id, normalizeQuantity(menu.quantity));
+    menuById.set(menu.id, {
+      id: menu.id,
+      quantity: normalizeQuantity(menu.quantity),
+      mode: menu.mode,
+    });
   });
 
   addMenus.forEach((menu) => {
-    const previous = quantityByMenuId.get(menu.id) ?? 0;
-    quantityByMenuId.set(menu.id, normalizeQuantity(previous + menu.quantity));
+    const previous = menuById.get(menu.id);
+    const previousQuantity = previous?.quantity ?? 0;
+    menuById.set(menu.id, {
+      id: menu.id,
+      quantity: normalizeQuantity(previousQuantity + menu.quantity),
+      mode: previous?.mode ?? menu.mode,
+    });
   });
 
-  return [...quantityByMenuId.entries()]
-    .map(([id, quantity]) => ({
-      id,
-      quantity,
-    }))
-    .filter((menu) => menu.quantity > 0);
+  return [...menuById.values()].filter((menu) => menu.quantity > 0);
 }
 
 function subtractMenus(baseMenus: MenuQuantity[], removeMenus: MenuQuantity[]) {
-  const quantityByMenuId = new Map<number, number>();
+  const menuById = new Map<number, MenuQuantity>();
 
   baseMenus.forEach((menu) => {
-    quantityByMenuId.set(menu.id, normalizeQuantity(menu.quantity));
+    menuById.set(menu.id, {
+      id: menu.id,
+      quantity: normalizeQuantity(menu.quantity),
+      mode: menu.mode,
+    });
   });
 
   removeMenus.forEach((menu) => {
-    const previous = quantityByMenuId.get(menu.id) ?? 0;
-    const nextQuantity = roundQuantity(previous - menu.quantity);
+    const previous = menuById.get(menu.id);
+    const previousQuantity = previous?.quantity ?? 0;
+    const nextQuantity = roundQuantity(previousQuantity - menu.quantity);
 
     if (nextQuantity > 0) {
-      quantityByMenuId.set(menu.id, nextQuantity);
+      menuById.set(menu.id, {
+        id: menu.id,
+        quantity: nextQuantity,
+        mode: previous?.mode ?? menu.mode,
+      });
       return;
     }
 
-    quantityByMenuId.delete(menu.id);
+    menuById.delete(menu.id);
   });
 
-  return [...quantityByMenuId.entries()].map(([id, quantity]) => ({
-    id,
-    quantity,
-  }));
+  return [...menuById.values()];
 }
 
 function toRegisterRequest(
@@ -116,6 +133,9 @@ function toRegisterRequest(
     time: Number(mealType) as MealTime,
     menu_ids: menus.map((menu) => menu.id),
     menu_quantities: menus.map((menu) => normalizeQuantity(menu.quantity)),
+    menu_input_modes: menus.map((menu) =>
+      menu.mode === "unit" ? MENU_INPUT_MODE.UNIT : MENU_INPUT_MODE.WEIGHT,
+    ),
   };
 }
 

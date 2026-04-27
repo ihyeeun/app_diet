@@ -60,6 +60,23 @@ function buildInitialFormState(
   };
 }
 
+function scaleCaloriesByConsumedWeight(baseCalories: number, baseWeight: number, consumedWeight?: number) {
+  if (
+    typeof baseCalories !== "number" ||
+    !Number.isFinite(baseCalories) ||
+    typeof baseWeight !== "number" ||
+    !Number.isFinite(baseWeight) ||
+    baseWeight <= 0 ||
+    typeof consumedWeight !== "number" ||
+    !Number.isFinite(consumedWeight) ||
+    consumedWeight <= 0
+  ) {
+    return baseCalories;
+  }
+
+  return baseCalories * (consumedWeight / baseWeight);
+}
+
 const RESET_NUTRIENT_FIELDS = buildNutrientResetPatch();
 
 export default function NutrientModifyPage() {
@@ -237,11 +254,17 @@ export default function NutrientModifyPage() {
               locationState.source === "meal-record" && locationState.wasQueuedInDraft === true;
 
             if (shouldBackToMealRecord) {
+              const consumedWeight = toFiniteNumberOrUndefined(locationState.quantity);
               const unitQuantity =
                 typeof resolvedMenu?.unit_quantity === "string" &&
                 resolvedMenu.unit_quantity.trim().length > 0
                   ? resolvedMenu.unit_quantity.trim()
                   : `1회(${payload.weight}${payload.unit === MENU_UNIT.GRAM ? "g" : "ml"})`;
+              const scaledCalories = scaleCaloriesByConsumedWeight(
+                payload.calories,
+                payload.weight,
+                consumedWeight,
+              );
 
               upsertPreviews({
                 key: draftKey,
@@ -251,7 +274,7 @@ export default function NutrientModifyPage() {
                     name: payload.name,
                     brand: payload.brand,
                     unit_quantity: unitQuantity,
-                    calories: payload.calories,
+                    calories: scaledCalories,
                     weight: payload.weight,
                     unit: payload.unit,
                     data_source: MENU_DATA_SOURCE.PERSONAL,

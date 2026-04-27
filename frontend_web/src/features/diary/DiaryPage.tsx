@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, PlusIcon, UtensilsCrossed } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,11 +8,7 @@ import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import type { MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
-import {
-  getCalorieSummary,
-  getHomeMealFeedback,
-  hasValidTargets,
-} from "@/features/home/utils/todayMealFeedback";
+import { getCalorieSummary, hasValidTargets } from "@/features/home/utils/todayMealFeedback";
 import {
   formatMenuDraftKey,
   useMenuDraftInit,
@@ -30,23 +26,25 @@ import {
   getCalorieProgressPercent,
 } from "@/shared/utils/nutrientScore";
 
-const DIARY_MEALS = [
+type DiaryMeal = {
+  type: MealType;
+  label: string;
+  iconSrc: string;
+  emptyStatusText?: string;
+};
+
+const DIARY_MEALS: readonly DiaryMeal[] = [
   {
     type: "0",
     label: "아침",
     iconSrc: "/icons/breakfast.svg",
-    emptyStatusText: "안먹었어요",
+    emptyStatusText: "안 먹었어요",
   },
-  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안먹었어요" },
-  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안먹었어요" },
-  { type: "3", label: "간식", iconSrc: "/icons/snack.svg", emptyStatusText: "안먹었어요" },
-  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg", emptyStatusText: "안먹었어요" },
-] as const satisfies ReadonlyArray<{
-  type: MealType;
-  label: string;
-  iconSrc: string;
-  emptyStatusText: string;
-}>;
+  { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안 먹었어요" },
+  { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안 먹었어요" },
+  { type: "3", label: "간식", iconSrc: "/icons/snack.svg" },
+  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg" },
+];
 
 export default function DiaryPage() {
   const selectedDateKey = useSelectedDateKey();
@@ -102,6 +100,7 @@ export default function DiaryPage() {
     const seedMenus = (dayMeals?.menusByTime[mealType] ?? []).map((menu) => ({
       id: menu.id,
       quantity: menu.quantity,
+      mode: menu.serving_input_mode,
     }));
 
     initDraft({
@@ -113,7 +112,6 @@ export default function DiaryPage() {
 
     navigate(getMealSearchPath(selectedDateKey, mealType));
   };
-  const mealFeedback = getHomeMealFeedback(dayMeals, targets);
 
   const handleTodayMealScoreClick = () => {
     if (!hasValidTargets(targets)) {
@@ -127,7 +125,6 @@ export default function DiaryPage() {
         targets: targets,
         currents: dayMeals,
         calorieMessage: calorieSummary.message,
-        mealFeedback,
       },
     });
   };
@@ -212,7 +209,7 @@ function MealRecordCard({
   iconSrc: string;
   menus: MenuWithQuantity[];
   calories: number;
-  emptyStatusText: string;
+  emptyStatusText?: string;
   isExpanded: boolean;
   onNavigate: () => void;
   onToggleExpand: () => void;
@@ -221,26 +218,38 @@ function MealRecordCard({
 
   return (
     <ActionCard className={`${styles.mealCard} ${hasRecord ? "" : styles.mealCardEmpty}`}>
-      <button type="button" className={styles.mealHeader} onClick={onNavigate}>
-        <div className={styles.mealTitleContainer}>
+      <div className={styles.mealHeader}>
+        <button type="button" onClick={onNavigate} className={styles.mealTitleContainer}>
           <img src={iconSrc} alt="" aria-hidden="true" className={styles.mealIcon} />
           <p className="typo-title3">{title}</p>
-        </div>
+        </button>
 
         {hasRecord ? (
-          <div className={styles.navigateButton} aria-label={`${title} 기록으로 이동`}>
+          <button
+            type="button"
+            onClick={onNavigate}
+            className={styles.navigateButton}
+            aria-label={`${title} 기록으로 이동`}
+          >
             <ChevronRight size={24} />
-          </div>
+          </button>
         ) : (
           <div className={styles.emptyMeta} aria-label={`${title} 기록하기`}>
-            <div className={styles.emptyStatusButton}>
-              <UtensilsCrossed size={16} />
-              <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
-            </div>
-            <PlusIcon size={24} className={styles.emptyPlusIcon} />
+            {emptyStatusText && (
+              <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
+                <div className={styles.emptyStatusIcon}>
+                  <Check size={13} strokeWidth={3} />
+                </div>
+                <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
+              </button>
+            )}
+
+            <button type="button" onClick={onNavigate}>
+              <PlusIcon size={24} className={styles.emptyPlusIcon} />
+            </button>
           </div>
         )}
-      </button>
+      </div>
 
       {hasRecord ? (
         <div className={styles.mealSummaryCard}>

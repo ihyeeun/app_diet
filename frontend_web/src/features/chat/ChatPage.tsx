@@ -10,7 +10,10 @@ import { useChatMealRecordActions } from "@/features/chat/hooks/useChatMealRecor
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
 import { useChatMealDraftStore } from "@/features/chat/stores/chatMealDraft.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
-import { getMealTypeFromCurrentTime } from "@/features/chat/utils/chatMeal";
+import {
+  getMealTypeFromCurrentTime,
+  parseRecommendationServingContext,
+} from "@/features/chat/utils/chatMeal";
 import { getRecommendResultPath } from "@/features/chat/utils/recommendNavigation";
 import {
   formatMenuDraftKey,
@@ -41,8 +44,7 @@ const QUICK_CHIP_LIST = ["지금 먹기 좋은 메뉴를 추천해줘", "고지�
 type RecordedMenuItem = {
   id: number;
   menu: string;
-  calories: number;
-  quantity: number;
+  totalCalories: number;
 };
 
 export default function ChatPage() {
@@ -192,6 +194,12 @@ export default function ChatPage() {
 
     const baseMealType = fromCommitted && committed ? committed.mealType : defaultMealType;
     const quantityByMenuId = new Map<number, number>();
+    const recommendationById = new Map(
+      chatItem.response_payload.recommendations.map((recommendation) => [
+        recommendation.menu_id,
+        recommendation,
+      ]),
+    );
 
     if (fromCommitted && committed) {
       committed.menus.forEach((menu) => {
@@ -201,7 +209,11 @@ export default function ChatPage() {
 
     if (typeof initialMenuId === "number" && Number.isInteger(initialMenuId) && initialMenuId > 0) {
       if (!quantityByMenuId.has(initialMenuId)) {
-        quantityByMenuId.set(initialMenuId, 1);
+        const recommendation = recommendationById.get(initialMenuId);
+        const defaultConsumedWeight = recommendation
+          ? parseRecommendationServingContext(recommendation.amount).baseWeight
+          : 1;
+        quantityByMenuId.set(initialMenuId, defaultConsumedWeight);
       }
     }
 
@@ -310,13 +322,16 @@ export default function ChatPage() {
         if (!recommendation) {
           return acc;
         }
+        const servingContext = parseRecommendationServingContext(recommendation.amount);
 
         acc.push({
           id: menu.id,
           name: recommendation.menu,
           brand: recommendation.brand,
           unit_quantity: recommendation.amount,
-          calories: recommendation.calories,
+          calories: recommendation.calories * (menu.quantity / servingContext.baseWeight),
+          weight: servingContext.baseWeight,
+          unit: servingContext.weightUnit === "ml" ? 1 : 0,
         });
         return acc;
       },
@@ -759,7 +774,7 @@ function RecordCompleteCard({
   onEdit: () => void;
   isActionPending: boolean;
 }) {
-  const totalCalories = menus.reduce((sum, item) => sum + item.calories * item.quantity, 0);
+  const totalCalories = menus.reduce((sum, item) => sum + item.totalCalories, 0);
   const summaryText = getRecordSummaryText(menus);
 
   return (
@@ -791,7 +806,7 @@ function RecordCompleteCard({
             <li key={item.id} className={styles.recordCompleteDetailItem}>
               <span className="typo-body3">{item.menu}</span>
               <span className={`${styles.recordCompleteDetailCalories} typo-body3`}>
-                {formatCalories(item.calories * item.quantity)} kcal
+                {formatCalories(item.totalCalories)} kcal
               </span>
             </li>
           ))}
@@ -841,8 +856,9 @@ function buildRecordedMenus(
     acc.push({
       id: selectedMenu.id,
       menu: recommendation.menu,
-      calories: recommendation.calories,
-      quantity: selectedMenu.quantity,
+      totalCalories:
+        recommendation.calories *
+        (selectedMenu.quantity / parseRecommendationServingContext(recommendation.amount).baseWeight),
     });
 
     return acc;

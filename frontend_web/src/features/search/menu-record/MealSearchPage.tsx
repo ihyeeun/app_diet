@@ -31,6 +31,10 @@ import { toast } from "@/shared/commons/toast/toast";
 
 import styles from "../styles/MealSearch.module.css";
 
+function getDefaultConsumedWeight(weight: number) {
+  return typeof weight === "number" && Number.isFinite(weight) && weight > 0 ? weight : 1;
+}
+
 export default function MealSearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -92,7 +96,7 @@ export default function MealSearchPage() {
     upsertMenu({
       key: draftKey,
       id: menuId,
-      quantity: 1,
+      quantity: getDefaultConsumedWeight(menu.weight),
     });
 
     upsertPreviews({

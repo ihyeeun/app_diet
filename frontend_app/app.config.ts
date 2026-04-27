@@ -11,7 +11,7 @@ const config: ExpoConfig = {
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/logo/melo-logo.png",
-  scheme: "frontendapp",
+  scheme: "melo",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
   ios: {

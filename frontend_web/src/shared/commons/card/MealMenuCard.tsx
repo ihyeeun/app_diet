@@ -24,8 +24,35 @@ type MealMenuCardProps = {
   onIconClick?: () => void;
 };
 
+const UNIT_QUANTITY_PATTERN = /^\s*([\d.]+)/;
+
 function formatCalories(value: number) {
   return value.toLocaleString("ko-KR", { maximumFractionDigits: 1 });
+}
+
+function formatQuantity(value: number) {
+  return value.toLocaleString("ko-KR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  });
+}
+
+function toPositiveNumber(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function parseBaseUnitCount(unitQuantity?: string) {
+  if (typeof unitQuantity !== "string" || unitQuantity.trim().length === 0) {
+    return 1;
+  }
+
+  const matched = unitQuantity.match(UNIT_QUANTITY_PATTERN);
+  const parsed = matched ? Number(matched[1]) : Number.NaN;
+  return toPositiveNumber(parsed) ?? 1;
 }
 
 function getActionAriaLabel(icon: MealMenuCardIcon) {
@@ -48,7 +75,7 @@ export function MealMenuCard({
   brand,
   unit,
   weight,
-  quantity = 1,
+  quantity,
   data_source,
   suggestionChipLabel,
   icon = "delete",
@@ -81,6 +108,17 @@ export function MealMenuCard({
 
   const isPersonalMenu = data_source === 1;
   const shouldShowChipList = isPersonalMenu || Boolean(suggestionChipLabel);
+  const safeQuantityInput =
+    typeof quantity === "number" && Number.isFinite(quantity) && quantity > 0 ? quantity : null;
+  const safeWeight = toPositiveNumber(weight);
+  const resolvedConsumedWeight = safeQuantityInput ?? safeWeight ?? 1;
+  const safeDisplayUnitCount =
+    safeWeight !== null
+      ? (resolvedConsumedWeight / safeWeight) * parseBaseUnitCount(unit_quantity)
+      : resolvedConsumedWeight;
+  const displayedCalories =
+    typeof calories === "number" && Number.isFinite(calories) ? calories : null;
+  const weightUnitText = unit === 1 ? "ml" : "g";
 
   return (
     <article
@@ -114,18 +152,16 @@ export function MealMenuCard({
           <p className={styles.prouductInfo}>
             {brand && <span className={`${styles.brand} typo-label4`}>{brand}</span>}
             <span className={`${styles.unitAmount} typo-label4`}>
-              {quantity}
+              {formatQuantity(safeDisplayUnitCount)}
               {unit_quantity}
             </span>
-            {weight && (
-              <span
-                className={`${styles.unitAmount} typo-label4`}
-              >{`(${(weight * quantity)?.toLocaleString("ko-KR")} ${unit === 0 ? "g" : "ml"})`}</span>
-            )}
+            <span
+              className={`${styles.unitAmount} typo-label4`}
+            >{`(${formatQuantity(resolvedConsumedWeight)} ${weightUnitText})`}</span>
           </p>
-          {calories && (
+          {displayedCalories !== null && (
             <span className={`${styles.calories} typo-title2`}>
-              {formatCalories(calories * quantity)} kcal
+              {formatCalories(displayedCalories)} kcal
             </span>
           )}
         </section>
