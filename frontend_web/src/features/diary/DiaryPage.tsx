@@ -8,11 +8,7 @@ import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import type { MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
-import {
-  getCalorieSummary,
-  getHomeMealFeedback,
-  hasValidTargets,
-} from "@/features/home/utils/todayMealFeedback";
+import { getCalorieSummary, hasValidTargets } from "@/features/home/utils/todayMealFeedback";
 import {
   formatMenuDraftKey,
   useMenuDraftInit,
@@ -30,7 +26,14 @@ import {
   getCalorieProgressPercent,
 } from "@/shared/utils/nutrientScore";
 
-const DIARY_MEALS = [
+type DiaryMeal = {
+  type: MealType;
+  label: string;
+  iconSrc: string;
+  emptyStatusText?: string;
+};
+
+const DIARY_MEALS: readonly DiaryMeal[] = [
   {
     type: "0",
     label: "아침",
@@ -39,14 +42,9 @@ const DIARY_MEALS = [
   },
   { type: "1", label: "점심", iconSrc: "/icons/lunch.svg", emptyStatusText: "안 먹었어요" },
   { type: "2", label: "저녁", iconSrc: "/icons/dinner.svg", emptyStatusText: "안 먹었어요" },
-  { type: "3", label: "간식", iconSrc: "/icons/snack.svg", emptyStatusText: "안 먹었어요" },
-  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg", emptyStatusText: "안 먹었어요" },
-] as const satisfies ReadonlyArray<{
-  type: MealType;
-  label: string;
-  iconSrc: string;
-  emptyStatusText: string;
-}>;
+  { type: "3", label: "간식", iconSrc: "/icons/snack.svg" },
+  { type: "4", label: "야식", iconSrc: "/icons/pizza-icon.svg" },
+];
 
 export default function DiaryPage() {
   const selectedDateKey = useSelectedDateKey();
@@ -114,7 +112,6 @@ export default function DiaryPage() {
 
     navigate(getMealSearchPath(selectedDateKey, mealType));
   };
-  const mealFeedback = getHomeMealFeedback(dayMeals, targets);
 
   const handleTodayMealScoreClick = () => {
     if (!hasValidTargets(targets)) {
@@ -128,7 +125,6 @@ export default function DiaryPage() {
         targets: targets,
         currents: dayMeals,
         calorieMessage: calorieSummary.message,
-        mealFeedback,
       },
     });
   };
@@ -213,7 +209,7 @@ function MealRecordCard({
   iconSrc: string;
   menus: MenuWithQuantity[];
   calories: number;
-  emptyStatusText: string;
+  emptyStatusText?: string;
   isExpanded: boolean;
   onNavigate: () => void;
   onToggleExpand: () => void;
@@ -239,12 +235,14 @@ function MealRecordCard({
           </button>
         ) : (
           <div className={styles.emptyMeta} aria-label={`${title} 기록하기`}>
-            <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
-              <div className={styles.emptyStatusIcon}>
-                <Check size={13} strokeWidth={3} />
-              </div>
-              <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
-            </button>
+            {emptyStatusText && (
+              <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
+                <div className={styles.emptyStatusIcon}>
+                  <Check size={13} strokeWidth={3} />
+                </div>
+                <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
+              </button>
+            )}
 
             <button type="button" onClick={onNavigate}>
               <PlusIcon size={24} className={styles.emptyPlusIcon} />
