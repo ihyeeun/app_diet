@@ -623,7 +623,7 @@ export default function GoalEditPage() {
     : birthYearDefault;
   const isInstantSelectEditor =
     editingField === "gender" || editingField === "activity" || editingField === "goal";
-  const hasPositiveValue = (value?: number) => value !== undefined && value !== 0;
+  const hasPositiveValue = (value?: number) => value !== undefined && value > 0;
   const isEditorConfirmDisabled =
     isSubmitting ||
     (editingField === "height" && !hasPositiveValue(sheetData.height)) ||
