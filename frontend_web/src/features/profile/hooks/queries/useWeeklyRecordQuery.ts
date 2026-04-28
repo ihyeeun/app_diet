@@ -47,7 +47,7 @@ function formatChartLabel(dateKey: string) {
   const date = parseDateKey(dateKey);
   const weekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
 
-  return `${date.getMonth() + 1}/${date.getDate()}(${weekdayLabel})`;
+  return `${date.getMonth() + 1}/${date.getDate()}\n${weekdayLabel}`;
 }
 
 function getRecentWeekDateKeys(today: string) {
@@ -95,8 +95,7 @@ export function useWeeklyRecordQuery({
     bodyLogQueries.some((query) => query.isPending || query.isFetching) ||
     goalSnapshotQueries.some((query) => query.isPending || query.isFetching);
   const hasError =
-    dayMealQueries.some((query) => query.isError) ||
-    bodyLogQueries.some((query) => query.isError);
+    dayMealQueries.some((query) => query.isError) || bodyLogQueries.some((query) => query.isError);
 
   const records = dateKeys.map<WeeklyRecordPoint>((dateKey, index) => {
     const dayMeal = dayMealQueries[index]?.data;

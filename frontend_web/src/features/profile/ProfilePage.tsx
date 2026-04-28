@@ -1,4 +1,4 @@
-import { Pencil, Settings } from "lucide-react";
+import { ChevronRightIcon, Pencil, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -70,8 +70,6 @@ export default function ProfilePage() {
   const targetWeight = profile?.target_weight ?? currentWeight;
   const targetCalories = profile?.target_calories ?? 2000;
   const remainingWeight = Math.abs(currentWeight - targetWeight);
-  // const todayWeight =
-  //   typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
   const todaySteps =
     typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
   const metricConfig = METRIC_CONFIG[selectedMetric];
@@ -182,55 +180,51 @@ export default function ProfilePage() {
                 color="assistive"
               >
                 목표 재설정
+                <ChevronRightIcon size={20} className={styles.icon} />
               </Button>
             </div>
           </section>
 
-          <section className={styles.bodyLogSection}>
-            <div className={styles.activeCardGrid}>
-              <ActionCard
-                onClick={() => setSelectedMetric("weight")}
-                className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
-              >
-                <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
+          <section className={styles.activeCardGrid}>
+            <ActionCard
+              onClick={() => setSelectedMetric("weight")}
+              className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
+            >
+              <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
 
-                <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-h3`}>
-                    {/* {todayWeight === null ? "-" : todayWeight.toLocaleString("ko-KR")} */}
-                    {currentWeight.toLocaleString("ko-KR")}
-                  </span>
-                  <span className={`${styles.activeCardUnit} typo-label1`}>kg</span>
-                </div>
-              </ActionCard>
+              <div className={styles.activeCardValueRow}>
+                <span className={`${styles.activeCardValue} typo-title4`}>
+                  {currentWeight.toLocaleString("ko-KR")}
+                </span>
+                <span className={`${styles.activeCardUnit} typo-label4`}>kg</span>
+              </div>
+            </ActionCard>
 
-              <ActionCard
-                onClick={() => setSelectedMetric("calories")}
-                className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
-              >
-                <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
+            <ActionCard
+              onClick={() => setSelectedMetric("calories")}
+              className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
+            >
+              <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
 
-                <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-h3`}>
-                    {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
-                  </span>
-                  <span className={`${styles.activeCardUnit} typo-label1`}>kcal</span>
-                </div>
-              </ActionCard>
-            </div>
+              <div className={styles.activeCardValueRow}>
+                <span className={`${styles.activeCardValue} typo-title4`}>
+                  {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
+                </span>
+                <span className={`${styles.activeCardUnit} typo-label4`}>kcal</span>
+              </div>
+            </ActionCard>
 
             <ActionCard
               onClick={() => setSelectedMetric("steps")}
-              className={selectedMetric === "steps" ? styles.activeMetricCard : ""}
+              className={`${styles.activeCard} ${selectedMetric === "steps" ? styles.activeMetricCard : ""}`}
             >
-              <div className={styles.activeCardRow}>
-                <span className={`${styles.activeCardTitle} typo-title4`}>걸음 수</span>
+              <p className={`${styles.activeCardTitle} typo-title4`}>걸음 수</p>
 
-                <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-h3`}>
-                    {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
-                  </span>
-                  <span className={`${styles.activeCardUnit} typo-label1`}>걸음</span>
-                </div>
+              <div className={styles.activeCardValueRow}>
+                <span className={`${styles.activeCardValue} typo-title4`}>
+                  {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
+                </span>
+                <span className={`${styles.activeCardUnit} typo-label4`}>보</span>
               </div>
             </ActionCard>
           </section>
@@ -264,11 +258,14 @@ export default function ProfilePage() {
                 주간 기록을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.
               </p>
             ) : (
-              <WeeklyRecordChart
-                data={weeklyChartData}
-                unit={metricConfig.unit}
-                yTicks={metricConfig.ticks}
-              />
+              <section className={styles.weeklyChart}>
+                <span className={`${styles.weeklyYLabel} typo-caption`}>{metricConfig.title}</span>
+                <WeeklyRecordChart
+                  data={weeklyChartData}
+                  unit={metricConfig.unit}
+                  yTicks={metricConfig.ticks}
+                />
+              </section>
             )}
           </section>
 

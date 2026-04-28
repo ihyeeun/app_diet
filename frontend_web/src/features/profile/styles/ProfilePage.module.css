@@ -61,16 +61,10 @@
   word-break: keep-all;
 }
 
-.bodyLogSection {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .activeCardGrid {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .activeCard {
@@ -188,4 +182,20 @@
 
 .input::placeholder {
   color: var(--text-assistive2);
+}
+
+.icon {
+  padding-left: 4px;
+}
+
+.weeklyChart {
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weeklyYLabel {
+  color: var(--text-assistive2);
+  padding-left: 22px;
 }
