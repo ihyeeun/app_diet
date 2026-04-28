@@ -577,6 +577,12 @@ export default function GoalEditPage() {
     : birthYearDefault;
   const isInstantSelectEditor =
     editingField === "gender" || editingField === "activity" || editingField === "goal";
+  const hasPositiveValue = (value?: number) => value !== undefined && value !== 0;
+  const isEditorConfirmDisabled =
+    isSubmitting ||
+    (editingField === "height" && !hasPositiveValue(sheetData.height)) ||
+    (editingField === "weight" && !hasPositiveValue(sheetData.weight)) ||
+    (editingField === "goalWeight" && !hasPositiveValue(sheetData.goalweight));
 
   const getSelectableCardClassName = (selected: boolean) =>
     [styles.selectableCard, selected ? styles.selectableCardActive : ""].filter(Boolean).join(" ");
@@ -643,6 +649,8 @@ export default function GoalEditPage() {
             min={ONBOARDING_HEIGHT_RANGE.min}
             max={ONBOARDING_HEIGHT_RANGE.max}
             step={1}
+            blockOutOfRangeInput
+            fractionDigits={1}
             unit="cm"
             clampOnChange={false}
             normalizeOnBlur={false}
@@ -664,6 +672,8 @@ export default function GoalEditPage() {
             min={ONBOARDING_WEIGHT_RANGE.min}
             max={ONBOARDING_WEIGHT_RANGE.max}
             step={0.1}
+            fractionDigits={1}
+            blockOutOfRangeInput
             unit="kg"
             clampOnChange={false}
             normalizeOnBlur={false}
@@ -730,6 +740,8 @@ export default function GoalEditPage() {
           min={ONBOARDING_WEIGHT_RANGE.min}
           max={ONBOARDING_WEIGHT_RANGE.max}
           step={0.1}
+          fractionDigits={1}
+          blockOutOfRangeInput
           unit="kg"
           clampOnChange={false}
           normalizeOnBlur={false}
@@ -839,6 +851,8 @@ export default function GoalEditPage() {
                 variant="filled"
                 size="large"
                 color="primary"
+                disabled={isEditorConfirmDisabled}
+                state={isEditorConfirmDisabled ? "disabled" : "default"}
               >
                 확인
               </Button>

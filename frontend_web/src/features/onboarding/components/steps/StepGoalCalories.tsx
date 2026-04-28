@@ -158,6 +158,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
             max={GOAL_CALORIES_MAX}
             min={GOAL_CALORIES_MIN}
             step={GOAL_CALORIES_STEP}
+            blockOutOfRangeInput
             placeholder="목표 칼로리 입력"
             unit="kcal"
             clampOnChange={true}
