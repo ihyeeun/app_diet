@@ -48,6 +48,12 @@ const METRIC_CONFIG: Record<
   },
 };
 
+const NICKNAME_MAX_LENGTH = 15;
+const NICKNAME_ALLOWED_PATTERN = /[^0-9A-Za-zㄱ-ㅎㅏ-ㅣ가-힣]/g;
+
+const sanitizeNickName = (value: string) =>
+  value.replace(NICKNAME_ALLOWED_PATTERN, "").slice(0, NICKNAME_MAX_LENGTH);
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const today = getTodayFormatDateKey();
@@ -62,7 +68,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep sheet input synced with async profile data.
-    setNickName(profile?.nickname ?? "");
+    setNickName(sanitizeNickName(profile?.nickname ?? ""));
   }, [profile?.nickname]);
 
   const nickname = profile?.nickname ?? "진득한 푸마";
@@ -278,7 +284,7 @@ export default function ProfilePage() {
             isOpen={sheetOpen}
             onClose={() => {
               setSheetOpen(false);
-              setNickName(profile?.nickname ?? "");
+              setNickName(sanitizeNickName(profile?.nickname ?? ""));
             }}
           >
             <div className={styles.sheetContainer}>
@@ -287,18 +293,19 @@ export default function ProfilePage() {
                 <input
                   placeholder="닉네임 입력"
                   value={nickName}
-                  onChange={(e) => setNickName(e.target.value.slice(0, 15))}
+                  onChange={(e) => setNickName(sanitizeNickName(e.target.value))}
                   className={`${styles.input} typo-body3`}
                 />
               </section>
 
               <Button
                 variant="filled"
-                state="default"
+                state={nickName.trim() === "" ? "disabled" : "default"}
                 size="large"
                 color="primary"
                 fullWidth
                 onClick={handleUpdateNickName}
+                disabled={nickName.trim() === ""}
               >
                 수정하기
               </Button>
