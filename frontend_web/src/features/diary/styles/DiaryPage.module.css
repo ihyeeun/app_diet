@@ -276,3 +276,7 @@
 .bodyCardList {
   margin-bottom: var(--safe-area-bottom);
 }
+
+.icon {
+  margin-left: auto;
+}

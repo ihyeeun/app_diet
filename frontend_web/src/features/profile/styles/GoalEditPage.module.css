@@ -6,6 +6,10 @@
   width: 100%;
 }
 
+.pageWhite {
+  background-color: var(--bg-normal-white);
+}
+
 .main {
   flex: 1;
   overflow-y: auto;

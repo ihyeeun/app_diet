@@ -5,6 +5,7 @@ type BottomSheetProps = {
   onClose: () => void;
   title?: string;
   className?: string;
+  disableContentDrag?: boolean;
   children: React.ReactNode;
 };
 
@@ -13,6 +14,7 @@ export default function BottomSheet({
   onClose,
   title,
   className,
+  disableContentDrag = false,
   children,
 }: BottomSheetProps) {
   return (
@@ -26,7 +28,7 @@ export default function BottomSheet({
         }}
       >
         <Sheet.Header />
-        <Sheet.Content>
+        <Sheet.Content disableDrag={disableContentDrag}>
           <div>
             {title ? <div>{title}</div> : null}
 

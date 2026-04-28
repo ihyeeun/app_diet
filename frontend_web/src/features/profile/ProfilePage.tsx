@@ -1,4 +1,4 @@
-import { Pencil, Settings } from "lucide-react";
+import { ChevronRightIcon, Pencil, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -48,6 +48,12 @@ const METRIC_CONFIG: Record<
   },
 };
 
+const NICKNAME_MAX_LENGTH = 15;
+const NICKNAME_ALLOWED_PATTERN = /[^0-9A-Za-zㄱ-ㅎㅏ-ㅣ가-힣]/g;
+
+const sanitizeNickName = (value: string) =>
+  value.replace(NICKNAME_ALLOWED_PATTERN, "").slice(0, NICKNAME_MAX_LENGTH);
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const today = getTodayFormatDateKey();
@@ -62,7 +68,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep sheet input synced with async profile data.
-    setNickName(profile?.nickname ?? "");
+    setNickName(sanitizeNickName(profile?.nickname ?? ""));
   }, [profile?.nickname]);
 
   const nickname = profile?.nickname ?? "진득한 푸마";
@@ -70,13 +76,12 @@ export default function ProfilePage() {
   const targetWeight = profile?.target_weight ?? currentWeight;
   const targetCalories = profile?.target_calories ?? 2000;
   const remainingWeight = Math.abs(currentWeight - targetWeight);
-  // const todayWeight =
-  //   typeof bodyLog?.weight === "number" && bodyLog.weight > 0 ? bodyLog.weight : null;
   const todaySteps =
     typeof bodyLog?.steps === "number" && bodyLog.steps >= 0 ? bodyLog.steps : null;
   const metricConfig = METRIC_CONFIG[selectedMetric];
 
   const weeklyRecordQuery = useWeeklyRecordQuery({
+    metric: selectedMetric,
     today,
     targetWeight,
     targetCalories,
@@ -102,10 +107,14 @@ export default function ProfilePage() {
 
       return {
         label: record.label,
-        value: record.steps,
+        value: record.steps ?? 0,
       };
     });
   }, [selectedMetric, weeklyRecordQuery.records]);
+
+  const handleSelectMetric = (metric: WeeklyMetricType) => {
+    setSelectedMetric(metric);
+  };
 
   const handleUpdateNickName = () => {
     if (nickName?.trim() === "" || nickName === undefined) {
@@ -176,61 +185,57 @@ export default function ProfilePage() {
 
             <div className={styles.textButton}>
               <Button
-                onClick={() => navigate(PATH.GOAL_EDIT)}
+                onClick={() => navigate(PATH.GOAL_EDIT, { state: { goalEditFlow: true } })}
                 variant="text"
                 size="small"
                 color="assistive"
               >
                 목표 재설정
+                <ChevronRightIcon size={20} className={styles.icon} />
               </Button>
             </div>
           </section>
 
-          <section className={styles.bodyLogSection}>
-            <div className={styles.activeCardGrid}>
-              <ActionCard
-                onClick={() => setSelectedMetric("weight")}
-                className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
-              >
-                <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
+          <section className={styles.activeCardGrid}>
+            <ActionCard
+              onClick={() => handleSelectMetric("weight")}
+              className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
+            >
+              <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
 
-                <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-h3`}>
-                    {/* {todayWeight === null ? "-" : todayWeight.toLocaleString("ko-KR")} */}
-                    {currentWeight.toLocaleString("ko-KR")}
-                  </span>
-                  <span className={`${styles.activeCardUnit} typo-label1`}>kg</span>
-                </div>
-              </ActionCard>
-
-              <ActionCard
-                onClick={() => setSelectedMetric("calories")}
-                className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
-              >
-                <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
-
-                <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-h3`}>
-                    {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
-                  </span>
-                  <span className={`${styles.activeCardUnit} typo-label1`}>kcal</span>
-                </div>
-              </ActionCard>
-            </div>
+              <div className={styles.activeCardValueRow}>
+                <span className={`${styles.activeCardValue} typo-title4`}>
+                  {currentWeight.toLocaleString("ko-KR")}
+                </span>
+                <span className={`${styles.activeCardUnit} typo-label4`}>kg</span>
+              </div>
+            </ActionCard>
 
             <ActionCard
-              onClick={() => setSelectedMetric("steps")}
-              className={selectedMetric === "steps" ? styles.activeMetricCard : ""}
+              onClick={() => handleSelectMetric("calories")}
+              className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
             >
-              <div className={styles.activeCardRow}>
-                <span className={`${styles.activeCardTitle} typo-title4`}>걸음 수</span>
+              <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
 
-                <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-h3`}>
-                    {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
-                  </span>
-                  <span className={`${styles.activeCardUnit} typo-label1`}>걸음</span>
-                </div>
+              <div className={styles.activeCardValueRow}>
+                <span className={`${styles.activeCardValue} typo-title4`}>
+                  {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
+                </span>
+                <span className={`${styles.activeCardUnit} typo-label4`}>kcal</span>
+              </div>
+            </ActionCard>
+
+            <ActionCard
+              onClick={() => handleSelectMetric("steps")}
+              className={`${styles.activeCard} ${selectedMetric === "steps" ? styles.activeMetricCard : ""}`}
+            >
+              <p className={`${styles.activeCardTitle} typo-title4`}>걸음 수</p>
+
+              <div className={styles.activeCardValueRow}>
+                <span className={`${styles.activeCardValue} typo-title4`}>
+                  {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
+                </span>
+                <span className={`${styles.activeCardUnit} typo-label4`}>보</span>
               </div>
             </ActionCard>
           </section>
@@ -264,11 +269,14 @@ export default function ProfilePage() {
                 주간 기록을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.
               </p>
             ) : (
-              <WeeklyRecordChart
-                data={weeklyChartData}
-                unit={metricConfig.unit}
-                yTicks={metricConfig.ticks}
-              />
+              <section className={styles.weeklyChart}>
+                <span className={`${styles.weeklyYLabel} typo-caption`}>{metricConfig.title}</span>
+                <WeeklyRecordChart
+                  data={weeklyChartData}
+                  unit={metricConfig.unit}
+                  yTicks={metricConfig.ticks}
+                />
+              </section>
             )}
           </section>
 
@@ -276,7 +284,7 @@ export default function ProfilePage() {
             isOpen={sheetOpen}
             onClose={() => {
               setSheetOpen(false);
-              setNickName(profile?.nickname ?? "");
+              setNickName(sanitizeNickName(profile?.nickname ?? ""));
             }}
           >
             <div className={styles.sheetContainer}>
@@ -285,18 +293,19 @@ export default function ProfilePage() {
                 <input
                   placeholder="닉네임 입력"
                   value={nickName}
-                  onChange={(e) => setNickName(e.target.value.slice(0, 15))}
+                  onChange={(e) => setNickName(sanitizeNickName(e.target.value))}
                   className={`${styles.input} typo-body3`}
                 />
               </section>
 
               <Button
                 variant="filled"
-                state="default"
+                state={nickName.trim() === "" ? "disabled" : "default"}
                 size="large"
                 color="primary"
                 fullWidth
                 onClick={handleUpdateNickName}
+                disabled={nickName.trim() === ""}
               >
                 수정하기
               </Button>

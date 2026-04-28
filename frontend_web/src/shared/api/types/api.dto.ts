@@ -149,7 +149,7 @@ export type RegisterMenuRequestDto = Pick<
 export interface ModifyMenuRequestDto extends RegisterMenuRequestDto, MenuIdField {}
 
 export interface WeightStepsResponseDto {
-  weight: number;
+  weight: number | null;
   steps: number;
 }
 

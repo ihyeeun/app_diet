@@ -130,6 +130,7 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
         min={0}
         max={100}
         step={0.5}
+        snapOnStep
         unit="%"
         isInputTextAllowed={isAllowedNutrientInput}
       />

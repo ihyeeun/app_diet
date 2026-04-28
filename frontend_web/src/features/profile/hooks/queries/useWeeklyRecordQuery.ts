@@ -9,6 +9,8 @@ import { getUserGoalSnapshot } from "@/features/profile/api/profile";
 import { queryKeys as profileQueryKeys } from "@/features/profile/hooks/queries/queryKey";
 
 type UseWeeklyRecordQueryProps = {
+  enabled?: boolean;
+  metric: WeeklyMetricType;
   today: string;
   targetCalories: number;
   targetWeight: number;
@@ -47,7 +49,7 @@ function formatChartLabel(dateKey: string) {
   const date = parseDateKey(dateKey);
   const weekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
 
-  return `${date.getMonth() + 1}/${date.getDate()}(${weekdayLabel})`;
+  return `${date.getMonth() + 1}/${date.getDate()}\n${weekdayLabel}`;
 }
 
 function getRecentWeekDateKeys(today: string) {
@@ -60,16 +62,22 @@ function getRecentWeekDateKeys(today: string) {
 }
 
 export function useWeeklyRecordQuery({
+  enabled = true,
+  metric,
   today,
   targetCalories,
   targetWeight,
 }: UseWeeklyRecordQueryProps) {
   const dateKeys = useMemo(() => getRecentWeekDateKeys(today), [today]);
+  const shouldFetchWeight = enabled && metric === "weight";
+  const shouldFetchCalories = enabled && metric === "calories";
+  const shouldFetchSteps = enabled && metric === "steps";
 
   const dayMealQueries = useQueries({
     queries: dateKeys.map((dateKey) => ({
       queryKey: homeQueryKeys.dayMeals.byDate(dateKey),
       queryFn: () => getDayMeals({ date: dateKey }),
+      enabled: shouldFetchCalories,
       staleTime: Infinity,
     })),
   });
@@ -78,6 +86,7 @@ export function useWeeklyRecordQuery({
     queries: dateKeys.map((dateKey) => ({
       queryKey: homeQueryKeys.bodyStats(dateKey),
       queryFn: () => getBodyStats({ date: dateKey }),
+      enabled: shouldFetchWeight || shouldFetchSteps,
       staleTime: Infinity,
     })),
   });
@@ -86,17 +95,27 @@ export function useWeeklyRecordQuery({
     queries: dateKeys.map((dateKey) => ({
       queryKey: profileQueryKeys.userGoalSnapshot(dateKey),
       queryFn: () => getUserGoalSnapshot(dateKey),
+      enabled: shouldFetchWeight || shouldFetchCalories,
       staleTime: Infinity,
     })),
   });
 
   const isPending =
-    dayMealQueries.some((query) => query.isPending || query.isFetching) ||
-    bodyLogQueries.some((query) => query.isPending || query.isFetching) ||
-    goalSnapshotQueries.some((query) => query.isPending || query.isFetching);
+    metric === "weight"
+      ? bodyLogQueries.some((query) => query.isPending || query.isFetching) ||
+        goalSnapshotQueries.some((query) => query.isPending || query.isFetching)
+      : metric === "calories"
+        ? dayMealQueries.some((query) => query.isPending || query.isFetching) ||
+          goalSnapshotQueries.some((query) => query.isPending || query.isFetching)
+        : bodyLogQueries.some((query) => query.isPending || query.isFetching);
   const hasError =
-    dayMealQueries.some((query) => query.isError) ||
-    bodyLogQueries.some((query) => query.isError);
+    metric === "weight"
+      ? bodyLogQueries.some((query) => query.isError) ||
+        goalSnapshotQueries.some((query) => query.isError)
+      : metric === "calories"
+        ? dayMealQueries.some((query) => query.isError) ||
+          goalSnapshotQueries.some((query) => query.isError)
+        : bodyLogQueries.some((query) => query.isError);
 
   const records = dateKeys.map<WeeklyRecordPoint>((dateKey, index) => {
     const dayMeal = dayMealQueries[index]?.data;

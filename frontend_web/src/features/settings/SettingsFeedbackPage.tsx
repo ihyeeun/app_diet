@@ -45,7 +45,7 @@ export default function SettingsFeedbackPage() {
           <section className={styles.titleSection}>
             <h1 className={`${styles.title} typo-title1`}>
               서비스 이용 중 불편했던 점이나 <br />
-              개선점을 알려주세요
+              개선 아이디어를 알려주세요
             </h1>
           </section>
 

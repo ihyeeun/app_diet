@@ -7,6 +7,8 @@ type Props = Omit<React.ComponentProps<"input">, "onChange" | "value" | "min" | 
   value?: number;
   min?: number;
   max?: number;
+  fractionDigits?: number;
+  blockOutOfRangeInput?: boolean;
   clampOnChange?: boolean;
   normalizeOnBlur?: boolean;
   onChange: (v?: number) => void;
@@ -25,6 +27,8 @@ export function EditorInput({
   value,
   min,
   max,
+  fractionDigits,
+  blockOutOfRangeInput = false,
   clampOnChange = true,
   normalizeOnBlur = true,
   ...props
@@ -45,8 +49,19 @@ export function EditorInput({
             return;
           }
 
+          if (fractionDigits !== undefined) {
+            const safeDigits = Math.max(0, Math.trunc(fractionDigits));
+            const decimalPattern = new RegExp(`^-?\\d*(\\.\\d{0,${safeDigits}})?$`);
+
+            if (!decimalPattern.test(raw)) return;
+          }
+
           const num = Number(raw);
           if (Number.isNaN(num)) return;
+
+          const isBelowMin = min !== undefined && num < min;
+          const isAboveMax = max !== undefined && num > max;
+          if (blockOutOfRangeInput && (isBelowMin || isAboveMax)) return;
 
           const fixed = clampOnChange ? clamp(num, min, max) : num;
 

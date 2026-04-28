@@ -1,4 +1,6 @@
+import { queryKeys } from "@/features/profile/hooks/queries/queryKey";
 import { appApiData } from "@/shared/api/appApi";
+import { queryClient } from "@/shared/api/queryClient";
 import type { ProfileResponseDto, UserGoalSnapshotResponseDto } from "@/shared/api/types/api.dto";
 
 const END_POINT = {
@@ -26,12 +28,20 @@ export async function getProfile() {
   return response;
 }
 
+function invalidateProfileQuery() {
+  void queryClient.invalidateQueries({
+    queryKey: queryKeys.profile,
+  });
+}
+
 async function updateProfileField(endpoint: string, body: Record<string, unknown>) {
   const response = await appApiData<ProfileResponseDto>({
     endpoint,
     method: "POST",
     body,
   });
+
+  invalidateProfileQuery();
 
   return response;
 }

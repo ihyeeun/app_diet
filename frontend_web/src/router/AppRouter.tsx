@@ -104,6 +104,8 @@ export default function AppRouter() {
 
             <Route path={PATH.PROFILE} element={<ProfilePage />} />
             <Route path={PATH.GOAL_EDIT} element={<GoalEditPage />} />
+            <Route path={PATH.GOAL_EDIT_TARGET_CALORIES} element={<GoalEditPage />} />
+            <Route path={PATH.GOAL_EDIT_NUTRIENT} element={<GoalEditPage />} />
 
             <Route path="*" element={<Navigate replace to={PATH.HOME} />} />
           </Route>

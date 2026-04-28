@@ -25,9 +25,11 @@ type WeeklyRecordChartProps = {
 };
 
 type AxisTickProps = {
+  index?: number;
   payload?: {
     value: number | string;
   };
+  visibleTicksCount?: number;
   x?: number;
   y?: number;
 };
@@ -37,16 +39,33 @@ type CustomTooltipProps = TooltipContentProps & {
 };
 
 function XAxisTick({ payload, x = 0, y = 0 }: AxisTickProps) {
+  const rawValue = String(payload?.value ?? "");
+  const [dateLabel, weekdayLabel] = rawValue.includes("\n")
+    ? rawValue.split("\n", 2)
+    : [rawValue, ""];
+  const today = new Date();
+  const todayDateLabel = `${today.getMonth() + 1}/${today.getDate()}`;
+  const todayWeekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][today.getDay()];
+  const normalizedWeekdayLabel = weekdayLabel.replaceAll("(", "").replaceAll(")", "").trim();
+  const isTodayTick = dateLabel === todayDateLabel && normalizedWeekdayLabel === todayWeekdayLabel;
+  const tickClassName =
+    `${styles.xAxisTick} ${isTodayTick ? styles.xAxisTickToday : ""} typo-caption`.trim();
+
   return (
-    <text className={styles.xAxisTick} textAnchor="middle" x={x} y={y + 14}>
-      {payload?.value}
+    <text className={tickClassName} textAnchor="middle" x={x} y={y + 12}>
+      <tspan x={x}>{dateLabel}</tspan>
+      {weekdayLabel ? (
+        <tspan x={x} dy="1.2em">
+          {weekdayLabel}
+        </tspan>
+      ) : null}
     </text>
   );
 }
 
 function YAxisTick({ payload, x = 0, y = 0 }: AxisTickProps) {
   return (
-    <text className={styles.yAxisTick} textAnchor="end" x={x - 3} y={y + 4}>
+    <text className={`${styles.yAxisTick} typo-caption`} textAnchor="end" x={x} y={y}>
       {payload?.value}
     </text>
   );
@@ -79,7 +98,11 @@ export default function WeeklyRecordChart({ data, unit, yTicks }: WeeklyRecordCh
   return (
     <div className={styles.chartContainer}>
       <ResponsiveContainer>
-        <AreaChart accessibilityLayer={false} data={data}>
+        <AreaChart
+          accessibilityLayer={false}
+          data={data}
+          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+        >
           <defs>
             <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="var(--chart-current)" stopOpacity={1} />
@@ -96,7 +119,9 @@ export default function WeeklyRecordChart({ data, unit, yTicks }: WeeklyRecordCh
           <XAxis
             axisLine={false}
             dataKey="label"
+            height={50}
             minTickGap={0}
+            padding="no-gap"
             tick={<XAxisTick />}
             tickLine={false}
             interval={0}
@@ -127,7 +152,7 @@ export default function WeeklyRecordChart({ data, unit, yTicks }: WeeklyRecordCh
               fill={`url(#${targetGradientId})`}
               isAnimationActive={false}
               stroke="var(--chart-target)"
-              strokeWidth={2}
+              strokeWidth={1}
               type="linear"
             />
           )}
@@ -137,7 +162,7 @@ export default function WeeklyRecordChart({ data, unit, yTicks }: WeeklyRecordCh
             fill={`url(#${gradientId})`}
             isAnimationActive={false}
             stroke="var(--chart-current)"
-            strokeWidth={2}
+            strokeWidth={1}
             type="monotone"
           />
         </AreaChart>
