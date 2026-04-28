@@ -827,6 +827,7 @@ export default function GoalEditPage() {
         isOpen={editingField !== null}
         onClose={closeEditor}
         className={styles.goalEditBottomSheet}
+        disableContentDrag
       >
         <div className={styles.sheetContent} data-editor-field={editingField ?? undefined}>
           <div className={styles.sheetBody}>{renderEditorBody()}</div>
