@@ -101,7 +101,7 @@ export default function ProfilePage() {
 
       return {
         label: record.label,
-        value: record.steps,
+        value: record.steps ?? 0,
       };
     });
   }, [selectedMetric, weeklyRecordQuery.records]);
