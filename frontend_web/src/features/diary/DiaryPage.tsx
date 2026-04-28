@@ -136,8 +136,6 @@ export default function DiaryPage() {
 
         <div className={styles.content}>
           <ActionCard onClick={handleTodayMealScoreClick} className={styles.summaryCard}>
-            <p className="typo-title2">{formatDiaryRecordTitle(selectedDate)}</p>
-
             <div className={styles.scoreCard}>
               <p className={styles.scoreText}>
                 <p className={styles.calorieText}>
@@ -150,6 +148,8 @@ export default function DiaryPage() {
                 </p>
                 <span className={styles.scoreDivider} aria-hidden="true" />
                 <span className={`${styles.score} typo-title2`}>{mealScore}점</span>
+
+                <ChevronRight size={24} className={styles.icon} />
               </p>
               <div className={styles.scoreContainer}>
                 <ScoreProgress
@@ -289,12 +289,6 @@ function MealRecordCard({
       ) : null}
     </ActionCard>
   );
-}
-
-function formatDiaryRecordTitle(date: Date) {
-  const weekDays = ["일", "월", "화", "수", "목", "금", "토"] as const;
-
-  return `${date.getMonth() + 1}월 ${date.getDate()}일 ${weekDays[date.getDay()]}요일의 기록`;
 }
 
 function formatCalories(value: number) {
