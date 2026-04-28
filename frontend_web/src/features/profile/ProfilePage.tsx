@@ -75,6 +75,7 @@ export default function ProfilePage() {
   const metricConfig = METRIC_CONFIG[selectedMetric];
 
   const weeklyRecordQuery = useWeeklyRecordQuery({
+    metric: selectedMetric,
     today,
     targetWeight,
     targetCalories,
@@ -104,6 +105,10 @@ export default function ProfilePage() {
       };
     });
   }, [selectedMetric, weeklyRecordQuery.records]);
+
+  const handleSelectMetric = (metric: WeeklyMetricType) => {
+    setSelectedMetric(metric);
+  };
 
   const handleUpdateNickName = () => {
     if (nickName?.trim() === "" || nickName === undefined) {
@@ -187,7 +192,7 @@ export default function ProfilePage() {
 
           <section className={styles.activeCardGrid}>
             <ActionCard
-              onClick={() => setSelectedMetric("weight")}
+              onClick={() => handleSelectMetric("weight")}
               className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
             >
               <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
@@ -201,7 +206,7 @@ export default function ProfilePage() {
             </ActionCard>
 
             <ActionCard
-              onClick={() => setSelectedMetric("calories")}
+              onClick={() => handleSelectMetric("calories")}
               className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
             >
               <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
@@ -215,7 +220,7 @@ export default function ProfilePage() {
             </ActionCard>
 
             <ActionCard
-              onClick={() => setSelectedMetric("steps")}
+              onClick={() => handleSelectMetric("steps")}
               className={`${styles.activeCard} ${selectedMetric === "steps" ? styles.activeMetricCard : ""}`}
             >
               <p className={`${styles.activeCardTitle} typo-title4`}>걸음 수</p>
