@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import StepGoalCalories from "@/features/onboarding/components/steps/StepGoalCalories";
 import StepNutrient from "@/features/onboarding/components/steps/StepNutrient";
@@ -25,6 +25,7 @@ import {
 import { queryKeys } from "@/features/profile/hooks/queries/queryKey";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import styles from "@/features/profile/styles/GoalEditPage.module.css";
+import { PATH } from "@/router/path";
 import type { ProfileResponseDto } from "@/shared/api/types/api.dto";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
@@ -41,6 +42,9 @@ import { toast } from "@/shared/commons/toast/toast";
 import { useSetTargets } from "@/shared/stores/targetNutrient.store";
 
 type GoalEditStage = "summary" | "targetCalories" | "nutrient";
+type GoalEditNavigationState = {
+  goalEditFlow?: boolean;
+};
 type EditableField =
   | "gender"
   | "birthYear"
@@ -100,6 +104,29 @@ const GOAL_LABELS = GOAL_OPTIONS.map((goal) => goal.title);
 const GOAL_CALORIES_MIN = 1;
 const GOAL_CALORIES_MAX = 99999;
 const RATIO_TOLERANCE = 0.001;
+const GOAL_EDIT_STAGE_PATH: Record<GoalEditStage, string> = {
+  summary: PATH.GOAL_EDIT,
+  targetCalories: PATH.GOAL_EDIT_TARGET_CALORIES,
+  nutrient: PATH.GOAL_EDIT_NUTRIENT,
+};
+
+function normalizePathname(pathname: string) {
+  return pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+}
+
+function getGoalEditStage(pathname: string): GoalEditStage {
+  const normalizedPathname = normalizePathname(pathname);
+
+  if (normalizedPathname === PATH.GOAL_EDIT_TARGET_CALORIES) {
+    return "targetCalories";
+  }
+
+  if (normalizedPathname === PATH.GOAL_EDIT_NUTRIENT) {
+    return "nutrient";
+  }
+
+  return "summary";
+}
 
 function toGoalEditDraft(profile: ProfileResponseDto): GoalEditDraft {
   return {
@@ -254,12 +281,15 @@ function toUpdatedProfile(previous: ProfileResponseDto, draft: GoalEditDraft): P
 }
 
 export default function GoalEditPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const setTargets = useSetTargets();
   const { data: profile, isPending } = useGetProfileQuery();
 
-  const [stage, setStage] = useState<GoalEditStage>("summary");
+  const stage = useMemo(() => getGoalEditStage(location.pathname), [location.pathname]);
+  const isPlanStage = stage === "targetCalories" || stage === "nutrient";
+  const navigationState = (location.state as GoalEditNavigationState | null) ?? undefined;
   const [draft, setDraft] = useState<GoalEditDraft | null>(null);
   const [initialDraft, setInitialDraft] = useState<GoalEditDraft | null>(null);
   const [editingField, setEditingField] = useState<EditableField | null>(null);
@@ -441,7 +471,7 @@ export default function GoalEditPage() {
       return;
     }
 
-    setStage("targetCalories");
+    navigate(GOAL_EDIT_STAGE_PATH.targetCalories, { state: navigationState });
   };
 
   const handleGoNutrient = () => {
@@ -457,7 +487,7 @@ export default function GoalEditPage() {
       return;
     }
 
-    setStage("nutrient");
+    navigate(GOAL_EDIT_STAGE_PATH.nutrient, { state: navigationState });
   };
 
   const handleComplete = async () => {
@@ -547,7 +577,18 @@ export default function GoalEditPage() {
       setInitialDraft({ ...draft });
 
       toast.success("목표가 수정되었어요");
-      navigate(-1);
+      if (navigationState?.goalEditFlow) {
+        const backStepsByStage: Record<GoalEditStage, number> = {
+          summary: -1,
+          targetCalories: -2,
+          nutrient: -3,
+        };
+
+        navigate(backStepsByStage[stage]);
+        return;
+      }
+
+      navigate(PATH.PROFILE, { replace: true });
     } catch (error) {
       console.error(error);
       toast.warning("목표 수정에 실패했어요");
@@ -564,12 +605,17 @@ export default function GoalEditPage() {
       return;
     }
 
-    if (stage === "targetCalories") {
-      setStage("summary");
+    if (navigationState?.goalEditFlow) {
+      navigate(-1);
       return;
     }
 
-    setStage("targetCalories");
+    if (stage === "targetCalories") {
+      navigate(GOAL_EDIT_STAGE_PATH.summary, { replace: true, state: navigationState });
+      return;
+    }
+
+    navigate(GOAL_EDIT_STAGE_PATH.targetCalories, { replace: true, state: navigationState });
   };
 
   const selectedBirthYear = isValidBirthYear(sheetData.birthYear)
@@ -753,7 +799,7 @@ export default function GoalEditPage() {
   const isFooterDisabled = isSubmitting || (stage === "summary" && !canStartPlan);
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${isPlanStage ? styles.pageWhite : ""}`}>
       <PageHeader title="목표 재설정" onBack={handleBack} />
 
       <main className={styles.main}>

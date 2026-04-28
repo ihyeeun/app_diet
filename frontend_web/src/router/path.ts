@@ -30,4 +30,6 @@ export const PATH = {
 
   // Profile
   GOAL_EDIT: "/profile/goal-edit",
+  GOAL_EDIT_TARGET_CALORIES: "/profile/goal-edit/target-calories",
+  GOAL_EDIT_NUTRIENT: "/profile/goal-edit/nutrient",
 };

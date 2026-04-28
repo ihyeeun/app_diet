@@ -185,7 +185,7 @@ export default function ProfilePage() {
 
             <div className={styles.textButton}>
               <Button
-                onClick={() => navigate(PATH.GOAL_EDIT)}
+                onClick={() => navigate(PATH.GOAL_EDIT, { state: { goalEditFlow: true } })}
                 variant="text"
                 size="small"
                 color="assistive"
