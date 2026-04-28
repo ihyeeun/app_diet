@@ -342,7 +342,7 @@ export default function AppWebViewScreen({
 
   const rememberTabWebHref = useCallback(
     (url: string) => {
-      if (!isTabWebView || !currentTab) return;
+      if (!isTabWebView) return;
 
       const webHref = resolveWebPath(url, webAppOrigin);
       if (!webHref) return;
@@ -351,15 +351,10 @@ export default function AppWebViewScreen({
       latestWebPathRef.current = webHref;
 
       if (tabFromUrl !== null) {
-        // Keep each tab's latest root URL in sync even when web navigation
-        // moves across tabs before native tab state catches up.
         lastKnownTabWebHrefByTabRef.current.set(tabFromUrl, webHref);
-        return;
       }
-
-      lastKnownTabWebHrefByTabRef.current.set(currentTab, webHref);
     },
-    [currentTab, isTabWebView, webAppOrigin],
+    [isTabWebView, webAppOrigin],
   );
 
   useEffect(() => {
