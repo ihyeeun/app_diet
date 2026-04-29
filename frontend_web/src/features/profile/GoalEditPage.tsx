@@ -180,25 +180,11 @@ function getSummaryValue(field: EditableField, draft: GoalEditDraft) {
 }
 
 function isGoalWeightRangeValid(data: GoalEditDraft) {
-  const isWeightInDefaultRange = isInRange(
+  return isInRange(
     data.goalweight,
     ONBOARDING_WEIGHT_RANGE.min,
     ONBOARDING_WEIGHT_RANGE.max,
   );
-
-  if (!isWeightInDefaultRange) {
-    return false;
-  }
-
-  if (data.goal === 0 && data.goalweight !== undefined && data.weight !== undefined) {
-    return data.goalweight <= data.weight;
-  }
-
-  if (data.goal === 2 && data.goalweight !== undefined && data.weight !== undefined) {
-    return data.goalweight > data.weight;
-  }
-
-  return true;
 }
 
 function validateStartPlan(draft: GoalEditDraft) {
@@ -217,14 +203,6 @@ function validateStartPlan(draft: GoalEditDraft) {
   if (draft.goal === undefined) return "목표를 선택해주세요";
 
   if (!isGoalWeightRangeValid(draft)) {
-    if (draft.goal === 0 && draft.goalweight !== undefined && draft.weight !== undefined) {
-      return "다이어트 목표는 현재 몸무게보다 높게 설정할 수 없어요";
-    }
-
-    if (draft.goal === 2 && draft.goalweight !== undefined && draft.weight !== undefined) {
-      return "근육 늘리기 목표는 현재 몸무게보다 높게 설정해야 해요";
-    }
-
     return "목표 몸무게를 다시 확인해주세요";
   }
 
@@ -431,24 +409,6 @@ export default function GoalEditPage() {
     };
 
     if (!isGoalWeightRangeValid(nextDraft)) {
-      if (
-        nextDraft.goal === 0 &&
-        nextDraft.goalweight !== undefined &&
-        nextDraft.weight !== undefined
-      ) {
-        toast.warning("다이어트 목표는 현재 몸무게보다 높게 설정할 수 없어요");
-        return;
-      }
-
-      if (
-        nextDraft.goal === 2 &&
-        nextDraft.goalweight !== undefined &&
-        nextDraft.weight !== undefined
-      ) {
-        toast.warning("근육 늘리기 목표는 현재 몸무게보다 높게 설정해야 해요");
-        return;
-      }
-
       toast.warning("목표 몸무게를 다시 확인해주세요");
       return;
     }

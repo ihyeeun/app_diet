@@ -26,25 +26,11 @@ function isBodyRangeValid(data: OnboardingData) {
 }
 
 function isGoalWeightRangeValid(data: OnboardingData) {
-  const isWeightInDefaultRange = isInRange(
+  return isInRange(
     data.goalweight,
     ONBOARDING_WEIGHT_RANGE.min,
     ONBOARDING_WEIGHT_RANGE.max,
   );
-
-  if (!isWeightInDefaultRange) {
-    return false;
-  }
-
-  if (data.goal === 0 && data.goalweight !== undefined && data.weight !== undefined) {
-    return data.goalweight <= data.weight;
-  }
-
-  if (data.goal === 2 && data.goalweight !== undefined && data.weight !== undefined) {
-    return data.goalweight > data.weight;
-  }
-
-  return true;
 }
 
 export default function OnboardingPage() {
@@ -81,23 +67,7 @@ export default function OnboardingPage() {
     }
 
     if (step.id === "goalWeight" && !isGoalWeightRangeValid(userData)) {
-      if (
-        userData.goal === 0 &&
-        userData.goalweight !== undefined &&
-        userData.weight !== undefined &&
-        userData.goalweight >= userData.weight
-      ) {
-        toast.warning("다이어트 목표는 현재 몸무게보다 높게 설정할 수 없어요");
-      } else if (
-        userData.goal === 2 &&
-        userData.goalweight !== undefined &&
-        userData.weight !== undefined &&
-        userData.goalweight <= userData.weight
-      ) {
-        toast.warning("근육 늘리기 목표는 현재 몸무게보다 높게 설정해야 해요");
-      } else {
-        toast.warning("정확한 값인지 다시 확인해주세요");
-      }
+      toast.warning("정확한 값인지 다시 확인해주세요");
       return;
     }
 

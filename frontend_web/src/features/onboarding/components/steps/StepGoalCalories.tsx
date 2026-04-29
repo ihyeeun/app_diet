@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
-import { calculateGoalWeek } from "@/features/onboarding/utils/calculateGoalWeek";
+import {
+  getGoalWeekEstimate,
+  type GoalWeekEstimateResult,
+} from "@/features/onboarding/utils/calculateGoalWeek";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { EditorInput } from "@/shared/commons/input/EditorInput";
@@ -32,6 +35,42 @@ function hasRequiredRecommendPayload(data: StepComponentProps["data"]) {
     data.activity !== undefined &&
     data.goal !== undefined
   );
+}
+
+function showInvalidGoalCaloriesToast(goalWeekEstimate: GoalWeekEstimateResult) {
+  if (goalWeekEstimate.status !== "invalid") {
+    return;
+  }
+
+  if (goalWeekEstimate.reason === "calories_too_low_for_gain") {
+    const minTargetCalories = goalWeekEstimate.tdee === undefined ? undefined : Math.ceil(goalWeekEstimate.tdee);
+    toast.warning(
+      "목표 체중에 비해 목표 칼로리가 너무 낮아요.",
+      minTargetCalories === undefined ? undefined : `${minTargetCalories}kcal 보다 높게 입력해주세요.`,
+    );
+    return;
+  }
+
+  if (goalWeekEstimate.reason === "calories_too_high_for_loss") {
+    const maxTargetCalories =
+      goalWeekEstimate.tdee === undefined ? undefined : Math.floor(goalWeekEstimate.tdee);
+    toast.warning(
+      "목표 체중에 비해 목표 칼로리가 너무 높아요.",
+      maxTargetCalories === undefined ? undefined : `${maxTargetCalories}kcal 보다 낮게 입력해주세요.`,
+    );
+    return;
+  }
+
+  if (goalWeekEstimate.reason === "no_daily_delta") {
+    const tdee = goalWeekEstimate.tdee === undefined ? undefined : Math.round(goalWeekEstimate.tdee);
+    toast.warning(
+      "해당 칼로리로는 목표 달성이 어려워요.",
+      tdee === undefined ? undefined : `${tdee}kcal와 다르게 입력해주세요.`,
+    );
+    return;
+  }
+
+  toast.warning("해당 칼로리로는 목표 달성이 어려워요.");
 }
 
 export default function SteptargetCalories({ data, update }: StepComponentProps) {
@@ -73,36 +112,35 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
       return;
     }
 
-    update({ targetCalories: toInteger(responseData) });
+    const nextRecommendedCalories = toInteger(responseData);
+    update({ targetCalories: nextRecommendedCalories });
   }, [responseData, update]);
 
-  const visibletargetCalories = data.targetCalories ?? responseData;
+  const displayRecommendedCalories = responseData === undefined ? undefined : toInteger(responseData);
+  const visibletargetCalories = data.targetCalories ?? displayRecommendedCalories;
   const normalizedVisibletargetCalories =
     visibletargetCalories === undefined ? undefined : toInteger(visibletargetCalories);
 
-  const goalWeeks = useMemo(() => {
-    if (normalizedVisibletargetCalories === undefined) {
-      return undefined;
-    }
+  const goalWeekEstimate =
+    normalizedVisibletargetCalories === undefined
+      ? undefined
+      : getGoalWeekEstimate(data, normalizedVisibletargetCalories);
 
-    try {
-      return calculateGoalWeek(data, normalizedVisibletargetCalories);
-    } catch {
-      return null;
-    }
-  }, [data, normalizedVisibletargetCalories]);
-
-  const goalWeekMessage = useMemo(() => {
-    if (goalWeeks === undefined) {
+  const goalWeekMessage = (() => {
+    if (goalWeekEstimate === undefined) {
       return "목표 달성 기간을 계산하고 있어요";
     }
 
-    if (goalWeeks === null) {
+    if (goalWeekEstimate.status === "invalid" && goalWeekEstimate.reason === "insufficient_data") {
+      return "목표 달성 기간을 계산하고 있어요";
+    }
+
+    if (goalWeekEstimate.status === "invalid") {
       return "해당 칼로리로는 목표 달성이 어려워요";
     }
 
-    return `목표 달성까지 약 ${goalWeeks}주 걸려요`;
-  }, [goalWeeks]);
+    return `목표 달성까지 약 ${goalWeekEstimate.weeks}주 걸려요`;
+  })();
 
   const openEditor = () => {
     setDrafttargetCalories(normalizedVisibletargetCalories);
@@ -122,6 +160,13 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
       return;
     }
 
+    const nextGoalWeekEstimate = getGoalWeekEstimate(data, nexttargetCalories);
+
+    if (nextGoalWeekEstimate.status === "invalid") {
+      showInvalidGoalCaloriesToast(nextGoalWeekEstimate);
+      return;
+    }
+
     update({ targetCalories: nexttargetCalories });
     setOpen(false);
     toast.success("수정되었어요.");
@@ -134,7 +179,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
         <p className={styles.onboardingSubtitle}>
           {isPending
             ? "추천 목표 칼로리를 계산하고 있어요"
-            : `추천하는 목표 칼로리는 ${formattargetCalories(responseData)}kcal예요`}
+            : `추천하는 목표 칼로리는 ${formattargetCalories(displayRecommendedCalories)}kcal예요`}
         </p>
       </div>
 
