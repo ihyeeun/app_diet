@@ -55,6 +55,7 @@
 
 .brandItemChevron {
   color: var(--static-black);
+  margin-left: auto;
 }
 
 .emptyResult {
