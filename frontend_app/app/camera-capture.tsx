@@ -93,10 +93,8 @@ export default function CameraCaptureScreen() {
   const isFocused = useIsFocused();
   const cameraRef = useRef<Camera>(null);
   const [isPreparing, setIsPreparing] = useState(true);
-  const [cameraPermissionStatus, setCameraPermissionStatus] = useState<CameraPermissionStatus | null>(
-    null,
-  );
-  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
+  const [cameraPermissionStatus, setCameraPermissionStatus] =
+    useState<CameraPermissionStatus | null>(null);
   const [isDeviceDetectionFinished, setIsDeviceDetectionFinished] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const capturePayload = useMemo(() => getPendingCameraCapturePayload(), []);
@@ -222,21 +220,6 @@ export default function CameraCaptureScreen() {
     );
     router.back();
   }, [cameraPermissionStatus, device, isDeviceDetectionFinished, isPreparing]);
-
-  const handlePermissionRetryPress = useCallback(async () => {
-    if (isCheckingPermission) return;
-
-    setIsCheckingPermission(true);
-
-    try {
-      const nextStatus = await getCameraPermissionStatus(true);
-      setCameraPermissionStatus(nextStatus);
-    } catch {
-      Alert.alert("카메라 권한을 확인하지 못했어요.", "잠시 후 다시 시도해주세요.");
-    } finally {
-      setIsCheckingPermission(false);
-    }
-  }, [getCameraPermissionStatus, isCheckingPermission]);
 
   const handleOpenSettingsPress = useCallback(async () => {
     try {
@@ -389,37 +372,16 @@ export default function CameraCaptureScreen() {
           <Ionicons name="camera-outline" size={36} color="#ff8a00" />
           <Text style={styles.permissionTitle}>카메라 권한이 꺼져 있어요.</Text>
           <Text style={styles.permissionDescription}>
-            기기 설정에서 카메라 접근을 허용한 뒤 다시 시도해주세요.
+            기기 설정에서 카메라 접근을 허용한 뒤{"\n"} 다시 시도해주세요.
           </Text>
-        </View>
 
-        <View style={[styles.permissionActionGroup, { paddingBottom: Math.max(insets.bottom, 20) }]}>
           <Pressable
-            style={[
-              styles.permissionPrimaryButton,
-              isCheckingPermission && styles.disabledButton,
-            ]}
+            style={styles.permissionPrimaryButton}
             onPress={handleOpenSettingsPress}
             accessibilityRole="button"
             accessibilityLabel="설정으로 이동"
-            disabled={isCheckingPermission}
           >
             <Text style={styles.permissionPrimaryButtonText}>설정으로 이동</Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.permissionSecondaryButton,
-              isCheckingPermission && styles.disabledButton,
-            ]}
-            onPress={handlePermissionRetryPress}
-            accessibilityRole="button"
-            accessibilityLabel="권한 다시 확인"
-            disabled={isCheckingPermission}
-          >
-            <Text style={styles.permissionSecondaryButtonText}>
-              {isCheckingPermission ? "권한 확인 중..." : "다시 확인"}
-            </Text>
           </Pressable>
         </View>
       </View>
@@ -508,17 +470,16 @@ const styles = StyleSheet.create({
   permissionContainer: {
     flex: 1,
     backgroundColor: "#111111",
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingHorizontal: 20,
   },
   permissionCard: {
-    marginTop: 120,
-    marginBottom: 24,
     borderRadius: 16,
     backgroundColor: "#ffffff",
     paddingHorizontal: 24,
     paddingVertical: 28,
     alignItems: "center",
+    justifyContent: "center",
     gap: 10,
   },
   permissionTitle: {
@@ -534,35 +495,19 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: "center",
   },
-  permissionActionGroup: {
-    paddingBottom: 20,
-    gap: 10,
-  },
   permissionPrimaryButton: {
     minHeight: 54,
-    borderRadius: 14,
+    borderRadius: 8,
     backgroundColor: "#ff8a00",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 20,
+    alignSelf: "stretch",
   },
   permissionPrimaryButtonText: {
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "700",
-  },
-  permissionSecondaryButton: {
-    minHeight: 54,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#5f5f5f",
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  permissionSecondaryButtonText: {
-    color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "600",
   },
   loadingContainer: {
     flex: 1,
