@@ -14,7 +14,7 @@ interface WeightLogBottomSheetProps {
   onSubmit: (weight: number) => void;
 }
 
-const MAX_WEIGHT = 999.9;
+const MAX_WEIGHT = 200;
 
 function isWeightInputAllowed(inputValue: string) {
   const normalized = inputValue.trim();
@@ -41,13 +41,8 @@ export default function WeightLogBottomSheet({
     }
 
     const nextWeight = toOneDecimalPlace(draftWeight);
-    if (nextWeight < 1) {
-      toast.warning("정확한 값을 입력해주세요");
-      return;
-    }
-
-    if (nextWeight > MAX_WEIGHT) {
-      toast.warning("체중은 1 ~ 999.9kg 사이로 입력해주세요");
+    if (nextWeight < 1 || nextWeight > MAX_WEIGHT) {
+      toast.warning("정확한 값인지 다시 확인해주세요");
       return;
     }
 
