@@ -77,7 +77,7 @@ export default function MenuBoardCameraPage() {
       toast.success("메뉴판 분석이 완료되었어요");
     } catch (error) {
       setCapturedPreviewSrc(null);
-      setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "MENU_BOARD"));
+      setCaptureErrorFeedback(getRecognitionErrorFeedback("MENU_BOARD", error));
     } finally {
       setIsProcessing(false);
     }

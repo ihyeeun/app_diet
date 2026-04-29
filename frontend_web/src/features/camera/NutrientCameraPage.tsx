@@ -82,7 +82,7 @@ export default function NutrientCameraPage() {
       toast.success("영양성분표 분석이 완료되었어요.");
     } catch (error) {
       setCapturedPreviewSrc(null);
-      setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "NUTRITION_LABEL"));
+      setCaptureErrorFeedback(getRecognitionErrorFeedback("NUTRITION_LABEL", error));
     } finally {
       setIsUploading(false);
     }

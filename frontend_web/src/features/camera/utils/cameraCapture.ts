@@ -32,7 +32,7 @@ const RECOGNITION_ERROR_COPY: Record<RecognitionDomain, RecognitionErrorCopy> = 
     retryGuide: "영양성분표 전체가 선명하게 보이도록 다시 촬영해주세요.",
   },
   FOOD: {
-    title: "음식 인식에 실패했어요",
+    title: "음식을 인식하기 어려웠어요",
     fallbackMessage: "음식 메뉴 분석에 실패했어요.",
     retryGuide: "음식이 잘 보이도록 다시 촬영해주세요.",
   },
@@ -80,8 +80,8 @@ export function getCameraCaptureErrorFeedback(error: unknown): CameraCaptureErro
 }
 
 export function getRecognitionErrorFeedback(
-  error: unknown,
   domain: RecognitionDomain,
+  error?: unknown,
 ): CameraCaptureErrorFeedback {
   // const statusCode = (error as BridgeCameraError)?.statusCode;
   // if (typeof statusCode === "number" && statusCode >= 500) {
@@ -92,11 +92,10 @@ export function getRecognitionErrorFeedback(
   // }
 
   const copy = RECOGNITION_ERROR_COPY[domain];
-  const message = getErrorMessage(error, copy.fallbackMessage);
 
   return {
     title: copy.title,
-    description: `${message} ${copy.retryGuide}`,
+    description: `${copy.retryGuide} ${getErrorMessage(error, copy.fallbackMessage)}`,
   };
 }
 
