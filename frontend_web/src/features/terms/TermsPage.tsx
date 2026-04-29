@@ -41,13 +41,22 @@ export default function TermsPage() {
           <Accordion.Root className={styles.accordion}>
             <Accordion.Item className={styles.item}>
               <Accordion.Header className={styles.header}>
-                <Accordion.Trigger className={styles.trigger}>
+                <Accordion.Trigger className={`${styles.trigger} typo-title4`}>
                   서비스 이용약관
                   <ChevronDown size={24} className={styles.triggerIcon} />
                 </Accordion.Trigger>
               </Accordion.Header>
               <Accordion.Panel className={styles.panel}>
-                <div className={styles.content}>추후 추가 예정.</div>
+                <div className={styles.content}>
+                  <a
+                    className={styles.link}
+                    href="https://third-princess-d57.notion.site/termsofservice"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    서비스 이용약관 보러가기
+                  </a>
+                </div>
               </Accordion.Panel>
             </Accordion.Item>
           </Accordion.Root>
@@ -55,13 +64,22 @@ export default function TermsPage() {
           <Accordion.Root className={styles.accordion}>
             <Accordion.Item className={styles.item}>
               <Accordion.Header className={styles.header}>
-                <Accordion.Trigger className={styles.trigger}>
+                <Accordion.Trigger className={`${styles.trigger} typo-title4`}>
                   개인정보처리방침
                   <ChevronDown size={24} className={styles.triggerIcon} />
                 </Accordion.Trigger>
               </Accordion.Header>
               <Accordion.Panel className={styles.panel}>
-                <div className={styles.content}>추후 추가 예정.</div>
+                <div className={styles.content}>
+                  <a
+                    className={styles.link}
+                    href="https://third-princess-d57.notion.site/privacypolicy"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    개인정보처리방침 보러가기
+                  </a>
+                </div>
               </Accordion.Panel>
             </Accordion.Item>
           </Accordion.Root>

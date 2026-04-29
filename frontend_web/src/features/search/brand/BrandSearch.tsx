@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -133,7 +134,7 @@ export default function BrandSearch() {
                         aria-pressed={isSelected}
                       >
                         <span className={`typo-title2 ${styles.brandName}`}>{brand.name}</span>
-                        {/* <ChevronRight size={24} className={styles.brandItemChevron} /> */}
+                        <ChevronRight size={24} className={styles.brandItemChevron} />
                       </button>
                     </li>
                   );

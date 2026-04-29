@@ -63,7 +63,11 @@ export function hasChildNutrientOverflow(
   source: Partial<Record<MenuNutrientFieldKey, unknown>>,
 ) {
   return NUTRIENT_CHILD_RULES.some(({ parent, children }) => {
-    const parentValue = toFiniteNumberOrZero(source[parent]);
+    const parentValue = toFiniteNumberOrUndefined(source[parent]);
+    if (parentValue === undefined) {
+      return false;
+    }
+
     const childSum = children.reduce((sum, key) => sum + toFiniteNumberOrZero(source[key]), 0);
 
     return childSum > parentValue + NUTRIENT_OVERFLOW_EPSILON;

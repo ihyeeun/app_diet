@@ -68,9 +68,7 @@ export default function FoodCameraPage() {
 
       if (!imageData?.menu_ids?.length) {
         setCapturedPreviewSrc(null);
-        setCaptureErrorFeedback(
-          getRecognitionErrorFeedback(new Error("메뉴를 인식하지 못했어요."), "FOOD"),
-        );
+        setCaptureErrorFeedback(getRecognitionErrorFeedback("FOOD"));
         return;
       }
 
@@ -99,7 +97,7 @@ export default function FoodCameraPage() {
       navigate(getMealRecordPath(dateKey, mealType), { replace: true });
     } catch (error) {
       setCapturedPreviewSrc(null);
-      setCaptureErrorFeedback(getRecognitionErrorFeedback(error, "FOOD"));
+      setCaptureErrorFeedback(getRecognitionErrorFeedback("FOOD", error));
     } finally {
       setIsUploading(false);
     }

@@ -140,7 +140,6 @@ export default function ProfilePage() {
   return (
     <div className={styles.page}>
       <PageHeader
-        title="식단기록"
         rightSlot={
           <button
             type="button"

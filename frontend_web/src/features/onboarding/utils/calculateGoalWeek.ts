@@ -1,17 +1,48 @@
 import type { OnboardingData } from "@/features/onboarding/onboarding.types";
 
+type WeightDirection = "loss" | "gain" | "maintain";
+
+export type GoalWeekInvalidReason =
+  | "insufficient_data"
+  | "no_daily_delta"
+  | "calories_too_high_for_loss"
+  | "calories_too_low_for_gain";
+
+export type GoalWeekEstimateResult =
+  | {
+      status: "ok";
+      weeks: number;
+      tdee: number;
+    }
+  | {
+      status: "invalid";
+      reason: GoalWeekInvalidReason;
+      tdee?: number;
+    };
+
 function hasRequiredGoalWeekBaseFields(
   data: OnboardingData,
 ): data is OnboardingData &
-  Required<Pick<OnboardingData, "birthYear" | "weight" | "height" | "gender" | "activity" | "goal">> {
+  Required<Pick<OnboardingData, "birthYear" | "weight" | "height" | "gender" | "activity">> {
   return (
     data.birthYear !== undefined &&
     data.weight !== undefined &&
     data.height !== undefined &&
     data.gender !== undefined &&
-    data.activity !== undefined &&
-    data.goal !== undefined
+    data.activity !== undefined
   );
+}
+
+export function resolveWeightDirection(weight: number, targetWeight: number): WeightDirection {
+  if (targetWeight > weight) {
+    return "gain";
+  }
+
+  if (targetWeight < weight) {
+    return "loss";
+  }
+
+  return "maintain";
 }
 
 export function calculateTDEE(
@@ -34,55 +65,67 @@ export function calculateTDEE(
 
 export function calculateGoalWeeks(
   weight: number,
-  goal: number,
   targetWeight: number,
   targetCalories: number,
   tdee: number,
-): number {
-  if (goal === 1) {
-    return 0;
+): GoalWeekEstimateResult {
+  const weightDirection = resolveWeightDirection(weight, targetWeight);
+
+  if (weightDirection === "maintain") {
+    return { status: "ok", weeks: 0, tdee };
+  }
+
+  if (weightDirection === "loss" && targetCalories >= tdee) {
+    return {
+      status: "invalid",
+      reason: "calories_too_high_for_loss",
+      tdee,
+    };
+  }
+
+  if (weightDirection === "gain" && targetCalories <= tdee) {
+    return {
+      status: "invalid",
+      reason: "calories_too_low_for_gain",
+      tdee,
+    };
   }
 
   const dailyDeltaCalories = Math.abs(targetCalories - tdee);
 
   if (dailyDeltaCalories === 0) {
-    throw new Error("해당 값으로는 목표 달성이 불가능합니다.");
-  }
-
-  if (goal === 0 && targetCalories >= tdee) {
-    throw new Error("해당 값으로는 목표 달성이 불가능합니다.");
-  }
-
-  if (goal === 2 && targetCalories <= tdee) {
-    throw new Error("해당 값으로는 목표 달성이 불가능합니다.");
-  }
-
-  if (goal === 0 && targetWeight >= weight) {
-    throw new Error("감량 목표에서는 목표 체중이 현재 체중보다 낮아야 합니다.");
-  }
-
-  if (goal === 2 && targetWeight <= weight) {
-    throw new Error("증량 목표에서는 목표 체중이 현재 체중보다 높아야 합니다.");
+    return { status: "invalid", reason: "no_daily_delta", tdee };
   }
 
   const weightDiff = Math.abs(weight - targetWeight);
-  return Math.ceil(weightDiff / ((dailyDeltaCalories * 7) / 7700));
+  const weeks = Math.ceil(weightDiff / ((dailyDeltaCalories * 7) / 7700));
+
+  return { status: "ok", weeks, tdee };
 }
 
-export function calculateGoalWeek(data: OnboardingData, targetCalories: number): number {
+export function getGoalWeekEstimate(
+  data: OnboardingData,
+  targetCalories: number,
+): GoalWeekEstimateResult {
   if (!hasRequiredGoalWeekBaseFields(data)) {
-    throw new Error("목표 달성 기간 계산에 필요한 값이 부족합니다.");
-  }
-
-  if (data.goal === 1) {
-    return 0;
+    return { status: "invalid", reason: "insufficient_data" };
   }
 
   if (data.goalweight === undefined) {
-    throw new Error("목표 달성 기간 계산에 필요한 값이 부족합니다.");
+    return { status: "invalid", reason: "insufficient_data" };
   }
 
   const tdee = calculateTDEE(data.birthYear, data.weight, data.height, data.gender, data.activity);
 
-  return calculateGoalWeeks(data.weight, data.goal, data.goalweight, targetCalories, tdee);
+  return calculateGoalWeeks(data.weight, data.goalweight, targetCalories, tdee);
+}
+
+export function calculateGoalWeek(data: OnboardingData, targetCalories: number): number {
+  const goalWeekEstimate = getGoalWeekEstimate(data, targetCalories);
+
+  if (goalWeekEstimate.status !== "ok") {
+    throw new Error("해당 값으로는 목표 달성이 불가능합니다.");
+  }
+
+  return goalWeekEstimate.weeks;
 }

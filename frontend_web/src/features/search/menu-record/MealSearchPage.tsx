@@ -1,4 +1,3 @@
-import { ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -208,13 +207,6 @@ export default function MealSearchPage() {
                     );
                   })}
 
-                  {searchResults.brand_list.map((brand) => (
-                    <button key={brand} type="button" className={styles.brandItem}>
-                      <span className={`typo-title2 ${styles.brandName}`}>{brand}</span>
-                      <ChevronRight size={24} className={styles.brandItemChevron} />
-                    </button>
-                  ))}
-
                   <div className={styles.bottomTextContainer}>
                     <Button
                       variant="text"
@@ -281,13 +273,6 @@ export default function MealSearchPage() {
                             />
                           );
                         })}
-
-                        {searchResults.brand_list.map((brand) => (
-                          <button key={brand} type="button" className={styles.brandItem}>
-                            <span className={`typo-title2 ${styles.brandName}`}>{brand}</span>
-                            <ChevronRight size={24} className={styles.brandItemChevron} />
-                          </button>
-                        ))}
                       </div>
                     </section>
                   )}
