@@ -366,7 +366,7 @@ export default function ChatPage() {
 
   return (
     <div className={styles.page}>
-      <PageHeader title="채팅" onBack={() => navigate(PATH.HOME)} />
+      <PageHeader onBack={() => navigate(PATH.HOME)} />
 
       <main className={styles.main}>
         {!hasAnyConversation && !isHistoryPending ? <EmptySection /> : null}
@@ -858,7 +858,8 @@ function buildRecordedMenus(
       menu: recommendation.menu,
       totalCalories:
         recommendation.calories *
-        (selectedMenu.quantity / parseRecommendationServingContext(recommendation.amount).baseWeight),
+        (selectedMenu.quantity /
+          parseRecommendationServingContext(recommendation.amount).baseWeight),
     });
 
     return acc;
