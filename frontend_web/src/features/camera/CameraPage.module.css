@@ -50,6 +50,7 @@
   overflow: hidden;
   position: relative;
   width: 85%;
+  max-height: 100%;
 }
 
 .previewImage {
