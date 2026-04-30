@@ -49,7 +49,7 @@ export default function CalendarHeader({
           <div className="calendar-header-right">
             <button
               type="button"
-              className="typo-label3 calender-text-white"
+              className="typo-label3 calendar-text-white"
               onClick={onToday}
               aria-label="오늘 날짜로 이동"
             >
@@ -60,11 +60,11 @@ export default function CalendarHeader({
       </div>
 
       {viewMode === "month" && (
-        <div className="calender-month-title">
+        <div className="calendar-month-title">
           <button type="button" className="calendar-nav-button" onClick={onPrev} aria-label="이전">
             <ChevronLeft size={24} />
           </button>
-          <p className="typo-title3 calender-text-white">{monthTitle}</p>
+          <p className="typo-title3 calendar-text-white">{monthTitle}</p>
           <button type="button" className="calendar-nav-button" onClick={onNext} aria-label="다음">
             <ChevronRight size={24} />
           </button>

@@ -192,12 +192,12 @@
   width: min(40px, 100%);
 }
 
-.calender-month-title {
+.calendar-month-title {
   display: flex;
   gap: 16px;
   justify-content: center;
 }
 
-.calender-text-white {
+.calendar-text-white {
   color: var(--text-white);
 }
