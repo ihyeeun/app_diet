@@ -62,8 +62,8 @@ type GoalEditDraft = Pick<
   | "weight"
   | "activity"
   | "goal"
-  | "goalweight"
-  | "targetCalories"
+  | "target_weight"
+  | "target_calories"
   | "carbs"
   | "protein"
   | "fat"
@@ -136,8 +136,8 @@ function toGoalEditDraft(profile: ProfileResponseDto): GoalEditDraft {
     weight: profile.weight,
     activity: profile.activity,
     goal: profile.goal,
-    goalweight: profile.target_weight,
-    targetCalories: profile.target_calories,
+    target_weight: profile.target_weight,
+    target_calories: profile.target_calories,
     carbs: profile.target_ratio[0],
     protein: profile.target_ratio[1],
     fat: profile.target_ratio[2],
@@ -176,15 +176,11 @@ function getSummaryValue(field: EditableField, draft: GoalEditDraft) {
     return draft.goal !== undefined ? (GOAL_LABELS[draft.goal] ?? "-") : "-";
   }
 
-  return draft.goalweight !== undefined ? `${formatDecimal(draft.goalweight)}kg` : "-";
+  return draft.target_weight !== undefined ? `${formatDecimal(draft.target_weight)}kg` : "-";
 }
 
 function isGoalWeightRangeValid(data: GoalEditDraft) {
-  return isInRange(
-    data.goalweight,
-    ONBOARDING_WEIGHT_RANGE.min,
-    ONBOARDING_WEIGHT_RANGE.max,
-  );
+  return isInRange(data.target_weight, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max);
 }
 
 function validateStartPlan(draft: GoalEditDraft) {
@@ -252,8 +248,8 @@ function toUpdatedProfile(previous: ProfileResponseDto, draft: GoalEditDraft): P
     weight: draft.weight ?? previous.weight,
     activity: draft.activity ?? previous.activity,
     goal: draft.goal ?? previous.goal,
-    target_weight: draft.goalweight ?? previous.target_weight,
-    target_calories: draft.targetCalories ?? previous.target_calories,
+    target_weight: draft.target_weight ?? previous.target_weight,
+    target_calories: draft.target_calories ?? previous.target_calories,
     target_ratio: nextTargetRatio,
   };
 }
@@ -405,7 +401,7 @@ export default function GoalEditPage() {
 
     const nextDraft: GoalEditDraft = {
       ...draft,
-      goalweight: sheetData.goalweight,
+      target_weight: sheetData.target_weight,
     };
 
     if (!isGoalWeightRangeValid(nextDraft)) {
@@ -413,7 +409,7 @@ export default function GoalEditPage() {
       return;
     }
 
-    updateDraft({ goalweight: sheetData.goalweight });
+    updateDraft({ target_weight: sheetData.target_weight });
     closeEditor();
   };
 
@@ -437,12 +433,12 @@ export default function GoalEditPage() {
   const handleGoNutrient = () => {
     if (!draft) return;
 
-    if (draft.targetCalories === undefined || draft.targetCalories < GOAL_CALORIES_MIN) {
+    if (draft.target_calories === undefined || draft.target_calories < GOAL_CALORIES_MIN) {
       toast.warning("목표 칼로리를 입력해주세요");
       return;
     }
 
-    if (draft.targetCalories > GOAL_CALORIES_MAX) {
+    if (draft.target_calories > GOAL_CALORIES_MAX) {
       toast.warning("목표 칼로리는 1~99999 사이로 입력해주세요");
       return;
     }
@@ -461,7 +457,7 @@ export default function GoalEditPage() {
       return;
     }
 
-    if (draft.targetCalories === undefined) {
+    if (draft.target_calories === undefined) {
       toast.warning("목표 칼로리를 입력해주세요");
       return;
     }
@@ -497,15 +493,15 @@ export default function GoalEditPage() {
       updateTasks.push(() => updateGoal(draft.goal!));
     }
 
-    if (draft.goalweight !== undefined && draft.goalweight !== initialDraft.goalweight) {
-      updateTasks.push(() => updateTargetWeight(draft.goalweight!));
+    if (draft.target_weight !== undefined && draft.target_weight !== initialDraft.target_weight) {
+      updateTasks.push(() => updateTargetWeight(draft.target_weight!));
     }
 
     if (
-      draft.targetCalories !== undefined &&
-      draft.targetCalories !== initialDraft.targetCalories
+      draft.target_calories !== undefined &&
+      draft.target_calories !== initialDraft.target_calories
     ) {
-      updateTasks.push(() => updateTargetCalories(draft.targetCalories!));
+      updateTasks.push(() => updateTargetCalories(draft.target_calories!));
     }
 
     if (isRatioChanged(initialDraft, draft)) {
@@ -531,7 +527,7 @@ export default function GoalEditPage() {
       });
 
       setTargets({
-        target_calories: draft.targetCalories!,
+        target_calories: draft.target_calories!,
         target_ratio: [draft.carbs!, draft.protein!, draft.fat!],
       });
       setInitialDraft({ ...draft });
@@ -588,7 +584,7 @@ export default function GoalEditPage() {
     isSubmitting ||
     (editingField === "height" && !hasPositiveValue(sheetData.height)) ||
     (editingField === "weight" && !hasPositiveValue(sheetData.weight)) ||
-    (editingField === "goalWeight" && !hasPositiveValue(sheetData.goalweight));
+    (editingField === "goalWeight" && !hasPositiveValue(sheetData.target_weight));
 
   const getSelectableCardClassName = (selected: boolean) =>
     [styles.selectableCard, selected ? styles.selectableCardActive : ""].filter(Boolean).join(" ");
@@ -740,8 +736,8 @@ export default function GoalEditPage() {
         <EditorInput
           type="number"
           inputMode="decimal"
-          value={sheetData.goalweight}
-          onChange={(value) => updateSheetData({ goalweight: value })}
+          value={sheetData.target_weight}
+          onChange={(value) => updateSheetData({ target_weight: value })}
           placeholder="목표 몸무게 입력"
           min={ONBOARDING_WEIGHT_RANGE.min}
           max={ONBOARDING_WEIGHT_RANGE.max}

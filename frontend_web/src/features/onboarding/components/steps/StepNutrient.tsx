@@ -42,11 +42,12 @@ function isAllowedNutrientInput(nextInputValue: string) {
 export default function StepNutrient({ data, update }: StepComponentProps) {
   const requestPayload = useMemo(
     () => ({
-      targetCalories: data.targetCalories,
+      target_calories: data.target_calories,
       weight: data.weight,
       goal: data.goal,
+      target_weight: data.target_weight,
     }),
-    [data.goal, data.targetCalories, data.weight],
+    [data.goal, data.target_calories, data.weight, data.target_weight],
   );
 
   const { mutate, data: nutrient } = useRecommendNutrientMutation();
@@ -74,27 +75,27 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
       </div>
       <div className={styles.onboardingNutrientContent}>
         <p className={styles.onboardingNutrientGoal}>
-          목표 칼로리 {data.targetCalories ?? "--"}kcal
+          목표 칼로리 {data.target_calories ?? "--"}kcal
         </p>
         <div className={styles.onboardingNutrientList}>
           <NutrientCard
             label="탄수화물"
             nutrientType="carbs"
-            targetCalories={data.targetCalories}
+            targetCalories={data.target_calories}
             value={data.carbs ?? 0}
             onChange={(v) => update({ carbs: v })}
           />
           <NutrientCard
             label="단백질"
             nutrientType="protein"
-            targetCalories={data.targetCalories}
+            targetCalories={data.target_calories}
             value={data.protein ?? 0}
             onChange={(v) => update({ protein: v })}
           />
           <NutrientCard
             label="지방"
             nutrientType="fat"
-            targetCalories={data.targetCalories}
+            targetCalories={data.target_calories}
             value={data.fat ?? 0}
             onChange={(v) => update({ fat: v })}
           />

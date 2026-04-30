@@ -43,10 +43,13 @@ function showInvalidGoalCaloriesToast(goalWeekEstimate: GoalWeekEstimateResult) 
   }
 
   if (goalWeekEstimate.reason === "calories_too_low_for_gain") {
-    const minTargetCalories = goalWeekEstimate.tdee === undefined ? undefined : Math.ceil(goalWeekEstimate.tdee);
+    const minTargetCalories =
+      goalWeekEstimate.tdee === undefined ? undefined : Math.ceil(goalWeekEstimate.tdee);
     toast.warning(
       "목표 체중에 비해 목표 칼로리가 너무 낮아요.",
-      minTargetCalories === undefined ? undefined : `${minTargetCalories}kcal 보다 높게 입력해주세요.`,
+      minTargetCalories === undefined
+        ? undefined
+        : `${minTargetCalories}kcal 보다 높게 입력해주세요.`,
     );
     return;
   }
@@ -56,13 +59,16 @@ function showInvalidGoalCaloriesToast(goalWeekEstimate: GoalWeekEstimateResult) 
       goalWeekEstimate.tdee === undefined ? undefined : Math.floor(goalWeekEstimate.tdee);
     toast.warning(
       "목표 체중에 비해 목표 칼로리가 너무 높아요.",
-      maxTargetCalories === undefined ? undefined : `${maxTargetCalories}kcal 보다 낮게 입력해주세요.`,
+      maxTargetCalories === undefined
+        ? undefined
+        : `${maxTargetCalories}kcal 보다 낮게 입력해주세요.`,
     );
     return;
   }
 
   if (goalWeekEstimate.reason === "no_daily_delta") {
-    const tdee = goalWeekEstimate.tdee === undefined ? undefined : Math.round(goalWeekEstimate.tdee);
+    const tdee =
+      goalWeekEstimate.tdee === undefined ? undefined : Math.round(goalWeekEstimate.tdee);
     toast.warning(
       "해당 칼로리로는 목표 달성이 어려워요.",
       tdee === undefined ? undefined : `${tdee}kcal와 다르게 입력해주세요.`,
@@ -95,8 +101,17 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
       height: data.height,
       activity: data.activity,
       goal: data.goal,
+      target_weight: data.target_weight,
     }),
-    [data.gender, data.birthYear, data.weight, data.height, data.activity, data.goal],
+    [
+      data.gender,
+      data.birthYear,
+      data.weight,
+      data.height,
+      data.activity,
+      data.goal,
+      data.target_weight,
+    ],
   );
 
   useEffect(() => {
@@ -113,11 +128,12 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
     }
 
     const nextRecommendedCalories = toInteger(responseData);
-    update({ targetCalories: nextRecommendedCalories });
+    update({ target_calories: nextRecommendedCalories });
   }, [responseData, update]);
 
-  const displayRecommendedCalories = responseData === undefined ? undefined : toInteger(responseData);
-  const visibletargetCalories = data.targetCalories ?? displayRecommendedCalories;
+  const displayRecommendedCalories =
+    responseData === undefined ? undefined : toInteger(responseData);
+  const visibletargetCalories = data.target_calories ?? displayRecommendedCalories;
   const normalizedVisibletargetCalories =
     visibletargetCalories === undefined ? undefined : toInteger(visibletargetCalories);
 
@@ -167,7 +183,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
       return;
     }
 
-    update({ targetCalories: nexttargetCalories });
+    update({ target_calories: nexttargetCalories });
     setOpen(false);
     toast.success("수정되었어요.");
   };

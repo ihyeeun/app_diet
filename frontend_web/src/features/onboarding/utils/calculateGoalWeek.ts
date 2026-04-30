@@ -111,13 +111,13 @@ export function getGoalWeekEstimate(
     return { status: "invalid", reason: "insufficient_data" };
   }
 
-  if (data.goalweight === undefined) {
+  if (data.target_weight === undefined) {
     return { status: "invalid", reason: "insufficient_data" };
   }
 
   const tdee = calculateTDEE(data.birthYear, data.weight, data.height, data.gender, data.activity);
 
-  return calculateGoalWeeks(data.weight, data.goalweight, targetCalories, tdee);
+  return calculateGoalWeeks(data.weight, data.target_weight, targetCalories, tdee);
 }
 
 export function calculateGoalWeek(data: OnboardingData, targetCalories: number): number {

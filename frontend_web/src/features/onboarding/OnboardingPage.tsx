@@ -26,11 +26,7 @@ function isBodyRangeValid(data: OnboardingData) {
 }
 
 function isGoalWeightRangeValid(data: OnboardingData) {
-  return isInRange(
-    data.goalweight,
-    ONBOARDING_WEIGHT_RANGE.min,
-    ONBOARDING_WEIGHT_RANGE.max,
-  );
+  return isInRange(data.target_weight, ONBOARDING_WEIGHT_RANGE.min, ONBOARDING_WEIGHT_RANGE.max);
 }
 
 export default function OnboardingPage() {
@@ -96,8 +92,8 @@ export default function OnboardingPage() {
         weight: userData.weight!,
         activity: userData.activity!,
         goal: userData.goal!,
-        target_weight: userData.goalweight!,
-        target_calories: userData.targetCalories!,
+        target_weight: userData.target_weight!,
+        target_calories: userData.target_calories!,
         target_ratio: [userData.carbs!, userData.protein!, userData.fat!],
         subCode: userData.subscribedCode ?? "",
       });

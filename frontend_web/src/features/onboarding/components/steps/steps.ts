@@ -56,7 +56,7 @@ export const STEPS: StepMeta[] = [
   {
     id: "goalWeight",
     title: "목표 체중",
-    isValid: (d) => !!d.goalweight,
+    isValid: (d) => !!d.target_weight,
   },
   {
     id: "targetCalories",

@@ -5,8 +5,8 @@ export type OnboardingData = {
   weight?: number;
   activity?: number;
   goal?: number;
-  goalweight?: number;
-  targetCalories?: number;
+  target_weight?: number;
+  target_calories?: number;
   carbs?: number;
   protein?: number;
   fat?: number;

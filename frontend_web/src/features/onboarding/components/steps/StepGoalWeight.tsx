@@ -7,8 +7,8 @@ import { NumberInput } from "@/shared/commons/input/NumberInput";
 
 export default function StepGoalWeight({ data, update }: StepComponentProps) {
   const diff =
-    data.goalweight !== undefined && data.weight !== undefined
-      ? Math.round((data.goalweight - data.weight) * 10) / 10
+    data.target_weight !== undefined && data.weight !== undefined
+      ? Math.round((data.target_weight - data.weight) * 10) / 10
       : undefined;
 
   const diffLabel =
@@ -29,8 +29,8 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
       <Field.Root className={styles.onboardingFieldPadding}>
         <div className={styles.onboardingGoalWeightCard}>
           <NumberInput
-            value={data.goalweight}
-            onChange={(value) => update({ goalweight: value })}
+            value={data.target_weight}
+            onChange={(value) => update({ target_weight: value })}
             placeholder="55"
             min={ONBOARDING_WEIGHT_RANGE.min}
             max={ONBOARDING_WEIGHT_RANGE.max}
