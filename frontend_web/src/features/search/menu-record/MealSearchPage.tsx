@@ -27,6 +27,7 @@ import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButt
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 import styles from "../styles/MealSearch.module.css";
 
@@ -177,7 +178,7 @@ export default function MealSearchPage() {
         inputRef={searchInputRef}
         placeholder="메뉴를 검색해보세요"
         inputAriaLabel="메뉴 검색"
-        onBack={() => navigate(getMealRecordPath(dateKey, mealType))}
+        onBack={() => navigateBackOrFallback(navigate, getMealRecordPath(dateKey, mealType))}
       />
 
       <main className={styles.main}>

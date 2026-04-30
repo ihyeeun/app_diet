@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, unstable_HistoryRouter as HistoryRouter } from "react-router-dom";
 
 import AccountDeletePage from "@/features/account-delete/AccountDeletePage";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
+import { appHistory } from "@/shared/navigation/stackflowRouter";
 import {
   useSetTargets,
   useTargetsLoadedState,
@@ -63,7 +64,7 @@ function PrivateRouteLayout() {
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
+    <HistoryRouter history={appHistory}>
       <Suspense fallback={null}>
         <Routes>
           <Route path={PATH.TERMS} element={<TermsPage />} />
@@ -111,6 +112,6 @@ export default function AppRouter() {
           </Route>
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </HistoryRouter>
   );
 }

@@ -20,6 +20,7 @@ import { DEFAULT_MEAL_TYPE } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
   CHAT_TO_MEAL_RECORD_SOURCE,
@@ -209,7 +210,10 @@ export default function RecommendResultPage() {
   if (isPending && !chatItem) {
     return (
       <section className={styles.page}>
-        <PageHeader title="메뉴 추천 결과" onBack={() => navigate(PATH.CHAT)} />
+        <PageHeader
+          title="메뉴 추천 결과"
+          onBack={() => navigateBackOrFallback(navigate, PATH.CHAT)}
+        />
         <main className={styles.main}>
           <p className={`${styles.loadingText} typo-body4`}>추천 결과를 불러오는 중이에요</p>
         </main>
@@ -223,7 +227,7 @@ export default function RecommendResultPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="메뉴 추천 결과" onBack={() => navigate(PATH.CHAT)} />
+      <PageHeader title="메뉴 추천 결과" onBack={() => navigateBackOrFallback(navigate, PATH.CHAT)} />
 
       <main className={styles.main}>
         <section className={styles.content}>

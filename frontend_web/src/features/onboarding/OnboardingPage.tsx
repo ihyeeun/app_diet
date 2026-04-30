@@ -41,7 +41,7 @@ export default function OnboardingPage() {
   const { mutate } = useRegisterUserInfoMutation({
     onSuccess: () => {
       syncAppTab("home");
-      navigate(PATH.HOME);
+      navigate(PATH.HOME, { replace: true });
     },
     onError: () => {
       toast.warning("등록 실패");

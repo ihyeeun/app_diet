@@ -6,15 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { PATH } from "@/router/path";
 import { isNativeApp, requestAppBack } from "@/shared/api/bridge/nativeBridge";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { canGoBackWithLocalHistory } from "@/shared/navigation/backNavigation";
 
 import styles from "./TermsPage.module.css";
-
-function canGoBackWithLocalHistory() {
-  if (typeof window === "undefined") return false;
-
-  const historyState = window.history.state as { idx?: number } | null;
-  return typeof historyState?.idx === "number" && historyState.idx > 0;
-}
 
 export default function TermsPage() {
   const navigate = useNavigate();

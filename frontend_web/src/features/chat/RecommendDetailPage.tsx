@@ -12,6 +12,7 @@ import {
 import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 export default function RecommendDetailPage() {
   useClearChatDraftOnFlowExit();
@@ -56,7 +57,10 @@ export default function RecommendDetailPage() {
   if (isPending && !recommendation) {
     return (
       <section className={styles.page}>
-        <PageHeader title="추천 상세" onBack={() => navigate(getRecommendResultPath(chatId))} />
+        <PageHeader
+          title="추천 상세"
+          onBack={() => navigateBackOrFallback(navigate, getRecommendResultPath(chatId))}
+        />
         <main className={styles.main}>
           <p className={`${styles.loadingText} typo-body4`}>추천 상세를 불러오는 중이에요</p>
         </main>
@@ -70,7 +74,10 @@ export default function RecommendDetailPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="추천 상세" onBack={() => navigate(getRecommendResultPath(chatId))} />
+      <PageHeader
+        title="추천 상세"
+        onBack={() => navigateBackOrFallback(navigate, getRecommendResultPath(chatId))}
+      />
 
       <main className={styles.main}>
         <div className={styles.content}>

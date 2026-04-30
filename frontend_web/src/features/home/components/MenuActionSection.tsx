@@ -31,7 +31,7 @@ export default function MenuActionSection({ selectedDate }: { selectedDate: stri
           iconSrc="/icons/chat-icon.svg"
           onClick={() => {
             syncAppTab("chat");
-            navigate(PATH.CHAT);
+            navigate(PATH.CHAT, { replace: true });
           }}
         />
       </div>
