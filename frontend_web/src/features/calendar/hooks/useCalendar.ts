@@ -98,6 +98,13 @@ export function useCalendar({
     });
   };
 
+  const goToday = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setViewDate(today);
+    return today;
+  };
+
   return {
     viewMode,
     selectedDate,
@@ -108,5 +115,6 @@ export function useCalendar({
     selectDate,
     goPrev,
     goNext,
+    goToday,
   };
 }
