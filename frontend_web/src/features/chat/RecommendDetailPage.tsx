@@ -76,7 +76,9 @@ export default function RecommendDetailPage() {
     <section className={styles.page}>
       <PageHeader
         title="추천 상세"
-        onBack={() => navigateBackOrFallback(navigate, getRecommendResultPath(chatId))}
+        onBack={() =>
+          navigateBackOrFallback(navigate, getRecommendResultPath(chatId), { replace: true })
+        }
       />
 
       <main className={styles.main}>
@@ -129,7 +131,7 @@ export default function RecommendDetailPage() {
           size="large"
           color="primary"
           fullWidth
-          onClick={() => navigate(getRecommendResultPath(chatId))}
+          onClick={() => navigate(getRecommendResultPath(chatId), { replace: true })}
         >
           확인했어요
         </Button>

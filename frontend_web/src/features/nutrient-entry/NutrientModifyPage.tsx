@@ -42,6 +42,7 @@ import {
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 import styles from "./styles/NutrientModifyPage.module.css";
 
@@ -190,18 +191,20 @@ export default function NutrientModifyPage() {
     }));
   };
 
-  const handleBack = () => {
+  const getBackFallbackPath = () => {
     if (menuId !== null) {
-      navigate(getMealDetailPath(dateKey, mealType, menuId, pageKey, searchKeyword));
-      return;
+      return getMealDetailPath(dateKey, mealType, menuId, pageKey, searchKeyword);
     }
 
     if (pageKey === "MEAL_SEARCH") {
-      navigate(getMealSearchPath(dateKey, mealType, searchKeyword));
-      return;
+      return getMealSearchPath(dateKey, mealType, searchKeyword);
     }
 
-    navigate(getMealRecordPath(dateKey, mealType));
+    return getMealRecordPath(dateKey, mealType);
+  };
+
+  const handleBack = () => {
+    navigateBackOrFallback(navigate, getBackFallbackPath());
   };
 
   const handleResetForm = () => {

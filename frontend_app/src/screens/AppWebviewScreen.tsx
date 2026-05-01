@@ -405,6 +405,13 @@ export default function AppWebViewScreen({
           rememberTabWebHref(rawData.context.href);
         }
 
+        if (rawData.type === "NAVIGATION_BACK") {
+          if (canGoBackRef.current) {
+            webViewRef.current?.goBack();
+            return;
+          }
+        }
+
         if (rawData.type === "WEB_PATH_CHANGE" && typeof rawData.payload?.href === "string") {
           rememberTabWebHref(rawData.payload.href);
           if (canSyncAfterInitialLoad()) {

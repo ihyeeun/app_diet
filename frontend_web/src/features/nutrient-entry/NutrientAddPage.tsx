@@ -13,6 +13,7 @@ import { getPathWithMeal } from "@/router/pathHelpers";
 import type { MealType, RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 import styles from "./styles/NutrientAddPage.module.css";
 
@@ -78,7 +79,7 @@ export default function NutrientAddPage() {
   };
 
   const handleBack = () => {
-    navigation(getMealSearchPath(dateKey, mealType, searchKeyword));
+    navigateBackOrFallback(navigation, getMealSearchPath(dateKey, mealType, searchKeyword));
   };
 
   return (

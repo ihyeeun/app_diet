@@ -32,7 +32,6 @@ import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButt
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
   CHAT_TO_MEAL_RECORD_SOURCE,
@@ -367,7 +366,7 @@ export default function ChatPage() {
 
   return (
     <div className={styles.page}>
-      <PageHeader onBack={() => navigateBackOrFallback(navigate, PATH.HOME)} />
+      <PageHeader onBack={() => navigate(PATH.HOME, { replace: true })} />
 
       <main className={styles.main}>
         {!hasAnyConversation && !isHistoryPending ? <EmptySection /> : null}
