@@ -225,7 +225,7 @@ export default function MealDetailPage() {
       return;
     }
 
-    navigate(fallbackPath);
+    navigate(fallbackPath, { replace: true });
   };
 
   const handleHeaderBack = () => {
