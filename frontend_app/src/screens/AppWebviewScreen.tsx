@@ -1,7 +1,7 @@
 import { handleWebMessage } from "@/src/shared/api/bridge/handleWebMessage";
 import { subscribeAuthExpired } from "@/src/shared/auth/authSessionEvents";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BackHandler, Platform, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -102,10 +102,12 @@ function resolveWebPathname(requestUrl: string, webAppOrigin: string | null) {
 }
 
 function resolveTabFromPath(pathname: string): AppTabName | null {
-  if (pathname === "/" || pathname === "/home") return "home";
-  if (pathname === "/chat") return "chat";
-  if (pathname === "/diary") return "diary";
-  if (pathname === "/profile") return "profile";
+  const normalizedPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+
+  if (normalizedPath === "/" || normalizedPath === "/home") return "home";
+  if (normalizedPath === "/chat") return "chat";
+  if (normalizedPath === "/diary") return "diary";
+  if (normalizedPath === "/profile") return "profile";
 
   return null;
 }
@@ -240,8 +242,8 @@ export default function AppWebViewScreen({
   currentTab,
   onTabBarVisibilityChange,
 }: AppWebViewScreenProps) {
-  const lastKnownTabWebHrefByTabRef = useRef<Map<AppTabName, string>>(new Map());
   const webViewRef = useRef<WebView>(null);
+  const initialTabUrlRef = useRef<string | null>(null);
   const canGoBackRef = useRef(false);
   const didLoadOnceRef = useRef(false);
   const didInitializeTabPathSyncRef = useRef(false);
@@ -252,22 +254,11 @@ export default function AppWebViewScreen({
   const isTabWebView = Boolean(currentTab);
   const normalizedTabPath = useMemo(() => normalizeTabPath(path), [path]);
   const webAppOrigin = getWebAppOrigin();
-  const resolvePreferredTabHref = useCallback((tab: AppTabName | undefined, fallbackPath: string) => {
-    if (tab) {
-      const preservedHref = lastKnownTabWebHrefByTabRef.current.get(tab);
-      if (preservedHref) return preservedHref;
-    }
-
-    return buildWebAppUrl(fallbackPath);
-  }, []);
-
-  const [tabInitialUrl] = useState<string | null>(() => {
-    if (!isTabWebView) return null;
-    return resolvePreferredTabHref(currentTab, normalizedTabPath);
-  });
-
+  if (isTabWebView && initialTabUrlRef.current === null) {
+    initialTabUrlRef.current = buildWebAppUrl(normalizedTabPath);
+  }
   const targetUrl = isTabWebView
-    ? (tabInitialUrl ?? buildWebAppUrl(normalizedTabPath))
+    ? (initialTabUrlRef.current ?? buildWebAppUrl(normalizedTabPath))
     : buildWebAppUrl(path);
 
   const webViewSource = useMemo(() => ({ uri: targetUrl }), [targetUrl]);
@@ -307,17 +298,16 @@ export default function AppWebViewScreen({
 
   const syncTabStateFromUrl = useCallback(
     (url: string) => {
-      if (!isTabWebView) return false;
+      if (!isTabWebView) return;
 
       syncTabBarFromUrl(url);
 
-      if (!currentTab) return false;
+      if (!currentTab) return;
 
       const targetTab = resolveTabFromUrl(url, webAppOrigin);
-      if (!targetTab || targetTab === currentTab) return false;
+      if (!targetTab || targetTab === currentTab) return;
 
       router.replace(getTabRoute(targetTab));
-      return true;
     },
     [currentTab, isTabWebView, syncTabBarFromUrl, webAppOrigin],
   );
@@ -347,12 +337,7 @@ export default function AppWebViewScreen({
       const webHref = resolveWebPath(url, webAppOrigin);
       if (!webHref) return;
 
-      const tabFromUrl = resolveTabFromUrl(url, webAppOrigin);
       latestWebPathRef.current = webHref;
-
-      if (tabFromUrl !== null) {
-        lastKnownTabWebHrefByTabRef.current.set(tabFromUrl, webHref);
-      }
     },
     [isTabWebView, webAppOrigin],
   );
@@ -361,7 +346,6 @@ export default function AppWebViewScreen({
     if (!isTabWebView) return;
 
     const unsubscribe = subscribeAuthExpired(() => {
-      lastKnownTabWebHrefByTabRef.current.clear();
       latestWebPathRef.current = null;
     });
 
@@ -393,9 +377,9 @@ export default function AppWebViewScreen({
       return;
     }
 
-    pendingTabPathRef.current = resolvePreferredTabHref(currentTab, normalizedTabPath);
+    pendingTabPathRef.current = normalizedTabPath;
     flushPendingTabPathSync();
-  }, [currentTab, flushPendingTabPathSync, isTabWebView, normalizedTabPath, resolvePreferredTabHref]);
+  }, [currentTab, flushPendingTabPathSync, isTabWebView, normalizedTabPath]);
 
   useEffect(() => {
     if (!isTabWebView) return;

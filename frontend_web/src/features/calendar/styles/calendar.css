@@ -69,13 +69,6 @@
   background: rgb(255 255 255 / 20%);
 }
 
-.calendar-month-title {
-  color: var(--static-white);
-  margin: 0;
-  text-align: center;
-  width: 100%;
-}
-
 .calendar-body {
   align-items: center;
   display: flex;
@@ -197,4 +190,14 @@
   height: min(40px, 100%);
   justify-content: center;
   width: min(40px, 100%);
+}
+
+.calendar-month-title {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.calendar-text-white {
+  color: var(--text-white);
 }

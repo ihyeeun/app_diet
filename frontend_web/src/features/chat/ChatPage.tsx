@@ -366,7 +366,7 @@ export default function ChatPage() {
 
   return (
     <div className={styles.page}>
-      <PageHeader onBack={() => navigate(PATH.HOME)} />
+      <PageHeader onBack={() => navigate(PATH.HOME, { replace: true })} />
 
       <main className={styles.main}>
         {!hasAnyConversation && !isHistoryPending ? <EmptySection /> : null}

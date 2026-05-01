@@ -26,6 +26,7 @@ import type {
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 import styles from "./styles/NutrientRegisterPage.module.css";
 
@@ -139,7 +140,7 @@ export default function NutrientRegisterPage() {
   };
 
   const handleBack = () => {
-    navigation(getMealSearchPath(dateKey, mealType, searchKeyword));
+    navigateBackOrFallback(navigation, getMealSearchPath(dateKey, mealType, searchKeyword));
   };
 
   return (

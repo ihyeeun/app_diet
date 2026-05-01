@@ -10,6 +10,7 @@ type Props = {
   onToggleViewMode: () => void;
   onPrev: () => void;
   onNext: () => void;
+  onToday: () => void;
 };
 
 export default function CalendarHeader({
@@ -19,6 +20,7 @@ export default function CalendarHeader({
   onToggleViewMode,
   onPrev,
   onNext,
+  onToday,
 }: Props) {
   const weekTitle = formatCalendarHeader(selectedDate, "week");
   const monthTitle = formatCalendarHeader(viewDate, "month");
@@ -47,25 +49,27 @@ export default function CalendarHeader({
           <div className="calendar-header-right">
             <button
               type="button"
-              className="calendar-nav-button"
-              onClick={onPrev}
-              aria-label="이전"
+              className="typo-label3 calendar-text-white"
+              onClick={onToday}
+              aria-label="오늘 날짜로 이동"
             >
-              <ChevronLeft size={24} />
-            </button>
-            <button
-              type="button"
-              className="calendar-nav-button"
-              onClick={onNext}
-              aria-label="다음"
-            >
-              <ChevronRight size={24} />
+              오늘
             </button>
           </div>
         )}
       </div>
 
-      {viewMode === "month" && <p className="calendar-month-title typo-title3">{monthTitle}</p>}
+      {viewMode === "month" && (
+        <div className="calendar-month-title">
+          <button type="button" className="calendar-nav-button" onClick={onPrev} aria-label="이전">
+            <ChevronLeft size={24} />
+          </button>
+          <p className="typo-title3 calendar-text-white">{monthTitle}</p>
+          <button type="button" className="calendar-nav-button" onClick={onNext} aria-label="다음">
+            <ChevronRight size={24} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

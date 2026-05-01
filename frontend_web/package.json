@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@stackflow/plugin-history-sync": "^1.10.1",
+    "@stackflow/react": "^1.12.0",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-query-devtools": "^5.95.2",
     "date-fns": "^4.1.0",

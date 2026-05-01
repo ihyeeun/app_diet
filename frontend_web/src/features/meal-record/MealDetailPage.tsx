@@ -26,6 +26,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
@@ -204,18 +205,31 @@ export default function MealDetailPage() {
 
   const isPersonalMenuData = meal.data_source === MENU_DATA_SOURCE.PERSONAL;
 
-  const handleGoBack = () => {
+  const getBackFallbackPath = () => {
     if (pageKey === "MEAL_SEARCH") {
-      navigate(getMealRecordAddSearchPath(dateKey, mealType, searchKeyword));
-      return;
+      return getMealRecordAddSearchPath(dateKey, mealType, searchKeyword);
     }
 
     if (pageKey === "MEAL_RECORD") {
-      navigate(getMealRecordPath(dateKey, mealType));
+      return getMealRecordPath(dateKey, mealType);
+    }
+
+    return PATH.HOME;
+  };
+
+  const handleGoBack = () => {
+    const fallbackPath = getBackFallbackPath();
+
+    if (fallbackPath === PATH.HOME) {
+      navigate(PATH.HOME, { replace: true });
       return;
     }
 
-    navigate(PATH.HOME, { replace: true });
+    navigate(fallbackPath, { replace: true });
+  };
+
+  const handleHeaderBack = () => {
+    navigateBackOrFallback(navigate, getBackFallbackPath());
   };
 
   const handleModify = () => {
@@ -273,7 +287,7 @@ export default function MealDetailPage() {
     <section className={styles.page}>
       <PageHeader
         title="영양성분 상세"
-        onBack={handleGoBack}
+        onBack={handleHeaderBack}
         rightSlot={
           isPersonalMenuData && (
             <div className={styles.headerButtons}>
