@@ -298,17 +298,16 @@ export default function AppWebViewScreen({
 
   const syncTabStateFromUrl = useCallback(
     (url: string) => {
-      if (!isTabWebView) return false;
+      if (!isTabWebView) return;
 
       syncTabBarFromUrl(url);
 
-      if (!currentTab) return false;
+      if (!currentTab) return;
 
       const targetTab = resolveTabFromUrl(url, webAppOrigin);
-      if (!targetTab || targetTab === currentTab) return false;
+      if (!targetTab || targetTab === currentTab) return;
 
       router.replace(getTabRoute(targetTab));
-      return true;
     },
     [currentTab, isTabWebView, syncTabBarFromUrl, webAppOrigin],
   );
@@ -403,13 +402,6 @@ export default function AppWebViewScreen({
 
         if (typeof rawData.context?.href === "string") {
           rememberTabWebHref(rawData.context.href);
-        }
-
-        if (rawData.type === "NAVIGATION_BACK") {
-          if (canGoBackRef.current) {
-            webViewRef.current?.goBack();
-            return;
-          }
         }
 
         if (rawData.type === "WEB_PATH_CHANGE" && typeof rawData.payload?.href === "string") {
