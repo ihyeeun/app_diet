@@ -10,12 +10,12 @@ import {
 import { useRegisterUserInfoMutation } from "@/features/onboarding/hooks/mutations/useRegisterUserInfoMutation";
 import styles from "@/features/onboarding/styles/OnboardingPage.module.css";
 import { PATH } from "@/router/path";
-import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
+import { isNativeApp, syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
 
-import { STEP_COMPONENTS, STEPS } from "./components/steps/steps";
+import { getOnboardingSteps, STEP_COMPONENTS } from "./components/steps/steps";
 import type { OnboardingData } from "./onboarding.types";
 
 function isBodyRangeValid(data: OnboardingData) {
@@ -34,9 +34,14 @@ export default function OnboardingPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [isNutrientTotalModalOpen, setIsNutrientTotalModalOpen] = useState(false);
   const navigate = useNavigate();
+  const showSubscribedCodeStep = !isNativeApp();
+  const steps = useMemo(
+    () => getOnboardingSteps({ showSubscribedCodeStep }),
+    [showSubscribedCodeStep],
+  );
 
-  const step = STEPS[stepIndex];
-  const total = STEPS.length;
+  const step = steps[stepIndex];
+  const total = steps.length;
 
   const { mutate } = useRegisterUserInfoMutation({
     onSuccess: () => {
@@ -80,26 +85,25 @@ export default function OnboardingPage() {
       }
     }
 
-    if (stepIndex < total - 1) {
+    const isLastStep = stepIndex === total - 1;
+
+    if (!isLastStep) {
       setStepIndex((s) => s + 1);
-    }
-
-    if (step.id === "subscribedCode") {
-      mutate({
-        gender: userData.gender!,
-        birthYear: userData.birthYear!,
-        height: userData.height!,
-        weight: userData.weight!,
-        activity: userData.activity!,
-        goal: userData.goal!,
-        target_weight: userData.target_weight!,
-        target_calories: userData.target_calories!,
-        target_ratio: [userData.carbs!, userData.protein!, userData.fat!],
-        subCode: userData.subscribedCode ?? "",
-      });
-
       return;
     }
+
+    mutate({
+      gender: userData.gender!,
+      birthYear: userData.birthYear!,
+      height: userData.height!,
+      weight: userData.weight!,
+      activity: userData.activity!,
+      goal: userData.goal!,
+      target_weight: userData.target_weight!,
+      target_calories: userData.target_calories!,
+      target_ratio: [userData.carbs!, userData.protein!, userData.fat!],
+      subCode: userData.subscribedCode ?? "",
+    });
   };
 
   const prev = () => {

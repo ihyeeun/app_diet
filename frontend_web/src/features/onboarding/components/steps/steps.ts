@@ -27,7 +27,7 @@ export const STEP_COMPONENTS: Record<StepId, ComponentType<StepComponentProps>> 
   subscribedCode: StepSubscribedCode,
 };
 
-export const STEPS: StepMeta[] = [
+const BASE_STEPS: StepMeta[] = [
   {
     id: "gender",
     title: "성별",
@@ -68,10 +68,24 @@ export const STEPS: StepMeta[] = [
     title: "탄단지 비율 선택",
     isValid: () => true,
   },
-  {
-    id: "subscribedCode",
-    title: "코드 입력",
-    isValid: () => true,
-    nextText: "시작",
-  },
 ];
+
+const SUBSCRIBED_CODE_STEP: StepMeta = {
+  id: "subscribedCode",
+  title: "코드 입력",
+  isValid: () => true,
+};
+
+type OnboardingStepOptions = {
+  showSubscribedCodeStep: boolean;
+};
+
+export function getOnboardingSteps({ showSubscribedCodeStep }: OnboardingStepOptions): StepMeta[] {
+  const steps = showSubscribedCodeStep ? [...BASE_STEPS, SUBSCRIBED_CODE_STEP] : [...BASE_STEPS];
+  const lastStepIndex = steps.length - 1;
+
+  return steps.map((step, index) => ({
+    ...step,
+    nextText: index === lastStepIndex ? "시작" : undefined,
+  }));
+}
