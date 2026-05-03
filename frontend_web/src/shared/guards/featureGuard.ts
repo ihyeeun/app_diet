@@ -48,7 +48,7 @@ export function isFeatureBlocked(feature: FeatureGuardTarget) {
   return BLOCKED_FEATURES.has(feature);
 }
 
-function syncFeatureGuardStateToApp() {
+export function syncFeatureGuardStateToApp() {
   syncAppFeatureGuardEnabled(freeUserGuardEnabledRuntime);
 }
 
@@ -105,5 +105,3 @@ export function getBlockedFeatureFromLocationState(state: unknown): FeatureGuard
 
   return null;
 }
-
-syncFeatureGuardStateToApp();
