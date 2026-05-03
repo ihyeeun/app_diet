@@ -1,7 +1,7 @@
 import AppWebViewScreen, { type AppTabName } from "@/src/screens/AppWebviewScreen";
 import { router, Slot, useSegments } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import HomeIcon from "../../assets/images/Icon/home-outline.svg";
 import HomeFillIcon from "../../assets/images/Icon/home-fill.svg";
@@ -30,6 +30,7 @@ const TAB_ITEMS: {
   { tab: "diary", label: "다이어리", Icon: DiaryIcon, FocusedIcon: DiaryFillIcon },
   { tab: "profile", label: "프로필", Icon: UserIcon, FocusedIcon: UserFillIcon },
 ];
+const FREE_USER_GUARD_ENABLED = true;
 
 let lastResolvedTab: AppTabName = "home";
 
@@ -59,9 +60,20 @@ export default function TabsLayout() {
   const currentTab = resolvedTab ?? lastResolvedTab;
   const tabPath = TAB_PATH_MAP[currentTab];
   const [isTabBarHidden, setIsTabBarHidden] = useState(false);
+  const [isFreeUserGuardEnabled, setIsFreeUserGuardEnabled] = useState(FREE_USER_GUARD_ENABLED);
   const insets = useSafeAreaInsets();
   const tabBarBottomPadding = Math.max(insets.bottom, 8);
+  const visibleTabItems = useMemo(
+    () => (isFreeUserGuardEnabled ? TAB_ITEMS.filter((item) => item.tab !== "chat") : TAB_ITEMS),
+    [isFreeUserGuardEnabled],
+  );
   const shouldHideTabBar = isTabBarHidden || currentTab === "chat";
+
+  useEffect(() => {
+    if (!isFreeUserGuardEnabled || currentTab !== "chat") return;
+
+    router.replace(getTabRoute("home"));
+  }, [currentTab, isFreeUserGuardEnabled]);
 
   return (
     <View style={styles.container}>
@@ -70,6 +82,7 @@ export default function TabsLayout() {
           path={tabPath}
           currentTab={currentTab}
           onTabBarVisibilityChange={setIsTabBarHidden}
+          onFeatureGuardEnabledChange={setIsFreeUserGuardEnabled}
         />
       </View>
 
@@ -79,7 +92,7 @@ export default function TabsLayout() {
 
       {!shouldHideTabBar ? (
         <View style={[styles.tabBar, { paddingBottom: tabBarBottomPadding }]}>
-          {TAB_ITEMS.map(({ tab, label, Icon, FocusedIcon }) => {
+          {visibleTabItems.map(({ tab, label, Icon, FocusedIcon }) => {
             const isFocused = currentTab === tab;
             const RenderIcon = isFocused ? FocusedIcon : Icon;
 

@@ -170,6 +170,18 @@ export function syncAppTab(tab: AppTabName) {
   });
 }
 
+export function syncAppFeatureGuardEnabled(enabled: boolean) {
+  if (!isNativeApp()) return;
+
+  postMessageToApp({
+    id: generateRequestId(),
+    type: "FEATURE_GUARD_SYNC",
+    payload: {
+      enabled,
+    },
+  });
+}
+
 export function requestAppBack() {
   if (!isNativeApp()) return;
 

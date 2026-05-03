@@ -36,6 +36,16 @@
   gap: 6px;
 }
 
+.nicknameButton {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--text-normal);
+  display: inline-flex;
+  justify-content: center;
+  padding: 0;
+}
+
 .nickname {
   color: var(--text-normal);
 }
