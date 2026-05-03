@@ -32,6 +32,7 @@ import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButt
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { FEATURE_GUARD, isFeatureBlocked } from "@/shared/guards/featureGuard";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
   CHAT_TO_MEAL_RECORD_SOURCE,
@@ -58,6 +59,7 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [pendingInput, setPendingInput] = useState<string | null>(null);
+  const showMenuBoardCameraButton = !isFeatureBlocked(FEATURE_GUARD.MENU_BOARD_CAMERA);
   const [floatingBottomOffset, setFloatingBottomOffset] = useState(0);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
   const [expandedCompleteCardByChatId, setExpandedCompleteCardByChatId] = useState<
@@ -465,23 +467,25 @@ export default function ChatPage() {
       </main>
 
       <footer ref={footerRef} className={styles.footer}>
-        <div
-          className={`${styles.floatingCameraButtonWrapper} ${isQuickActionVisible ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
-          aria-hidden={!isQuickActionVisible}
-        >
-          <FloatingCameraButton
-            onClick={() =>
-              navigate(PATH.MENU_BOARD_CAMERA, {
-                state: {
-                  autoOpenCamera: true,
-                },
-              })
-            }
-            ariaLabel="메뉴판 사진 찍기"
-            tone="primary"
-            bottomOffset={floatingBottomOffset}
-          />
-        </div>
+        {showMenuBoardCameraButton ? (
+          <div
+            className={`${styles.floatingCameraButtonWrapper} ${isQuickActionVisible ? styles.floatingCameraButtonVisible : styles.floatingCameraButtonHidden}`}
+            aria-hidden={!isQuickActionVisible}
+          >
+            <FloatingCameraButton
+              onClick={() =>
+                navigate(PATH.MENU_BOARD_CAMERA, {
+                  state: {
+                    autoOpenCamera: true,
+                  },
+                })
+              }
+              ariaLabel="메뉴판 사진 찍기"
+              tone="primary"
+              bottomOffset={floatingBottomOffset}
+            />
+          </div>
+        ) : null}
 
         <ChatInput
           value={inputValue}

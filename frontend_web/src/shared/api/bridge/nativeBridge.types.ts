@@ -35,6 +35,15 @@ export type WebToAppNavigationBackMessage = {
   context?: BridgeMessageContext;
 };
 
+export type WebToAppFeatureGuardSyncMessage = {
+  id: string;
+  type: "FEATURE_GUARD_SYNC";
+  payload: {
+    enabled: boolean;
+  };
+  context?: BridgeMessageContext;
+};
+
 export type CameraCaptureRequestPayload = {
   quality?: number;
   mode?: "NUTRITION_LABEL" | "MENU_BOARD" | "FOOD" | "GENERAL";
@@ -80,6 +89,7 @@ export type WebToAppMessage =
   | WebToAppApiRequestMessage
   | WebToAppTabSyncMessage
   | WebToAppNavigationBackMessage
+  | WebToAppFeatureGuardSyncMessage
   | WebToAppCameraCaptureMessage
   | WebToAppGalleryPickMessage
   | WebToAppImageUploadMessage;

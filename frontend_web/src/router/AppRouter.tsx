@@ -1,9 +1,14 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, type ReactElement, Suspense, useEffect } from "react";
 import { Navigate, Outlet, Route, Routes, unstable_HistoryRouter as HistoryRouter } from "react-router-dom";
 
 import AccountDeletePage from "@/features/account-delete/AccountDeletePage";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
+import {
+  FEATURE_GUARD,
+  type FeatureGuardTarget,
+  isFeatureBlocked,
+} from "@/shared/guards/featureGuard";
 import { appHistory } from "@/shared/navigation/stackflowRouter";
 import {
   useSetTargets,
@@ -62,6 +67,20 @@ function PrivateRouteLayout() {
   return <Outlet />;
 }
 
+function GuardedRoute({
+  feature,
+  element,
+}: {
+  feature: FeatureGuardTarget;
+  element: ReactElement;
+}) {
+  if (!isFeatureBlocked(feature)) {
+    return element;
+  }
+
+  return <Navigate replace to={PATH.HOME} />;
+}
+
 export default function AppRouter() {
   return (
     <HistoryRouter history={appHistory}>
@@ -87,8 +106,19 @@ export default function AppRouter() {
             <Route path={PATH.MEAL_RECORD} element={<MealRecordPage />} />
             <Route path={PATH.MEAL_RECORD_ADD_SEARCH} element={<MealSearchPage />} />
             <Route path={PATH.MEAL_DETAIL} element={<MealDetailPage />} />
-            <Route path={PATH.MENU_BOARD_CAMERA} element={<MenuBoardCameraPage />} />
-            <Route path={PATH.FOOD_CAMERA} element={<FoodCameraPage />} />
+            <Route
+              path={PATH.MENU_BOARD_CAMERA}
+              element={
+                <GuardedRoute
+                  feature={FEATURE_GUARD.MENU_BOARD_CAMERA}
+                  element={<MenuBoardCameraPage />}
+                />
+              }
+            />
+            <Route
+              path={PATH.FOOD_CAMERA}
+              element={<GuardedRoute feature={FEATURE_GUARD.FOOD_CAMERA} element={<FoodCameraPage />} />}
+            />
 
             <Route path={PATH.NUTRIENT_ADD} element={<NutrientAddPage />} />
             <Route path={PATH.NUTRIENT_CAMERA} element={<NutrientCameraPage />} />
@@ -97,7 +127,10 @@ export default function AppRouter() {
 
             <Route path={PATH.BRAND_SEARCH} element={<BrandSearch />} />
 
-            <Route path={PATH.CHAT} element={<ChatPage />} />
+            <Route
+              path={PATH.CHAT}
+              element={<GuardedRoute feature={FEATURE_GUARD.CHAT} element={<ChatPage />} />}
+            />
             <Route path={PATH.RECOMMEND_RESULT} element={<RecommendResultPage />} />
             <Route path={PATH.RECOMMEND_DETAIL} element={<RecommendDetailPage />} />
 

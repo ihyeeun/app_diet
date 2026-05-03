@@ -27,6 +27,10 @@ import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButt
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import {
+  FEATURE_GUARD,
+  isFeatureBlocked,
+} from "@/shared/guards/featureGuard";
 import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 
 import styles from "../styles/MealSearch.module.css";
@@ -53,6 +57,7 @@ export default function MealSearchPage() {
   const selectedCount = useMenuDraftSelectedCount(dateKey, mealType);
   const draft = useMenuDraftStore((store) => store.drafts[draftKey]);
   const hasDraft = Boolean(draft);
+  const showFoodCameraButton = !isFeatureBlocked(FEATURE_GUARD.FOOD_CAMERA);
 
   const selectedMenuIdSet = useMemo(
     () => new Set(selectedMenus.map((menu) => menu.id)),
@@ -305,7 +310,9 @@ export default function MealSearchPage() {
       </main>
 
       <footer className={styles.footer}>
-        <FloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
+        {showFoodCameraButton ? (
+          <FloatingCameraButton onClick={handleCameraClick} ariaLabel="사진으로 기록하기" />
+        ) : null}
 
         <Button
           onClick={handleApplySelectedMenus}

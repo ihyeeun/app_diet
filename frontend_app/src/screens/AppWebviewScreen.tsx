@@ -22,6 +22,7 @@ type AppWebViewScreenProps = {
   path?: string;
   currentTab?: AppTabName;
   onTabBarVisibilityChange?: (hidden: boolean) => void;
+  onFeatureGuardEnabledChange?: (enabled: boolean) => void;
 };
 
 export type AppTabName = "home" | "chat" | "diary" | "profile";
@@ -241,6 +242,7 @@ export default function AppWebViewScreen({
   path,
   currentTab,
   onTabBarVisibilityChange,
+  onFeatureGuardEnabledChange,
 }: AppWebViewScreenProps) {
   const webViewRef = useRef<WebView>(null);
   const initialTabUrlRef = useRef<string | null>(null);
@@ -396,7 +398,7 @@ export default function AppWebViewScreen({
       try {
         const rawData = JSON.parse(event.nativeEvent.data) as {
           type?: string;
-          payload?: { href?: string };
+          payload?: { href?: string; enabled?: boolean };
           context?: { href?: string };
         };
 
@@ -411,13 +413,18 @@ export default function AppWebViewScreen({
           }
           return;
         }
+
+        if (rawData.type === "FEATURE_GUARD_SYNC" && typeof rawData.payload?.enabled === "boolean") {
+          onFeatureGuardEnabledChange?.(rawData.payload.enabled);
+          return;
+        }
       } catch {
         // no-op
       }
 
       handleWebMessage(event, webViewRef);
     },
-    [canSyncAfterInitialLoad, rememberTabWebHref, syncTabStateFromUrl],
+    [canSyncAfterInitialLoad, onFeatureGuardEnabledChange, rememberTabWebHref, syncTabStateFromUrl],
   );
 
   const onNavigationStateChange = useCallback(

@@ -46,7 +46,7 @@ export default function SettingsPage() {
             <ChevronRight size={24} className={styles.menuChevron} />
           </button>
 
-          <button
+          {/* <button
             type="button"
             className={styles.menuItem}
             onClick={() => navigate(PATH.SETTINGS_SUB_CODE)}
@@ -61,7 +61,7 @@ export default function SettingsPage() {
               <span className={`${styles.menuLabel} typo-title3`}>구독 코드 입력</span>
             </div>
             <ChevronRight size={24} className={styles.menuChevron} />
-          </button>
+          </button> */}
 
           <button type="button" className={styles.menuItem} onClick={() => navigate(PATH.TERMS)}>
             <span className={`${styles.menuLabel} typo-title3`}>
