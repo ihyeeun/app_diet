@@ -181,7 +181,6 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   className={styles.nicknameButton}
-                  aria-label="프리 가드 토글"
                   onClick={handleNicknameGuardToggleTap}
                 >
                   <span className={`${styles.nickname} typo-title2`}>
