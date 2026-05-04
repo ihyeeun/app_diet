@@ -18,8 +18,8 @@ import type {
 import { sendToWeb } from "./sendToWeb";
 import { requestFromWeb } from "./requestFromWeb";
 
-const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png"]);
-const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
+const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/heic", "image/heif"]);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "heic", "heif"]);
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_UPLOAD_FIELD_NAME = "file";
 const SESSION_TERMINATION_ENDPOINTS = new Set(["/commonAuth/signout", "/commonAuth/delete"]);
@@ -46,17 +46,26 @@ function resolveLowerCaseExtension(value: string | null | undefined) {
   return matched[1].toLowerCase();
 }
 
+function resolveImageMimeTypeFromExtension(extension: string | null | undefined) {
+  if (!extension) return null;
+  if (extension === "png") return "image/png";
+  if (extension === "jpg" || extension === "jpeg") return "image/jpeg";
+  if (extension === "heic") return "image/heic";
+  if (extension === "heif") return "image/heif";
+  return null;
+}
+
 function resolveImageMimeType(source: ImageFileSource) {
   const normalizedMime = source.mimeType?.toLowerCase().trim();
   if (normalizedMime) return normalizedMime;
 
   const extensionFromName = resolveLowerCaseExtension(source.fileName);
-  if (extensionFromName === "png") return "image/png";
-  if (extensionFromName === "jpg" || extensionFromName === "jpeg") return "image/jpeg";
+  const mimeTypeFromName = resolveImageMimeTypeFromExtension(extensionFromName);
+  if (mimeTypeFromName) return mimeTypeFromName;
 
   const extensionFromUri = resolveLowerCaseExtension(source.uri);
-  if (extensionFromUri === "png") return "image/png";
-  if (extensionFromUri === "jpg" || extensionFromUri === "jpeg") return "image/jpeg";
+  const mimeTypeFromUri = resolveImageMimeTypeFromExtension(extensionFromUri);
+  if (mimeTypeFromUri) return mimeTypeFromUri;
 
   return null;
 }
@@ -93,7 +102,7 @@ async function normalizeCapturedImageSource(source: CapturedImageSource) {
 
   if (!isAllowedMimeType && !isAllowedExtension) {
     throw new BridgeHandledError(
-      "JPG 또는 PNG 형식의 이미지만 첨부할 수 있어요.",
+      "JPG, PNG, HEIC, HEIF 형식의 이미지만 첨부할 수 있어요.",
       400,
       "IMAGE_FORMAT_NOT_ALLOWED",
     );
@@ -156,7 +165,10 @@ function resolveUploadFileName(source: ImageFileSource, mimeType: string) {
   const extensionFromUri = resolveLowerCaseExtension(source.uri);
   if (extensionFromUri) return `upload.${extensionFromUri}`;
 
-  return mimeType === "image/png" ? "upload.png" : "upload.jpg";
+  if (mimeType === "image/png") return "upload.png";
+  if (mimeType === "image/heic") return "upload.heic";
+  if (mimeType === "image/heif") return "upload.heif";
+  return "upload.jpg";
 }
 
 async function normalizeUploadImageSource(payload: BridgeImageUploadRequestPayload) {
@@ -175,7 +187,7 @@ async function normalizeUploadImageSource(payload: BridgeImageUploadRequestPaylo
 
   if (!isAllowedMimeType && !isAllowedExtension) {
     throw new BridgeHandledError(
-      "JPG 또는 PNG 형식의 이미지만 첨부할 수 있어요.",
+      "JPG, PNG, HEIC, HEIF 형식의 이미지만 첨부할 수 있어요.",
       400,
       "IMAGE_FORMAT_NOT_ALLOWED",
     );
@@ -198,13 +210,7 @@ async function normalizeUploadImageSource(payload: BridgeImageUploadRequestPaylo
     );
   }
 
-  const normalizedMimeType =
-    mimeType ??
-    (extension === "png"
-      ? "image/png"
-      : extension === "jpg" || extension === "jpeg"
-        ? "image/jpeg"
-        : null);
+  const normalizedMimeType = mimeType ?? resolveImageMimeTypeFromExtension(extension);
   if (!normalizedMimeType) {
     throw new BridgeHandledError("이미지 형식을 확인하지 못했어요.", 400, "IMAGE_FORMAT_UNKNOWN");
   }
