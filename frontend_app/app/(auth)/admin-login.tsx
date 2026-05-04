@@ -91,8 +91,7 @@ export default function AdminLoginPage() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!isSubmitting}
-                returnKeyType="done"
-                onSubmitEditing={handleSubmit}
+                returnKeyType="next"
               />
             </View>
 
@@ -106,7 +105,8 @@ export default function AdminLoginPage() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!isSubmitting}
-                returnKeyType="next"
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit}
               />
             </View>
 
