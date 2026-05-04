@@ -76,24 +76,9 @@ export default function AdminLoginPage() {
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>테스트 계정 로그인</Text>
-            <Text style={styles.description}>테스트 계정으로 로그인 후 서비스를 이용하세요.</Text>
           </View>
 
           <View style={styles.form}>
-            <View style={styles.field}>
-              <Text style={styles.label}>아이디</Text>
-              <TextInput
-                value={adminId}
-                onChangeText={setAdminId}
-                placeholder="adminId"
-                style={styles.input}
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isSubmitting}
-                returnKeyType="next"
-              />
-            </View>
-
             <View style={styles.field}>
               <Text style={styles.label}>이메일</Text>
               <TextInput
@@ -108,6 +93,20 @@ export default function AdminLoginPage() {
                 editable={!isSubmitting}
                 returnKeyType="done"
                 onSubmitEditing={handleSubmit}
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>비밀번호</Text>
+              <TextInput
+                value={adminId}
+                onChangeText={setAdminId}
+                placeholder="password"
+                style={styles.input}
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!isSubmitting}
+                returnKeyType="next"
               />
             </View>
 
@@ -147,20 +146,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 48,
     paddingBottom: 24,
-    justifyContent: "space-between",
   },
   header: {
     gap: 8,
+    marginBottom: 100,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
     color: "#111111",
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: "#555555",
   },
   form: {
     gap: 16,
