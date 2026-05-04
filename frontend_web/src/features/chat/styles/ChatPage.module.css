@@ -537,6 +537,8 @@
   padding: 9px 20px;
   border-radius: 100px;
   border: 1px solid var(--border-normal);
+  resize: none;
+  overflow-y: auto;
 }
 
 .textInputWrapper {

@@ -693,7 +693,8 @@ function ChatInput({
         </button>
 
         <div className={styles.textInputWrapper}>
-          <input
+          <textarea
+            rows={1}
             value={value}
             className={`${styles.textInput} typo-body3`}
             placeholder="맥도날드에 왔는데 뭐 먹을까?"
