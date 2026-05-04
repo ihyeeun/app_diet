@@ -14,22 +14,80 @@
 }
 
 .footer {
-  background-color: var(--bg-normal-white);
   padding-bottom: var(--safe-area-bottom);
+  background-color: var(--bg-normal-white);
 }
 
 .floatingCameraButtonWrapper {
+  bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+  position: sticky;
   transition: opacity 180ms ease;
+  z-index: 10;
 }
 
-.floatingCameraButtonVisible {
-  opacity: 1;
-  pointer-events: auto;
+.floatingCameraBackdrop {
+  background-color: var(--dimmer-dimmer);
+  inset: 0;
+  position: fixed;
+  z-index: 5;
 }
 
-.floatingCameraButtonHidden {
-  opacity: 0;
-  pointer-events: none;
+.floatingCameraActionContainer {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.floatingCameraActionList {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.floatingCameraActionItem {
+  align-items: center;
+  display: inline-flex;
+  gap: 16px;
+}
+
+.floatingCameraActionLabel {
+  border-radius: 12px;
+  color: var(--text-white);
+  padding: 8px 10px;
+  white-space: nowrap;
+}
+
+.floatingCameraActionIcon {
+  align-items: center;
+  background-color: var(--dimmer-dimmer);
+  border-radius: 100px;
+  box-shadow: var(--shadow-emphasize);
+  display: inline-flex;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
+}
+
+.floatingCameraActionIconImage {
+  height: 26px;
+  width: 26px;
+}
+
+.cameraButton {
+  align-items: center;
+  background-color: var(--primary-normal);
+  border-radius: 100px;
+  box-shadow: var(--shadow-emphasize);
+  color: var(--text-white);
+  display: inline-flex;
+  height: 56px;
+  justify-content: center;
+  width: 56px;
 }
 
 .emptySection {
@@ -62,6 +120,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding-bottom: 30px;
 }
 
 .conversationSection {
@@ -385,6 +444,7 @@
 .chatInputContainer {
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-normal-white);
 }
 
 .chipSection {
@@ -531,4 +591,27 @@
   .addActionPanel {
     transition: none;
   }
+}
+
+.fabBubble {
+  position: absolute;
+  bottom: calc(100% - 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg-normal-white);
+  box-shadow: var(--shadow-strong);
+  white-space: nowrap;
+}
+
+.fabBubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 9px solid var(--bg-normal-white);
 }
