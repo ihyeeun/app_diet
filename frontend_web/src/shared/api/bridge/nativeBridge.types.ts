@@ -35,6 +35,19 @@ export type WebToAppNavigationBackMessage = {
   context?: BridgeMessageContext;
 };
 
+export type AppDeviceInfoPayload = {
+  appVersion: string;
+  appBuild: string | null;
+  osName: "ios" | "android";
+  osVersion: string | null;
+};
+
+export type WebToAppAppDeviceInfoRequestMessage = {
+  id: string;
+  type: "APP_DEVICE_INFO_REQUEST";
+  context?: BridgeMessageContext;
+};
+
 export type WebToAppFeatureGuardSyncMessage = {
   id: string;
   type: "FEATURE_GUARD_SYNC";
@@ -98,6 +111,7 @@ export type WebToAppMessage =
   | WebToAppApiRequestMessage
   | WebToAppTabSyncMessage
   | WebToAppNavigationBackMessage
+  | WebToAppAppDeviceInfoRequestMessage
   | WebToAppFeatureGuardSyncMessage
   | WebToAppBottomSheetSyncMessage
   | WebToAppCameraCaptureMessage

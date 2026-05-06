@@ -1,5 +1,6 @@
 import type {
   ApiRequestPayload,
+  AppDeviceInfoPayload,
   AppTabName,
   AppToWebMessage,
   CameraCaptureRequestPayload,
@@ -217,6 +218,13 @@ export function requestAppBack() {
     id: generateRequestId(),
     type: "NAVIGATION_BACK",
   });
+}
+
+export function requestNativeAppDeviceInfo() {
+  return sendRequestToApp<AppDeviceInfoPayload>((id) => ({
+    id,
+    type: "APP_DEVICE_INFO_REQUEST",
+  }));
 }
 
 export function requestNativeCameraCapture(payload?: CameraCaptureRequestPayload) {

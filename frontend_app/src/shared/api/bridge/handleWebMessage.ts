@@ -1,15 +1,18 @@
 import type { RefObject } from "react";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { isAxiosError } from "axios";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 import { clearTokens } from "@/features/auth/store/tokenStore";
 import { apiClient } from "@/src/shared/api/apiClient";
 import { emitAuthExpired } from "@/src/shared/auth/authSessionEvents";
 import { BridgeHandledError, isBridgeHandledError } from "./bridgeError";
 import { beginCameraCaptureSession } from "./cameraCaptureSession";
 import type {
+  BridgeAppDeviceInfoPayload,
   BridgeCameraCaptureRequestPayload,
   BridgeGalleryPickRequestPayload,
   BridgeImageUploadRequestPayload,
@@ -306,6 +309,58 @@ function shouldTerminateSession(endpoint: string) {
   return SESSION_TERMINATION_ENDPOINTS.has(endpoint);
 }
 
+function resolveAppVersion() {
+  const appVersion = Constants.expoConfig?.version;
+  if (typeof appVersion === "string" && appVersion.trim().length > 0) {
+    return appVersion.trim();
+  }
+
+  return "unknown";
+}
+
+function resolveBuildVersion() {
+  const platformManifest = Constants.platform;
+  const iosBuildNumber =
+    platformManifest &&
+    "ios" in platformManifest &&
+    platformManifest.ios &&
+    typeof platformManifest.ios.buildNumber === "string"
+      ? platformManifest.ios.buildNumber.trim()
+      : "";
+  if (iosBuildNumber.length > 0) return iosBuildNumber;
+
+  const androidVersionCode =
+    platformManifest &&
+    "android" in platformManifest &&
+    platformManifest.android &&
+    typeof platformManifest.android.versionCode === "number"
+      ? platformManifest.android.versionCode
+      : null;
+  if (typeof androidVersionCode === "number" && Number.isFinite(androidVersionCode)) {
+    return String(androidVersionCode);
+  }
+
+  return null;
+}
+
+function resolveOsVersion() {
+  if (typeof Platform.Version === "string") return Platform.Version;
+  if (typeof Platform.Version === "number" && Number.isFinite(Platform.Version)) {
+    return String(Platform.Version);
+  }
+
+  return null;
+}
+
+function resolveAppDeviceInfo(): BridgeAppDeviceInfoPayload {
+  return {
+    appVersion: resolveAppVersion(),
+    appBuild: resolveBuildVersion(),
+    osName: Platform.OS === "android" ? "android" : "ios",
+    osVersion: resolveOsVersion(),
+  };
+}
+
 function isBridgePrimitiveValue(value: unknown): value is string | number | boolean | undefined {
   return (
     value === undefined ||
@@ -345,6 +400,10 @@ function isWebToAppMessage(value: unknown): value is WebToAppMessage {
   }
 
   if (value.type === "NAVIGATION_BACK") {
+    return true;
+  }
+
+  if (value.type === "APP_DEVICE_INFO_REQUEST") {
     return true;
   }
 
@@ -432,6 +491,17 @@ export async function handleWebMessage(
 
     if (message.type === "NAVIGATION_BACK") {
       router.back();
+      return;
+    }
+
+    if (message.type === "APP_DEVICE_INFO_REQUEST") {
+      const result = resolveAppDeviceInfo();
+
+      sendToWeb(webViewRef, {
+        id: requestId,
+        type: "API_RESPONSE",
+        payload: result,
+      });
       return;
     }
 
