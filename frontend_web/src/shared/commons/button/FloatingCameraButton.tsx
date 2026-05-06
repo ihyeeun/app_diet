@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Camera } from "lucide-react";
+import * as React from "react";
 
 import styles from "./FloatingCameraButton.module.css";
 
