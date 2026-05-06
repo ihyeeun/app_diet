@@ -756,7 +756,7 @@ export default function GoalEditPage() {
 
   return (
     <div className={`${styles.page} ${isPlanStage ? styles.pageWhite : ""}`}>
-      <PageHeader title="목표 재설정" onBack={handleBack} />
+      <PageHeader title={isPlanStage ? undefined : "목표 재설정"} onBack={handleBack} />
 
       <main className={styles.main}>
         {isPending && !draft && <p className={styles.loadingText}>불러오는 중...</p>}
