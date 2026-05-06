@@ -98,7 +98,7 @@ export default function SettingsFeedbackPage() {
               />
             </div>
             <p className={`${styles.lengthText} typo-label4`}>최대 {MAX_FEEDBACK_LENGTH}자 이내</p>
-            {/* <p className={`${styles.lengthText} typo-label4`}>{appInfoLabel}</p> */}
+            <p className={`${styles.lengthText} typo-caption`}>{appInfoLabel}</p>
           </section>
         </div>
       </main>
