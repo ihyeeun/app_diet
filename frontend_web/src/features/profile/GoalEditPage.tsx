@@ -804,7 +804,7 @@ export default function GoalEditPage() {
             fullWidth
             variant="filled"
             size="large"
-            state={isFooterDisabled ? "disabled" : "default"}
+            interaction={isFooterDisabled ? "disable" : "normal"}
           >
             새로운 식단 계획 받기
           </Button>
@@ -817,7 +817,7 @@ export default function GoalEditPage() {
             fullWidth
             variant="filled"
             size="large"
-            state={isSubmitting ? "disabled" : "default"}
+            interaction={isSubmitting ? "disable" : "normal"}
           >
             다음
           </Button>
@@ -830,7 +830,7 @@ export default function GoalEditPage() {
             fullWidth
             variant="filled"
             size="large"
-            state={isSubmitting ? "disabled" : "default"}
+            interaction={isSubmitting ? "disable" : "normal"}
           >
             {isSubmitting ? "완료 중..." : "완료"}
           </Button>
@@ -854,7 +854,7 @@ export default function GoalEditPage() {
                 size="large"
                 color="primary"
                 disabled={isEditorConfirmDisabled}
-                state={isEditorConfirmDisabled ? "disabled" : "default"}
+                interaction={isEditorConfirmDisabled ? "disable" : "normal"}
               >
                 확인
               </Button>

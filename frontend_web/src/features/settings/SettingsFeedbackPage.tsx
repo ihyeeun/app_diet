@@ -76,7 +76,7 @@ export default function SettingsFeedbackPage() {
           disabled={!canSubmit}
           fullWidth
           size="large"
-          state={canSubmit ? "default" : "disabled"}
+          interaction={canSubmit ? "normal" : "disable"}
         >
           보내기
         </Button>

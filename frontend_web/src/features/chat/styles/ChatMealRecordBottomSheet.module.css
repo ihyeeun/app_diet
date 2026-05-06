@@ -15,7 +15,7 @@
 
 .calorieCard {
   align-items: center;
-  background-color: var(--bg-normal-primary2);
+  background-color: var(--bg-primary-2);
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
@@ -23,11 +23,11 @@
 }
 
 .calorieValue {
-  color: var(--text-normal);
+  color: var(--label-normal);
 }
 
 .sectionTitle {
-  color: var(--text-normal);
+  color: var(--label-normal);
   margin-bottom: 8px;
 }
 
@@ -47,8 +47,8 @@
 .mealTypeButton {
   align-items: center;
   aspect-ratio: 1 / 1;
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-neutral);
   border-radius: 8px;
   display: inline-flex;
   justify-content: center;
@@ -58,7 +58,7 @@
 .mealTypeButtonActive {
   background-color: var(--interaction-primary);
   border-color: var(--border-primary);
-  color: var(--text-primary);
+  color: var(--label-primary);
 }
 
 .menuSection {
@@ -87,8 +87,8 @@
 
 .quantityStepper {
   align-items: center;
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-neutral);
   border-radius: 8px;
   display: flex;
   flex: 1;
@@ -108,7 +108,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  color: var(--text-normal);
+  color: var(--label-normal);
   cursor: pointer;
   display: inline-flex;
   height: 24px;
@@ -126,7 +126,7 @@
 .quantityNumberFieldInput {
   background-color: transparent;
   border: 0;
-  color: var(--text-normal);
+  color: var(--label-normal);
   text-align: center;
   width: 100%;
 }
@@ -137,10 +137,10 @@
 
 .unitSelectTrigger {
   align-items: center;
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-neutral);
   border-radius: 8px;
-  color: var(--text-normal);
+  color: var(--label-normal);
   display: inline-flex;
   gap: 10px;
   justify-content: space-between;
@@ -152,7 +152,7 @@
 }
 
 .selectIcon {
-  color: var(--text-normal);
+  color: var(--label-normal);
   display: inline-flex;
 }
 
@@ -161,8 +161,8 @@
 }
 
 .selectPopup {
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-neutral);
   border-radius: 10px;
   box-shadow: var(--shadow-strong);
   overflow: hidden;
@@ -175,7 +175,7 @@
 }
 
 .selectItem {
-  color: var(--text-normal);
+  color: var(--label-normal);
   padding: 10px 14px;
 }
 
@@ -184,15 +184,15 @@
 }
 
 .primaryText {
-  color: var(--text-primary);
+  color: var(--label-primary);
 }
 
 .secondaryText {
-  color: var(--text-assistive1);
+  color: var(--label-alternative);
 }
 
 .tertiaryText {
-  color: var(--text-assistive2);
+  color: var(--label-assistive);
 }
 
 .actionBar {

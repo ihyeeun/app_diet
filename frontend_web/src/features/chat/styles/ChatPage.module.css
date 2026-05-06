@@ -1,5 +1,5 @@
 .page {
-  background-color: var(--bg-normal-normal);
+  background-color: var(--bg-normal);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -15,7 +15,7 @@
 
 .footer {
   padding-bottom: var(--safe-area-bottom);
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
 }
 
 .floatingCameraButtonWrapper {
@@ -57,7 +57,7 @@
 
 .floatingCameraActionLabel {
   border-radius: 12px;
-  color: var(--text-white);
+  color: var(--static-white);
   padding: 8px 10px;
   white-space: nowrap;
 }
@@ -83,7 +83,7 @@
   background-color: var(--primary-normal);
   border-radius: 100px;
   box-shadow: var(--shadow-emphasize);
-  color: var(--text-white);
+  color: var(--static-white);
   display: inline-flex;
   height: 56px;
   justify-content: center;
@@ -107,11 +107,11 @@
   align-items: center;
   display: flex;
   gap: 6px;
-  color: var(--text-primary);
+  color: var(--label-primary);
 }
 
 .loadingText {
-  color: var(--text-assistive2);
+  color: var(--label-assistive);
   padding-top: 36px;
   text-align: center;
 }
@@ -138,7 +138,7 @@
 .dateText {
   background-color: var(--gray-500);
   border-radius: 999px;
-  color: var(--text-white);
+  color: var(--static-white);
   display: inline-flex;
   padding: 4px 12px;
 }
@@ -151,13 +151,13 @@
 }
 
 .timeText {
-  color: var(--text-assistive2);
+  color: var(--label-assistive);
 }
 
 .userBubble {
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   border-radius: 100px;
-  color: var(--text-normal);
+  color: var(--label-normal);
   max-width: 80%;
   padding: 8px 16px;
   white-space: pre-wrap;
@@ -172,7 +172,7 @@
 }
 
 .assistantBubble {
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   border-radius: 8px;
   padding: 8px 16px;
   white-space: pre-wrap;
@@ -186,8 +186,8 @@
 }
 
 .recommendCard {
-  background-color: var(--bg-normal-white);
-  border: 1px solid var(--border-normal);
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-neutral);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -205,7 +205,7 @@
   align-items: center;
   background-color: var(--primary-strong);
   border-radius: 4px;
-  color: var(--text-white);
+  color: var(--static-white);
   display: inline-flex;
   padding: 2px 6px;
   width: fit-content;
@@ -219,12 +219,12 @@
 }
 
 .recommendMenuName {
-  color: var(--text-normal);
+  color: var(--label-normal);
   margin-bottom: 2px;
 }
 
 .recommendSummary {
-  color: var(--text-assistive2);
+  color: var(--label-assistive);
 }
 
 .recommendMetaRow {
@@ -239,25 +239,15 @@
 }
 
 .recommendBrand {
-  color: var(--text-assistive2);
+  color: var(--label-assistive);
 }
 
 .recommendAmount {
-  color: var(--text-assistive1);
+  color: var(--label-alternative);
 }
 
 .recommendCalories {
-  color: var(--text-normal);
-}
-
-.recommendTag {
-  align-items: center;
-  background-color: var(--bg-shadow-1);
-  border-radius: 4px;
-  color: var(--text-assistive2);
-  display: inline-flex;
-  padding: 2px 6px;
-  width: fit-content;
+  color: var(--label-normal);
 }
 
 .addAction {
@@ -268,19 +258,19 @@
 }
 
 .addActionText {
-  color: var(--text-assistive1);
+  color: var(--label-alternative);
 }
 
 .addActionSelected {
   display: flex;
   gap: 8px;
   justify-content: center;
-  color: var(--text-primary);
+  color: var(--label-primary);
 }
 
 .moreRecommendCard {
   align-items: flex-start;
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -291,27 +281,27 @@
 
 .recordNowButton {
   align-items: center;
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   border-radius: 8px;
-  color: var(--text-primary);
+  color: var(--label-primary);
   display: flex;
   justify-content: space-between;
   padding: 10px 12px;
 }
 
 .moreRecommendTitle {
-  color: var(--text-normal);
+  color: var(--label-normal);
 }
 
 .moreRecommendAction {
   align-items: center;
-  color: var(--text-assistive2);
+  color: var(--label-assistive);
   display: inline-flex;
   gap: 2px;
 }
 
 .recordCompleteCard {
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   border-radius: 12px;
   padding: 14px;
   width: 100%;
@@ -330,7 +320,7 @@
 }
 
 .recordCompleteSummaryText {
-  color: var(--text-normal);
+  color: var(--label-normal);
 }
 
 .recordCompleteCaloriesWrapper {
@@ -340,11 +330,11 @@
 }
 
 .recordCompleteCalories {
-  color: var(--text-normal);
+  color: var(--label-normal);
 }
 
 .recordCompleteChevron {
-  color: var(--text-normal);
+  color: var(--label-normal);
   transition: transform 0.2s ease;
 }
 
@@ -353,7 +343,7 @@
 }
 
 .recordCompleteDetailList {
-  border-top: 1px solid var(--border-normal);
+  border-top: 1px solid var(--border-neutral);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -369,7 +359,7 @@
 }
 
 .recordCompleteDetailCalories {
-  color: var(--text-assistive1);
+  color: var(--label-alternative);
 }
 
 .recordCompleteActionRow {
@@ -388,8 +378,8 @@
 }
 
 .recordActionButtonNeutral {
-  border: 1px solid var(--border-normal);
-  color: var(--text-assistive1);
+  border: 1px solid var(--border-neutral);
+  color: var(--label-alternative);
 }
 
 .recordActionButtonPrimary {
@@ -403,7 +393,7 @@
 
 .typingBubble {
   align-items: center;
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   border-radius: 12px;
   display: inline-flex;
   gap: 5px;
@@ -444,11 +434,11 @@
 .chatInputContainer {
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
 }
 
 .chipSection {
-  background-color: var(--bg-normal-normal);
+  background-color: var(--bg-normal);
   height: 58px;
   display: flex;
   align-items: center;
@@ -474,12 +464,12 @@
 }
 
 .chipContainer {
-  background-color: var(--bg-normal-white);
+  background-color: var(--bg-white);
   width: fit-content;
   padding: 8px 16px;
   border-radius: 100px;
   flex-shrink: 0;
-  border: 1px solid var(--border-normal);
+  border: 1px solid var(--border-neutral);
 }
 
 .textInputContainer {
@@ -491,19 +481,19 @@
 }
 
 .plusIconContainer {
-  background-color: var(--bg-shadow-3);
+  background-color: var(--interaction-alternative);
   width: 36px;
   height: 36px;
   border-radius: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-white);
+  color: var(--static-white);
 }
 
 .plusIconContainerActive {
   background-color: var(--gray-300);
-  color: var(--text-white);
+  color: var(--static-white);
 }
 
 .plusIcon {
@@ -522,7 +512,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-white);
+  color: var(--static-white);
   flex-shrink: 0;
 }
 
@@ -536,7 +526,7 @@
   width: 100%;
   padding: 9px 20px;
   border-radius: 100px;
-  border: 1px solid var(--border-normal);
+  border: 1px solid var(--border-neutral);
   resize: none;
   overflow-y: auto;
 }
@@ -571,9 +561,9 @@
 
 .addActionItemButton {
   align-items: center;
-  background-color: var(--bg-normal-normal);
+  background-color: var(--bg-normal);
   border-radius: 8px;
-  color: var(--text-normal);
+  color: var(--label-normal);
   display: inline-flex;
   gap: 8px;
   justify-content: flex-start;
@@ -602,7 +592,7 @@
   transform: translateX(-50%);
   padding: 6px 10px;
   border-radius: 6px;
-  background: var(--bg-normal-white);
+  background: var(--bg-white);
   box-shadow: var(--shadow-strong);
   white-space: nowrap;
 }
@@ -615,5 +605,5 @@
   transform: translateX(-50%);
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 9px solid var(--bg-normal-white);
+  border-top: 9px solid var(--bg-white);
 }

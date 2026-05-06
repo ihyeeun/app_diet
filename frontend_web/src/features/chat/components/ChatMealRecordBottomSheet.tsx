@@ -310,9 +310,9 @@ export function ChatMealRecordBottomSheet({
               <p className={`${styles.secondaryText} typo-label3`}>다른 메뉴도 드셨나요?</p>
               <Button
                 variant="text"
-                state="default"
+                interaction="normal"
                 size="small"
-                color="assistive"
+                color="normal"
                 onClick={onAddMore}
               >
                 추가하러 가기
@@ -324,8 +324,8 @@ export function ChatMealRecordBottomSheet({
         <div className={styles.actionBar}>
           <Button
             variant="filled"
-            state={selectedItems.length > 0 && !isSubmitPending ? "default" : "disabled"}
-            size="medium"
+            interaction={selectedItems.length > 0 && !isSubmitPending ? "normal" : "disable"}
+            size="normal"
             color="primary"
             fullWidth
             disabled={selectedItems.length === 0 || isSubmitPending}

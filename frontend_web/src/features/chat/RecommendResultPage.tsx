@@ -304,10 +304,10 @@ export default function RecommendResultPage() {
       <footer className={styles.footer}>
         <Button
           variant="filled"
-          size="medium"
+          size="normal"
           color="primary"
           fullWidth
-          state={selectedCount > 0 && !isRecordPending ? "default" : "disabled"}
+          interaction={selectedCount > 0 && !isRecordPending ? "normal" : "disable"}
           disabled={selectedCount === 0 || isRecordPending}
           onClick={() => setIsBottomSheetOpen(true)}
         >

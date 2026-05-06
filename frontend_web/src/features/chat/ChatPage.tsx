@@ -373,6 +373,7 @@ export default function ChatPage() {
     setIsCameraActionMenuOpen(false);
   };
 
+  // TODO 카메라 기능 연동
   const handleNavigateMenuBoardCamera = () => {
     handleCloseCameraActionMenu();
     navigate(PATH.MENU_BOARD_CAMERA, {
