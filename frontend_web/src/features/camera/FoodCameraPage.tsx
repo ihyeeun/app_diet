@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
@@ -27,13 +27,20 @@ import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
 
+type FoodCameraLocationState = {
+  autoOpenCamera?: boolean;
+  source?: "chat";
+};
+
 export default function FoodCameraPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isUploading, setIsUploading] = useState(false);
   const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
   const [captureErrorFeedback, setCaptureErrorFeedback] =
     useState<CameraCaptureErrorFeedback | null>(null);
+  const autoTriggeredRef = useRef(false);
 
   const { mutateAsync: uploadImage } = useFoodImageMutation();
   const { mutateAsync: mealRegisterAsync } = useTodayMealRecordRegisterMutation();
@@ -43,10 +50,19 @@ export default function FoodCameraPage() {
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const upsertMenu = useMenuDraftUpsert();
+  const locationState = (location.state ?? {}) as FoodCameraLocationState;
+  const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
+  const isChatSource = locationState.source === "chat";
 
-  const handleCameraActions = async () => {
+  const handleCameraActions = useCallback(async () => {
     if (isUploading) return;
     setCaptureErrorFeedback(null);
+
+    if (isChatSource) {
+      toast.show({ title: "채팅 연동 기능 준비 중이에요." });
+      return;
+      // TODO 채팅 전송 로직 교체
+    }
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
@@ -101,7 +117,26 @@ export default function FoodCameraPage() {
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [
+    dateKey,
+    draftKey,
+    isUploading,
+    mealRegisterAsync,
+    mealType,
+    navigate,
+    isChatSource,
+    upsertMenu,
+    uploadImage,
+  ]);
+
+  useEffect(() => {
+    if (!shouldAutoOpenCamera || autoTriggeredRef.current) {
+      return;
+    }
+
+    autoTriggeredRef.current = true;
+    void handleCameraActions();
+  }, [handleCameraActions, shouldAutoOpenCamera]);
 
   return (
     <section className={styles.page}>
