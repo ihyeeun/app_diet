@@ -46,6 +46,7 @@ export default function MenuActionSection({
     navigate(getPathWithMeal(PATH.FOOD_CAMERA, selectedDate, mealType), {
       state: {
         autoOpenCamera: true,
+        source: "chat" as const,
       },
     });
   };

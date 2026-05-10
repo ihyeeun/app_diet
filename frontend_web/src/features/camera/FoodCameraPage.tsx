@@ -29,6 +29,7 @@ import { toast } from "@/shared/commons/toast/toast";
 
 type FoodCameraLocationState = {
   autoOpenCamera?: boolean;
+  source?: "chat";
 };
 
 export default function FoodCameraPage() {
@@ -51,10 +52,17 @@ export default function FoodCameraPage() {
   const upsertMenu = useMenuDraftUpsert();
   const locationState = (location.state ?? {}) as FoodCameraLocationState;
   const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
+  const isChatSource = locationState.source === "chat";
 
   const handleCameraActions = useCallback(async () => {
     if (isUploading) return;
     setCaptureErrorFeedback(null);
+
+    if (isChatSource) {
+      toast.show({ title: "채팅 연동 기능 준비 중이에요." });
+      return;
+      // TODO 채팅 전송 로직 교체
+    }
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
@@ -116,6 +124,7 @@ export default function FoodCameraPage() {
     mealRegisterAsync,
     mealType,
     navigate,
+    isChatSource,
     upsertMenu,
     uploadImage,
   ]);
