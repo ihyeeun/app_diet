@@ -6,7 +6,7 @@ import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection"
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { getPathWithMeal } from "@/router/pathHelpers";
-import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
+import { isNativeApp, syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
@@ -72,7 +72,11 @@ export default function MenuActionSection({
               description="오늘의 식단 고민을 해결해드려요"
               iconSrc="/icons/chat-icon.svg"
               onClick={() => {
-                syncAppTab("chat");
+                if (isNativeApp()) {
+                  syncAppTab("chat");
+                  return;
+                }
+
                 navigate(PATH.CHAT);
               }}
             />
