@@ -41,7 +41,6 @@ import {
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 import {
   navigateBack,
   useLocation,
@@ -213,7 +212,7 @@ export default function NutrientModifyPage() {
   };
 
   const handleBack = () => {
-    navigateBackOrFallback(navigate, getBackFallbackPath());
+    navigateBack({ fallbackTo: getBackFallbackPath() });
   };
 
   const handleResetForm = () => {

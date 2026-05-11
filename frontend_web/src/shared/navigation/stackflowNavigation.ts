@@ -6,7 +6,6 @@ export type {
   URLSearchParamsInit,
 } from "./stackflowRouter";
 export {
-  canGoBackWithStack,
   isPreviousStackActivity,
   navigate,
   navigateBack,
@@ -14,6 +13,5 @@ export {
   useLocation,
   useNavigate,
   useSearchParams,
-  useStackDepth,
   useStackflowBackHandler,
 } from "./stackflowRouter";

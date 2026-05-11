@@ -19,13 +19,12 @@ import {
 import styles from "@/features/meal-record/styles/MealDetailPage.module.css";
 import type { NutrientModifyLocationState } from "@/features/nutrient-entry/types/nutrientEntry.state";
 import { PATH } from "@/router/path";
-import type { PageKey } from "@/router/pathHelpers";
+import { getMealRecordPath, getMealSearchPath, type PageKey } from "@/router/pathHelpers";
 import { type MealMenuItem, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
 import {
   navigateBack,
   useLocation,
@@ -34,7 +33,6 @@ import {
 } from "@/shared/navigation/stackflowNavigation";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
-import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";
 import { getMealType, getSafeDateKey, getSafeKeyword } from "./utils/mealRecord.queryParams";
 
 type MealDetailLocationState = {
@@ -213,7 +211,7 @@ export default function MealDetailPage() {
 
   const getBackFallbackPath = () => {
     if (pageKey === "MEAL_SEARCH") {
-      return getMealRecordAddSearchPath(dateKey, mealType, searchKeyword);
+      return getMealSearchPath(dateKey, mealType, searchKeyword);
     }
 
     if (pageKey === "MEAL_RECORD") {
@@ -228,7 +226,7 @@ export default function MealDetailPage() {
   };
 
   const handleHeaderBack = () => {
-    navigateBackOrFallback(navigate, getBackFallbackPath());
+    navigateBack({ fallbackTo: getBackFallbackPath() });
   };
 
   const handleModify = () => {

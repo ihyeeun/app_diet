@@ -19,7 +19,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 
 import AccountDeletePage from "@/features/account-delete/AccountDeletePage";
@@ -178,9 +177,6 @@ const SWIPE_TRIGGER_RATIO = 0.2;
 
 const activityNavigationStateMap = new Map<string, unknown>();
 const stackflowBackHandlerMap = new Map<string, StackflowBackHandler>();
-const stackDepthListeners = new Set<() => void>();
-
-let currentStackDepth = 0;
 
 function createLazyActivity(loader: () => Promise<{ default: ComponentType }>) {
   const LazyPage = lazy(loader);
@@ -338,13 +334,9 @@ function getActivityNavigationState<State>(activityId: string): State | null {
 }
 
 function setStackDepth(depth: number) {
-  currentStackDepth = depth;
-
   if (typeof window !== "undefined") {
     Object.assign(window, { __STACKFLOW_STACK_DEPTH__: depth });
   }
-
-  stackDepthListeners.forEach((listener) => listener());
 }
 
 function getBackStackDepth(stack: Stack) {
@@ -369,17 +361,6 @@ function runActiveBackHandler(skipBackHandler: boolean | undefined) {
   if (!activeActivity) return false;
 
   return stackflowBackHandlerMap.get(activeActivity.id)?.() === true;
-}
-
-function subscribeStackDepth(listener: () => void) {
-  stackDepthListeners.add(listener);
-  return () => {
-    stackDepthListeners.delete(listener);
-  };
-}
-
-function getStackDepthSnapshot() {
-  return currentStackDepth;
 }
 
 function createSearchParams(init?: URLSearchParamsInit) {
@@ -727,7 +708,7 @@ export function navigateBack({
   return false;
 }
 
-export function canGoBackWithStack() {
+function canGoBackWithStack() {
   return getBackStackDepth(stackflowActions.getStack()) > 1;
 }
 
@@ -814,10 +795,6 @@ export function useSearchParams(): [
   );
 
   return [searchParams, setSearchParams];
-}
-
-export function useStackDepth() {
-  return useSyncExternalStore(subscribeStackDepth, getStackDepthSnapshot, getStackDepthSnapshot);
 }
 
 export function useStackflowBackHandler(handler: StackflowBackHandler | null | undefined) {
