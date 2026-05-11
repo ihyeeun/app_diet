@@ -109,6 +109,8 @@ export default function NumberField({
     onPaste: onInputPaste,
     ...restInputProps
   } = inputProps ?? {};
+  const decrementClassName = classNames?.decrement ?? (unstyled ? undefined : styles.decrement);
+  const incrementClassName = classNames?.increment ?? (unstyled ? undefined : styles.increment);
 
   return (
     <BaseNumberField.Root
@@ -152,7 +154,7 @@ export default function NumberField({
       <BaseNumberField.Group className={cx(unstyled ? undefined : styles.group, classNames?.group)}>
         {showControls && (
           <BaseNumberField.Decrement
-            className={cx(unstyled ? undefined : styles.decrement, classNames?.decrement)}
+            className={decrementClassName}
             aria-label={decrementAriaLabel}
             disabled={decrementDisabled}
           >
@@ -211,7 +213,7 @@ export default function NumberField({
         {suffix}
         {showControls && (
           <BaseNumberField.Increment
-            className={cx(unstyled ? undefined : styles.increment, classNames?.increment)}
+            className={incrementClassName}
             aria-label={incrementAriaLabel}
             disabled={incrementDisabled}
           >

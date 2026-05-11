@@ -9,6 +9,7 @@ type BaseAlertModalProps = {
   title: React.ReactNode;
   description?: React.ReactNode;
   children: React.ReactNode;
+  focusPopupOnOpen?: boolean;
 };
 
 export function BaseAlertModal({
@@ -17,7 +18,9 @@ export function BaseAlertModal({
   title,
   description,
   children,
+  focusPopupOnOpen = false,
 }: BaseAlertModalProps) {
+  const popupRef = React.useRef<HTMLDivElement | null>(null);
   const actionCount = React.Children.toArray(children).filter(Boolean).length;
 
   return (
@@ -25,7 +28,11 @@ export function BaseAlertModal({
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className="modal-backdrop" />
 
-        <AlertDialog.Popup className="modal-popup">
+        <AlertDialog.Popup
+          ref={popupRef}
+          className="modal-popup"
+          initialFocus={focusPopupOnOpen ? popupRef : undefined}
+        >
           <div className="modal-surface">
             <AlertDialog.Title className="typo-title2">{title}</AlertDialog.Title>
 

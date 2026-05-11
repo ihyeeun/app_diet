@@ -33,7 +33,7 @@ export default function TermsPage() {
       <section className={styles.container}>
         <div className={styles.accordionContainer}>
           <Accordion.Root className={styles.accordion}>
-            <Accordion.Item className={styles.item}>
+            <Accordion.Item>
               <Accordion.Header className={styles.header}>
                 <Accordion.Trigger className={`${styles.trigger} typo-title4`}>
                   서비스 이용약관
@@ -56,7 +56,7 @@ export default function TermsPage() {
           </Accordion.Root>
 
           <Accordion.Root className={styles.accordion}>
-            <Accordion.Item className={styles.item}>
+            <Accordion.Item>
               <Accordion.Header className={styles.header}>
                 <Accordion.Trigger className={`${styles.trigger} typo-title4`}>
                   개인정보처리방침

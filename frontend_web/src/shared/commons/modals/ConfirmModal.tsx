@@ -40,7 +40,13 @@ export function ConfirmModal({
   onConfirm,
 }: ConfirmModalProps) {
   return (
-    <BaseAlertModal open={open} onOpenChange={onOpenChange} title={title} description={description}>
+    <BaseAlertModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      focusPopupOnOpen
+    >
       {/* 취소는 무조건 닫기 */}
       <AlertDialog.Close
         render={(props) => (

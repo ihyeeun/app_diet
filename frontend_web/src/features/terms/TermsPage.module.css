@@ -25,10 +25,6 @@
   width: 100%;
 }
 
-.item {
-  border-bottom: 1px solid var(--border-neutral);
-}
-
 .header {
   margin: 0;
 }
