@@ -24,7 +24,11 @@ import {
 import AccountDeletePage from "@/features/account-delete/AccountDeletePage";
 import { PATH } from "@/router/path";
 import { isNativeApp, requestAppBack } from "@/shared/api/bridge/nativeBridge";
-import { FEATURE_GUARD, type FeatureGuardTarget, isFeatureBlocked } from "@/shared/guards/featureGuard";
+import {
+  FEATURE_GUARD,
+  type FeatureGuardTarget,
+  isFeatureBlocked,
+} from "@/shared/guards/featureGuard";
 
 import styles from "./StackflowRuntime.module.css";
 
@@ -81,16 +85,28 @@ const HomePage = createLazyActivity(() => import("@/features/home/HomePage"));
 const TodayMealScorePage = createLazyActivity(() => import("@/features/home/TodayMealScorePage"));
 const MealDetailPage = createLazyActivity(() => import("@/features/meal-record/MealDetailPage"));
 const MealRecordPage = createLazyActivity(() => import("@/features/meal-record/MealRecordPage"));
-const NutrientAddPage = createLazyActivity(() => import("@/features/nutrient-entry/NutrientAddPage"));
-const NutrientModifyPage = createLazyActivity(() => import("@/features/nutrient-entry/NutrientModifyPage"));
-const NutrientRegisterPage = createLazyActivity(() => import("@/features/nutrient-entry/NutrientRegisterPage"));
+const NutrientAddPage = createLazyActivity(
+  () => import("@/features/nutrient-entry/NutrientAddPage"),
+);
+const NutrientModifyPage = createLazyActivity(
+  () => import("@/features/nutrient-entry/NutrientModifyPage"),
+);
+const NutrientRegisterPage = createLazyActivity(
+  () => import("@/features/nutrient-entry/NutrientRegisterPage"),
+);
 const OnboardingPage = createLazyActivity(() => import("@/features/onboarding/OnboardingPage"));
 const RecommendPage = createLazyActivity(() => import("@/features/recommend/RecommendPage"));
 const BrandSearch = createLazyActivity(() => import("@/features/search/brand/BrandSearch"));
-const MealSearchPage = createLazyActivity(() => import("@/features/search/menu-record/MealSearchPage"));
-const SettingsFeedbackPage = createLazyActivity(() => import("@/features/settings/SettingsFeedbackPage"));
+const MealSearchPage = createLazyActivity(
+  () => import("@/features/search/menu-record/MealSearchPage"),
+);
+const SettingsFeedbackPage = createLazyActivity(
+  () => import("@/features/settings/SettingsFeedbackPage"),
+);
 const SettingsPage = createLazyActivity(() => import("@/features/settings/SettingsPage"));
-const SettingsSubCodePage = createLazyActivity(() => import("@/features/settings/SettingsSubCodePage"));
+const SettingsSubCodePage = createLazyActivity(
+  () => import("@/features/settings/SettingsSubCodePage"),
+);
 const TermsPage = createLazyActivity(() => import("@/features/terms/TermsPage"));
 const MenuBoardCameraPage = createGuardedLazyActivity(
   FEATURE_GUARD.MENU_BOARD_CAMERA,
@@ -103,7 +119,10 @@ const FoodCameraPage = createGuardedLazyActivity(
 );
 const ProfilePage = createLazyActivity(() => import("@/features/profile/ProfilePage"));
 const GoalEditPage = createLazyActivity(() => import("@/features/profile/GoalEditPage"));
-const ChatPage = createGuardedLazyActivity(FEATURE_GUARD.CHAT, () => import("@/features/chat/ChatPage"));
+const ChatPage = createGuardedLazyActivity(
+  FEATURE_GUARD.CHAT,
+  () => import("@/features/chat/ChatPage"),
+);
 const DiaryPage = createLazyActivity(() => import("@/features/diary/DiaryPage"));
 const RecommendResultPage = createLazyActivity(() => import("@/features/chat/RecommendResultPage"));
 const RecommendDetailPage = createLazyActivity(() => import("@/features/chat/RecommendDetailPage"));
@@ -170,10 +189,14 @@ const ACTIVITY_ROUTES: Record<keyof typeof ACTIVITIES, RoutePath> = {
 
 type ActivityName = keyof typeof ACTIVITY_ROUTES;
 
-const EDGE_SWIPE_WIDTH = 28;
-const SWIPE_CANCEL_DISTANCE = -8;
-const SWIPE_START_DISTANCE = 8;
-const SWIPE_TRIGGER_RATIO = 0.2;
+const EDGE_SWIPE_WIDTH = 44;
+const SWIPE_CANCEL_DISTANCE = -12;
+const SWIPE_START_DISTANCE = 4;
+const SWIPE_TRIGGER_RATIO = 0.12;
+const SWIPE_VELOCITY_MIN_DISTANCE = 20;
+const SWIPE_VELOCITY_TRIGGER = 0.45;
+const SWIPE_VERTICAL_CANCEL_DISTANCE = 32;
+const SWIPE_VERTICAL_CANCEL_RATIO = 2.4;
 
 const activityNavigationStateMap = new Map<string, unknown>();
 const stackflowBackHandlerMap = new Map<string, StackflowBackHandler>();
@@ -254,7 +277,9 @@ function isActivityName(value: string): value is ActivityName {
   return value in ACTIVITY_ROUTES;
 }
 
-function resolveActivityForPath(to: To): { activityName: ActivityName; params: ActivityParams } | null {
+function resolveActivityForPath(
+  to: To,
+): { activityName: ActivityName; params: ActivityParams } | null {
   const rawPath = toPathString(to);
   let url: URL;
 
@@ -333,6 +358,21 @@ function getActivityNavigationState<State>(activityId: string): State | null {
   return activityNavigationStateMap.get(activityId) as State;
 }
 
+function pruneActivityNavigationStateMap() {
+  const activeIds = new Set(
+    stackflowActions
+      .getStack()
+      .activities.filter((activity) => !activity.exitedBy)
+      .map((activity) => activity.id),
+  );
+
+  activityNavigationStateMap.forEach((_, activityId) => {
+    if (!activeIds.has(activityId)) {
+      activityNavigationStateMap.delete(activityId);
+    }
+  });
+}
+
 function setStackDepth(depth: number) {
   if (typeof window !== "undefined") {
     Object.assign(window, { __STACKFLOW_STACK_DEPTH__: depth });
@@ -388,7 +428,31 @@ function isEditableElement(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
 
   const tagName = target.tagName.toLowerCase();
-  return tagName === "input" || tagName === "textarea" || tagName === "select" || target.isContentEditable;
+  return (
+    tagName === "input" ||
+    tagName === "textarea" ||
+    tagName === "select" ||
+    target.isContentEditable
+  );
+}
+
+function isEdgeSwipeZone(target: EventTarget | null): target is HTMLElement {
+  return target instanceof HTMLElement && target.dataset.stackflowEdgeSwipeZone === "true";
+}
+
+function forwardTapThroughEdgeSwipeZone(event: ReactPointerEvent<HTMLElement>) {
+  if (!isEdgeSwipeZone(event.target)) return;
+
+  const edgeSwipeZone = event.target;
+  const previousPointerEvents = edgeSwipeZone.style.pointerEvents;
+  edgeSwipeZone.style.pointerEvents = "none";
+
+  const target = document.elementFromPoint(event.clientX, event.clientY);
+  edgeSwipeZone.style.pointerEvents = previousPointerEvents;
+
+  if (target instanceof HTMLElement) {
+    target.click();
+  }
 }
 
 function stackflowRendererPlugin(): StackflowReactPlugin<typeof ACTIVITIES> {
@@ -437,6 +501,8 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
     width: number;
   } | null>(null);
   const [dragX, setDragX] = useState(0);
+  const [isSwipePending, setIsSwipePending] = useState(false);
+  const [isSwipeCompleting, setIsSwipeCompleting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const canSwipeBack =
@@ -448,12 +514,16 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
   const clearSwipe = useCallback(() => {
     swipeRef.current = null;
     setDragX(0);
+    setIsSwipePending(false);
+    setIsSwipeCompleting(false);
     setIsDragging(false);
     setIsResetting(false);
   }, []);
 
   const snapBackSwipe = useCallback(() => {
     swipeRef.current = null;
+    setIsSwipePending(false);
+    setIsSwipeCompleting(false);
     setIsDragging(false);
     setIsResetting(true);
     setDragX(0);
@@ -465,6 +535,8 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
 
     const frameId = window.requestAnimationFrame(() => {
       setDragX(0);
+      setIsSwipePending(false);
+      setIsSwipeCompleting(false);
       setIsDragging(false);
       setIsResetting(false);
     });
@@ -492,6 +564,8 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
         width: rect.width,
       };
       setDragX(0);
+      setIsSwipePending(true);
+      setIsSwipeCompleting(false);
       setIsDragging(false);
       setIsResetting(false);
       event.currentTarget.setPointerCapture(event.pointerId);
@@ -499,34 +573,47 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
     [canSwipeBack],
   );
 
-  const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    const swipe = swipeRef.current;
-    if (!swipe || swipe.pointerId !== event.pointerId) return;
+  const handlePointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const swipe = swipeRef.current;
+      if (!swipe || swipe.pointerId !== event.pointerId) return;
 
-    const dx = event.clientX - swipe.startX;
-    const dy = event.clientY - swipe.startY;
+      const dx = event.clientX - swipe.startX;
+      const dy = event.clientY - swipe.startY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
 
-    if (!swipe.dragging) {
-      if (dx < SWIPE_CANCEL_DISTANCE || Math.abs(dy) > Math.max(dx, SWIPE_START_DISTANCE) * 1.4) {
-        clearSwipe();
-        return;
+      if (!swipe.dragging) {
+        const isVerticalScroll =
+          absDy >= SWIPE_VERTICAL_CANCEL_DISTANCE &&
+          absDy > Math.max(absDx, SWIPE_START_DISTANCE) * SWIPE_VERTICAL_CANCEL_RATIO;
+
+        if (dx < SWIPE_CANCEL_DISTANCE || isVerticalScroll) {
+          clearSwipe();
+          return;
+        }
+
+        if (dx < SWIPE_START_DISTANCE) {
+          event.preventDefault();
+          return;
+        }
+
+        swipe.dragging = true;
+        setIsSwipePending(false);
+        setIsDragging(true);
       }
 
-      if (dx < SWIPE_START_DISTANCE) return;
+      const now = performance.now();
+      const elapsed = Math.max(now - swipe.lastTime, 1);
+      swipe.velocity = (event.clientX - swipe.lastX) / elapsed;
+      swipe.lastX = event.clientX;
+      swipe.lastTime = now;
 
-      swipe.dragging = true;
-      setIsDragging(true);
-    }
-
-    const now = performance.now();
-    const elapsed = Math.max(now - swipe.lastTime, 1);
-    swipe.velocity = (event.clientX - swipe.lastX) / elapsed;
-    swipe.lastX = event.clientX;
-    swipe.lastTime = now;
-
-    setDragX(Math.max(0, Math.min(dx, swipe.width)));
-    event.preventDefault();
-  }, [clearSwipe]);
+      setDragX(Math.max(0, Math.min(dx, swipe.width)));
+      event.preventDefault();
+    },
+    [clearSwipe],
+  );
 
   const handlePointerUp = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -535,20 +622,23 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
 
       const finalDragX = Math.max(0, Math.min(event.clientX - swipe.startX, swipe.width));
       const shouldPop =
-        swipe.dragging && finalDragX >= swipe.width * SWIPE_TRIGGER_RATIO;
+        swipe.dragging &&
+        (finalDragX >= swipe.width * SWIPE_TRIGGER_RATIO ||
+          (finalDragX >= SWIPE_VELOCITY_MIN_DISTANCE &&
+            swipe.velocity >= SWIPE_VELOCITY_TRIGGER));
 
       swipeRef.current = null;
+      setIsSwipePending(false);
       setIsDragging(false);
 
       if (shouldPop) {
-        const didNavigateBack = navigateBack({ animate: true });
-
-        setDragX(0);
-        setIsResetting(!didNavigateBack);
+        setDragX(swipe.width);
+        setIsSwipeCompleting(true);
         return;
       }
 
       if (!swipe.dragging) {
+        forwardTapThroughEdgeSwipeZone(event);
         clearSwipe();
         return;
       }
@@ -579,15 +669,29 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
 
   const handleTransitionEnd = useCallback(
     (event: ReactTransitionEvent<HTMLDivElement>) => {
+      if (event.target !== event.currentTarget) return;
       if (event.propertyName !== "transform") return;
+
+      if (isSwipeCompleting) {
+        const didNavigateBack = navigateBack({ animate: false });
+
+        if (!didNavigateBack) {
+          setIsSwipeCompleting(false);
+          setIsResetting(true);
+          setDragX(0);
+        }
+        return;
+      }
+
       if (!isResetting) return;
       setIsResetting(false);
     },
-    [isResetting],
+    [isResetting, isSwipeCompleting],
   );
 
   const frameStyle = {
     "--stackflow-drag-x": `${dragX}px`,
+    "--stackflow-edge-swipe-width": `${EDGE_SWIPE_WIDTH}px`,
     zIndex: activity.zIndex,
   } as CSSProperties;
 
@@ -598,6 +702,8 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
       data-dragging={isDragging ? "true" : undefined}
       data-resetting={isResetting ? "true" : undefined}
       data-root={activity.isRoot ? "true" : undefined}
+      data-swipe-completing={isSwipeCompleting ? "true" : undefined}
+      data-swipe-pending={isSwipePending ? "true" : undefined}
       data-top={activity.isTop ? "true" : undefined}
       data-transition-state={activity.transitionState}
       onLostPointerCapture={handleLostPointerCapture}
@@ -609,6 +715,13 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
       style={frameStyle}
     >
       {activity.render()}
+      {canSwipeBack ? (
+        <div
+          aria-hidden="true"
+          className={styles.edgeSwipeZone}
+          data-stackflow-edge-swipe-zone="true"
+        />
+      ) : null}
     </div>
   );
 }
@@ -665,6 +778,62 @@ export function navigate(toOrDelta: To | number, options?: NavigateOptions) {
     : stackflowActions.push(resolved.activityName, resolved.params, actionOptions);
 
   setActivityNavigationState(result.activityId, options?.state);
+  pruneActivityNavigationStateMap();
+}
+
+export function navigateBackAndPush({
+  animate = true,
+  count = 1,
+  fallbackOptions,
+  pushOptions,
+  skipBackHandler = false,
+  to,
+  fallbackTo = to,
+}: {
+  animate?: boolean;
+  count?: number;
+  fallbackOptions?: NavigateOptions;
+  fallbackTo?: To;
+  pushOptions?: Omit<NavigateOptions, "replace">;
+  skipBackHandler?: boolean;
+  to: To;
+}) {
+  if (runActiveBackHandler(skipBackHandler)) {
+    return false;
+  }
+
+  const backStackDepth = getBackStackDepth(stackflowActions.getStack());
+  const requestedCount = Math.max(1, count);
+
+  if (backStackDepth - 1 < requestedCount) {
+    navigate(fallbackTo, {
+      ...pushOptions,
+      ...fallbackOptions,
+      replace: true,
+    });
+    return true;
+  }
+
+  const resolved = resolveActivityForPath(to);
+  if (!resolved) {
+    window.location.assign(toPathString(to));
+    return true;
+  }
+
+  const actionOptions = pushOptions?.animate == null ? undefined : { animate: pushOptions.animate };
+
+  // Buffer Stackflow events so pop + push is reduced as one navigation change.
+  stackflowActions.dispatchEvent("Paused", {});
+  try {
+    stackflowActions.pop(requestedCount, { animate });
+    const result = stackflowActions.push(resolved.activityName, resolved.params, actionOptions);
+    setActivityNavigationState(result.activityId, pushOptions?.state);
+  } finally {
+    stackflowActions.dispatchEvent("Resumed", {});
+    pruneActivityNavigationStateMap();
+  }
+
+  return true;
 }
 
 export function navigateBack({
@@ -689,6 +858,7 @@ export function navigateBack({
 
   if (safeCount > 0) {
     stackflowActions.pop(safeCount, { animate });
+    pruneActivityNavigationStateMap();
     return true;
   }
 
@@ -719,21 +889,30 @@ export function isPreviousStackActivity(activityName: string) {
   return previousActivity?.name === activityName;
 }
 
-export function syncStackflowWithCurrentBrowserPath({ animate = true }: { animate?: boolean } = {}) {
+export function syncStackflowWithCurrentBrowserPath({
+  animate = true,
+}: { animate?: boolean } = {}) {
   const currentPath = getCurrentBrowserPath();
-  const activeActivity = stackflowActions.getStack().activities.find((activity) => activity.isActive);
+  const activeActivity = stackflowActions
+    .getStack()
+    .activities.find((activity) => activity.isActive);
 
-  if (activeActivity && getComparablePath(getActivityPath(activeActivity)) === getComparablePath(currentPath)) {
+  if (
+    activeActivity &&
+    getComparablePath(getActivityPath(activeActivity)) === getComparablePath(currentPath)
+  ) {
     return;
   }
 
   const resolved = resolveActivityForPath(currentPath);
   if (!resolved) {
     stackflowActions.replace("Home", {}, { animate });
+    pruneActivityNavigationStateMap();
     return;
   }
 
   stackflowActions.replace(resolved.activityName, resolved.params, { animate });
+  pruneActivityNavigationStateMap();
 }
 
 export function useNavigate(): NavigateFunction {

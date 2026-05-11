@@ -43,6 +43,7 @@ import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 import {
   navigateBack,
+  navigateBackAndPush,
   useLocation,
   useNavigate,
   useSearchParams,
@@ -328,9 +329,11 @@ export default function NutrientModifyPage() {
         const detailPageState: MealDetailLocationState | undefined =
           menuId !== null && menuId !== createdMenuId ? { replaceMenuId: menuId } : undefined;
 
-        navigateBack({ count: 2, animate: false });
-        window.requestAnimationFrame(() => {
-          navigate(detailPath, { state: detailPageState });
+        navigateBackAndPush({
+          count: 2,
+          animate: false,
+          to: detailPath,
+          pushOptions: { state: detailPageState },
         });
       },
       onError: () => {

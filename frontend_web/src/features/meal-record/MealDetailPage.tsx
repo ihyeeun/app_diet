@@ -225,10 +225,6 @@ export default function MealDetailPage() {
     navigateBack({ fallbackTo: getBackFallbackPath() });
   };
 
-  const handleHeaderBack = () => {
-    navigateBack({ fallbackTo: getBackFallbackPath() });
-  };
-
   const handleModify = () => {
     moveToNutrientModify(meal, existingSelection?.quantity ?? 1, existingSelection !== null);
   };
@@ -284,7 +280,7 @@ export default function MealDetailPage() {
     <section className={styles.page}>
       <PageHeader
         title="영양성분 상세"
-        onBack={handleHeaderBack}
+        onBack={handleGoBack}
         rightSlot={
           isPersonalMenuData && (
             <div className={styles.headerButtons}>

@@ -488,10 +488,24 @@ export default function GoalEditPage() {
     if (draft.weight !== undefined && draft.weight !== initialDraft.weight) {
       updateTasks.push(async () => {
         const nextWeight = draft.weight!;
-        const [updatedProfile] = await Promise.all([
-          updateWeight(nextWeight),
-          registerWeight({ date: today, weight: nextWeight }),
-        ]);
+        const previousWeight = initialDraft.weight;
+        const updatedProfile = await updateWeight(nextWeight);
+
+        try {
+          await registerWeight({ date: today, weight: nextWeight });
+        } catch (error) {
+          console.error("Failed to register updated weight", error);
+
+          if (previousWeight !== undefined) {
+            try {
+              await updateWeight(previousWeight);
+            } catch (rollbackError) {
+              console.error("Failed to rollback profile weight", rollbackError);
+            }
+          }
+
+          throw error;
+        }
 
         queryClient.setQueryData<WeightStepsResponseDto>(
           homeQueryKeys.bodyStats(today),

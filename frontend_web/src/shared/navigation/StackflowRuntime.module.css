@@ -15,11 +15,29 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
   position: absolute;
   touch-action: pan-y;
   transform: translateX(0);
   width: 100%;
   will-change: transform;
+}
+
+.activityFrame[data-swipe-pending="true"],
+.activityFrame[data-dragging="true"],
+.activityFrame[data-swipe-completing="true"] {
+  overflow-y: hidden;
+  touch-action: none;
+}
+
+.edgeSwipeZone {
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  top: 0;
+  touch-action: none;
+  width: var(--stackflow-edge-swipe-width);
+  z-index: 2147483647;
 }
 
 .activityFrame:not([data-top="true"]) {
@@ -31,7 +49,6 @@
 }
 
 .activityFrame[data-transition-state="exit-active"] {
-  animation: stackflow-slide-out 270ms cubic-bezier(0.22, 1, 0.36, 1) both;
   box-shadow: -16px 0 32px rgba(0, 0, 0, 0.12);
   pointer-events: none;
 }
@@ -40,6 +57,14 @@
   box-shadow: -16px 0 32px rgba(0, 0, 0, 0.14);
   transform: translateX(var(--stackflow-drag-x));
   transition: none;
+}
+
+.activityFrame[data-top="true"][data-transition-state="enter-done"][data-swipe-completing="true"] {
+  box-shadow: -16px 0 32px rgba(0, 0, 0, 0.14);
+  transform: translateX(var(--stackflow-drag-x));
+  transition:
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .activityFrame[data-top="true"][data-transition-state="enter-done"][data-resetting="true"] {
@@ -56,15 +81,5 @@
 
   to {
     transform: translateX(0);
-  }
-}
-
-@keyframes stackflow-slide-out {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(100%);
   }
 }

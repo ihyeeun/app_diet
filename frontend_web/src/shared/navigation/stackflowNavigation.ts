@@ -9,6 +9,7 @@ export {
   isPreviousStackActivity,
   navigate,
   navigateBack,
+  navigateBackAndPush,
   syncStackflowWithCurrentBrowserPath,
   useLocation,
   useNavigate,
