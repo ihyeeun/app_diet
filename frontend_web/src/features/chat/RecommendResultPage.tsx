@@ -1,6 +1,5 @@
 import { CheckCircle2Icon, PlusCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { ChatMealRecordBottomSheet } from "@/features/chat/components/ChatMealRecordBottomSheet";
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
@@ -21,6 +20,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import { useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
   CHAT_TO_MEAL_RECORD_SOURCE,

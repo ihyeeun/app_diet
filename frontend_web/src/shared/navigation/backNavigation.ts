@@ -1,16 +1,8 @@
-import type { NavigateFunction, NavigateOptions, To } from "react-router-dom";
-
-import { isNativeApp, requestAppBack } from "@/shared/api/bridge/nativeBridge";
+import type { NavigateFunction, NavigateOptions, To } from "./stackflowNavigation";
+import { canGoBackWithStack, navigateBack } from "./stackflowNavigation";
 
 export function canGoBackWithLocalHistory() {
-  if (typeof window === "undefined") return false;
-
-  const historyState = window.history.state as { idx?: number } | null;
-  if (typeof historyState?.idx === "number" && historyState.idx > 0) {
-    return true;
-  }
-
-  return window.history.length > 1;
+  return canGoBackWithStack();
 }
 
 export function navigateBackOrFallback(
@@ -23,13 +15,8 @@ export function navigateBackOrFallback(
     return;
   }
 
-  if (isNativeApp()) {
-    requestAppBack();
-    return;
-  }
-
-  navigate(fallbackTo, {
-    ...fallbackOptions,
-    replace: true,
+  navigateBack({
+    fallbackOptions,
+    fallbackTo,
   });
 }

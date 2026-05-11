@@ -1,6 +1,5 @@
 import { ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import { useGetBrandSearchQuery } from "@/features/search/brand/hooks/queries/useBrandSearchQuery";
 import styles from "@/features/search/styles/BrandSearch.module.css";
@@ -8,6 +7,7 @@ import { PATH } from "@/router/path";
 import type { RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { useLocation, useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 type BrandSearchResult = {
   id: string;

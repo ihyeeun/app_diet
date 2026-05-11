@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@stackflow/plugin-devtools": "^0.1.11",
     "@stackflow/plugin-history-sync": "^1.10.1",
+    "@stackflow/plugin-stack-depth-change": "^1.1.5",
     "@stackflow/react": "^1.12.0",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-query-devtools": "^5.95.2",
@@ -21,7 +23,6 @@
     "react-dom": "^19.2.0",
     "react-mobile-picker": "^1.2.0",
     "react-modal-sheet": "^5.2.3",
-    "react-router-dom": "^7.13.1",
     "recharts": "^3.8.1",
     "zustand": "^5.0.12"
   },

@@ -1,7 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import { registerWeight } from "@/features/home/api/health";
 import { queryKeys as homeQueryKeys } from "@/features/home/hooks/queries/queryKey";
@@ -41,6 +40,7 @@ import {
   makeYearOptions,
 } from "@/shared/commons/picker/yearOptions";
 import { toast } from "@/shared/commons/toast/toast";
+import { useLocation, useNavigate } from "@/shared/navigation/stackflowNavigation";
 import { useSetTargets } from "@/shared/stores/targetNutrient.store";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 

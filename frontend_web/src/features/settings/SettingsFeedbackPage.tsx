@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { useRegisterInquiryMutation } from "@/features/settings/hooks/mutations/useInquiryMutation";
 import { isNativeApp, requestNativeAppDeviceInfo } from "@/shared/api/bridge/nativeBridge";
@@ -7,6 +6,7 @@ import type { AppDeviceInfoPayload } from "@/shared/api/bridge/nativeBridge.type
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 import styles from "./styles/SettingsDetail.module.css";
 

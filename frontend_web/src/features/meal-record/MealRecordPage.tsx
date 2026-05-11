@@ -1,6 +1,5 @@
 import { PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import {
@@ -33,6 +32,7 @@ import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { useLocation, useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 import { parseMealRecordTransferState } from "@/shared/types/mealRecordTransfer";
 
 import styles from "./styles/MealRecordPage.module.css";

@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
 import { useClearChatDraftOnFlowExit } from "@/features/chat/hooks/useClearChatDraftOnFlowExit";
@@ -13,6 +12,7 @@ import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import { useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 
 export default function RecommendDetailPage() {
   useClearChatDraftOnFlowExit();

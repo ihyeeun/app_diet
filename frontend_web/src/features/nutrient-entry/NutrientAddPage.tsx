@@ -1,6 +1,5 @@
 import { Search } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   getMealType,
@@ -14,6 +13,7 @@ import type { MealType, RegisterMenuRequestDto } from "@/shared/api/types/api.dt
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import { useLocation, useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 
 import styles from "./styles/NutrientAddPage.module.css";
 

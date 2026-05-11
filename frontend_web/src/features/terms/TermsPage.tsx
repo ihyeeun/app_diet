@@ -1,12 +1,12 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { ChevronDown } from "lucide-react";
 import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { PATH } from "@/router/path";
 import { isNativeApp, requestAppBack } from "@/shared/api/bridge/nativeBridge";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { canGoBackWithLocalHistory } from "@/shared/navigation/backNavigation";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 import styles from "./TermsPage.module.css";
 

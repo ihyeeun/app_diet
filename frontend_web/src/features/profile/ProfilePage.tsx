@@ -1,6 +1,5 @@
 import { ChevronRightIcon, Pencil, Settings } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
@@ -19,6 +18,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
 import { toggleFreeUserGuardEnabled } from "@/shared/guards/featureGuard";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 
 const METRIC_CONFIG: Record<

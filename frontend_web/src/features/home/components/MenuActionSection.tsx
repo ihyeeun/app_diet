@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { getMealTypeFromCurrentTime } from "@/features/chat/utils/chatMeal";
 import ActionCard from "@/features/home/components/cards/ActionCard";
@@ -9,6 +8,7 @@ import { PATH } from "@/router/path";
 import { getPathWithMeal } from "@/router/pathHelpers";
 import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 export default function MenuActionSection({
   selectedDate,

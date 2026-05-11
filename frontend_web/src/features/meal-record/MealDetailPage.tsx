@@ -1,7 +1,6 @@
 import { Menu } from "@base-ui/react/menu";
 import { EllipsisVertical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   MealMenuNutrientDetail,
@@ -27,6 +26,7 @@ import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
 import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import { useLocation, useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 
 import { MAX_MEAL_RECORD_MENUS } from "./constants/menu.constants";
 import { getMealRecordAddSearchPath, getMealRecordPath } from "./utils/mealRecord.paths";

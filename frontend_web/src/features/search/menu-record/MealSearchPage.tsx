@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MAX_MEAL_RECORD_MENUS } from "@/features/meal-record/constants/menu.constants";
 import {
@@ -29,6 +28,7 @@ import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
 import { toast } from "@/shared/commons/toast/toast";
 import { FEATURE_GUARD, isFeatureBlocked } from "@/shared/guards/featureGuard";
 import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import { useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 
 import styles from "../styles/MealSearch.module.css";
 
