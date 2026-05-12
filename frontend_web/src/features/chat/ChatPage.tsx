@@ -387,7 +387,11 @@ export default function ChatPage() {
     const mealType = getMealTypeFromCurrentTime(new Date());
 
     handleCloseCameraActionMenu();
-    navigate(getPathWithMeal(PATH.FOOD_CAMERA, selectedDateKey, mealType));
+    navigate(getPathWithMeal(PATH.FOOD_CAMERA, selectedDateKey, mealType), {
+      state: {
+        autoOpenCamera: true,
+      },
+    });
   };
 
   return (

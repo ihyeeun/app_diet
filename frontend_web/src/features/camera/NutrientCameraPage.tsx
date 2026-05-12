@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import styles from "@/features/camera/CameraPage.module.css";
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
@@ -11,24 +11,62 @@ import {
   getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
+import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRecord.queryParams";
 import { PATH } from "@/router/path";
+import { getPathWithMeal } from "@/router/pathHelpers";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
-import { useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
+import {
+  navigateBack,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "@/shared/navigation/stackflowNavigation";
+
+type NutrientCameraLocationState = {
+  autoOpenCamera?: boolean;
+};
 
 export default function NutrientCameraPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isUploading, setIsUploading] = useState(false);
   const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
   const [captureErrorFeedback, setCaptureErrorFeedback] =
     useState<CameraCaptureErrorFeedback | null>(null);
   const { mutateAsync: uploadImage } = useNutritionLabelMutation();
   const [searchParams] = useSearchParams();
+  const dateKey = getSafeDateKey(searchParams.get("date"));
+  const mealType = getMealType(searchParams.get("mealType"));
+  const autoTriggeredRef = useRef(false);
+  const locationState = (location.state ?? {}) as NutrientCameraLocationState;
+  const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
+  const [isAutoOpenPending, setIsAutoOpenPending] = useState(shouldAutoOpenCamera);
+  const shouldHideWebCameraPrompt =
+    isAutoOpenPending && !isUploading && captureErrorFeedback === null;
 
-  const handleCameraActions = async () => {
+  const returnFromCameraPage = useCallback(() => {
+    navigateBack({
+      fallbackTo: getPathWithMeal(
+        PATH.NUTRIENT_ADD,
+        dateKey,
+        mealType,
+        searchParams.get("keyword") ?? undefined,
+      ),
+      fallbackOptions: {
+        state: {
+          name: searchParams.get("name") ?? "",
+          brand: searchParams.get("brand") ?? "",
+          keyword: searchParams.get("keyword") ?? undefined,
+        },
+      },
+    });
+  }, [dateKey, mealType, searchParams]);
+
+  const handleCameraActions = useCallback(async () => {
     if (isUploading) return;
     setCaptureErrorFeedback(null);
 
@@ -38,8 +76,15 @@ export default function NutrientCameraPage() {
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "NUTRITION_LABEL",
       });
+      setIsAutoOpenPending(false);
     } catch (error) {
-      if (isCameraCaptureCancelled(error)) return;
+      setIsAutoOpenPending(false);
+      if (isCameraCaptureCancelled(error)) {
+        if (shouldAutoOpenCamera) {
+          returnFromCameraPage();
+        }
+        return;
+      }
       setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
       return;
@@ -86,24 +131,44 @@ export default function NutrientCameraPage() {
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [
+    isUploading,
+    navigate,
+    returnFromCameraPage,
+    searchParams,
+    shouldAutoOpenCamera,
+    uploadImage,
+  ]);
+
+  useEffect(() => {
+    if (!shouldAutoOpenCamera || autoTriggeredRef.current) {
+      return;
+    }
+
+    autoTriggeredRef.current = true;
+    void handleCameraActions();
+  }, [handleCameraActions, shouldAutoOpenCamera]);
 
   return (
     <section className={styles.page}>
-      <PageHeader title="영양정보 촬영" onBack={() => navigate(-1)} />
+      {shouldHideWebCameraPrompt ? null : (
+        <PageHeader title="영양정보 촬영" onBack={returnFromCameraPage} />
+      )}
 
       {isUploading ? (
         <CameraLoading description="영양 성분을 확인하고 있어요" previewSrc={capturedPreviewSrc} />
+      ) : shouldHideWebCameraPrompt ? (
+        <main className={styles.main} />
       ) : (
         <main className={styles.main}>
-          <div className={styles.content}>
+          {/* <div className={styles.content}>
             <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
             <p className="typo-title1">
               영양성분표 전체가 선명하게
               <br />
               보이도록 촬영해주세요
             </p>
-          </div>
+          </div> */}
           <div className={styles.actionButtons}>
             <Button
               variant="filled"

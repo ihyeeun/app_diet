@@ -180,7 +180,11 @@ export default function MealSearchPage() {
       return;
     }
 
-    navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
+    navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType), {
+      state: {
+        autoOpenCamera: true,
+      },
+    });
   };
 
   const handleMealSearch = (keyword = submittedKeyword) => {
