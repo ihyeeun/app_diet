@@ -455,19 +455,32 @@ function isEdgeSwipeZone(target: EventTarget | null): target is HTMLElement {
   return target instanceof HTMLElement && target.dataset.stackflowEdgeSwipeZone === "true";
 }
 
-function forwardTapThroughEdgeSwipeZone(event: ReactPointerEvent<HTMLElement>) {
-  if (!isEdgeSwipeZone(event.target)) return;
+function getClickableElementAtPoint(x: number, y: number) {
+  const target = document.elementFromPoint(x, y);
+  if (!(target instanceof Element)) return null;
 
-  const edgeSwipeZone = event.target;
+  const clickableTarget = target.closest<HTMLElement>(
+    "button, a, input, textarea, select, [role='button'], [tabindex]",
+  );
+  if (clickableTarget) return clickableTarget;
+
+  return target instanceof HTMLElement ? target : null;
+}
+
+function forwardTapThroughEdgeSwipeZone(
+  event: ReactPointerEvent<HTMLElement>,
+  pointerDownTarget: EventTarget | null,
+) {
+  if (!isEdgeSwipeZone(pointerDownTarget)) return;
+
+  const edgeSwipeZone = pointerDownTarget;
   const previousPointerEvents = edgeSwipeZone.style.pointerEvents;
   edgeSwipeZone.style.pointerEvents = "none";
 
-  const target = document.elementFromPoint(event.clientX, event.clientY);
+  const target = getClickableElementAtPoint(event.clientX, event.clientY);
   edgeSwipeZone.style.pointerEvents = previousPointerEvents;
 
-  if (target instanceof HTMLElement) {
-    target.click();
-  }
+  target?.click();
 }
 
 function stackflowRendererPlugin(): StackflowReactPlugin<typeof ACTIVITIES> {
@@ -532,6 +545,7 @@ function StackActivityFrame({
     pointerId: number;
     startX: number;
     startY: number;
+    pointerDownTarget: EventTarget | null;
     velocity: number;
     width: number;
   } | null>(null);
@@ -595,6 +609,7 @@ function StackActivityFrame({
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
+        pointerDownTarget: event.target,
         velocity: 0,
         width: rect.width,
       };
@@ -673,7 +688,7 @@ function StackActivityFrame({
       }
 
       if (!swipe.dragging) {
-        forwardTapThroughEdgeSwipeZone(event);
+        forwardTapThroughEdgeSwipeZone(event, swipe.pointerDownTarget);
         clearSwipe();
         return;
       }
