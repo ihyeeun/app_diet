@@ -466,15 +466,29 @@ function stackflowRendererPlugin(): StackflowReactPlugin<typeof ACTIVITIES> {
 
 function StackRenderer({ stack }: { stack: RenderableStack }) {
   const { activities } = stack.render();
+  const visibleActivities = activities.filter(
+    (activity) =>
+      activity.transitionState === "enter-active" ||
+      activity.transitionState === "enter-done" ||
+      activity.transitionState === "exit-active",
+  );
+  const latestEventName = stack.events.at(-1)?.name;
+  const isBackTransition = latestEventName === "Popped" || latestEventName === "StepPopped";
 
-  if (activities.length === 0) {
+  if (visibleActivities.length === 0) {
     return <EmptyStackFallback />;
   }
 
   return (
     <div className={styles.stackRoot}>
-      {activities.map((activity) => (
-        <StackActivityFrame activity={activity} key={activity.key} />
+      {visibleActivities.map((activity) => (
+        <StackActivityFrame
+          activity={activity}
+          key={activity.key}
+          shouldAnimateEnter={
+            activity.transitionState === "enter-active" && !isBackTransition
+          }
+        />
       ))}
     </div>
   );
@@ -488,7 +502,13 @@ function EmptyStackFallback() {
   return null;
 }
 
-function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
+function StackActivityFrame({
+  activity,
+  shouldAnimateEnter,
+}: {
+  activity: RenderedActivity;
+  shouldAnimateEnter: boolean;
+}) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const swipeRef = useRef<{
     dragging: boolean;
@@ -700,6 +720,7 @@ function StackActivityFrame({ activity }: { activity: RenderedActivity }) {
       ref={frameRef}
       className={styles.activityFrame}
       data-dragging={isDragging ? "true" : undefined}
+      data-enter-animation={shouldAnimateEnter ? "true" : undefined}
       data-resetting={isResetting ? "true" : undefined}
       data-root={activity.isRoot ? "true" : undefined}
       data-swipe-completing={isSwipeCompleting ? "true" : undefined}
@@ -807,6 +828,7 @@ export function navigateBackAndPush({
 
   if (backStackDepth - 1 < requestedCount) {
     navigate(fallbackTo, {
+      animate: false,
       ...pushOptions,
       ...fallbackOptions,
       replace: true,
@@ -864,6 +886,7 @@ export function navigateBack({
 
   if (fallbackTo) {
     navigate(fallbackTo, {
+      animate: false,
       ...fallbackOptions,
       replace: true,
     });
@@ -876,6 +899,30 @@ export function navigateBack({
   }
 
   return false;
+}
+
+export function resetStackflowWithCurrentBrowserPath({
+  animate = true,
+}: { animate?: boolean } = {}) {
+  const currentPath = getCurrentBrowserPath();
+  const resolved = resolveActivityForPath(currentPath);
+
+  const targetActivityName = resolved?.activityName ?? "Home";
+  const targetParams = resolved?.params ?? {};
+  const stack = stackflowActions.getStack();
+  const backStackDepth = getBackStackDepth(stack);
+
+  for (let index = 1; index < backStackDepth; index += 1) {
+    stackflowActions.dispatchEvent("Popped", { skipExitActiveState: true });
+  }
+
+  const result = stackflowActions.replace(targetActivityName, targetParams, {
+    animate,
+    activityId: createStackflowActivityId(),
+  });
+
+  setActivityNavigationState(result.activityId, null);
+  pruneActivityNavigationStateMap();
 }
 
 function canGoBackWithStack() {

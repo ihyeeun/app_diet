@@ -44,12 +44,12 @@
   pointer-events: none;
 }
 
-.activityFrame[data-transition-state="enter-active"]:not([data-root="true"]) {
+.activityFrame[data-enter-animation="true"][data-transition-state="enter-active"] {
   animation: stackflow-slide-in 270ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .activityFrame[data-transition-state="exit-active"] {
-  box-shadow: -16px 0 32px rgba(0, 0, 0, 0.12);
+  animation: stackflow-slide-out 270ms cubic-bezier(0.22, 1, 0.36, 1) both;
   pointer-events: none;
 }
 
@@ -81,5 +81,15 @@
 
   to {
     transform: translateX(0);
+  }
+}
+
+@keyframes stackflow-slide-out {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
   }
 }

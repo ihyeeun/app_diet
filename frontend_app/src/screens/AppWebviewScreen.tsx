@@ -203,7 +203,7 @@ function createTabPathSyncScript(absoluteHref: string, appOrigin: string | null)
       var currentPath = window.location.pathname + window.location.search + window.location.hash;
       if (nextPath === currentPath) return;
 
-      history.replaceState(history.state, "", nextPath);
+      history.replaceState(null, "", nextPath);
 
       try {
         window.dispatchEvent(new CustomEvent("MELO_NATIVE_PATH_SYNC"));

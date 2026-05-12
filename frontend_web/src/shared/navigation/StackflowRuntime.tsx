@@ -8,7 +8,11 @@ import {
   useTargetsState,
 } from "@/shared/stores/targetNutrient.store";
 
-import { getStackflowStackComponent, syncStackflowWithCurrentBrowserPath } from "./stackflowRouter";
+import {
+  getStackflowStackComponent,
+  resetStackflowWithCurrentBrowserPath,
+  syncStackflowWithCurrentBrowserPath,
+} from "./stackflowRouter";
 
 const StackComponent = getStackflowStackComponent();
 const NATIVE_PATH_SYNC_EVENT = "MELO_NATIVE_PATH_SYNC";
@@ -37,7 +41,7 @@ export function StackflowRuntime() {
 
   useEffect(() => {
     const handleNativePathSync = () => {
-      window.setTimeout(() => syncStackflowWithCurrentBrowserPath({ animate: false }), 0);
+      window.setTimeout(resetStackflowWithCurrentBrowserPath, 0);
     };
 
     const handlePopState = () => {
