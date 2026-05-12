@@ -8,7 +8,10 @@
 }
 
 .main {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 0 20px;
 }
@@ -21,7 +24,9 @@
 .floatingCameraButtonWrapper {
   bottom: 20px;
   display: flex;
+  flex-shrink: 0;
   justify-content: flex-end;
+  margin-top: auto;
   position: sticky;
   transition: opacity 180ms ease;
   z-index: 10;
