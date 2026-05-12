@@ -60,8 +60,8 @@
 .btn--variant-filled.btn--size-large,
 .btn--variant-outlined.btn--size-large {
   border-radius: 8px;
-  height: 54px;
-  padding: 16px 42px;
+  height: 50px;
+  padding: 14px 24px;
   font-size: var(--fs-label2);
   font-weight: var(--fw-bold);
   letter-spacing: var(--letter-spacing-normal);

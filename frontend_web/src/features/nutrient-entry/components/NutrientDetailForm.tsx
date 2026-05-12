@@ -1,5 +1,7 @@
 import { Select } from "@base-ui/react";
 import { ChevronDown } from "lucide-react";
+import type { FocusEventHandler, InputHTMLAttributes } from "react";
+import { useState } from "react";
 
 import { NUTRIENT_FORM_CONFIG } from "@/features/nutrient-entry/constants/nutrientDetailForm";
 import styles from "@/features/nutrient-entry/styles/NutrientDetailForm.module.css";
@@ -26,8 +28,12 @@ function roundToSingleDecimal(value: number) {
   return Math.round(value * 10) / 10;
 }
 
+function formatSingleDecimalValue(value: number | undefined) {
+  return value === undefined ? "" : String(value);
+}
+
 function sanitizeSingleDecimalInput(value: string) {
-  const cleaned = value.replace(/[^0-9.]/g, "");
+  const cleaned = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
   const [integerPart = "", ...decimalParts] = cleaned.split(".");
 
   if (decimalParts.length === 0) {
@@ -57,6 +63,68 @@ function cx(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+type SingleDecimalInputProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type" | "value" | "onChange" | "inputMode" | "min" | "max" | "step"
+> & {
+  value?: number;
+  onValueChange: (nextValue: number | undefined) => void;
+  min?: number;
+  max?: number;
+};
+
+function SingleDecimalInput({
+  value,
+  onValueChange,
+  min = 0,
+  max = MAX_INPUT_VALUE,
+  onBlur,
+  onFocus,
+  ...inputProps
+}: SingleDecimalInputProps) {
+  const [draftValue, setDraftValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const displayValue = isFocused ? draftValue : formatSingleDecimalValue(value);
+
+  const normalizeDraftValue = (nextDraftValue: string) => {
+    const parsedValue = parseSingleDecimalInput(nextDraftValue, min, max);
+    const normalizedValue = formatSingleDecimalValue(parsedValue);
+
+    setDraftValue(normalizedValue);
+    onValueChange(parsedValue);
+  };
+
+  const handleFocus: FocusEventHandler<HTMLInputElement> = (event) => {
+    setDraftValue(event.currentTarget.value);
+    setIsFocused(true);
+    onFocus?.(event);
+  };
+
+  const handleBlur: FocusEventHandler<HTMLInputElement> = (event) => {
+    setIsFocused(false);
+    normalizeDraftValue(event.currentTarget.value);
+    onBlur?.(event);
+  };
+
+  return (
+    <input
+      {...inputProps}
+      type="text"
+      inputMode="decimal"
+      pattern="[0-9]*[.,]?[0-9]?"
+      value={displayValue}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onChange={(event) => {
+        const nextDraftValue = sanitizeSingleDecimalInput(event.target.value);
+
+        setDraftValue(nextDraftValue);
+        onValueChange(parseSingleDecimalInput(nextDraftValue, min, max));
+      }}
+    />
+  );
+}
+
 export function NutrientDetailForm({
   totalWeight,
   onTotalWeightChange,
@@ -78,17 +146,12 @@ export function NutrientDetailForm({
           <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
         </div>
         <div className={styles.weightRow}>
-          <input
+          <SingleDecimalInput
             className={`typo-body3 ${styles.valueInput}`}
-            type="number"
-            step="0.1"
-            inputMode="decimal"
             placeholder="0"
             aria-label="총 용량 입력"
-            value={totalWeight === undefined ? "" : String(totalWeight)}
-            onChange={(event) => {
-              onTotalWeightChange(parseSingleDecimalInput(event.target.value));
-            }}
+            value={totalWeight}
+            onValueChange={onTotalWeightChange}
             max={MAX_INPUT_VALUE}
             min={0}
           />
@@ -139,17 +202,12 @@ export function NutrientDetailForm({
           </p>
           <p className={`typo-label6 ${styles.requiredText}`}>* 필수로 작성해주세요</p>
         </div>
-        <input
+        <SingleDecimalInput
           className={`typo-body3 ${styles.valueInput}`}
-          type="number"
-          step="0.1"
-          inputMode="decimal"
           placeholder="0"
           aria-label="총 칼로리 입력"
-          value={totalCalories === undefined ? "" : String(totalCalories)}
-          onChange={(event) => {
-            onTotalCaloriesChange(parseSingleDecimalInput(event.target.value));
-          }}
+          value={totalCalories}
+          onValueChange={onTotalCaloriesChange}
           max={MAX_INPUT_VALUE}
           min={0}
         />
@@ -182,18 +240,11 @@ export function NutrientDetailForm({
                   {field.label}
                   <span className={`typo-label3 ${styles.unitText}`}> ({field.unit})</span>
                 </p>
-                <input
+                <SingleDecimalInput
                   className={`typo-body3 ${styles.nutrientInput}`}
-                  type="number"
-                  step="0.1"
-                  inputMode="decimal"
-                  value={fieldValue === undefined ? "" : String(fieldValue)}
-                  onChange={(event) => {
-                    const parsedValue = parseSingleDecimalInput(event.target.value);
-                    onFieldChange(
-                      field.key,
-                      parsedValue === undefined ? "" : String(parsedValue),
-                    );
+                  value={fieldValue}
+                  onValueChange={(nextValue) => {
+                    onFieldChange(field.key, nextValue === undefined ? "" : String(nextValue));
                   }}
                   aria-label={`${field.label} 입력`}
                   placeholder="0"

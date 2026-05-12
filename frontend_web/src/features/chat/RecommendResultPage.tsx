@@ -1,6 +1,5 @@
 import { CheckCircle2Icon, PlusCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { ChatMealRecordBottomSheet } from "@/features/chat/components/ChatMealRecordBottomSheet";
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
@@ -20,7 +19,11 @@ import { DEFAULT_MEAL_TYPE } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import {
+  navigateBack,
+  useNavigate,
+  useSearchParams,
+} from "@/shared/navigation/stackflowNavigation";
 import { useSelectedDateKey } from "@/shared/stores/selectedDate.store";
 import {
   CHAT_TO_MEAL_RECORD_SOURCE,
@@ -212,7 +215,7 @@ export default function RecommendResultPage() {
       <section className={styles.page}>
         <PageHeader
           title="메뉴 추천 결과"
-          onBack={() => navigateBackOrFallback(navigate, PATH.CHAT)}
+          onBack={() => navigateBack({ fallbackTo: PATH.CHAT })}
         />
         <main className={styles.main}>
           <p className={`${styles.loadingText} typo-body4`}>추천 결과를 불러오는 중이에요</p>
@@ -229,7 +232,7 @@ export default function RecommendResultPage() {
     <section className={styles.page}>
       <PageHeader
         title="메뉴 추천 결과"
-        onBack={() => navigateBackOrFallback(navigate, PATH.CHAT)}
+        onBack={() => navigateBack({ fallbackTo: PATH.CHAT })}
       />
 
       <main className={styles.main}>

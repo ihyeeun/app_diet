@@ -7,8 +7,6 @@ import { syncFeatureGuardStateToApp } from "@/shared/guards/featureGuard";
 import { StackflowRuntime } from "@/shared/navigation/StackflowRuntime";
 import { initInputCharacterRestriction } from "@/shared/utils/inputCharacterRestriction";
 
-import AppRouter from "./router/AppRouter";
-
 export default function App() {
   useEffect(() => {
     const cleanupNativeBridgeListener = initNativeBridgeListener();
@@ -24,7 +22,6 @@ export default function App() {
   return (
     <div className="app-container">
       <StackflowRuntime />
-      <AppRouter />
     </div>
   );
 }

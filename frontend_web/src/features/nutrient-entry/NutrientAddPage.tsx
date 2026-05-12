@@ -1,19 +1,28 @@
 import { Search } from "lucide-react";
-import { type ChangeEvent, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { type ChangeEvent, useEffect, useState } from "react";
 
 import {
   getMealType,
   getSafeDateKey,
   getSafeKeyword,
 } from "@/features/meal-record/utils/mealRecord.queryParams";
+import {
+  createBrandSearchSelectionKey,
+  useBrandSearchSelectedBrand,
+  useClearBrandSearchSelection,
+} from "@/features/search/brand/stores/brandSearchSelection.store";
 import { PATH } from "@/router/path";
 import { getMealSearchPath } from "@/router/pathHelpers";
 import { getPathWithMeal } from "@/router/pathHelpers";
 import type { MealType, RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
-import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import {
+  navigateBack,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "@/shared/navigation/stackflowNavigation";
 
 import styles from "./styles/NutrientAddPage.module.css";
 
@@ -23,6 +32,7 @@ type NutrientAddLocationState = Partial<RegisterMenuRequestDto> & {
   brandName?: string;
   returnPath?: string;
   keyword?: string;
+  brandSearchReturnKey?: string;
 };
 
 export default function NutrientAddPage() {
@@ -35,7 +45,18 @@ export default function NutrientAddPage() {
   const mealType = getMealType(searchParams.get("mealType") ?? locationState.mealType ?? null);
   const searchKeyword = getSafeKeyword(searchParams.get("keyword") ?? locationState.keyword ?? null);
   const [foodName, setFoodName] = useState(locationState.name ?? "");
-  const brandName = (locationState.brand ?? locationState.brandName ?? "").trim();
+  const [brandSearchReturnKey] = useState(
+    locationState.brandSearchReturnKey ?? createBrandSearchSelectionKey(),
+  );
+  const selectedBrandName = useBrandSearchSelectedBrand(brandSearchReturnKey);
+  const clearBrandSearchSelection = useClearBrandSearchSelection();
+  const brandName = (selectedBrandName ?? locationState.brand ?? locationState.brandName ?? "").trim();
+
+  useEffect(() => {
+    return () => {
+      clearBrandSearchSelection(brandSearchReturnKey);
+    };
+  }, [brandSearchReturnKey, clearBrandSearchSelection]);
 
   const handleFoodNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFoodName(event.target.value);
@@ -50,6 +71,7 @@ export default function NutrientAddPage() {
         dateKey,
         mealType,
         keyword: searchKeyword,
+        brandSearchReturnKey,
         returnPath: getPathWithMeal(PATH.NUTRIENT_ADD, dateKey, mealType, searchKeyword),
       },
     });
@@ -75,11 +97,15 @@ export default function NutrientAddPage() {
       params.set("keyword", searchKeyword);
     }
 
-    navigation(PATH.NUTRIENT_CAMERA + "?" + params.toString());
+    navigation(PATH.NUTRIENT_CAMERA + "?" + params.toString(), {
+      state: {
+        autoOpenCamera: true,
+      },
+    });
   };
 
   const handleBack = () => {
-    navigateBackOrFallback(navigation, getMealSearchPath(dateKey, mealType, searchKeyword));
+    navigateBack({ fallbackTo: getMealSearchPath(dateKey, mealType, searchKeyword) });
   };
 
   return (

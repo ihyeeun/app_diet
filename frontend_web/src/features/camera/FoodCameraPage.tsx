@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
@@ -26,10 +25,15 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
+import {
+  navigateBack,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "@/shared/navigation/stackflowNavigation";
 
 type FoodCameraLocationState = {
   autoOpenCamera?: boolean;
-  source?: "chat";
 };
 
 export default function FoodCameraPage() {
@@ -52,17 +56,17 @@ export default function FoodCameraPage() {
   const upsertMenu = useMenuDraftUpsert();
   const locationState = (location.state ?? {}) as FoodCameraLocationState;
   const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
-  const isChatSource = locationState.source === "chat";
+  const [isAutoOpenPending, setIsAutoOpenPending] = useState(shouldAutoOpenCamera);
+  const shouldHideWebCameraPrompt =
+    isAutoOpenPending && !isUploading && captureErrorFeedback === null;
+
+  const returnFromCameraPage = useCallback(() => {
+    navigateBack({ fallbackTo: getMealRecordPath(dateKey, mealType) });
+  }, [dateKey, mealType]);
 
   const handleCameraActions = useCallback(async () => {
     if (isUploading) return;
     setCaptureErrorFeedback(null);
-
-    if (isChatSource) {
-      toast.show({ title: "채팅 연동 기능 준비 중이에요." });
-      return;
-      // TODO 채팅 전송 로직 교체
-    }
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
@@ -70,8 +74,15 @@ export default function FoodCameraPage() {
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "FOOD",
       });
+      setIsAutoOpenPending(false);
     } catch (error) {
-      if (isCameraCaptureCancelled(error)) return;
+      setIsAutoOpenPending(false);
+      if (isCameraCaptureCancelled(error)) {
+        if (shouldAutoOpenCamera) {
+          returnFromCameraPage();
+        }
+        return;
+      }
       setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
       return;
@@ -124,7 +135,8 @@ export default function FoodCameraPage() {
     mealRegisterAsync,
     mealType,
     navigate,
-    isChatSource,
+    returnFromCameraPage,
+    shouldAutoOpenCamera,
     upsertMenu,
     uploadImage,
   ]);
@@ -140,20 +152,24 @@ export default function FoodCameraPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="음식 촬영" onBack={() => navigate(-1)} />
+      {shouldHideWebCameraPrompt ? null : (
+        <PageHeader title="음식 촬영" onBack={returnFromCameraPage} />
+      )}
 
       {isUploading ? (
         <CameraLoading description="음식을 분석하고 있어요" previewSrc={capturedPreviewSrc} />
+      ) : shouldHideWebCameraPrompt ? (
+        <main className={styles.main} />
       ) : (
         <main className={styles.main}>
-          <div className={styles.content}>
+          {/* <div className={styles.content}>
             <img src="/icons/food-icon.svg" alt="카메라 아이콘" className={styles.image} />
             <p className="typo-title1">
               음식이 잘 보이도록
               <br />
               촬영해주세요
             </p>
-          </div>
+          </div> */}
           <div className={styles.actionButtons}>
             <Button
               variant="filled"

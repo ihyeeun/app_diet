@@ -1,6 +1,5 @@
 import { Check, ChevronDown, ChevronRight, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import Calendar from "@/features/calendar/components/Calendar";
 import styles from "@/features/diary/styles/DiaryPage.module.css";
@@ -18,6 +17,7 @@ import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import type { MealType } from "@/shared/api/types/api.dto";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { toast } from "@/shared/commons/toast/toast";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 import { useSelectedDateKey, useSetSelectedDate } from "@/shared/stores/selectedDate.store";
 import { useTargetsState } from "@/shared/stores/targetNutrient.store";
 import { parseDateKey } from "@/shared/utils/dateFormat";

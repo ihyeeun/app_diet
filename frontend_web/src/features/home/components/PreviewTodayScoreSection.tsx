@@ -2,7 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
@@ -18,6 +17,7 @@ import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQ
 import { PATH } from "@/router/path";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { toast } from "@/shared/commons/toast/toast";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 import {
   useSetTargets,
   useTargetsLoadedState,

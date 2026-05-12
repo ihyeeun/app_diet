@@ -155,9 +155,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   tabLabelFocused: {
-    color: "#ff7700",
+    color: "#ff8e00",
   },
   tabLabelBlurred: {
-    color: "#bfbfbf",
+    color: "#d9d9d9",
   },
 });

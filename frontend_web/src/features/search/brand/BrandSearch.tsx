@@ -1,13 +1,15 @@
+import { useEnterDoneEffect } from "@stackflow/react";
 import { ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 
 import { useGetBrandSearchQuery } from "@/features/search/brand/hooks/queries/useBrandSearchQuery";
+import { useSetBrandSearchSelection } from "@/features/search/brand/stores/brandSearchSelection.store";
 import styles from "@/features/search/styles/BrandSearch.module.css";
 import { PATH } from "@/router/path";
 import type { RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { navigateBack, useLocation } from "@/shared/navigation/stackflowNavigation";
 
 type BrandSearchResult = {
   id: string;
@@ -16,6 +18,7 @@ type BrandSearchResult = {
 
 type BrandSearchLocationState = Partial<RegisterMenuRequestDto> & {
   returnPath?: string;
+  brandSearchReturnKey?: string;
 };
 
 function mapBrandList(brandList: string[]): BrandSearchResult[] {
@@ -35,17 +38,17 @@ function mapBrandList(brandList: string[]): BrandSearchResult[] {
 }
 
 export default function BrandSearch() {
-  const navigate = useNavigate();
   const location = useLocation();
   const formState = (location.state ?? {}) as BrandSearchLocationState;
   const returnPath = formState.returnPath?.trim() || PATH.NUTRIENT_ADD_REGISTER;
+  const setBrandSearchSelection = useSetBrandSearchSelection();
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [selectedBrandId, setSelectedBrandId] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  useEnterDoneEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
       searchInputRef.current?.focus();
     });
@@ -76,9 +79,11 @@ export default function BrandSearch() {
   };
 
   const handleBack = () => {
-    navigate(returnPath, {
-      replace: true,
-      state: formState,
+    navigateBack({
+      fallbackTo: returnPath,
+      fallbackOptions: {
+        state: formState,
+      },
     });
   };
 
@@ -93,11 +98,17 @@ export default function BrandSearch() {
     const brand = (selectedBrandName ?? searchKeyword).trim();
     if (!brand) return;
 
-    navigate(returnPath, {
-      replace: true,
-      state: {
-        ...formState,
-        brand,
+    if (formState.brandSearchReturnKey) {
+      setBrandSearchSelection(formState.brandSearchReturnKey, brand);
+    }
+
+    navigateBack({
+      fallbackTo: returnPath,
+      fallbackOptions: {
+        state: {
+          ...formState,
+          brand,
+        },
       },
     });
   };

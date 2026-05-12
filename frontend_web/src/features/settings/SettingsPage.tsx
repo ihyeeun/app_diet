@@ -1,6 +1,5 @@
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   useLogoutMutation,
@@ -10,6 +9,7 @@ import { PATH } from "@/router/path";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 import styles from "./styles/SettingsPage.module.css";
 

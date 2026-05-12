@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import styles from "@/features/camera/CameraPage.module.css";
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
@@ -20,6 +19,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { navigateBack, useLocation, useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 type MenuBoardCameraLocationState = {
   autoOpenCamera?: boolean;
@@ -42,6 +42,13 @@ export default function MenuBoardCameraPage() {
 
   const locationState = (location.state ?? {}) as MenuBoardCameraLocationState;
   const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
+  const [isAutoOpenPending, setIsAutoOpenPending] = useState(shouldAutoOpenCamera);
+  const shouldHideWebCameraPrompt =
+    isAutoOpenPending && !isProcessing && captureErrorFeedback === null;
+
+  const returnFromCameraPage = useCallback(() => {
+    navigateBack({ fallbackTo: PATH.HOME });
+  }, []);
 
   const handleCameraActions = useCallback(async () => {
     if (isProcessing) return;
@@ -53,8 +60,15 @@ export default function MenuBoardCameraPage() {
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "MENU_BOARD",
       });
+      setIsAutoOpenPending(false);
     } catch (error) {
-      if (isCameraCaptureCancelled(error)) return;
+      setIsAutoOpenPending(false);
+      if (isCameraCaptureCancelled(error)) {
+        if (shouldAutoOpenCamera) {
+          returnFromCameraPage();
+        }
+        return;
+      }
       setCapturedPreviewSrc(null);
       setCaptureErrorFeedback(getCameraCaptureErrorFeedback(error));
       return;
@@ -81,7 +95,7 @@ export default function MenuBoardCameraPage() {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, navigate, uploadMenuBoardImage]);
+  }, [isProcessing, navigate, returnFromCameraPage, shouldAutoOpenCamera, uploadMenuBoardImage]);
 
   useEffect(() => {
     if (!shouldAutoOpenCamera || autoTriggeredRef.current) {
@@ -94,20 +108,24 @@ export default function MenuBoardCameraPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="메뉴판 촬영" onBack={() => navigate(-1)} />
+      {shouldHideWebCameraPrompt ? null : (
+        <PageHeader title="메뉴판 촬영" onBack={returnFromCameraPage} />
+      )}
 
       {isProcessing ? (
         <CameraLoading description="메뉴판을 분석 중이에요." previewSrc={capturedPreviewSrc} />
+      ) : shouldHideWebCameraPrompt ? (
+        <main className={styles.main} />
       ) : (
         <main className={styles.main}>
-          <div className={styles.content}>
+          {/* <div className={styles.content}>
             <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
             <p className="typo-title1">
               메뉴판 전체가 선명하게
               <br />
               보이도록 촬영해주세요
             </p>
-          </div>
+          </div> */}
           <div className={styles.actionButtons}>
             <Button
               variant="filled"

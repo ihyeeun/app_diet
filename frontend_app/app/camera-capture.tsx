@@ -3,8 +3,19 @@ import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import * as SecureStore from "expo-secure-store";
+import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ImageSourcePropType,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+} from "react-native";
 import { Camera, useCameraDevice } from "react-native-vision-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BridgeHandledError } from "@/src/shared/api/bridge/bridgeError";
@@ -18,8 +29,10 @@ import type { BridgeCameraCaptureRequestPayload } from "@/src/shared/api/bridge/
 
 type CameraCaptureMode = NonNullable<BridgeCameraCaptureRequestPayload["mode"]>;
 type CameraPermissionStatus = Awaited<ReturnType<typeof Camera.getCameraPermissionStatus>>;
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const DEFAULT_CAPTURE_MODE: CameraCaptureMode = "NUTRITION_LABEL";
+const CAMERA_ONBOARDING_DONE_VALUE = "done";
 
 const CAMERA_MODE_CONFIG: Record<
   CameraCaptureMode,
@@ -42,12 +55,44 @@ const CAMERA_MODE_CONFIG: Record<
   FOOD: {
     guideText: "음식이 프레임 안에 잘 보이도록 촬영해주세요",
     showGalleryButton: true,
-    frameAspectRatio: 1,
+    frameAspectRatio: 0.68,
   },
   GENERAL: {
     guideText: null,
     showGalleryButton: true,
     frameAspectRatio: null,
+  },
+};
+
+type CameraOnboardingConfig = {
+  title: string;
+  description: string;
+  visualAspectRatio: number;
+  placeholderIconName: IoniconName;
+  image: ImageSourcePropType;
+};
+
+const CAMERA_ONBOARDING_CONFIG: Partial<Record<CameraCaptureMode, CameraOnboardingConfig>> = {
+  NUTRITION_LABEL: {
+    title: "영양성분표 사진을 촬영해주세요",
+    description: "최대한 정보가 잘 읽히도록\n빛 반사나 왜곡 없이 올려주세요",
+    visualAspectRatio: 0.78,
+    placeholderIconName: "nutrition-outline",
+    image: require("@/assets/images/Icon/camera-onboarding-nutrient.png"),
+  },
+  MENU_BOARD: {
+    title: "메뉴판이 잘 보이도록 촬영해주세요",
+    description: "최대한 정보가 잘 읽히도록\n빛 반사나 왜곡 없이 올려주세요",
+    visualAspectRatio: 0.88,
+    placeholderIconName: "receipt-outline",
+    image: require("@/assets/images/Icon/camera-onboarding-menu.png"),
+  },
+  FOOD: {
+    title: "음식이 잘 보이도록 촬영해주세요",
+    description: "화면 프레임 안에 음식이\n들어갈 수 있도록 촬영해주세요",
+    visualAspectRatio: 1,
+    placeholderIconName: "restaurant-outline",
+    image: require("@/assets/images/Icon/camera-onboarding-food.png"),
   },
 };
 
@@ -80,10 +125,88 @@ async function readBase64FromUri(uri: string) {
   }
 }
 
+function getCameraOnboardingStorageKey(mode: CameraCaptureMode) {
+  return `camera-onboarding-${mode}-done`;
+}
+
+async function isCameraOnboardingDone(mode: CameraCaptureMode) {
+  try {
+    return (
+      (await SecureStore.getItemAsync(getCameraOnboardingStorageKey(mode))) ===
+      CAMERA_ONBOARDING_DONE_VALUE
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function markCameraOnboardingDone(mode: CameraCaptureMode) {
+  try {
+    await SecureStore.setItemAsync(
+      getCameraOnboardingStorageKey(mode),
+      CAMERA_ONBOARDING_DONE_VALUE,
+    );
+  } catch {
+    // Storage failure should not block camera usage.
+  }
+}
+
 function LoadingView() {
   return (
     <View style={styles.loadingContainer}>
       <ActivityIndicator size="large" color="#ff8a00" />
+    </View>
+  );
+}
+
+function CameraOnboardingOverlay({
+  config,
+  onClose,
+}: {
+  config: CameraOnboardingConfig;
+  onClose: () => void;
+}) {
+  return (
+    <View style={styles.cameraOnboardingOverlay} pointerEvents="box-none">
+      <View style={styles.cameraOnboardingBackdrop} pointerEvents="none" />
+
+      <View style={styles.cameraOnboardingCenter}>
+        <View style={styles.cameraOnboardingFocusFrame} pointerEvents="none">
+          <View style={[styles.cameraOnboardingFocusCorner, styles.focusCornerTopLeft]} />
+          <View style={[styles.cameraOnboardingFocusCorner, styles.focusCornerTopRight]} />
+          <View style={[styles.cameraOnboardingFocusCorner, styles.focusCornerBottomLeft]} />
+          <View style={[styles.cameraOnboardingFocusCorner, styles.focusCornerBottomRight]} />
+        </View>
+
+        <View style={styles.cameraOnboardingCard}>
+          <Pressable
+            style={styles.cameraOnboardingCloseButton}
+            onPress={onClose}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="카메라 안내 닫기"
+          >
+            <Ionicons name="close" size={24} color="#111111" />
+          </Pressable>
+
+          <View style={styles.cameraOnboardingVisual}>
+            <Image
+              source={config.image}
+              style={styles.cameraOnboardingImage}
+              resizeMode="contain"
+            />
+            <View style={styles.cameraOnboardingVisualFrame} pointerEvents="none">
+              <View style={[styles.cameraOnboardingVisualCorner, styles.visualCornerTopLeft]} />
+              <View style={[styles.cameraOnboardingVisualCorner, styles.visualCornerTopRight]} />
+              <View style={[styles.cameraOnboardingVisualCorner, styles.visualCornerBottomLeft]} />
+              <View style={[styles.cameraOnboardingVisualCorner, styles.visualCornerBottomRight]} />
+            </View>
+          </View>
+
+          <Text style={styles.cameraOnboardingTitle}>{config.title}</Text>
+          <Text style={styles.cameraOnboardingDescription}>{config.description}</Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -103,10 +226,16 @@ export default function CameraCaptureScreen() {
     [capturePayload?.mode],
   );
   const cameraModeConfig = useMemo(() => CAMERA_MODE_CONFIG[captureMode], [captureMode]);
+  const cameraOnboardingConfig = useMemo(
+    () => CAMERA_ONBOARDING_CONFIG[captureMode] ?? null,
+    [captureMode],
+  );
   const shouldShowOverlay = useMemo(
     () => cameraModeConfig.guideText !== null || cameraModeConfig.frameAspectRatio !== null,
     [cameraModeConfig.frameAspectRatio, cameraModeConfig.guideText],
   );
+  const [isCameraOnboardingVisible, setIsCameraOnboardingVisible] = useState(false);
+  const [isCameraOnboardingResolved, setIsCameraOnboardingResolved] = useState(false);
   const photoQualityBalance = useMemo(
     () => mapQualityPrioritization(capturePayload?.quality),
     [capturePayload?.quality],
@@ -187,6 +316,32 @@ export default function CameraCaptureScreen() {
   }, [cameraPermissionStatus, getCameraPermissionStatus, isFocused]);
 
   useEffect(() => {
+    let isMounted = true;
+
+    if (cameraPermissionStatus !== "granted" || !cameraOnboardingConfig) {
+      setIsCameraOnboardingVisible(false);
+      setIsCameraOnboardingResolved(true);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    setIsCameraOnboardingResolved(false);
+
+    (async () => {
+      const isDone = await isCameraOnboardingDone(captureMode);
+      if (!isMounted) return;
+
+      setIsCameraOnboardingVisible(!isDone);
+      setIsCameraOnboardingResolved(true);
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cameraOnboardingConfig, cameraPermissionStatus, captureMode]);
+
+  useEffect(() => {
     if (isPreparing || cameraPermissionStatus !== "granted") {
       setIsDeviceDetectionFinished(false);
       return;
@@ -228,6 +383,11 @@ export default function CameraCaptureScreen() {
       Alert.alert("설정을 열지 못했어요.", "기기 설정에서 카메라 권한을 직접 허용해주세요.");
     }
   }, []);
+
+  const handleCameraOnboardingClose = useCallback(() => {
+    setIsCameraOnboardingVisible(false);
+    void markCameraOnboardingDone(captureMode);
+  }, [captureMode]);
 
   const handleCapturePress = useCallback(async () => {
     if (!cameraRef.current || isProcessing) return;
@@ -349,6 +509,14 @@ export default function CameraCaptureScreen() {
     }
   }, [capturePayload?.quality, handleOpenSettingsPress, isProcessing]);
 
+  const isCameraOnboardingPending =
+    cameraPermissionStatus === "granted" &&
+    cameraOnboardingConfig !== null &&
+    !isCameraOnboardingResolved;
+  const isCaptureDisabled = isProcessing || isCameraOnboardingVisible || isCameraOnboardingPending;
+  const shouldShowGuideOverlay =
+    shouldShowOverlay && !isCameraOnboardingVisible && !isCameraOnboardingPending;
+
   if (isPreparing) {
     return <LoadingView />;
   }
@@ -416,7 +584,7 @@ export default function CameraCaptureScreen() {
         </Pressable>
       </View>
 
-      {shouldShowOverlay ? (
+      {shouldShowGuideOverlay ? (
         <View style={styles.overlay}>
           {cameraModeConfig.guideText ? (
             <View style={styles.guideCard}>
@@ -434,12 +602,19 @@ export default function CameraCaptureScreen() {
         </View>
       ) : null}
 
+      {isCameraOnboardingVisible && cameraOnboardingConfig ? (
+        <CameraOnboardingOverlay
+          config={cameraOnboardingConfig}
+          onClose={handleCameraOnboardingClose}
+        />
+      ) : null}
+
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         {cameraModeConfig.showGalleryButton ? (
           <Pressable
             style={[styles.sideSlot, styles.galleryButton, isProcessing && styles.disabledButton]}
             onPress={handleGalleryPress}
-            disabled={isProcessing}
+            disabled={isCaptureDisabled}
             accessibilityRole="button"
             accessibilityLabel="갤러리에서 사진 선택"
           >
@@ -451,7 +626,7 @@ export default function CameraCaptureScreen() {
         <Pressable
           style={[styles.captureOuter, isProcessing && styles.disabledButton]}
           onPress={handleCapturePress}
-          disabled={isProcessing}
+          disabled={isCaptureDisabled}
           accessibilityRole="button"
           accessibilityLabel="사진 촬영"
         >
@@ -524,6 +699,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: "space-between",
     backgroundColor: "black",
+    zIndex: 30,
   },
   spacer: {
     width: 28,
@@ -539,6 +715,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     pointerEvents: "none",
     marginBottom: 30,
+    zIndex: 10,
   },
   guideCard: {
     marginBottom: 20,
@@ -600,6 +777,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "rgba(0, 0, 0, 0.86)",
     padding: 27,
+    zIndex: 30,
   },
   sideSlot: {
     width: 44,
@@ -629,5 +807,145 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
+  },
+  cameraOnboardingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 26,
+    paddingBottom: 30,
+    zIndex: 40,
+  },
+  cameraOnboardingBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.58)",
+  },
+  cameraOnboardingCenter: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cameraOnboardingFocusFrame: {
+    position: "absolute",
+    top: -28,
+    right: -8,
+    bottom: -28,
+    left: -8,
+  },
+  cameraOnboardingFocusCorner: {
+    position: "absolute",
+    width: 64,
+    height: 64,
+    borderColor: "rgba(255, 255, 255, 0.42)",
+  },
+  focusCornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderTopLeftRadius: 22,
+  },
+  focusCornerTopRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderTopRightRadius: 22,
+  },
+  focusCornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderBottomLeftRadius: 22,
+  },
+  focusCornerBottomRight: {
+    right: 0,
+    bottom: 0,
+    borderRightWidth: 3,
+    borderBottomWidth: 3,
+    borderBottomRightRadius: 22,
+  },
+  cameraOnboardingCard: {
+    width: "100%",
+    borderRadius: 24,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    padding: 24,
+    paddingTop: 50,
+  },
+  cameraOnboardingCloseButton: {
+    position: "absolute",
+    top: 22,
+    right: 22,
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  cameraOnboardingVisual: {
+    width: 200,
+    height: 200,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  cameraOnboardingImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 30,
+  },
+  cameraOnboardingVisualFrame: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  cameraOnboardingVisualCorner: {
+    position: "absolute",
+    width: 58,
+    height: 58,
+    borderColor: "#ff8000",
+  },
+  visualCornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 6,
+    borderLeftWidth: 6,
+    borderTopLeftRadius: 30,
+  },
+  visualCornerTopRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 6,
+    borderRightWidth: 6,
+    borderTopRightRadius: 30,
+  },
+  visualCornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 6,
+    borderLeftWidth: 6,
+    borderBottomLeftRadius: 30,
+  },
+  visualCornerBottomRight: {
+    right: 0,
+    bottom: 0,
+    borderRightWidth: 6,
+    borderBottomWidth: 6,
+    borderBottomRightRadius: 30,
+  },
+  cameraOnboardingTitle: {
+    color: "#1f1f1f",
+    fontSize: 20,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 24,
+  },
+  cameraOnboardingDescription: {
+    color: "#1f1f1f",
+    fontSize: 16,
+    fontWeight: "400",
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 1.45 * 16,
   },
 });

@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import OnboardingHeader from "@/features/onboarding/components/OnboardingHeader";
 import {
@@ -14,6 +13,7 @@ import { isNativeApp, syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
+import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 import { getOnboardingSteps, STEP_COMPONENTS } from "./components/steps/steps";
 import type { OnboardingData } from "./onboarding.types";

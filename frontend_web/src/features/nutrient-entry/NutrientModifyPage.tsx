@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useMealDetatilQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
@@ -42,7 +41,13 @@ import {
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBackOrFallback } from "@/shared/navigation/backNavigation";
+import {
+  navigateBack,
+  navigateBackAndPush,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "@/shared/navigation/stackflowNavigation";
 
 import styles from "./styles/NutrientModifyPage.module.css";
 
@@ -208,7 +213,7 @@ export default function NutrientModifyPage() {
   };
 
   const handleBack = () => {
-    navigateBackOrFallback(navigate, getBackFallbackPath());
+    navigateBack({ fallbackTo: getBackFallbackPath() });
   };
 
   const handleResetForm = () => {
@@ -314,11 +319,21 @@ export default function NutrientModifyPage() {
         }
 
         toast.success("개인 메뉴로 등록했어요");
+        const detailPath = getMealDetailPath(
+          dateKey,
+          mealType,
+          createdMenuId,
+          pageKey,
+          searchKeyword,
+        );
         const detailPageState: MealDetailLocationState | undefined =
           menuId !== null && menuId !== createdMenuId ? { replaceMenuId: menuId } : undefined;
-        navigate(getMealDetailPath(dateKey, mealType, createdMenuId, pageKey, searchKeyword), {
-          replace: true,
-          state: detailPageState,
+
+        navigateBackAndPush({
+          count: 2,
+          animate: false,
+          to: detailPath,
+          pushOptions: { state: detailPageState },
         });
       },
       onError: () => {

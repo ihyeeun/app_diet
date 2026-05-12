@@ -17,7 +17,7 @@ type PendingRequest = {
 };
 
 const pendingRequests = new Map<string, PendingRequest>();
-const openedBottomSheetIds = new Set<string>();
+const activeTabBarVisibilitySyncIds = new Set<string>();
 const MESSAGE_TYPES_REQUIRING_NAV_CONTEXT = new Set<WebToAppMessage["type"]>([
   "TAB_SYNC",
   "NAVIGATION_BACK",
@@ -184,30 +184,34 @@ export function syncAppFeatureGuardEnabled(enabled: boolean) {
   });
 }
 
-export function syncBottomSheetStateToApp(isOpen: boolean) {
+function syncTabBarVisibilityToApp(isHidden: boolean) {
   if (!isNativeApp()) return;
 
   postMessageToApp({
     id: generateRequestId(),
-    type: "BOTTOM_SHEET_SYNC",
+    type: "TAB_BAR_VISIBILITY_SYNC",
     payload: {
-      isOpen,
+      isHidden,
     },
   });
 }
 
-export function beginBottomSheetVisibilitySync() {
+export function beginTabBarVisibilitySync() {
   if (!isNativeApp()) {
     return () => {};
   }
 
   const syncId = generateRequestId();
-  openedBottomSheetIds.add(syncId);
-  syncBottomSheetStateToApp(true);
+  let isSyncing = true;
+  activeTabBarVisibilitySyncIds.add(syncId);
+  syncTabBarVisibilityToApp(true);
 
   return () => {
-    openedBottomSheetIds.delete(syncId);
-    syncBottomSheetStateToApp(openedBottomSheetIds.size > 0);
+    if (!isSyncing) return;
+
+    isSyncing = false;
+    activeTabBarVisibilitySyncIds.delete(syncId);
+    syncTabBarVisibilityToApp(activeTabBarVisibilitySyncIds.size > 0);
   };
 }
 

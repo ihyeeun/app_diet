@@ -69,9 +69,10 @@ export default function HomeOnboardingOverlay({
 
   const [stepIndex, setStepIndex] = useState(0);
   const [metrics, setMetrics] = useState<SpotlightMetrics | null>(null);
-  const [bubbleWidth, setBubbleWidth] = useState(0);
+  const [bubbleMeasure, setBubbleMeasure] = useState({ stepIndex: 0, width: 0 });
   const bubbleRef = useRef<HTMLElement | null>(null);
   const currentStep = onboardingSteps[stepIndex] ?? null;
+  const bubbleWidth = bubbleMeasure.stepIndex === stepIndex ? bubbleMeasure.width : 0;
 
   useEffect(() => {
     if (!currentStep) return;
@@ -119,10 +120,6 @@ export default function HomeOnboardingOverlay({
   }, [currentStep]);
 
   useEffect(() => {
-    setBubbleWidth(0);
-  }, [stepIndex]);
-
-  useEffect(() => {
     if (!currentStep || !metrics) return;
     const bubbleElement = bubbleRef.current;
     if (!bubbleElement) return;
@@ -131,9 +128,12 @@ export default function HomeOnboardingOverlay({
       const nextWidth = bubbleElement.getBoundingClientRect().width;
       if (nextWidth <= 0) return;
 
-      setBubbleWidth((previous) => {
-        if (Math.abs(previous - nextWidth) < 0.5) return previous;
-        return nextWidth;
+      setBubbleMeasure((previous) => {
+        if (previous.stepIndex === stepIndex && Math.abs(previous.width - nextWidth) < 0.5) {
+          return previous;
+        }
+
+        return { stepIndex, width: nextWidth };
       });
     };
 

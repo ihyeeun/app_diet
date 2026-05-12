@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import styles from "@/features/home/styles/TodayMealScorePage.module.css";
 import type { DayMealSummary } from "@/features/home/utils/dayMealSummary";
@@ -15,6 +14,7 @@ import {
 import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { useLocation, useNavigate } from "@/shared/navigation/stackflowNavigation";
 import type { TargetsNutrients } from "@/shared/stores/targetNutrient.store";
 import { calculateMacroPercentToGram, type MacroKey } from "@/shared/utils/nutrientScore";
 

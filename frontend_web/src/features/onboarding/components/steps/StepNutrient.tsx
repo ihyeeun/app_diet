@@ -134,6 +134,10 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
         snapOnStep
         unit="%"
         isInputTextAllowed={isAllowedNutrientInput}
+        classNames={{
+          decrement: styles.weightAdjustButton,
+          increment: styles.weightAdjustButton,
+        }}
       />
 
       <div className={styles.onboardingNutrientDivider} />

@@ -237,3 +237,30 @@
   align-items: center;
   gap: 8px;
 }
+
+.weightAdjustButton {
+  align-items: center;
+  background: var(--interaction-alternative);
+  border: none;
+  border-radius: 100px;
+  color: var(--static-white);
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  transition: filter 0.14s ease;
+  width: 32px;
+}
+
+.weightAdjustButton:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.weightAdjustButton:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.weightAdjustButton:disabled {
+  background: var(--gray-400);
+  cursor: not-allowed;
+}
