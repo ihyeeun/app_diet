@@ -290,6 +290,7 @@ export interface ChatFeedbackMenuResponseDto {
   unit_quantity: string;
   calories: number;
   data_source: number;
+  brand?: string;
 }
 
 export interface ChatMenuBoardRecommendResponseDto {

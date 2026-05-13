@@ -56,7 +56,7 @@ export default function FeedbackResultPage() {
                   name={menu.menu_name}
                   calories={menu.calories}
                   unit_quantity={menu.unit_quantity}
-                  // brand={menu.brand}
+                  brand={menu.brand}
                   data_source={menu.data_source}
                   weight={menu.weight}
                   unit={menu.unit}
