@@ -8,19 +8,20 @@ import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection"
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import type { MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
 import { getCalorieSummary, hasValidTargets } from "@/features/home/utils/todayMealFeedback";
+import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
 import {
   formatMenuDraftKey,
   useMenuDraftInit,
 } from "@/features/meal-record/stores/menuDraft.store";
 import { PATH } from "@/router/path";
 import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
-import type { MealType } from "@/shared/api/types/api.dto";
+import type { MealTime, MealType, RegisterMealRequestDto } from "@/shared/api/types/api.dto";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { toast } from "@/shared/commons/toast/toast";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 import { useSelectedDateKey, useSetSelectedDate } from "@/shared/stores/selectedDate.store";
 import { useTargetsState } from "@/shared/stores/targetNutrient.store";
-import { parseDateKey } from "@/shared/utils/dateFormat";
+import { formatDateKey, parseDateKey } from "@/shared/utils/dateFormat";
 import {
   calculateDailyNutritionMetricsForDisplay,
   getCalorieProgressPercent,
@@ -181,6 +182,8 @@ export default function DiaryPage() {
                   onToggleExpand={() => {
                     setExpandedMealType((prev) => (prev === meal.type ? null : meal.type));
                   }}
+                  mealType={meal.type}
+                  selectedDate={selectedDate}
                 />
               );
             })}
@@ -204,6 +207,8 @@ function MealRecordCard({
   isExpanded,
   onNavigate,
   onToggleExpand,
+  mealType,
+  selectedDate,
 }: {
   title: string;
   iconSrc: string;
@@ -213,8 +218,24 @@ function MealRecordCard({
   isExpanded: boolean;
   onNavigate: () => void;
   onToggleExpand: () => void;
+  mealType: MealType;
+  selectedDate: Date;
 }) {
   const hasRecord = menus.length > 0;
+  const { mutate: didNotEatMutate } = useTodayMealRecordRegisterMutation();
+
+  const handleDidNotEatClick = () => {
+    const body: RegisterMealRequestDto = {
+      date: formatDateKey(selectedDate),
+      time: Number(mealType) as MealTime,
+      image: "",
+      menu_ids: [],
+      menu_quantities: [],
+      menu_input_modes: [],
+    };
+
+    return didNotEatMutate(body);
+  };
 
   return (
     <ActionCard className={`${styles.mealCard} ${hasRecord ? "" : styles.mealCardEmpty}`}>
@@ -225,18 +246,31 @@ function MealRecordCard({
         </button>
 
         {hasRecord ? (
-          <button
-            type="button"
-            onClick={onNavigate}
-            className={styles.navigateButton}
-            aria-label={`${title} 기록으로 이동`}
-          >
-            <ChevronRight size={24} />
-          </button>
+          menus.length > 0 ? (
+            <button
+              type="button"
+              onClick={onNavigate}
+              className={styles.navigateButton}
+              aria-label={`${title} 기록으로 이동`}
+            >
+              <ChevronRight size={24} />
+            </button>
+          ) : (
+            <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
+              <div className={styles.emptyStatusIconActive}>
+                <Check size={13} strokeWidth={3} />
+              </div>
+              <span className={`${styles.textPrimary} typo-title4`}>{emptyStatusText}</span>
+            </button>
+          )
         ) : (
           <div className={styles.emptyMeta} aria-label={`${title} 기록하기`}>
             {emptyStatusText && (
-              <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
+              <button
+                type="button"
+                onClick={handleDidNotEatClick}
+                className={styles.emptyStatusButton}
+              >
                 <div className={styles.emptyStatusIcon}>
                   <Check size={13} strokeWidth={3} />
                 </div>
@@ -251,7 +285,7 @@ function MealRecordCard({
         )}
       </div>
 
-      {hasRecord ? (
+      {hasRecord && menus.length > 0 ? (
         <div className={styles.mealSummaryCard}>
           <button
             type="button"
