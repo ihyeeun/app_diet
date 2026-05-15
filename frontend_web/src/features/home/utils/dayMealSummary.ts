@@ -69,6 +69,13 @@ export type DayMealSummary = {
     3: string;
     4: string;
   };
+  didNotEatByTime: {
+    0: boolean;
+    1: boolean;
+    2: boolean;
+    3: boolean;
+    4: boolean;
+  };
 };
 
 export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
@@ -106,6 +113,13 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     3: "",
     4: "",
   };
+  const recordCountByTime: Record<MealTimeKey, number> = {
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+  };
 
   const resolveServingInputMode = (meal: MealResponseDto, menuIndex: number): MealServingInputMode => {
     const menuInputModes = Array.isArray(meal.menu_input_modes)
@@ -130,6 +144,8 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
   };
 
   meals.meal_list.forEach((meal) => {
+    recordCountByTime[meal.time] += 1;
+
     if (typeof meal.image === "string" && meal.image.trim().length > 0) {
       // 같은 time에 여러 건이면 마지막 이미지로 덮어씀
       imagesByTime[meal.time] = meal.image;
@@ -222,5 +238,12 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     nutrientsByTime,
     menusByTime,
     imagesByTime,
+    didNotEatByTime: {
+      0: recordCountByTime[0] > 0 && menusByTime[0].length === 0,
+      1: recordCountByTime[1] > 0 && menusByTime[1].length === 0,
+      2: recordCountByTime[2] > 0 && menusByTime[2].length === 0,
+      3: recordCountByTime[3] > 0 && menusByTime[3].length === 0,
+      4: recordCountByTime[4] > 0 && menusByTime[4].length === 0,
+    },
   };
 }

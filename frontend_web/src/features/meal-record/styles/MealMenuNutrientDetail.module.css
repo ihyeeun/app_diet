@@ -1,11 +1,18 @@
 .summarySection {
-  background-color: var(--bg-primary-2);
+  background-color: var(--bg-white);
   border-radius: 8px;
+  border: 1px solid var(--border-neutral);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   overflow: hidden;
   padding: 16px 20px;
+}
+
+.skeletonRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .summaryContent {
@@ -24,38 +31,27 @@
   margin-left: auto;
 }
 
-.macroRow {
-  display: grid;
-  gap: 5px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.macroContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .macroItem {
-  background-color: var(--bg-white);
-  border: 1px solid var(--border-neutral);
-  border-radius: 8px;
   display: flex;
-  flex-direction: column;
   gap: 2px;
-  padding: 16px;
 }
 
 .macroLabelRow {
   align-items: center;
   display: flex;
-  min-width: 0;
-  justify-content: space-between;
+  gap: 4px;
 }
 
 .macroValue {
-  align-items: baseline;
   color: var(--label-primary);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  justify-content: flex-end;
-  min-width: 0;
   text-align: right;
+  flex: 1;
 }
 
 .macroNumber {
@@ -68,10 +64,11 @@
   flex: 0 0 auto;
 }
 
-@media (max-width: 360px) {
-  .macroRow {
-    grid-template-columns: 1fr;
-  }
+.skeletonMacroItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .servingInputSection {
@@ -175,6 +172,16 @@
 .detailSection {
   overflow: hidden;
   padding: 20px 0;
+}
+
+.skeletonDetailHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.skeletonDetailRows {
+  padding-top: 20px;
 }
 
 .detailToggleButton {

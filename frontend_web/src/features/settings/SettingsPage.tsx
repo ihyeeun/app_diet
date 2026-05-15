@@ -7,6 +7,7 @@ import {
 } from "@/features/settings/hooks/mutations/useAccountMutation";
 import { PATH } from "@/router/path";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { toast } from "@/shared/commons/toast/toast";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
@@ -137,6 +138,12 @@ export default function SettingsPage() {
           }
         }}
       />
+
+      {isLogoutPending || isWithdrawPending ? (
+        <LoadingOverlay
+          label={isWithdrawPending ? "탈퇴 처리 중입니다." : "로그아웃 처리 중입니다."}
+        />
+      ) : null}
     </div>
   );
 }

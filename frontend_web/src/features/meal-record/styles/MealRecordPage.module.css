@@ -14,21 +14,20 @@
 }
 
 .summaryCard {
-  background-color: var(--bg-primary-2);
+  background-color: var(--bg-white);
   border-radius: 8px;
   color: var(--label-normal);
   display: flex;
-  flex-direction: column;
   gap: 8px;
   padding: 20px;
-  justify-content: space-between;
-  align-items: space-between;
+  align-items: center;
 }
 
 .calorieRow {
   display: flex;
   gap: 4px;
   align-items: baseline;
+  margin-left: auto;
 }
 
 .currentCalorie {
@@ -69,6 +68,24 @@
   gap: 8px;
 }
 
+.menuCardSkeleton {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-neutral);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 20px;
+  width: 100%;
+}
+
+.menuCardSkeletonHeader,
+.menuCardSkeletonMeta {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
 .photoGroupCard {
   display: flex;
   flex-direction: column;
@@ -101,6 +118,26 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
+}
+
+.didNotEatState {
+  background-color: var(--bg-white);
+  border-radius: 8px;
+  color: var(--label-normal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 335px;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.didNotEatImage {
+  height: 120px;
+  width: 120px;
 }
 
 .footer {

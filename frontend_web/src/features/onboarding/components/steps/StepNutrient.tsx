@@ -4,6 +4,7 @@ import { useRecommendNutrientMutation } from "@/features/onboarding/hooks/mutati
 import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
 import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import NumberField from "@/shared/commons/input/NumberField";
+import { LoadingIndicator } from "@/shared/commons/loading/Loading";
 
 const INTERNAL_DECIMALS = 4;
 const NUTRIENT_INPUT_PATTERN = /^(?:100(?:\.0?)?|[0-9]{0,2}(?:\.[0-9]?)?)$/;
@@ -50,7 +51,7 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
     [data.goal, data.target_calories, data.weight, data.target_weight],
   );
 
-  const { mutate, data: nutrient } = useRecommendNutrientMutation();
+  const { mutate, data: nutrient, isPending } = useRecommendNutrientMutation();
 
   useEffect(() => {
     mutate(requestPayload);
@@ -71,7 +72,14 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
         className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup} ${styles.onboardingTitleGroupCompact}`}
       >
         <h2 className="typo-title1">추천하는 탄단지 비율이에요</h2>
-        <p className={styles.onboardingSubtitle}>비율을 수정할 수 있어요</p>
+        {isPending ? (
+          <div className={styles.onboardingLoadingRow}>
+            <LoadingIndicator iconSize={24} label="추천 탄단지 비율을 계산하는 중입니다." />
+            <p className={styles.onboardingSubtitle}>추천 비율을 계산하고 있어요</p>
+          </div>
+        ) : (
+          <p className={styles.onboardingSubtitle}>비율을 수정할 수 있어요</p>
+        )}
       </div>
       <div className={styles.onboardingNutrientContent}>
         <p className={styles.onboardingNutrientGoal}>

@@ -6,6 +6,7 @@ import {
   MealMenuNutrientDetail,
   type MealMenuNutrientSelection,
 } from "@/features/meal-record/components/MealMenuNutrientDetail";
+import { MealMenuNutrientDetailSkeleton } from "@/features/meal-record/components/MealMenuNutrientDetailSkeleton";
 import { useMealDeleteMutation } from "@/features/meal-record/hooks/mutations/useMealDetailMutation";
 import { useMealDetailQuery } from "@/features/meal-record/hooks/queries/useMealDetailQuery";
 import {
@@ -23,7 +24,9 @@ import { getMealRecordPath } from "@/router/pathHelpers";
 import { type MealMenuItem, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
+import { Skeleton } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
 import {
   navigateBack,
@@ -75,6 +78,15 @@ export default function MealDetailPage() {
       : null;
 
   const { data: meal, isPending, isError } = useMealDetailQuery(menuId);
+
+  const getBackFallbackPath = () => {
+    return getMealRecordPath(dateKey, mealType);
+  };
+
+  const handleGoBack = () => {
+    navigateBack({ fallbackTo: getBackFallbackPath() });
+  };
+
   const { mutate: deleteMealMutation, isPending: isDeletePending } = useMealDeleteMutation({
     onSuccess: () => {
       toast.success("삭제되었어요");
@@ -197,7 +209,21 @@ export default function MealDetailPage() {
   };
 
   if (isPending) {
-    return <p>로딩 중..</p>;
+    return (
+      <section className={styles.page}>
+        <PageHeader title="영양성분 상세" onBack={handleGoBack} />
+
+        <main className={styles.main}>
+          <div className={styles.content}>
+            <MealMenuNutrientDetailSkeleton />
+          </div>
+        </main>
+
+        <footer className={styles.footer}>
+          <Skeleton width="100%" height={48} radius={8} />
+        </footer>
+      </section>
+    );
   }
 
   if (!meal || menuId === null) {
@@ -205,14 +231,6 @@ export default function MealDetailPage() {
   }
 
   const isPersonalMenuData = meal.data_source === MENU_DATA_SOURCE.PERSONAL;
-
-  const getBackFallbackPath = () => {
-    return getMealRecordPath(dateKey, mealType);
-  };
-
-  const handleGoBack = () => {
-    navigateBack({ fallbackTo: getBackFallbackPath() });
-  };
 
   const handleModify = () => {
     moveToNutrientModify(meal, existingSelection?.quantity ?? 1, existingSelection !== null);
@@ -339,6 +357,8 @@ export default function MealDetailPage() {
         confirmDisabled={isDeletePending}
         onConfirm={handleConfirmDelete}
       />
+
+      {isDeletePending ? <LoadingOverlay label="영양성분을 삭제하는 중입니다." /> : null}
     </section>
   );
 }

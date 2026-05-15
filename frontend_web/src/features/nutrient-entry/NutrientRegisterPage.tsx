@@ -29,6 +29,7 @@ import type {
 } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { toast } from "@/shared/commons/toast/toast";
 import {
   navigateBack,
@@ -260,6 +261,8 @@ export default function NutrientRegisterPage() {
           등록하기
         </Button>
       </footer>
+
+      {isSubmitting ? <LoadingOverlay label="영양성분을 등록하는 중입니다." /> : null}
     </section>
   );
 }

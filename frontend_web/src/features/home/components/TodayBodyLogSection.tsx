@@ -11,6 +11,7 @@ import {
 import { useGetBodyLog } from "@/features/home/hooks/queries/useBodyLogQuery";
 import style from "@/features/home/styles/TodayBodyLogSection.module.css";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { toast } from "@/shared/commons/toast/toast";
 
 type TodayMetricType = "weight" | "steps";
@@ -19,7 +20,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
   const { data: bodyLog } = useGetBodyLog(date);
   const { data: profile } = useGetProfileQuery();
 
-  const { mutate: registerWeight } = useRegisterWeightMutation({
+  const { mutate: registerWeight, isPending: isWeightPending } = useRegisterWeightMutation({
     onSuccess: () => {
       toast.success("체중이 기록되었어요");
       closeEditor();
@@ -29,7 +30,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
       toast.error("체중 기록에 실패했어요");
     },
   });
-  const { mutate: registerSteps } = useRegisterStepsMutation({
+  const { mutate: registerSteps, isPending: isStepsPending } = useRegisterStepsMutation({
     onSuccess: () => {
       toast.success("걸음 수가 기록되었어요");
       closeEditor();
@@ -40,6 +41,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
   });
 
   const [editingMetric, setEditingMetric] = useState<TodayMetricType | null>(null);
+  const isSubmitPending = isWeightPending || isStepsPending;
 
   const closeEditor = () => {
     setEditingMetric(null);
@@ -90,6 +92,12 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
           initialSteps={bodyLog?.steps ?? 0}
           onClose={closeEditor}
           onSubmit={submitSteps}
+        />
+      ) : null}
+
+      {isSubmitPending ? (
+        <LoadingOverlay
+          label={isWeightPending ? "체중을 기록하는 중입니다." : "걸음 수를 기록하는 중입니다."}
         />
       ) : null}
     </>

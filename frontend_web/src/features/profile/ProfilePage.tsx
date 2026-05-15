@@ -1,4 +1,4 @@
-import { ChevronRightIcon, Pencil, Settings } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
@@ -16,6 +16,8 @@ import { PATH } from "@/router/path";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
+import { Skeleton, SkeletonStatus } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
 import { toggleFreeUserGuardEnabled } from "@/shared/guards/featureGuard";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
@@ -68,7 +70,7 @@ export default function ProfilePage() {
   const [nickName, setNickName] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<WeeklyMetricType>("weight");
   const nicknameTapStateRef = useRef({ count: 0, lastTappedAt: 0 });
-  const { mutate: updateNickName } = useNickNameUpdateMutation();
+  const { mutate: updateNickName, isPending: isNickNamePending } = useNickNameUpdateMutation();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep sheet input synced with async profile data.
@@ -155,7 +157,7 @@ export default function ProfilePage() {
   };
 
   if (isProfilePending || isDayMealPending || isBodyLogPending) {
-    return <div>로딩 중..</div>;
+    return <ProfilePageSkeleton />;
   }
 
   return (
@@ -168,7 +170,7 @@ export default function ProfilePage() {
             onClick={() => navigate(PATH.SETTINGS)}
             aria-label="설정"
           >
-            <Settings size={24} />
+            <img src="/icons/setting.svg" alt="설정" width={24} height={24} />
           </button>
         }
       />
@@ -183,7 +185,7 @@ export default function ProfilePage() {
                   className={styles.nicknameButton}
                   onClick={handleNicknameGuardToggleTap}
                 >
-                  <span className={`${styles.nickname} typo-title2`}>
+                  <span className={`${styles.nickname} typo-title1`}>
                     <span className={styles.highlight}>{nickname}</span> 님
                   </span>
                 </button>
@@ -196,7 +198,7 @@ export default function ProfilePage() {
                     setSheetOpen(true);
                   }}
                 >
-                  <Pencil size={20} />
+                  <img src="/icons/pencil.svg" alt="닉네임 수정" width={24} height={24} />
                 </button>
               </div>
 
@@ -222,89 +224,89 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <section className={styles.activeCardGrid}>
-            <ActionCard
-              onClick={() => handleSelectMetric("weight")}
-              className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
-            >
-              <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
+          <div>
+            <section className={styles.activeCardGrid}>
+              <ActionCard
+                onClick={() => handleSelectMetric("weight")}
+                className={`${styles.activeCard} ${selectedMetric === "weight" ? styles.activeMetricCard : ""}`}
+              >
+                <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
 
-              <div className={styles.activeCardValueRow}>
-                <span className={`${styles.activeCardValue} typo-title4`}>
-                  {currentWeight.toLocaleString("ko-KR")}
-                </span>
-                <span className={`${styles.activeCardUnit} typo-label4`}>kg</span>
-              </div>
-            </ActionCard>
-
-            <ActionCard
-              onClick={() => handleSelectMetric("calories")}
-              className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
-            >
-              <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
-
-              <div className={styles.activeCardValueRow}>
-                <span className={`${styles.activeCardValue} typo-title4`}>
-                  {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
-                </span>
-                <span className={`${styles.activeCardUnit} typo-label4`}>kcal</span>
-              </div>
-            </ActionCard>
-
-            <ActionCard
-              onClick={() => handleSelectMetric("steps")}
-              className={`${styles.activeCard} ${selectedMetric === "steps" ? styles.activeMetricCard : ""}`}
-            >
-              <p className={`${styles.activeCardTitle} typo-title4`}>걸음 수</p>
-
-              <div className={styles.activeCardValueRow}>
-                <span className={`${styles.activeCardValue} typo-title4`}>
-                  {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
-                </span>
-                <span className={`${styles.activeCardUnit} typo-label4`}>보</span>
-              </div>
-            </ActionCard>
-          </section>
-
-          <div className="divider" />
-
-          <section className={styles.weeklySection}>
-            <div className={styles.weeklyHeader}>
-              <span className={`${styles.weeklyTitle} typo-title3`}>주간 기록 현황</span>
-
-              <div className={styles.legendRow}>
-                {metricConfig.targetLabel && (
-                  <span className={`${styles.legendItem} typo-label4`}>
-                    <span className={`${styles.legendDot} ${styles.legendTarget}`} />
-                    {metricConfig.targetLabel}
+                <div className={styles.activeCardValueRow}>
+                  <span className={`${styles.activeCardValue} typo-title4`}>
+                    {currentWeight.toLocaleString("ko-KR")}
                   </span>
-                )}
-                <span className={`${styles.legendItem} typo-label4`}>
-                  <span className={`${styles.legendDot} ${styles.legendCurrent}`} />
-                  {metricConfig.title}
-                </span>
-              </div>
-            </div>
+                  <span className={`${styles.activeCardUnit} typo-label4`}>kg</span>
+                </div>
+              </ActionCard>
 
-            {weeklyRecordQuery.isPending ? (
-              <p className={`${styles.weeklyStatusText} typo-label2`}>
-                주간 기록을 불러오는 중이에요.
-              </p>
-            ) : weeklyRecordQuery.hasError ? (
-              <p className={`${styles.weeklyStatusText} typo-label2`}>
-                주간 기록을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.
-              </p>
-            ) : (
-              <section className={styles.weeklyChart}>
-                <span className={`${styles.weeklyYLabel} typo-caption`}>{metricConfig.title}</span>
-                <WeeklyRecordChart
-                  data={weeklyChartData}
-                  unit={metricConfig.unit}
-                  yTicks={metricConfig.ticks}
-                />
-              </section>
-            )}
-          </section>
+              <ActionCard
+                onClick={() => handleSelectMetric("calories")}
+                className={`${styles.activeCard} ${selectedMetric === "calories" ? styles.activeMetricCard : ""}`}
+              >
+                <p className={`${styles.activeCardTitle} typo-title4`}>섭취량</p>
+
+                <div className={styles.activeCardValueRow}>
+                  <span className={`${styles.activeCardValue} typo-title4`}>
+                    {(dayMeal?.totalCalories ?? 0).toLocaleString("ko-KR")}
+                  </span>
+                  <span className={`${styles.activeCardUnit} typo-label4`}>kcal</span>
+                </div>
+              </ActionCard>
+
+              <ActionCard
+                onClick={() => handleSelectMetric("steps")}
+                className={`${styles.activeCard} ${selectedMetric === "steps" ? styles.activeMetricCard : ""}`}
+              >
+                <p className={`${styles.activeCardTitle} typo-title4`}>걸음 수</p>
+
+                <div className={styles.activeCardValueRow}>
+                  <span className={`${styles.activeCardValue} typo-title4`}>
+                    {todaySteps === null ? "-" : todaySteps.toLocaleString("ko-KR")}
+                  </span>
+                  <span className={`${styles.activeCardUnit} typo-label4`}>보</span>
+                </div>
+              </ActionCard>
+            </section>
+
+            <section className={styles.weeklySection}>
+              <div className={styles.weeklyHeader}>
+                <span className={`${styles.weeklyTitle} typo-title3`}>주간 기록 현황</span>
+
+                <div className={styles.legendRow}>
+                  {metricConfig.targetLabel && (
+                    <span className={`${styles.legendItem} typo-label4`}>
+                      <span className={`${styles.legendDot} ${styles.legendTarget}`} />
+                      {metricConfig.targetLabel}
+                    </span>
+                  )}
+                  <span className={`${styles.legendItem} typo-label4`}>
+                    <span className={`${styles.legendDot} ${styles.legendCurrent}`} />
+                    {metricConfig.title}
+                  </span>
+                </div>
+              </div>
+
+              {weeklyRecordQuery.isPending ? (
+                <WeeklyRecordSkeleton />
+              ) : weeklyRecordQuery.hasError ? (
+                <p className={`${styles.weeklyStatusText} typo-label2`}>
+                  주간 기록을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.
+                </p>
+              ) : (
+                <section className={styles.weeklyChart}>
+                  <span className={`${styles.weeklyYLabel} typo-caption`}>
+                    {metricConfig.title}
+                  </span>
+                  <WeeklyRecordChart
+                    data={weeklyChartData}
+                    unit={metricConfig.unit}
+                    yTicks={metricConfig.ticks}
+                  />
+                </section>
+              )}
+            </section>
+          </div>
 
           <BottomSheet
             isOpen={sheetOpen}
@@ -331,7 +333,7 @@ export default function ProfilePage() {
                 color="primary"
                 fullWidth
                 onClick={handleUpdateNickName}
-                disabled={nickName.trim() === ""}
+                disabled={nickName.trim() === "" || isNickNamePending}
               >
                 수정하기
               </Button>
@@ -339,6 +341,73 @@ export default function ProfilePage() {
           </BottomSheet>
         </div>
       </main>
+
+      {isNickNamePending ? <LoadingOverlay label="닉네임을 수정하는 중입니다." /> : null}
+    </div>
+  );
+}
+
+function ProfilePageSkeleton() {
+  return (
+    <div className={styles.page}>
+      <PageHeader
+        rightSlot={
+          <Skeleton className={styles.headerIconButton} width={24} height={24} variant="circle" />
+        }
+      />
+
+      <main className={styles.main}>
+        <SkeletonStatus className={styles.content} label="프로필 정보를 불러오는 중입니다.">
+          <section className={styles.summarySection}>
+            <div className={styles.summaryText}>
+              <div className={styles.nicknameRow}>
+                <Skeleton width="48%" height={28} radius={999} />
+                <Skeleton width={24} height={24} variant="circle" />
+              </div>
+              <Skeleton width="72%" height={24} radius={999} />
+            </div>
+            <Skeleton width={96} height={32} radius={999} />
+          </section>
+
+          <div>
+            <section className={styles.activeCardGrid}>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <ActionCard key={index} className={styles.activeCard}>
+                  <Skeleton width="52%" height={18} radius={999} />
+                  <div className={styles.activeCardValueRow}>
+                    <Skeleton width="70%" height={22} radius={999} />
+                  </div>
+                </ActionCard>
+              ))}
+            </section>
+
+            <section className={styles.weeklySection}>
+              <div className={styles.weeklyHeader}>
+                <Skeleton width={112} height={22} radius={999} />
+                <Skeleton width={126} height={18} radius={999} />
+              </div>
+              <WeeklyRecordSkeleton />
+            </section>
+          </div>
+        </SkeletonStatus>
+      </main>
+    </div>
+  );
+}
+
+function WeeklyRecordSkeleton() {
+  return (
+    <div className={styles.weeklyChartSkeleton}>
+      {Array.from({ length: 7 }).map((_, index) => (
+        <div key={index} className={styles.weeklyChartSkeletonColumn}>
+          <Skeleton
+            width="100%"
+            height={`${52 + ((index * 23) % 86)}px`}
+            radius="8px 8px 2px 2px"
+          />
+          <Skeleton width="70%" height={12} radius={999} />
+        </div>
+      ))}
     </div>
   );
 }
