@@ -91,7 +91,9 @@ export default function DiaryPage() {
 
   const calorieMessage = isPending ? "식사 데이터를 불러오는 중이에요" : calorieSummary.message;
   const handleMoveMealRecord = (mealType: MealType) => {
-    const hasRecord = (dayMeals?.menusByTime[mealType]?.length ?? 0) > 0;
+    const hasRecord =
+      (dayMeals?.menusByTime[mealType]?.length ?? 0) > 0 ||
+      Boolean(dayMeals?.didNotEatByTime[mealType]);
 
     if (hasRecord) {
       navigate(getMealRecordPath(selectedDateKey, mealType));
@@ -168,6 +170,7 @@ export default function DiaryPage() {
             {DIARY_MEALS.map((meal) => {
               const mealMenus = dayMeals?.menusByTime[meal.type] ?? [];
               const mealCalories = getTotalMealCalories(mealMenus);
+              const didNotEat = Boolean(dayMeals?.didNotEatByTime[meal.type]);
 
               return (
                 <MealRecordCard
@@ -177,6 +180,7 @@ export default function DiaryPage() {
                   menus={mealMenus}
                   calories={mealCalories}
                   emptyStatusText={meal.emptyStatusText}
+                  didNotEat={didNotEat}
                   isExpanded={expandedMealType === meal.type}
                   onNavigate={() => handleMoveMealRecord(meal.type)}
                   onToggleExpand={() => {
@@ -204,6 +208,7 @@ function MealRecordCard({
   menus,
   calories,
   emptyStatusText,
+  didNotEat,
   isExpanded,
   onNavigate,
   onToggleExpand,
@@ -215,13 +220,14 @@ function MealRecordCard({
   menus: MenuWithQuantity[];
   calories: number;
   emptyStatusText?: string;
+  didNotEat: boolean;
   isExpanded: boolean;
   onNavigate: () => void;
   onToggleExpand: () => void;
   mealType: MealType;
   selectedDate: Date;
 }) {
-  const hasRecord = menus.length > 0;
+  const hasMenus = menus.length > 0;
   const { mutate: didNotEatMutate } = useTodayMealRecordRegisterMutation();
 
   const handleDidNotEatClick = () => {
@@ -238,31 +244,29 @@ function MealRecordCard({
   };
 
   return (
-    <ActionCard className={`${styles.mealCard} ${hasRecord ? "" : styles.mealCardEmpty}`}>
+    <ActionCard className={`${styles.mealCard} ${hasMenus ? "" : styles.mealCardEmpty}`}>
       <div className={styles.mealHeader}>
         <button type="button" onClick={onNavigate} className={styles.mealTitleContainer}>
           <img src={iconSrc} alt="" aria-hidden="true" className={styles.mealIcon} />
           <p className="typo-title3">{title}</p>
         </button>
 
-        {hasRecord ? (
-          menus.length > 0 ? (
-            <button
-              type="button"
-              onClick={onNavigate}
-              className={styles.navigateButton}
-              aria-label={`${title} 기록으로 이동`}
-            >
-              <ChevronRight size={24} />
-            </button>
-          ) : (
-            <button type="button" onClick={() => {}} className={styles.emptyStatusButton}>
-              <div className={styles.emptyStatusIconActive}>
-                <Check size={13} strokeWidth={3} />
-              </div>
-              <span className={`${styles.textPrimary} typo-title4`}>{emptyStatusText}</span>
-            </button>
-          )
+        {hasMenus ? (
+          <button
+            type="button"
+            onClick={onNavigate}
+            className={styles.navigateButton}
+            aria-label={`${title} 기록으로 이동`}
+          >
+            <ChevronRight size={24} />
+          </button>
+        ) : didNotEat && emptyStatusText ? (
+          <button type="button" onClick={onNavigate} className={styles.emptyStatusButton}>
+            <div className={styles.emptyStatusIconActive}>
+              <Check size={13} strokeWidth={3} />
+            </div>
+            <span className={`${styles.textPrimary} typo-title4`}>{emptyStatusText}</span>
+          </button>
         ) : (
           <div className={styles.emptyMeta} aria-label={`${title} 기록하기`}>
             {emptyStatusText && (
@@ -285,7 +289,7 @@ function MealRecordCard({
         )}
       </div>
 
-      {hasRecord && menus.length > 0 ? (
+      {hasMenus ? (
         <div className={styles.mealSummaryCard}>
           <button
             type="button"

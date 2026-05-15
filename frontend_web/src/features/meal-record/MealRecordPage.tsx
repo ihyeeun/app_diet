@@ -127,6 +127,7 @@ export default function MealRecordPage() {
     [allDrafts, draftKey],
   );
   const mealImage = allDrafts[draftKey]?.image ?? currentMenus?.imagesByTime[mealType] ?? null;
+  const didNotEat = Boolean(currentMenus?.didNotEatByTime[mealType]);
   const currentMenuItems = (() => {
     if (!currentMenus) return [];
     return currentMenus.menusByTime[mealType];
@@ -305,6 +306,7 @@ export default function MealRecordPage() {
       return sum + menu.calories;
     }, 0);
   }, [displayMenuItems]);
+  const showDidNotEatState = didNotEat && displayMenuItems.length === 0;
 
   const clearAllDrafts = useCallback(() => {
     MEAL_TYPE_OPTIONS.forEach((option) => {
@@ -481,6 +483,16 @@ export default function MealRecordPage() {
                 />
               ))}
             </div>
+          ) : showDidNotEatState ? (
+            <article className={styles.didNotEatState}>
+              <img
+                src="/icons/character-sad.svg"
+                alt=""
+                aria-hidden="true"
+                className={styles.didNotEatImage}
+              />
+              <p className="typo-title2">안 먹었어요</p>
+            </article>
           ) : (
             <button type="button" className={styles.emptyState} onClick={handleMealSearchNavigate}>
               <div className={styles.emptyStateIcon}>
