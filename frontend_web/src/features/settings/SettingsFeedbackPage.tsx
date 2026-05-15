@@ -5,6 +5,7 @@ import { isNativeApp, requestNativeAppDeviceInfo } from "@/shared/api/bridge/nat
 import type { AppDeviceInfoPayload } from "@/shared/api/bridge/nativeBridge.types";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { Skeleton } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
@@ -19,10 +20,10 @@ export default function SettingsFeedbackPage() {
   const [feedback, setFeedback] = useState("");
   const [appDeviceInfo, setAppDeviceInfo] = useState<AppDeviceInfoPayload | null>(null);
   const [isAppInfoLoading, setIsAppInfoLoading] = useState(isInNativeApp);
-  const { mutate } = useRegisterInquiryMutation();
+  const { mutate, isPending: isSubmitPending } = useRegisterInquiryMutation();
 
   const trimmedFeedback = feedback.trim();
-  const canSubmit = trimmedFeedback.length > 0;
+  const canSubmit = trimmedFeedback.length > 0 && !isSubmitPending;
   const appInfoLabel = !isInNativeApp
     ? "앱 환경이 아니어서 앱/OS 정보를 표시하지 않습니다."
     : appDeviceInfo === null
@@ -123,6 +124,8 @@ export default function SettingsFeedbackPage() {
           보내기
         </Button>
       </footer>
+
+      {isSubmitPending ? <LoadingOverlay label="문의 내용을 보내는 중입니다." /> : null}
     </div>
   );
 }

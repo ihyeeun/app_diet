@@ -37,6 +37,18 @@
   width: 100%;
 }
 
+.overlay {
+  align-items: center;
+  background: var(--loading-overlay-background, var(--dimmer-dimmer));
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  min-height: 100dvh;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
 .visuallyHidden {
   border: 0;
   clip: rect(0 0 0 0);

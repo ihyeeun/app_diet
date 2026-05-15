@@ -11,6 +11,7 @@ import styles from "@/features/onboarding/styles/OnboardingPage.module.css";
 import { PATH } from "@/router/path";
 import { isNativeApp, syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import { Button } from "@/shared/commons/button/Button";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
@@ -43,7 +44,7 @@ export default function OnboardingPage() {
   const step = steps[stepIndex];
   const total = steps.length;
 
-  const { mutate } = useRegisterUserInfoMutation({
+  const { mutate, isPending: isRegisterPending } = useRegisterUserInfoMutation({
     onSuccess: () => {
       syncAppTab("home");
       navigate(PATH.HOME, { replace: true });
@@ -125,16 +126,18 @@ export default function OnboardingPage() {
       <footer className={styles.footer}>
         <Button
           onClick={next}
-          disabled={!canGoNext}
+          disabled={!canGoNext || isRegisterPending}
           fullWidth
           variant="filled"
           size="large"
           color="primary"
-          interaction={canGoNext ? "normal" : "disable"}
+          interaction={canGoNext && !isRegisterPending ? "normal" : "disable"}
         >
           {step.nextText ?? "다음"}
         </Button>
       </footer>
+
+      {isRegisterPending ? <LoadingOverlay label="회원 정보를 저장하는 중입니다." /> : null}
 
       <CheckButtonModal
         open={isNutrientTotalModalOpen}

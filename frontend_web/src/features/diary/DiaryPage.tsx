@@ -16,6 +16,7 @@ import {
 import { PATH } from "@/router/path";
 import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import type { MealTime, MealType, RegisterMealRequestDto } from "@/shared/api/types/api.dto";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import ScoreProgress from "@/shared/commons/progress/Progress";
 import { Skeleton, SkeletonStatus } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
@@ -283,7 +284,8 @@ function MealRecordCard({
   selectedDate: Date;
 }) {
   const hasMenus = menus.length > 0;
-  const { mutate: didNotEatMutate } = useTodayMealRecordRegisterMutation();
+  const { mutate: didNotEatMutate, isPending: isDidNotEatPending } =
+    useTodayMealRecordRegisterMutation();
 
   const handleDidNotEatClick = () => {
     const body: RegisterMealRequestDto = {
@@ -379,6 +381,10 @@ function MealRecordCard({
             </ul>
           ) : null}
         </div>
+      ) : null}
+
+      {isDidNotEatPending ? (
+        <LoadingOverlay label={`${title} 식사 상태를 저장하는 중입니다.`} />
       ) : null}
     </ActionCard>
   );

@@ -10,6 +10,7 @@ const LOADING_ICONS = [
 
 type LoadingStyle = CSSProperties & {
   "--loading-icon-size"?: string;
+  "--loading-overlay-background"?: CSSProperties["background"];
   "--loading-screen-background"?: CSSProperties["background"];
 };
 
@@ -19,6 +20,12 @@ type LoadingIndicatorProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 type LoadingScreenProps = Omit<HTMLAttributes<HTMLElement>, "children"> & {
+  background?: CSSProperties["background"];
+  iconSize?: CSSProperties["width"];
+  label?: string;
+};
+
+type LoadingOverlayProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
   background?: CSSProperties["background"];
   iconSize?: CSSProperties["width"];
   label?: string;
@@ -83,5 +90,30 @@ export function LoadingScreen({
     >
       <LoadingIndicator iconSize={iconSize} label={label} />
     </main>
+  );
+}
+
+export function LoadingOverlay({
+  background,
+  className,
+  iconSize,
+  label,
+  style,
+  ...props
+}: LoadingOverlayProps) {
+  return (
+    <div
+      {...props}
+      aria-busy="true"
+      className={getClasses(styles.overlay, className)}
+      style={
+        {
+          ...(background ? { "--loading-overlay-background": background } : {}),
+          ...style,
+        } as LoadingStyle
+      }
+    >
+      <LoadingIndicator iconSize={iconSize} label={label} />
+    </div>
   );
 }

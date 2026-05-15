@@ -26,6 +26,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { FloatingCameraButton } from "@/shared/commons/button/FloatingCameraButton";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { LoadingIndicator } from "@/shared/commons/loading/Loading";
 import { toast } from "@/shared/commons/toast/toast";
 import { FEATURE_GUARD, isFeatureBlocked } from "@/shared/guards/featureGuard";
 import {
@@ -70,6 +71,7 @@ export default function MealSearchPage() {
   const {
     mutate: mealSearchMutation,
     data: searchResults,
+    isPending: isSearchPending,
     reset: resetMealSearch,
   } = useMealSearchMutation();
 
@@ -216,7 +218,11 @@ export default function MealSearchPage() {
 
       <main className={styles.main}>
         <section className={styles.content}>
-          {searchResults ? (
+          {isSearchPending ? (
+            <div className={styles.placeholder}>
+              <LoadingIndicator label="메뉴를 검색하는 중입니다." />
+            </div>
+          ) : searchResults ? (
             <>
               {searchResults.has_result ? (
                 <div className={styles.resultList}>

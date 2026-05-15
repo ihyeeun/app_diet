@@ -30,6 +30,7 @@ import {
 import { Button } from "@/shared/commons/button/Button";
 import { MealMenuCard } from "@/shared/commons/card/MealMenuCard";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { Skeleton, SkeletonStatus } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
@@ -541,6 +542,8 @@ export default function MealRecordPage() {
         onCancel={handleExit}
         onConfirm={() => {}}
       />
+
+      {isSavePending ? <LoadingOverlay label="식사 기록을 저장하는 중입니다." /> : null}
     </section>
   );
 }

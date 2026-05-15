@@ -39,6 +39,7 @@ import {
 } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { toast } from "@/shared/commons/toast/toast";
 import {
   navigateBack,
@@ -403,6 +404,8 @@ export default function NutrientModifyPage() {
           수정하기
         </Button>
       </footer>
+
+      {isSubmitting ? <LoadingOverlay label="영양성분을 저장하는 중입니다." /> : null}
     </section>
   );
 }

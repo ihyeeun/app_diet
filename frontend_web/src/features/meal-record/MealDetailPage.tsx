@@ -24,6 +24,7 @@ import { getMealRecordPath } from "@/router/pathHelpers";
 import { type MealMenuItem, MENU_DATA_SOURCE, MENU_UNIT } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { Skeleton } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
@@ -356,6 +357,8 @@ export default function MealDetailPage() {
         confirmDisabled={isDeletePending}
         onConfirm={handleConfirmDelete}
       />
+
+      {isDeletePending ? <LoadingOverlay label="영양성분을 삭제하는 중입니다." /> : null}
     </section>
   );
 }

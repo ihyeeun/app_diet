@@ -127,6 +127,12 @@
   line-height: var(--line-height-145);
 }
 
+.onboardingLoadingRow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
 .onboardingFieldPadding {
   padding: 0;
 }

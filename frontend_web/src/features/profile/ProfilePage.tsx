@@ -16,6 +16,7 @@ import { PATH } from "@/router/path";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
+import { LoadingOverlay } from "@/shared/commons/loading/Loading";
 import { Skeleton, SkeletonStatus } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
 import { toggleFreeUserGuardEnabled } from "@/shared/guards/featureGuard";
@@ -69,7 +70,7 @@ export default function ProfilePage() {
   const [nickName, setNickName] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<WeeklyMetricType>("weight");
   const nicknameTapStateRef = useRef({ count: 0, lastTappedAt: 0 });
-  const { mutate: updateNickName } = useNickNameUpdateMutation();
+  const { mutate: updateNickName, isPending: isNickNamePending } = useNickNameUpdateMutation();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep sheet input synced with async profile data.
@@ -332,7 +333,7 @@ export default function ProfilePage() {
                 color="primary"
                 fullWidth
                 onClick={handleUpdateNickName}
-                disabled={nickName.trim() === ""}
+                disabled={nickName.trim() === "" || isNickNamePending}
               >
                 수정하기
               </Button>
@@ -340,6 +341,8 @@ export default function ProfilePage() {
           </BottomSheet>
         </div>
       </main>
+
+      {isNickNamePending ? <LoadingOverlay label="닉네임을 수정하는 중입니다." /> : null}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { PATH } from "@/router/path";
 import type { RegisterMenuRequestDto } from "@/shared/api/types/api.dto";
 import { Button } from "@/shared/commons/button/Button";
 import { SearchInputHeader } from "@/shared/commons/header/SearchInputHeader";
+import { LoadingIndicator } from "@/shared/commons/loading/Loading";
 import { navigateBack, useLocation } from "@/shared/navigation/stackflowNavigation";
 
 type BrandSearchResult = {
@@ -154,7 +155,7 @@ export default function BrandSearch() {
             ) : (
               <div className={styles.emptyResult}>
                 {isInitialSearching ? (
-                  <p className="typo-label4">브랜드를 찾고 있어요</p>
+                  <LoadingIndicator label="브랜드를 검색하는 중입니다." />
                 ) : (
                   <>
                     <p className={`typo-label4 ${styles.emptyResultSubText}`}>
