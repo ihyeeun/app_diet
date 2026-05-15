@@ -147,7 +147,7 @@ export default function DiaryPage() {
           ) : (
             <ActionCard onClick={handleTodayMealScoreClick} className={styles.summaryCard}>
               <div className={styles.scoreCard}>
-                <p className={styles.scoreText}>
+                <div className={styles.scoreText}>
                   <p className={styles.calorieText}>
                     <span className={`${styles.scoreCurrent} typo-h2`}>
                       {calorieSummary.roundedCurrentCalories.toLocaleString("ko-KR")}
@@ -160,7 +160,7 @@ export default function DiaryPage() {
                   <span className={`${styles.score} typo-title2`}>{mealScore}점</span>
 
                   <ChevronRight size={24} className={styles.icon} />
-                </p>
+                </div>
                 <div className={styles.scoreContainer}>
                   <ScoreProgress
                     value={calorieProgress}

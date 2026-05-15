@@ -76,7 +76,7 @@
 
 .filterBadgeSelected {
   background-color: var(--primary-normal);
-  border-color: none;
+  border-color: transparent;
   color: var(--label-white);
 }
 
