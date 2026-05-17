@@ -128,6 +128,7 @@ export default function TabsLayout() {
               >
                 <RenderIcon width={24} height={24} />
                 <Text
+                  allowFontScaling={false}
                   style={[
                     styles.tabLabel,
                     isFocused ? styles.tabLabelFocused : styles.tabLabelBlurred,
