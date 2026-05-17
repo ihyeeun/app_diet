@@ -820,6 +820,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
+  margin-top: 16px;
 }
 
 .mealRecordSummary {
@@ -828,10 +829,10 @@
   background: none;
   border: 0;
   color: var(--label-normal);
-  gap: 8px;
   padding: 0;
   text-align: left;
   width: 100%;
+  margin-top: 8px;
 }
 
 .mealRecordSummary:disabled {
@@ -855,7 +856,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 12px 16px;
+  margin-top: 4px;
 }
 
 .mealRecordMenuItem {
@@ -871,7 +873,6 @@
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   padding: 16px 20px;
   width: 100%;
 }
