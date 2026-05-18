@@ -1,3 +1,4 @@
+import { useEnterDoneEffect } from "@stackflow/react";
 import {
   Camera,
   Check,
@@ -188,6 +189,11 @@ export default function ChatPage() {
       top: main.scrollHeight,
       behavior,
     });
+
+    if (behavior === "auto") {
+      isScrolledAwayFromBottomRef.current = false;
+      setIsScrolledAwayFromBottom(false);
+    }
   }, []);
 
   const scrollToBottomAfterLayout = useCallback(
@@ -203,6 +209,14 @@ export default function ChatPage() {
     },
     [scrollToBottom],
   );
+
+  const handleChatImageLoad = useCallback(() => {
+    if (isScrolledAwayFromBottomRef.current) {
+      return;
+    }
+
+    scrollToBottomAfterLayout("auto");
+  }, [scrollToBottomAfterLayout]);
 
   useEffect(() => {
     if (!isQuickActionVisible) {
@@ -249,6 +263,15 @@ export default function ChatPage() {
 
     scrollToBottomAfterLayout("smooth");
   }, [isTypingPending, pendingInput, scrollToBottomAfterLayout]);
+
+  useEnterDoneEffect(() => {
+    if (!hasAnyConversation || isHistoryPending) {
+      return;
+    }
+
+    scrollToBottom("auto");
+    scrollToBottomAfterLayout("auto");
+  }, [hasAnyConversation, isHistoryPending, scrollToBottom, scrollToBottomAfterLayout]);
 
   useEffect(() => {
     updateIsScrolledAwayFromBottom();
@@ -525,6 +548,7 @@ export default function ChatPage() {
                           alt=""
                           aria-hidden="true"
                           className={styles.userImageBubble}
+                          onLoad={handleChatImageLoad}
                         />
                       ) : null}
                     </div>
