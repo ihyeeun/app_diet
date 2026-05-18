@@ -88,7 +88,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
       ) : null}
       {editingMetric === "steps" ? (
         <StepsLogBottomSheet
-          initialSteps={bodyLog?.steps ?? 0}
+          initialSteps={bodyLog?.steps ?? undefined}
           onClose={closeEditor}
           onSubmit={submitSteps}
         />
