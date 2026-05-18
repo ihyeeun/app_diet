@@ -455,6 +455,7 @@ export default function ChatPage() {
               const chatDate = parseDate(chatItem.createdAt);
               const previousItem = chatList[index - 1];
               const previousDate = previousItem ? parseDate(previousItem.createdAt) : null;
+              const userImageUrl = getChatItemImageUrl(chatItem);
               const shouldShowDateDivider =
                 chatDate !== null &&
                 (previousDate === null || formatDateKey(chatDate) !== formatDateKey(previousDate));
@@ -472,7 +473,17 @@ export default function ChatPage() {
                     <p className={`${styles.timeText} typo-caption`}>
                       {formatChatTime(chatItem.createdAt)}
                     </p>
-                    <p className={`${styles.userBubble} typo-body3`}>{chatItem.input_text}</p>
+                    <div className={styles.userMessageContent}>
+                      <p className={`${styles.userBubble} typo-body3`}>{chatItem.input_text}</p>
+                      {userImageUrl ? (
+                        <img
+                          src={userImageUrl}
+                          alt=""
+                          aria-hidden="true"
+                          className={styles.userImageBubble}
+                        />
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className={styles.assistantMessageGroup}>
@@ -1197,6 +1208,12 @@ function getPrimaryMealRecordMenu(chatItem: ChatHistoryItemResponseDto): ChatMea
   }
 
   return chatItem.response_payload.feedback.menus[0] ?? null;
+}
+
+function getChatItemImageUrl(chatItem: ChatHistoryItemResponseDto) {
+  const imageUrl = chatItem.image_url ?? chatItem.response_payload.image_url ?? "";
+
+  return imageUrl.trim().length > 0 ? imageUrl : null;
 }
 
 function getMergedMealRecordPayload(
