@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { mealDelete, mealRegister } from "@/features/chat/api/chat.api";
 import { queryKeys as chatQueryKeys } from "@/features/chat/hooks/queries/queryKey";
@@ -98,6 +98,59 @@ function mergeMenus(
   return [...menuById.values()];
 }
 
+function toPreviousMealRecordMenus(
+  mealRecord: NonNullable<PreviousMealRecord>,
+): ChatMealRecordMenuPayload[] {
+  return (mealRecord.menu_ids ?? []).map((id, index) => ({
+    id,
+    quantity: mealRecord.menu_quantities?.[index] ?? 1,
+    inputMode: mealRecord.menu_input_modes?.[index] ?? MENU_INPUT_MODE.UNIT,
+  }));
+}
+
+async function registerChatMealRecord({
+  chatId,
+  time,
+  menus,
+}: {
+  chatId: number;
+  time: MealTime;
+  menus: ChatMealRecordMenuPayload[];
+}) {
+  await mealRegister({
+    chat_id: chatId,
+    time,
+    menu_ids: menus.map((menu) => menu.id),
+    menu_quantities: menus.map((menu) => menu.quantity),
+    menu_input_modes: menus.map((menu) => menu.inputMode),
+  });
+}
+
+async function restoreChatMealRecord({
+  chatId,
+  previousMealRecord,
+}: {
+  chatId: number;
+  previousMealRecord?: PreviousMealRecord;
+}) {
+  if (!previousMealRecord) {
+    await mealDelete({ chat_id: chatId });
+    return;
+  }
+
+  const previousMenus = toPreviousMealRecordMenus(previousMealRecord);
+  if (previousMenus.length === 0) {
+    await mealDelete({ chat_id: chatId });
+    return;
+  }
+
+  await registerChatMealRecord({
+    chatId,
+    time: previousMealRecord.time,
+    menus: previousMenus,
+  });
+}
+
 async function replaceDiaryMenusByTime({
   date,
   time,
@@ -132,6 +185,69 @@ async function replaceDiaryMenusByTime({
       }),
     ),
   );
+}
+
+async function restoreDiaryMenusByTimeSnapshot({
+  date,
+  time,
+  dayMeals,
+}: {
+  date: string;
+  time: MealTime;
+  dayMeals: DayMealSummary;
+}) {
+  const snapshotMenus = getMenusByTime(dayMeals, time).map(toDiaryPayload);
+
+  if (snapshotMenus.length > 0) {
+    await postTodayMealRecordRegister(
+      buildRegisterRequest({
+        date,
+        time,
+        menus: snapshotMenus,
+        image: getImageByTime(dayMeals, time),
+      }),
+    );
+    return;
+  }
+
+  const currentDayMeals = await getDayMeals({ date });
+  await Promise.all(
+    getMenusByTime(currentDayMeals, time).map((menu) =>
+      deleteTodayMealRecord({
+        date,
+        time,
+        menu_id: menu.id,
+      }),
+    ),
+  );
+}
+
+async function restoreDiaryMenusBySnapshot({
+  date,
+  times,
+  dayMeals,
+}: {
+  date: string;
+  times: MealTime[];
+  dayMeals: DayMealSummary;
+}) {
+  await Promise.all(
+    [...new Set(times)].map((time) =>
+      restoreDiaryMenusByTimeSnapshot({
+        date,
+        time,
+        dayMeals,
+      }),
+    ),
+  );
+}
+
+async function rollbackBestEffort(rollback: () => Promise<void>, message: string) {
+  try {
+    await rollback();
+  } catch (rollbackError) {
+    console.error(message, rollbackError);
+  }
 }
 
 async function removeDiaryMenusById({
@@ -200,6 +316,16 @@ async function syncDiaryMealRecord({
   });
 }
 
+async function invalidateSyncedMealRecordQueries(queryClient: QueryClient, date: string) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: homeQueryKeys.dayMeals.byDate(date) }),
+    queryClient.invalidateQueries({
+      queryKey: chatQueryKeys.chatHistory,
+      refetchType: "active",
+    }),
+  ]);
+}
+
 export function useSyncChatMealRecordRegisterMutation() {
   const queryClient = useQueryClient();
 
@@ -216,20 +342,42 @@ export function useSyncChatMealRecordRegisterMutation() {
         queryFn: () => getDayMeals({ date }),
       });
 
-      await mealRegister({
-        chat_id: chatId,
-        time,
-        menu_ids: menus.map((menu) => menu.id),
-        menu_quantities: menus.map((menu) => menu.quantity),
-        menu_input_modes: menus.map((menu) => menu.inputMode),
-      });
-      await syncDiaryMealRecord({
-        date,
+      await registerChatMealRecord({
+        chatId,
         time,
         menus,
-        previousMealRecord,
-        dayMeals,
       });
+
+      try {
+        await syncDiaryMealRecord({
+          date,
+          time,
+          menus,
+          previousMealRecord,
+          dayMeals,
+        });
+      } catch (error) {
+        await Promise.all([
+          rollbackBestEffort(
+            () => restoreChatMealRecord({ chatId, previousMealRecord }),
+            "Failed to rollback chat meal record",
+          ),
+          rollbackBestEffort(
+            () =>
+              restoreDiaryMenusBySnapshot({
+                date,
+                times: previousMealRecord ? [time, previousMealRecord.time] : [time],
+                dayMeals,
+              }),
+            "Failed to rollback diary meal record",
+          ),
+        ]);
+
+        throw error;
+      }
+    },
+    onSettled: async (_data, _error, variables) => {
+      await invalidateSyncedMealRecordQueries(queryClient, variables.date);
     },
   });
 }
@@ -247,24 +395,35 @@ export function useSyncChatMealRecordDeleteMutation() {
           queryFn: () => getDayMeals({ date }),
         });
 
-        await removeDiaryMenusById({
-          date,
-          time: previousMealRecord.time,
-          menuIds: previousMenuIds,
-          dayMeals,
-        });
+        try {
+          await removeDiaryMenusById({
+            date,
+            time: previousMealRecord.time,
+            menuIds: previousMenuIds,
+            dayMeals,
+          });
+
+          await mealDelete({ chat_id: chatId });
+        } catch (error) {
+          await rollbackBestEffort(
+            () =>
+              restoreDiaryMenusBySnapshot({
+                date,
+                times: [previousMealRecord.time],
+                dayMeals,
+              }),
+            "Failed to rollback diary meal record",
+          );
+
+          throw error;
+        }
+        return;
       }
 
       await mealDelete({ chat_id: chatId });
     },
     onSettled: async (_data, _error, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: homeQueryKeys.dayMeals.byDate(variables.date) }),
-        queryClient.invalidateQueries({
-          queryKey: chatQueryKeys.chatHistory,
-          refetchType: "active",
-        }),
-      ]);
+      await invalidateSyncedMealRecordQueries(queryClient, variables.date);
     },
   });
 }
