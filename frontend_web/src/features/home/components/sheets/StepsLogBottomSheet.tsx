@@ -7,7 +7,7 @@ import NumberField from "@/shared/commons/input/NumberField";
 import { toast } from "@/shared/commons/toast/toast";
 
 interface StepsLogBottomSheetProps {
-  initialSteps: number;
+  initialSteps: number | undefined;
   onClose: () => void;
   onSubmit: (steps: number) => void;
 }
