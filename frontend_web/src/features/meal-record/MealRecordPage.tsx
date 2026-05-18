@@ -604,6 +604,7 @@ export default function MealRecordPage() {
           size="large"
           color="primary"
           fullWidth
+          disabled={isSavePending}
         >
           완료하기
         </Button>

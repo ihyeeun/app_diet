@@ -1,22 +1,19 @@
 function isEditableTarget(target: EventTarget | null) {
-  if (!(target instanceof Element)) {
+  const element =
+    target instanceof Element
+      ? target
+      : target instanceof Node
+        ? target.parentElement
+        : null;
+
+  if (!element) {
     return false;
   }
 
-  if (target.closest("input, textarea, select")) {
-    return true;
-  }
-
-  let current: Element | null = target;
-  while (current) {
-    if (current instanceof HTMLElement && current.isContentEditable) {
-      return true;
-    }
-
-    current = current.parentElement;
-  }
-
-  return false;
+  return (
+    !!element.closest("input, textarea, select") ||
+    (element instanceof HTMLElement && element.isContentEditable)
+  );
 }
 
 function preventOutsideEditable(event: Event) {
