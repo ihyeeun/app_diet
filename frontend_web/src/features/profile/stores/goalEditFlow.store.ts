@@ -25,7 +25,7 @@ export const useGoalEditFlowStore = create<GoalEditFlowState>()(
       initialDraft: null,
       actions: {
         finish: () => {
-          set({ hasActiveFlow: false }, false, "goalEdit/finish");
+          set({ hasActiveFlow: false, draft: null, initialDraft: null }, false, "goalEdit/finish");
         },
         startFromProfile: (profile) => {
           const nextDraft = toGoalEditDraft(profile);
@@ -72,12 +72,9 @@ export const useGoalEditFlowStore = create<GoalEditFlowState>()(
 );
 
 export const useGoalEditDraft = () => useGoalEditFlowStore((state) => state.draft);
-export const useGoalEditHasActiveFlow = () =>
-  useGoalEditFlowStore((state) => state.hasActiveFlow);
-export const useGoalEditInitialDraft = () =>
-  useGoalEditFlowStore((state) => state.initialDraft);
-export const useFinishGoalEditFlow = () =>
-  useGoalEditFlowStore((state) => state.actions.finish);
+export const useGoalEditHasActiveFlow = () => useGoalEditFlowStore((state) => state.hasActiveFlow);
+export const useGoalEditInitialDraft = () => useGoalEditFlowStore((state) => state.initialDraft);
+export const useFinishGoalEditFlow = () => useGoalEditFlowStore((state) => state.actions.finish);
 export const useStartGoalEditFlow = () =>
   useGoalEditFlowStore((state) => state.actions.startFromProfile);
 export const useEnsureGoalEditFlow = () =>

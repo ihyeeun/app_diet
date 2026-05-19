@@ -14,7 +14,7 @@ type ShowToastOptions = {
 const activeToastIdsBySignature = new Map<string, string>();
 
 function getToastSignature(type: ToastType, title: string, description?: string) {
-  return `${type}:${title}:${description ?? ""}`;
+  return JSON.stringify([type, title, description ?? ""]);
 }
 
 function show({
