@@ -230,8 +230,10 @@ export default function NutrientModifyPage() {
         {
           onSuccess: () => {
             toast.success("영양 성분을 수정했어요");
-            navigate(getMealDetailPath(dateKey, mealType, menuId, searchKeyword), {
-              replace: true,
+            navigateBackAndPush({
+              count: 2,
+              animate: false,
+              to: getMealDetailPath(dateKey, mealType, menuId, searchKeyword),
             });
           },
           onError: () => {
