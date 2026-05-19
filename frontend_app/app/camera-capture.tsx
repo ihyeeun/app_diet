@@ -860,7 +860,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   cameraOnboardingContent: {
-    backgroundColor: "#ffe9d5",
+    backgroundColor: "#f5f5f5",
     alignItems: "center",
     paddingHorizontal: 28,
     paddingTop: 40,
@@ -940,7 +940,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "stretch",
     backgroundColor: "#ff8a00",
-    borderRadius: 4,
+    borderRadius: 6,
     height: 42,
     justifyContent: "center",
   },
