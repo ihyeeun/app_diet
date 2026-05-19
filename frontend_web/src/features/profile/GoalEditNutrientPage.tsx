@@ -30,7 +30,7 @@ import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
-import { isPreviousStackActivity, useNavigate } from "@/shared/navigation/stackflowNavigation";
+import { resetStackflow, useNavigate } from "@/shared/navigation/stackflowNavigation";
 import { useSetTargets } from "@/shared/stores/targetNutrient.store";
 import { getTodayFormatDateKey } from "@/shared/utils/dateFormat";
 
@@ -198,12 +198,9 @@ export default function GoalEditNutrientPage() {
       });
       finishGoalEditFlow();
 
-      if (isPreviousStackActivity("GoalEditTargetCalories")) {
-        navigate(-3);
-        return;
-      }
-
-      navigate(PATH.PROFILE, { replace: true });
+      resetStackflow(PATH.PROFILE, {
+        animate: false,
+      });
     } catch (error) {
       console.error(error);
       toast.warning("목표 수정에 실패했어요");
