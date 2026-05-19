@@ -119,6 +119,12 @@ const FoodCameraPage = createGuardedLazyActivity(
 );
 const ProfilePage = createLazyActivity(() => import("@/features/profile/ProfilePage"));
 const GoalEditPage = createLazyActivity(() => import("@/features/profile/GoalEditPage"));
+const GoalEditTargetCaloriesPage = createLazyActivity(
+  () => import("@/features/profile/GoalEditTargetCaloriesPage"),
+);
+const GoalEditNutrientPage = createLazyActivity(
+  () => import("@/features/profile/GoalEditNutrientPage"),
+);
 const ChatPage = createGuardedLazyActivity(
   FEATURE_GUARD.CHAT,
   () => import("@/features/chat/ChatPage"),
@@ -158,8 +164,8 @@ const ACTIVITIES = {
   RecommendDetail: RecommendDetailPage,
   Diary: DiaryPage,
   GoalEdit: GoalEditPage,
-  GoalEditTargetCalories: GoalEditPage,
-  GoalEditNutrient: GoalEditPage,
+  GoalEditTargetCalories: GoalEditTargetCaloriesPage,
+  GoalEditNutrient: GoalEditNutrientPage,
   AccountDelete: createStaticActivity(AccountDeletePage),
   FeedbackResult: FeedbackResultPage,
   FeedbackDetail: FeedbackDetailPage,
