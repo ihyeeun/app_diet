@@ -64,7 +64,11 @@ function toPositiveNumber(value: number | null | undefined) {
   return value;
 }
 
-function scaleCaloriesByWeight(calories: number, nextWeight: number, currentWeight: number) {
+function scaleCaloriesByWeight(
+  calories: number,
+  nextWeight: number | null | undefined,
+  currentWeight: number | null | undefined,
+) {
   const safeCalories = toPositiveNumber(calories) ?? 0;
   const safeNextWeight = toPositiveNumber(nextWeight);
   const safeCurrentWeight = toPositiveNumber(currentWeight);
@@ -284,7 +288,7 @@ export default function MealRecordPage() {
         id: preview.id,
         name: preview.name,
         brand: preview.brand,
-        calories: preview.calories,
+        calories: scaleCaloriesByWeight(preview.calories, draftMenu.quantity, preview.weight),
         quantity: draftMenu.quantity,
         unit_quantity: preview.unit_quantity,
         unit: preview.unit,
