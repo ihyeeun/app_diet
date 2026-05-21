@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   errorMessage: {
-    ...typography["typo-body4"],
+    ...typography["typo-body3"],
     marginTop: 10,
     color: "#666666",
     textAlign: "center",
