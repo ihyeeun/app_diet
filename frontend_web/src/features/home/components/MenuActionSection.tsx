@@ -122,7 +122,7 @@ function MenuCard({
     <ActionCard onClick={onClick} className={type === "camera" ? style.bgPrimary : ""}>
       <div className={style.menuCardContainer}>
         <p className={`typo-title4 ${type === "camera" ? style.textWhite : ""}`}>{title}</p>
-        <p className={`${type === "camera" ? style.textWhite : style.description} typo-body4`}>
+        <p className={`${type === "camera" ? style.textWhite : style.description} typo-body3`}>
           {description}
         </p>
         <div className={style.iconContainer}>

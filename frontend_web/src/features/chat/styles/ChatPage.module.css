@@ -709,6 +709,10 @@
   margin-left: 4px;
 }
 
+.ActionIcon {
+  margin-left: 2px;
+}
+
 .textNormal {
   color: var(--label-normal);
 }

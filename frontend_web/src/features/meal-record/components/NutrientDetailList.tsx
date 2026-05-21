@@ -69,7 +69,7 @@ export function NutrientDetailList({
 
                   <article className={styles.detailRow}>
                     <p
-                      className={`${row.variant === "sub" ? "typo-body4" : "typo-title4"} ${
+                      className={`${row.variant === "sub" ? "typo-body3" : "typo-title4"} ${
                         row.variant === "sub" ? styles.detailLabelSub : styles.textNormal
                       }`}
                     >

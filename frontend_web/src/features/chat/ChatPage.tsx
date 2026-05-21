@@ -694,7 +694,7 @@ function EmptySection() {
         <br />
         무엇이든 물어보세요
       </p>
-      {/* <p className={`${styles.emptyText} typo-body4`}>
+      {/* <p className={`${styles.emptyText} typo-body3`}>
         <CircleAlert size={20} />
         상황을 자세히 알려주면 추천이 더 정확해져요
       </p> */}
@@ -890,8 +890,8 @@ function MealRecordCard({
         <div className={styles.mealRecordMenuList}>
           {menus.map((menu) => (
             <div key={menu.menu_id} className={styles.mealRecordMenuItem}>
-              <p className={`${styles.textNormal} typo-body4`}>{menu.menu_name}</p>
-              <span className={`${styles.textAlternative} typo-body4`}>
+              <p className={`${styles.textNormal} typo-body3`}>{menu.menu_name}</p>
+              <span className={`${styles.textAlternative} typo-body3`}>
                 {formatCalories(menu.recordedCalories)} kcal
               </span>
             </div>
@@ -1009,12 +1009,12 @@ function RecommendationSection({
           aria-label="추천 목록 더보기"
           onClick={() => navigate(getRecommendResultPath(chatId))}
         >
-          <p className={`${styles.moreRecommendTitle} typo-body3`}>
+          <p className={`${styles.textNormal} typo-body3`}>
             다른 추천 메뉴도 있어요 (총 {recommendations.length}개)
           </p>
-          <p className={`${styles.moreRecommendAction} typo-label3`}>
+          <p className={`${styles.textAssistive} typo-label3`}>
             더보기
-            <ChevronRight size={20} />
+            <ChevronRight size={20} className={styles.ActionIcon} />
           </p>
         </button>
       ) : null}
@@ -1090,9 +1090,9 @@ function FeedbackSection({
                   className={styles.feedbackMenuItem}
                 >
                   <div>
-                    <p className={`${styles.feedbackMenuItemName} typo-body4`}>{menu.menu_name}</p>
+                    <p className={`${styles.feedbackMenuItemName} typo-body3`}>{menu.menu_name}</p>
                   </div>
-                  <span className={`${styles.feedbackMenuItemCalories} typo-body4`}>
+                  <span className={`${styles.feedbackMenuItemCalories} typo-body3`}>
                     {formatCalories(menu.calories)} kcal
                   </span>
                 </li>

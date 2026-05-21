@@ -232,7 +232,7 @@ export function NutrientDetailForm({
               >
                 <p
                   className={cx(
-                    isMainField ? "typo-title4" : "typo-body4",
+                    isMainField ? "typo-title4" : "typo-body3",
                     styles.fieldLabel,
                     isMainField ? styles.fieldLabelMain : styles.fieldLabelSub,
                   )}
