@@ -1,13 +1,4 @@
-import {
-  Camera,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  CircleAlert,
-  Plus,
-  X,
-} from "lucide-react";
+import { Camera, Check, ChevronDown, ChevronRight, ChevronUp, Plus, X } from "lucide-react";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -475,14 +466,14 @@ export default function ChatPage() {
                 <section key={chatItem.id} className={styles.conversationSection}>
                   {shouldShowDateDivider ? (
                     <div className={styles.dateDivider}>
-                      <span className={`${styles.dateText} typo-caption`}>
+                      <span className={`${styles.dateText} typo-caption4`}>
                         {formatDateDividerText(chatDate)}
                       </span>
                     </div>
                   ) : null}
 
                   <div className={styles.userMessageGroup}>
-                    <p className={`${styles.timeText} typo-caption`}>
+                    <p className={`${styles.timeText} typo-caption4`}>
                       {formatChatTime(chatItem.createdAt)}
                     </p>
                     <div className={styles.userMessageContent}>
@@ -549,7 +540,7 @@ export default function ChatPage() {
             {pendingInput !== null ? (
               <section className={styles.conversationSection} aria-live="polite">
                 <div className={styles.userMessageGroup}>
-                  <p className={`${styles.timeText} typo-caption`}>{formatChatTime(new Date())}</p>
+                  <p className={`${styles.timeText} typo-caption4`}>{formatChatTime(new Date())}</p>
                   <p className={`${styles.userBubble} typo-body3`}>{pendingInput}</p>
                 </div>
 
@@ -613,7 +604,7 @@ export default function ChatPage() {
               {!isScrollToBottomButtonVisible &&
                 !isCameraActionMenuOpen &&
                 !isCameraHintDismissed && (
-                  <div className={`${styles.fabBubble} typo-caption`}>메뉴 찍기</div>
+                  <div className={`${styles.fabBubble} typo-caption4`}>메뉴 찍기</div>
                 )}
               <button
                 type="button"
@@ -698,15 +689,15 @@ function EmptySection() {
   return (
     <div className={styles.emptySection}>
       <img src="/icons/character-cool.svg" />
-      <p className={`typo-title1 ${styles.emptyTitle}`}>
+      <p className={`typo-body1 ${styles.emptyTitle}`}>
         식단 고민,
         <br />
         무엇이든 물어보세요
       </p>
-      <p className={`${styles.emptyText} typo-body4`}>
+      {/* <p className={`${styles.emptyText} typo-body4`}>
         <CircleAlert size={20} />
         상황을 자세히 알려주면 추천이 더 정확해져요
-      </p>
+      </p> */}
     </div>
   );
 }
@@ -1148,7 +1139,7 @@ function FeedbackSection({
 function FeedbackScoreGauge({ score }: { score: number }) {
   const roundedScore = Math.round(score);
   const safeScore = Math.min(Math.max(roundedScore, 0), 100);
-  const characterIcon = "/icons/chat-chart-icon.svg";
+  const gaugeVisual = getFeedbackGaugeVisual(safeScore);
   const markerPosition = getFeedbackGaugeMarkerPosition(safeScore);
 
   return (
@@ -1161,18 +1152,18 @@ function FeedbackScoreGauge({ score }: { score: number }) {
         >
           <path className={styles.feedbackGaugeTrack} d={FEEDBACK_GAUGE_PATH} pathLength={100} />
           <path
-            className={styles.feedbackGaugeValue}
+            className={`${styles.feedbackGaugeValue} ${gaugeVisual.valueClassName}`}
             d={FEEDBACK_GAUGE_PATH}
             pathLength={100}
             style={{ strokeDasharray: `${safeScore} 100` }}
           />
         </svg>
         <div className={styles.feedbackScoreLabel}>
-          <p className={`${styles.feedbackScoreValue} typo-h3`}>{safeScore}점</p>
-          <p className={`${styles.feedbackScoreCaption} typo-label4`}>메뉴 추천도</p>
+          <p className={`${styles.feedbackScoreValue} typo-h2`}>{safeScore}점</p>
+          <p className={`${styles.feedbackScoreCaption} typo-body3`}>메뉴 추천도</p>
         </div>
         <img
-          src={characterIcon}
+          src={gaugeVisual.characterIcon}
           alt=""
           aria-hidden="true"
           className={styles.feedbackGaugeCharacter}
@@ -1184,6 +1175,27 @@ function FeedbackScoreGauge({ score }: { score: number }) {
       </div>
     </div>
   );
+}
+
+function getFeedbackGaugeVisual(score: number) {
+  if (score < 40) {
+    return {
+      characterIcon: "/icons/face-1.svg",
+      valueClassName: styles.feedbackGaugeValueLow,
+    };
+  }
+
+  if (score < 80) {
+    return {
+      characterIcon: "/icons/face-2.svg",
+      valueClassName: styles.feedbackGaugeValueWarning,
+    };
+  }
+
+  return {
+    characterIcon: "/icons/face-3.svg",
+    valueClassName: styles.feedbackGaugeValueNormal,
+  };
 }
 
 function getFeedbackGaugeMarkerPosition(score: number) {

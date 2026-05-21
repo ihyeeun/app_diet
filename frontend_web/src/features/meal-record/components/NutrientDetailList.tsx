@@ -77,9 +77,7 @@ export function NutrientDetailList({
                     </p>
 
                     <div className={styles.detailValue}>
-                      {row.showWarning && row.key !== "totalWeight" && (
-                        <NutrientWarningPopover className={styles.detailWarningButton} />
-                      )}
+                      {row.showWarning && row.key !== "totalWeight" && <NutrientWarningPopover />}
 
                       <span className={row.variant === "sub" ? "typo-body3" : "typo-body1"}>
                         {formatNutrientValue(row.value)} {row.unit}

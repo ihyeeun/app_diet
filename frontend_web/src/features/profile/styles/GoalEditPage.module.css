@@ -50,11 +50,11 @@
 }
 
 .summaryValue {
-  color: var(--label-alternative);
+  color: var(--label-assistive);
 }
 
 .summaryChevron {
-  color: var(--label-normal);
+  color: var(--interaction-normal);
 }
 
 .stageSection {

@@ -337,7 +337,7 @@ function MealRecordCard({
                 <div className={styles.emptyStatusIcon}>
                   <Check size={12} strokeWidth={3} />
                 </div>
-                <span className={`${styles.emptyStatusText} typo-title4`}>{emptyStatusText}</span>
+                <span className={`${styles.emptyStatusText} typo-label2`}>{emptyStatusText}</span>
               </button>
             )}
 
