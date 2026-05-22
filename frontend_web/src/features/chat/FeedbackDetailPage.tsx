@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "@/features/chat/styles/FeedbackDetailPage.module.css";
 import {
@@ -17,6 +17,7 @@ import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { Skeleton } from "@/shared/commons/skeleton/Skeleton";
+import { toast } from "@/shared/commons/toast/toast";
 import {
   navigateBack,
   useLocation,
@@ -48,7 +49,21 @@ export default function FeedbackDetailPage() {
     navigateBack({ fallbackTo });
   };
 
-  const { data: meal, isPending } = useMealDetailQuery(menuId);
+  const { data: meal, isPending, isError } = useMealDetailQuery(menuId);
+
+  useEffect(() => {
+    if (menuId !== null) return;
+
+    toast.warning("잘못된 접근입니다.");
+    navigateBack({ fallbackTo });
+  }, [menuId, fallbackTo]);
+
+  useEffect(() => {
+    if (!isError) return;
+
+    toast.warning("메뉴 정보를 불러오지 못했어요");
+    navigateBack({ fallbackTo });
+  }, [isError, fallbackTo]);
 
   if (isPending) {
     return (
