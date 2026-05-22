@@ -1,4 +1,5 @@
 import { Check, ChevronDown, ChevronRight, PlusIcon } from "lucide-react";
+import type { MouseEvent } from "react";
 import { useMemo, useState } from "react";
 
 import Calendar from "@/features/calendar/components/Calendar";
@@ -292,12 +293,32 @@ function MealRecordCard({
     registerDidNotEatMutate(body);
   };
 
+  const handleNavigateButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onNavigate();
+  };
+
+  const handleDidNotEatButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    handleDidNotEatToggle();
+  };
+
+  const handleMealSummaryButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onToggleExpand();
+  };
+
   return (
     <ActionCard
       className={`${styles.mealCard} ${hasMenus || didNotEat ? "" : styles.mealCardEmpty}`}
+      onClick={onNavigate}
     >
       <div className={styles.mealHeader}>
-        <button type="button" onClick={onNavigate} className={styles.mealTitleContainer}>
+        <button
+          type="button"
+          onClick={handleNavigateButtonClick}
+          className={styles.mealTitleContainer}
+        >
           <img src={iconSrc} alt="" aria-hidden="true" className={styles.mealIcon} />
           <p className="typo-title3">{title}</p>
         </button>
@@ -305,7 +326,7 @@ function MealRecordCard({
         {hasMenus ? (
           <button
             type="button"
-            onClick={onNavigate}
+            onClick={handleNavigateButtonClick}
             className={styles.navigateButton}
             aria-label={`${title} 기록으로 이동`}
           >
@@ -314,7 +335,7 @@ function MealRecordCard({
         ) : didNotEat && emptyStatusText ? (
           <button
             type="button"
-            onClick={handleDidNotEatToggle}
+            onClick={handleDidNotEatButtonClick}
             className={styles.emptyStatusButton}
             aria-pressed
             disabled={isDidNotEatPending}
@@ -329,7 +350,7 @@ function MealRecordCard({
             {emptyStatusText && (
               <button
                 type="button"
-                onClick={handleDidNotEatToggle}
+                onClick={handleDidNotEatButtonClick}
                 className={styles.emptyStatusButton}
                 aria-pressed={false}
                 disabled={isDidNotEatPending}
@@ -341,7 +362,7 @@ function MealRecordCard({
               </button>
             )}
 
-            <button type="button" onClick={onNavigate}>
+            <button type="button" onClick={handleNavigateButtonClick}>
               <PlusIcon size={24} className={styles.emptyPlusIcon} />
             </button>
           </div>
@@ -353,7 +374,7 @@ function MealRecordCard({
           <button
             type="button"
             className={styles.mealSummaryButton}
-            onClick={onToggleExpand}
+            onClick={handleMealSummaryButtonClick}
             aria-expanded={isExpanded}
             aria-label={`${title} 상세 ${isExpanded ? "접기" : "펼치기"}`}
           >
