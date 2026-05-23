@@ -1,9 +1,8 @@
-import {
-  type ApiFailResponse,
-  type ApiResponse,
-  isApiSuccess,
-} from "@/shared/api/types/apiResponse.types";
-import { type AuthTokens, getAccessToken, setAuthTokens } from "@/shared/auth/authSession";
+import { AppApiError, getApiBaseUrl, webApiData } from "@/shared/api/appApi";
+import { type ApiFailResponse } from "@/shared/api/types/apiResponse.types";
+import { type AuthTokens, setAuthTokens } from "@/shared/auth/authSession";
+
+export { getApiBaseUrl };
 
 const END_POINT = {
   KAKAO_WEB_LOGIN: "/userAuth/kakao/web",
@@ -23,73 +22,35 @@ export class KakaoWebAuthApiError extends Error {
   }
 }
 
-export function getApiBaseUrl() {
-  const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  if (configuredBaseUrl) {
-    return configuredBaseUrl.replace(/\/+$/, "");
-  }
-
-  if (import.meta.env.DEV) {
-    return "http://localhost:8080";
-  }
-
-  throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-}
-
-function appendParams(url: URL, params?: Record<string, string>) {
-  if (!params) return;
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-}
-
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  const text = await response.text();
-
-  if (!text) {
-    throw new Error("서버 응답 형식이 올바르지 않습니다.");
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new Error("서버 응답을 읽지 못했습니다.");
-  }
-}
-
 async function kakaoWebAuthData<T>({
   endpoint,
-  accessToken,
+  includeAuthorization,
   params,
 }: {
   endpoint: string;
-  accessToken?: string | null;
+  includeAuthorization?: boolean;
   params?: Record<string, string>;
 }) {
-  const url = new URL(`${getApiBaseUrl()}${endpoint}`);
-  appendParams(url, params);
+  try {
+    return await webApiData<T>(
+      {
+        endpoint,
+        method: "POST",
+        params,
+      },
+      { includeAuthorization },
+    );
+  } catch (error) {
+    if (error instanceof AppApiError) {
+      throw new KakaoWebAuthApiError({
+        message: error.message,
+        statusCode: error.statusCode,
+        error: error.error,
+      });
+    }
 
-  const headers = new Headers({
-    Accept: "application/json",
-  });
-
-  if (accessToken) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
+    throw error;
   }
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers,
-  });
-  const payload = await parseJsonResponse<ApiResponse<T>>(response);
-
-  if (!isApiSuccess(payload)) {
-    throw new KakaoWebAuthApiError(payload);
-  }
-
-  return payload.data;
 }
 
 function normalizeHasUserInfo(value: unknown) {
@@ -122,6 +83,7 @@ export function redirectToKakaoWebLogin() {
 export async function exchangeKakaoWebCodeForToken(code: string) {
   const tokens = await kakaoWebAuthData<AuthTokens>({
     endpoint: END_POINT.KAKAO_WEB_CALLBACK,
+    includeAuthorization: false,
     params: { code },
   });
 
@@ -131,7 +93,6 @@ export async function exchangeKakaoWebCodeForToken(code: string) {
 export async function postHasUserInfo() {
   const hasUserInfo = await kakaoWebAuthData<unknown>({
     endpoint: END_POINT.HAS_USER_INFO,
-    accessToken: getAccessToken(),
   });
 
   return normalizeHasUserInfo(hasUserInfo);

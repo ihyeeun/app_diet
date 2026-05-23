@@ -112,15 +112,21 @@ export default function OnboardingPage() {
     () => getOnboardingSteps({ showSubscribedCodeStep }),
     [showSubscribedCodeStep],
   );
+  const navigateAfterOnboarding = useCallback(() => {
+    if (isNativeApp()) {
+      syncAppTab("home");
+      navigate(PATH.HOME, { replace: true });
+      return;
+    }
+
+    navigate(PATH.APP_INFO, { replace: true });
+  }, [navigate]);
 
   const step = steps[stepIndex];
   const total = steps.length;
 
   const { mutate, isPending: isRegisterPending } = useRegisterUserInfoMutation({
-    onSuccess: () => {
-      syncAppTab("home");
-      navigate(PATH.HOME, { replace: true });
-    },
+    onSuccess: navigateAfterOnboarding,
     onError: (error) => {
       const resolved = resolveRegisterUserInfoError(error);
 
@@ -139,8 +145,7 @@ export default function OnboardingPage() {
       }
 
       if (resolved.shouldGoHome) {
-        syncAppTab("home");
-        navigate(PATH.HOME, { replace: true });
+        navigateAfterOnboarding();
       }
     },
   });
