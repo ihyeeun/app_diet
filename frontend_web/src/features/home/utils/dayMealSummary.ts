@@ -34,10 +34,16 @@ function resolveSummaryNutrientValue(
   const childSum = sumFiniteNutrientValues(childValues);
 
   if (parent !== null && !(parent === 0 && childSum !== null && childSum > 0)) {
-    return parent;
+    return {
+      isEstimatedFromSubNutrients: false,
+      value: parent,
+    };
   }
 
-  return childSum ?? 0;
+  return {
+    isEstimatedFromSubNutrients: childSum !== null,
+    value: childSum ?? 0,
+  };
 }
 
 function scaleOptionalNutrient(value: OptionalNutrientValue, scaleFactor: number) {
@@ -57,6 +63,9 @@ export type DayMealSummary = {
     carbs: number;
     protein: number;
     fat: number;
+  };
+  nutrientNotices: {
+    carbsEstimatedFromSubNutrients: boolean;
   };
   caloriesByTime: {
     breakfast: number;
@@ -157,6 +166,9 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
     3: 0,
     4: 0,
   };
+  const nutrientNotices = {
+    carbsEstimatedFromSubNutrients: false,
+  };
 
   const resolveServingInputMode = (
     meal: MealResponseDto,
@@ -208,15 +220,23 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
           : 1;
       const scaleFactor = consumedWeight / baseWeight;
       const calories = menu.calories * scaleFactor;
-      const carbs = resolveSummaryNutrientValue(menu.carbs, [menu.sugars]) * scaleFactor;
+      const resolvedCarbs = resolveSummaryNutrientValue(menu.carbs, [menu.sugars]);
+      const carbs = resolvedCarbs.value * scaleFactor;
       const protein = menu.protein * scaleFactor;
-      const fat =
-        resolveSummaryNutrientValue(menu.fat, [menu.sat_fat, menu.trans_fat, menu.un_sat_fat]) *
-        scaleFactor;
+      const resolvedFat = resolveSummaryNutrientValue(menu.fat, [
+        menu.sat_fat,
+        menu.trans_fat,
+        menu.un_sat_fat,
+      ]);
+      const fat = resolvedFat.value * scaleFactor;
       const sugars = scaleOptionalNutrient(menu.sugars, scaleFactor);
       const satFat = scaleOptionalNutrient(menu.sat_fat, scaleFactor);
       const transFat = scaleOptionalNutrient(menu.trans_fat, scaleFactor);
       const unSatFat = scaleOptionalNutrient(menu.un_sat_fat, scaleFactor);
+
+      if (resolvedCarbs.isEstimatedFromSubNutrients) {
+        nutrientNotices.carbsEstimatedFromSubNutrients = true;
+      }
 
       const menuItem: MenuWithQuantity = {
         id: menu.id,
@@ -293,6 +313,7 @@ export function dayMealSummary(meals: MealRecordResponseDto): DayMealSummary {
   return {
     totalCalories,
     totalNutrients,
+    nutrientNotices,
     caloriesByTime,
     nutrientsByTime,
     menusByTime,
