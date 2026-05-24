@@ -35,12 +35,14 @@ type SyncChatMealRecordParams = {
   time: MealTime;
   menus: ChatMealRecordMenuPayload[];
   previousMealRecord?: PreviousMealRecord;
+  previousDiaryMealRecord?: PreviousMealRecord;
 };
 
 type DeleteChatMealRecordParams = {
   date: string;
   chatId: number;
   previousMealRecord?: PreviousMealRecord;
+  previousDiaryMealRecord?: PreviousMealRecord;
 };
 
 type SyncDiaryMealRecordParams = Omit<SyncChatMealRecordParams, "chatId"> & {
@@ -375,7 +377,9 @@ export function useSyncChatMealRecordRegisterMutation() {
       time,
       menus,
       previousMealRecord,
+      previousDiaryMealRecord,
     }: SyncChatMealRecordParams) => {
+      const diaryPreviousMealRecord = previousDiaryMealRecord ?? previousMealRecord;
       const dayMeals = await fetchDayMealsForSync(queryClient, date);
 
       assertDiaryMealRecordMenuLimit(
@@ -383,7 +387,7 @@ export function useSyncChatMealRecordRegisterMutation() {
           date,
           time,
           menus,
-          previousMealRecord,
+          previousMealRecord: diaryPreviousMealRecord,
           dayMeals,
         }),
       );
@@ -399,7 +403,7 @@ export function useSyncChatMealRecordRegisterMutation() {
           date,
           time,
           menus,
-          previousMealRecord,
+          previousMealRecord: diaryPreviousMealRecord,
           dayMeals,
         });
       } catch (error) {
@@ -412,7 +416,7 @@ export function useSyncChatMealRecordRegisterMutation() {
             () =>
               restoreDiaryMenusBySnapshot({
                 date,
-                times: previousMealRecord ? [time, previousMealRecord.time] : [time],
+                times: diaryPreviousMealRecord ? [time, diaryPreviousMealRecord.time] : [time],
                 dayMeals,
               }),
             "Failed to rollback diary meal record",
@@ -432,16 +436,22 @@ export function useSyncChatMealRecordDeleteMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ date, chatId, previousMealRecord }: DeleteChatMealRecordParams) => {
-      const previousMenuIds = previousMealRecord?.menu_ids ?? [];
+    mutationFn: async ({
+      date,
+      chatId,
+      previousMealRecord,
+      previousDiaryMealRecord,
+    }: DeleteChatMealRecordParams) => {
+      const diaryPreviousMealRecord = previousDiaryMealRecord ?? previousMealRecord;
+      const previousMenuIds = diaryPreviousMealRecord?.menu_ids ?? [];
 
-      if (previousMealRecord && previousMenuIds.length > 0) {
+      if (diaryPreviousMealRecord && previousMenuIds.length > 0) {
         const dayMeals = await fetchDayMealsForSync(queryClient, date);
 
         try {
           await removeDiaryMenusById({
             date,
-            time: previousMealRecord.time,
+            time: diaryPreviousMealRecord.time,
             menuIds: previousMenuIds,
             dayMeals,
           });
@@ -452,7 +462,7 @@ export function useSyncChatMealRecordDeleteMutation() {
             () =>
               restoreDiaryMenusBySnapshot({
                 date,
-                times: [previousMealRecord.time],
+                times: [diaryPreviousMealRecord.time],
                 dayMeals,
               }),
             "Failed to rollback diary meal record",
