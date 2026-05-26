@@ -3,6 +3,7 @@ import { Camera, Check, ChevronDown, ChevronRight, ChevronUp, Plus, X } from "lu
 import type { FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { AssistantPendingMessage } from "@/features/chat/components/AssistantPendingMessage";
 import {
   ChatMealRecordBottomSheet,
   type ChatMealRecordMenu,
@@ -831,15 +832,7 @@ export default function ChatPage() {
                   <p className={`${styles.userBubble} typo-body2`}>{pendingInput}</p>
                 </div>
 
-                {isTypingPending ? (
-                  <div className={styles.assistantMessageGroup}>
-                    <div className={styles.typingBubble} aria-label="답변 생성 중">
-                      <span className={styles.typingDot} />
-                      <span className={styles.typingDot} />
-                      <span className={styles.typingDot} />
-                    </div>
-                  </div>
-                ) : null}
+                {isTypingPending ? <AssistantPendingMessage /> : null}
               </section>
             ) : null}
           </div>
