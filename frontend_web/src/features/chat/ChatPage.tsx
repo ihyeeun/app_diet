@@ -163,8 +163,10 @@ export default function ChatPage() {
   const { mutateAsync: sendMessageMutation, isPending: isSendPending } = useSendMessageMutation();
   const { mutateAsync: registerDiaryMealRecordMutate, isPending: isDiaryMealRegisterPending } =
     useTodayMealRecordRegisterMutation();
-  const { mutateAsync: deleteDiaryMealRecordMutate } =
+  const { mutateAsync: deleteDiaryMealRecordMutate, isPending: isDiaryMealDeletePending } =
     useTodayMealRecordDeleteWithRollbackMutation();
+
+  const isMealRecordEditPending = isDiaryMealRegisterPending || isDiaryMealDeletePending;
 
   const chatList = useMemo(() => {
     const rawList = data?.chat_list ?? [];
@@ -588,7 +590,7 @@ export default function ChatPage() {
   };
 
   const handleMealRecordEditSubmit = async () => {
-    if (editingMealRecordContext === null) {
+    if (editingMealRecordContext === null || isMealRecordEditPending) {
       return;
     }
 
@@ -953,7 +955,7 @@ export default function ChatPage() {
         selectedMenus={editingSelectedMenus}
         mealType={editingMealType}
         submitLabel="수정하기"
-        isSubmitPending={isDiaryMealRegisterPending}
+        isSubmitPending={isMealRecordEditPending}
         onMealTypeChange={setEditingMealType}
         onQuantityChange={handleEditingQuantityChange}
         onModeChange={handleEditingModeChange}
