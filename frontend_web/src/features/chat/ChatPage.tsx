@@ -746,9 +746,7 @@ export default function ChatPage() {
                   </div>
 
                   <div className={styles.assistantMessageGroup}>
-                    <p className={`${styles.assistantBubble} typo-body2`}>
-                      {chatItem.response_payload.intro_message}
-                    </p>
+                    <AssistantMessageBubbles message={chatItem.response_payload.intro_message} />
 
                     {chatItem.response_payload.chat_category === "recommendation" &&
                     chatItem.response_payload.recommendations.length > 0 ? (
@@ -1027,6 +1025,28 @@ function ChatHistorySkeleton() {
       </section>
     </SkeletonStatus>
   );
+}
+
+function AssistantMessageBubbles({ message }: { message: string }) {
+  const bubbleTexts = splitAssistantMessageIntoBubbles(message);
+
+  return (
+    <>
+      {bubbleTexts.map((bubbleText, index) => (
+        <p key={`${index}-${bubbleText}`} className={`${styles.assistantBubble} typo-body2`}>
+          {bubbleText}
+        </p>
+      ))}
+    </>
+  );
+}
+
+function splitAssistantMessageIntoBubbles(message: string) {
+  return message
+    .replace(/\r\n?/g, "\n")
+    .split(/\n+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
 }
 
 function ChatInput({
@@ -1499,8 +1519,8 @@ function FeedbackSection({
         </div>
       </article>
 
-      <p className={`${styles.assistantBubble} typo-body2`}>{feedback.feedback_summary}</p>
-      <p className={`${styles.assistantBubble} typo-body2`}>{feedback.feedback_reason}</p>
+      <AssistantMessageBubbles message={feedback.feedback_summary} />
+      <AssistantMessageBubbles message={feedback.feedback_reason} />
     </div>
   );
 }
