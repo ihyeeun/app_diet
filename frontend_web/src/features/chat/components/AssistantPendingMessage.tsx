@@ -50,34 +50,32 @@ export function AssistantPendingMessage() {
   }, [isLongWaitVisible]);
 
   return (
-    <div className={styles.assistantMessageGroup}>
-      <div
-        className={`${styles.pendingStatus} ${isLongWaitVisible ? styles.pendingStatusLongWait : ""}`}
-      >
-        {isTypingVisible ? (
-          <div className={styles.typingLayer} aria-hidden={isLongWaitVisible}>
-            <div className={styles.typingBubble} aria-label="답변 생성 중">
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
-            </div>
+    <div
+      className={`${styles.pendingStatus} ${isLongWaitVisible ? styles.pendingStatusLongWait : ""}`}
+    >
+      {isTypingVisible ? (
+        <div className={styles.typingLayer} aria-hidden={isLongWaitVisible}>
+          <div className={styles.typingBubble} aria-label="답변 생성 중">
+            <span className={styles.typingDot} />
+            <span className={styles.typingDot} />
+            <span className={styles.typingDot} />
           </div>
-        ) : null}
+        </div>
+      ) : null}
 
-        {isLongWaitVisible ? (
-          <div className={styles.longWaitStatus} role="status" aria-live="polite">
-            <div className={styles.longWaitMarker} aria-hidden="true">
-              <span className={styles.longWaitDot} />
-              <span className={styles.longWaitDot} />
-              <span className={styles.longWaitDot} />
-              <span className={styles.longWaitDot} />
-            </div>
-            <p key={messageIndex} className={`${styles.longWaitText} typo-body3`}>
-              {getPendingStatusMessage(messageIndex, displayNickname)}
-            </p>
+      {isLongWaitVisible ? (
+        <div className={styles.longWaitStatus} role="status" aria-live="polite">
+          <div className={styles.longWaitMarker} aria-hidden="true">
+            <span className={styles.longWaitDot} />
+            <span className={styles.longWaitDot} />
+            <span className={styles.longWaitDot} />
+            <span className={styles.longWaitDot} />
           </div>
-        ) : null}
-      </div>
+          <p key={messageIndex} className={`${styles.longWaitText} typo-body3`}>
+            {getPendingStatusMessage(messageIndex, displayNickname)}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }
