@@ -10,7 +10,7 @@ import { NumberInput } from "@/shared/commons/input/NumberInput";
 
 export default function StepBody({ data, update }: StepComponentProps) {
   return (
-    <section className={styles.content}>
+    <section className={`${styles.content} ${styles.onboardingStepReadable}`}>
       <div className={styles.onboardingTitle}>
         <h2 className="typo-title1">키 / 몸무게가 몇인가요?</h2>
       </div>
@@ -70,18 +70,20 @@ export function InputCard({
 }: InputCardProps) {
   return (
     <Field.Root className={styles.onboardingInputCard}>
-      <Field.Label className={styles.onboardingInputCardLabel}>{label}</Field.Label>
+      <Field.Label className={`${styles.textNormal} typo-title3`}>{label}</Field.Label>
 
-      <NumberInput
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        min={min}
-        max={max}
-        step={step}
-        unit={unit}
-        normalizeOnBlur={normalizeOnBlur}
-      />
+      <div className={styles.onboardingInputCardInput}>
+        <NumberInput
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          min={min}
+          max={max}
+          step={step}
+          unit={unit}
+          normalizeOnBlur={normalizeOnBlur}
+        />
+      </div>
     </Field.Root>
   );
 }

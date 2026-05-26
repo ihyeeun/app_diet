@@ -66,18 +66,19 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
   }, [nutrient, update]);
 
   return (
-    <section className={styles.content}>
+    <section
+      className={`${styles.content} ${styles.onboardingStepReadable} ${styles.nutrientContentReadable}`}
+    >
       <div
         className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup} ${styles.onboardingTitleGroupCompact}`}
       >
         <h2 className="typo-title1">추천하는 탄단지 비율이에요</h2>
         {isPending ? (
           <div className={styles.onboardingLoadingRow}>
-            {/* <LoadingIndicator iconSize={24} label="추천 탄단지 비율을 계산하는 중입니다." /> */}
-            <p className={styles.onboardingSubtitle}>추천 비율을 계산하고 있어요</p>
+            <p className={`${styles.textAlternative} typo-body2`}>추천 비율을 계산하고 있어요</p>
           </div>
         ) : (
-          <p className={styles.onboardingSubtitle}>비율을 수정할 수 있어요</p>
+          <p className={`${styles.textAlternative} typo-body2`}>비율을 수정할 수 있어요</p>
         )}
       </div>
       <div className={styles.onboardingNutrientContent}>
@@ -132,8 +133,8 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
     targetKcal === undefined ? undefined : calculateTargetGram(targetKcal, nutrientType);
 
   return (
-    <div className={styles.onboardingNutrientCard}>
-      <label className={`${styles.onboardingNutrientLabel} typo-title3`}>{label}</label>
+    <div className={`${styles.onboardingNutrientCard} ${styles.onboardingNutrientCardReadable}`}>
+      <label className={`${styles.textNormal} typo-title3`}>{label}</label>
       <NumberField
         value={value}
         onChange={onChange}
@@ -144,8 +145,12 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
         unit="%"
         isInputTextAllowed={isAllowedNutrientInput}
         classNames={{
-          decrement: styles.weightAdjustButton,
-          increment: styles.weightAdjustButton,
+          decrement: styles.onboardingNutrientAdjustButton,
+          group: styles.onboardingNutrientControlGroup,
+          increment: styles.onboardingNutrientAdjustButton,
+          input: styles.onboardingNutrientInput,
+          inputWrapper: styles.onboardingNutrientInputWrapper,
+          unit: styles.onboardingNutrientUnit,
         }}
       />
 

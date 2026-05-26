@@ -3,7 +3,7 @@ import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 
 export default function StepActivity({ data, update }: StepComponentProps) {
   return (
-    <section className={styles.content}>
+    <section className={`${styles.content} ${styles.onboardingStepReadable}`}>
       <div className={styles.onboardingTitle}>
         <h2 className="typo-title1">평소에 얼마나 움직이시나요?</h2>
       </div>
@@ -59,8 +59,8 @@ function ActivityCard({
       aria-pressed={selected}
     >
       <div className={styles.onboardingOptionCardContent}>
-        <p className={styles.onboardingOptionCardTitle}>{title}</p>
-        <p className={styles.onboardingOptionCardDescription}>{description}</p>
+        <p className={`${styles.textNormal} typo-title3`}>{title}</p>
+        <p className={`${styles.textAlternative} typo-body2`}>{description}</p>
       </div>
     </button>
   );

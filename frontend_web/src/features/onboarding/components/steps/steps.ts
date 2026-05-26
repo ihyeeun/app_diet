@@ -30,13 +30,8 @@ export const STEP_COMPONENTS: Record<StepId, ComponentType<StepComponentProps>> 
 const BASE_STEPS: StepMeta[] = [
   {
     id: "gender",
-    title: "성별",
-    isValid: (d) => hasSelectedValue(d.gender),
-  },
-  {
-    id: "birthYear",
-    title: "출생연도",
-    isValid: (d) => isValidBirthYear(d.birthYear),
+    title: "성별/출생연도",
+    isValid: (d) => hasSelectedValue(d.gender) && isValidBirthYear(d.birthYear),
   },
   {
     id: "body",

@@ -184,22 +184,28 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
 
     update({ target_calories: nexttargetCalories });
     setOpen(false);
-    toast.success("수정되었어요.");
   };
 
   return (
-    <section className={styles.content}>
+    <section
+      className={`${styles.content} ${styles.onboardingStepReadable} ${styles.goalCaloriesContent}`}
+    >
       <div className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup}`}>
-        <h2 className="typo-title1">목표 칼로리를 선택해주세요</h2>
+        <h2 className="typo-title1">목표 칼로리를 설정해주세요</h2>
         {isPending ? (
           <div className={styles.onboardingLoadingRow}>
             {/* <LoadingIndicator iconSize={24} label="추천 목표 칼로리를 계산하는 중입니다." /> */}
-            <p className={styles.onboardingSubtitle}>추천 목표 칼로리를 계산하고 있어요</p>
+            \
+            <p className={`${styles.textAlternative} typo-body2`}>
+              추천 목표 칼로리를 계산하고 있어요
+            </p>
           </div>
         ) : (
-          <p className={styles.onboardingSubtitle}>
+          <p className={`${styles.textAlternative} typo-body2`}>
             추천하는 목표 칼로리는{" "}
-            <span className="textNoWrap">{formattargetCalories(displayRecommendedCalories)}kcal</span>
+            <span className="textNoWrap">
+              {formattargetCalories(displayRecommendedCalories)}kcal
+            </span>
             예요
           </p>
         )}
@@ -216,7 +222,7 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
         <p className={`${styles.onboardingGoalKcalHelper} typo-body1`}>{goalWeekMessage}</p>
       </div>
       <BottomSheet isOpen={open} onClose={() => setOpen(false)}>
-        <div className={styles.onboardingGoalKcalSheet}>
+        <div className={`${styles.onboardingGoalKcalSheet}`}>
           <h3 className="typo-title2">목표 칼로리</h3>
           <EditorInput
             type="number"
@@ -234,17 +240,17 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
               setDrafttargetCalories(value === undefined ? undefined : toInteger(value));
             }}
           />
-          <div className={styles.onboardingGoalKcalActions}>
-            <Button
-              onClick={handleConfirmtargetCalories}
-              fullWidth
-              interaction={drafttargetCalories ? "normal" : "disable"}
-              disabled={drafttargetCalories === undefined || drafttargetCalories === 0}
-              size="large"
-            >
-              수정하기
-            </Button>
-          </div>
+        </div>
+        <div className={styles.onboardingGoalKcalActions}>
+          <Button
+            onClick={handleConfirmtargetCalories}
+            fullWidth
+            interaction={drafttargetCalories ? "normal" : "disable"}
+            disabled={drafttargetCalories === undefined || drafttargetCalories === 0}
+            size="large"
+          >
+            다음
+          </Button>
         </div>
       </BottomSheet>
     </section>
