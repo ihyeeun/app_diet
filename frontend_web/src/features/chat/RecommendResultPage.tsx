@@ -154,6 +154,10 @@ function RecommendResultContent({
   }, [recommendations, selectedFilter]);
 
   const handleToggleMenu = (menu: ChatRecommendItemResponseDto) => {
+    if (isDayMealsPending) {
+      return;
+    }
+
     setSelectedMenusOverride((prev) => {
       const currentMenus = prev ?? diaryMealRecordSelection?.menus ?? [];
       const isAlreadySelected = currentMenus.some((item) => item.id === menu.menu_id);
@@ -268,7 +272,7 @@ function RecommendResultContent({
                     icon={isSelected ? "check" : "add"}
                     state={isSelected ? "select" : "default"}
                     onClick={() => navigate(getRecommendDetailPath(chatItem.id, item.menu_id))}
-                    onIconClick={() => handleToggleMenu(item)}
+                    onIconClick={isDayMealsPending ? undefined : () => handleToggleMenu(item)}
                   />
                 </li>
               );

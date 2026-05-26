@@ -137,6 +137,10 @@ function FeedbackResultContent({
   }, [selectedMenus]);
 
   const handleConfirmDetailSelection = (selection: FeedbackDetailSelectionPayload) => {
+    if (isDayMealsPending) {
+      return;
+    }
+
     setSelectedMenusOverride((prev) => {
       const currentMenus = prev ?? diaryMealRecordSelection?.menus ?? [];
       const nextMenu: SelectedMealRecordMenu = {
@@ -155,6 +159,10 @@ function FeedbackResultContent({
   };
 
   const handleMenuClick = ({ menuId, chatId }: { menuId: number; chatId: number }) => {
+    if (isDayMealsPending) {
+      return;
+    }
+
     const initialSelection = selectedMenus.find((menu) => menu.id === menuId);
     const state: FeedbackDetailNavigationState = {
       initialSelection: initialSelection
@@ -171,6 +179,10 @@ function FeedbackResultContent({
   };
 
   const handleToggleMenu = (menu: ChatFeedbackMenuResponseDto) => {
+    if (isDayMealsPending) {
+      return;
+    }
+
     setSelectedMenusOverride((prev) => {
       const currentMenus = prev ?? diaryMealRecordSelection?.menus ?? [];
       const isAlreadySelected = currentMenus.some((item) => item.id === menu.menu_id);
@@ -238,6 +250,7 @@ function FeedbackResultContent({
               imageUrl={imageUrl}
               recognizedFoods={recognizedFoods}
               menus={menus}
+              isDetailDisabled={isDayMealsPending}
               onMarkerClick={(menuId) => handleMenuClick({ menuId, chatId: chatItem.id })}
             />
           ) : null}
@@ -259,7 +272,11 @@ function FeedbackResultContent({
                     unit={menu.unit}
                     icon={isSelected ? "check" : "add"}
                     state={isSelected ? "select" : "default"}
-                    onClick={() => handleMenuClick({ menuId: menu.menu_id, chatId: chatItem.id })}
+                    onClick={
+                      isDayMealsPending
+                        ? undefined
+                        : () => handleMenuClick({ menuId: menu.menu_id, chatId: chatItem.id })
+                    }
                     onIconClick={() => handleToggleMenu(menu)}
                   />
                 </li>
@@ -289,11 +306,13 @@ function FoodImageFeedbackPreview({
   imageUrl,
   recognizedFoods,
   menus,
+  isDetailDisabled,
   onMarkerClick,
 }: {
   imageUrl: string;
   recognizedFoods: ChatFoodImageRecognizedMenuResponseDto[];
   menus: ChatFeedbackMenuResponseDto[];
+  isDetailDisabled: boolean;
   onMarkerClick: (menuId: number) => void;
 }) {
   const menuById = useMemo(() => new Map(menus.map((menu) => [menu.menu_id, menu])), [menus]);
@@ -327,6 +346,7 @@ function FoodImageFeedbackPreview({
               top: `${markerY * 100}%`,
             }}
             onClick={() => onMarkerClick(food.menu_id)}
+            disabled={isDetailDisabled}
             aria-label={`${label}${scoreText ? ` ${scoreText}` : ""} 상세 보기`}
           >
             <span className={styles.foodMarkerBubble}>
