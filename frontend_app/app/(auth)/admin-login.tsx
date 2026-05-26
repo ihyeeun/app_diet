@@ -1,4 +1,5 @@
 import { signInAdmin } from "@/features/auth/api/authTokenApi";
+import { postHasUserInfo } from "@/features/auth/api/onboardingStatusApi";
 import { saveTokens } from "@/features/auth/store/tokenStore";
 import { typography } from "@/src/shared/styles/tokens";
 import { isAxiosError } from "axios";
@@ -51,6 +52,14 @@ export default function AdminLoginPage() {
         accessToken: loginResult.accessToken,
         refreshToken: loginResult.refreshToken,
       });
+
+      const hasUserInfo = await postHasUserInfo();
+
+      if (!hasUserInfo) {
+        router.replace("/(auth)/onboarding");
+        return;
+      }
+
       router.replace("/(tabs)/home");
     } catch (error) {
       if (isAxiosError(error)) {
@@ -77,7 +86,7 @@ export default function AdminLoginPage() {
         <View style={styles.content}>
           <View style={styles.header}>
             <Text allowFontScaling={false} style={styles.title}>
-              테스트 계정 로그인
+              관리자 계정 로그인
             </Text>
           </View>
 
