@@ -230,6 +230,22 @@
   max-width: 88%;
 }
 
+.assistantMessageRow {
+  align-items: flex-end;
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.assistantMessageContent {
+  align-items: flex-start;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
 .assistantBubble {
   background-color: var(--bg-white);
   border: 1px solid var(--border-neutral);

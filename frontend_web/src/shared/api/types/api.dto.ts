@@ -134,6 +134,8 @@ export interface DeleteMealRequestDto extends DateField, MealTimeField {
 
 export interface MealResponseDto extends MealTimeField {
   image: string;
+  createdAt: string;
+  updatedAt: string;
   menu_list: MenuSimpleResponseDto[];
   menu_quantities: number[];
   menu_input_modes: MealMenuInputMode[];

@@ -64,6 +64,7 @@ import { navigateBack, useNavigate } from "@/shared/navigation/stackflowNavigati
 import {
   formatDateDividerText,
   formatDateKey,
+  formatTimeText,
   getTodayFormatDateKey,
   parseDate,
   parseDateKey,
@@ -99,10 +100,28 @@ type MealRecordViewModel = {
   dayMeals: DayMealSummary;
   image?: string;
   time: MealTime;
+  createdAt?: string;
+  updatedAt?: string;
   menus: ChatMealRecordMenu[];
   recordedMenus: RecordedMenuSummary[];
   previousMealRecord: MealRecordSnapshot;
 };
+
+type ChatTimelineItem =
+  | {
+      type: "chat";
+      key: string;
+      date: Date | null;
+      sortTime: number | null;
+      chatItem: ChatHistoryItemResponseDto;
+    }
+  | {
+      type: "mealRecord";
+      key: string;
+      date: Date | null;
+      sortTime: number | null;
+      mealRecord: MealRecordViewModel;
+    };
 
 type EditingMealRecordContext = {
   dateKey: string;
@@ -230,30 +249,31 @@ export default function ChatPage() {
 
     return dayMeals;
   }, [chatDateKeys, dayMealQueries]);
-  const hasTodayChat = useMemo(
-    () => chatList.some((chatItem) => getChatDateKey(chatItem) === todayDateKey),
-    [chatList, todayDateKey],
+  const timelineMealRecords = useMemo(() => {
+    return chatDateKeys.flatMap((dateKey) => {
+      const dayMeals = dayMealsByDate.get(dateKey);
+
+      if (!dayMeals) {
+        return [];
+      }
+
+      return getDateMealRecordViewModels(dayMeals, dateKey);
+    });
+  }, [chatDateKeys, dayMealsByDate]);
+  const timelineItems = useMemo(
+    () => buildChatTimelineItems(chatList, timelineMealRecords),
+    [chatList, timelineMealRecords],
   );
-  const standaloneTodayMealRecords = useMemo(() => {
-    if (hasTodayChat) {
-      return [];
-    }
-
-    const todayMeals = dayMealsByDate.get(todayDateKey);
-
-    if (!todayMeals) {
-      return [];
-    }
-
-    return getDateMealRecordViewModels(todayMeals, todayDateKey);
-  }, [dayMealsByDate, hasTodayChat, todayDateKey]);
+  const timelineSignature = useMemo(
+    () => timelineItems.map((item) => `${item.key}:${item.sortTime ?? "unknown"}`).join("|"),
+    [timelineItems],
+  );
   const todayMealQueryIndex = chatDateKeys.indexOf(todayDateKey);
   const isTodayMealPending =
     todayMealQueryIndex >= 0 ? (dayMealQueries[todayMealQueryIndex]?.isPending ?? false) : false;
   const editingMealRecordMenus = editingMealRecordContext?.menus ?? [];
 
-  const hasAnyConversation = chatList.length > 0 || pendingInput !== null;
-  const hasTimelineContent = hasAnyConversation || standaloneTodayMealRecords.length > 0;
+  const hasTimelineContent = timelineItems.length > 0 || pendingInput !== null;
   const isTypingPending = pendingInput !== null && (isSendPending || isAwaitingHistory);
   const isInputEmpty = inputValue.trim().length === 0;
   const isQuickActionVisible = isInputEmpty && !isInputFocused;
@@ -291,7 +311,7 @@ export default function ChatPage() {
     });
 
     updateIsScrolledAwayFromBottom();
-  }, [chatList, updateIsScrolledAwayFromBottom]);
+  }, [timelineSignature, updateIsScrolledAwayFromBottom]);
 
   useEffect(() => {
     endAnchorRef.current?.scrollIntoView({
@@ -748,9 +768,45 @@ export default function ChatPage() {
 
         {hasTimelineContent ? (
           <div className={styles.chatTimeline}>
-            {chatList.map((chatItem, index) => {
-              const chatDate = parseDate(chatItem.createdAt);
-              const chatDateKey = chatDate ? formatDateKey(chatDate) : null;
+            {timelineItems.map((timelineItem, index) => {
+              const previousItem = timelineItems[index - 1];
+              const shouldShowDateDivider = shouldShowTimelineDateDivider(
+                timelineItem,
+                previousItem,
+              );
+
+              if (timelineItem.type === "mealRecord") {
+                const { mealRecord } = timelineItem;
+
+                return (
+                  <section key={timelineItem.key} className={styles.conversationSection}>
+                    {shouldShowDateDivider && timelineItem.date ? (
+                      <div className={styles.dateDivider}>
+                        <span className={`${styles.dateText} typo-caption4`}>
+                          {formatDateDividerText(timelineItem.date)}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    <div className={styles.assistantMessageRow}>
+                      <div className={styles.assistantMessageContent}>
+                        <MealRecordCard
+                          menus={mealRecord.recordedMenus}
+                          mealRecordTime={mealRecord.time}
+                          onCancelClick={() => handleMealRecordCancelRequest(mealRecord)}
+                          onEditClick={() => handleMealRecordEditClick(mealRecord)}
+                        />
+                      </div>
+                      <p className={`${styles.timeText} typo-caption4`}>
+                        {formatTimeText(getMealRecordSavedAt(mealRecord))}
+                      </p>
+                    </div>
+                  </section>
+                );
+              }
+
+              const { chatItem } = timelineItem;
+              const chatDateKey = getChatDateKey(chatItem);
               const chatDayMeals = chatDateKey ? dayMealsByDate.get(chatDateKey) : undefined;
               const fallbackMealRecord =
                 chatDateKey && chatDayMeals
@@ -760,15 +816,6 @@ export default function ChatPage() {
                       getFallbackMealTime(chatItem),
                     )
                   : null;
-              const mealRecordsAfterChatItem =
-                chatDateKey && chatDayMeals
-                  ? getMealRecordsAfterChatItem({
-                      chatList,
-                      index,
-                      dateKey: chatDateKey,
-                      mealRecords: getDateMealRecordViewModels(chatDayMeals, chatDateKey),
-                    })
-                  : [];
               const mealRecordMenus = getChatMealRecordMenus(chatItem);
               const chatMealRecord =
                 chatDateKey && mealRecordMenus.length > 0
@@ -778,25 +825,21 @@ export default function ChatPage() {
                       mealRecordMenus.map((menu) => menu.menu_id),
                     )
                   : null;
-              const previousItem = chatList[index - 1];
-              const previousDate = previousItem ? parseDate(previousItem.createdAt) : null;
               const userImageUrl = getChatItemImageUrl(chatItem);
-              const shouldShowDateDivider =
-                chatDate !== null &&
-                (previousDate === null || formatDateKey(chatDate) !== formatDateKey(previousDate));
+
               return (
-                <section key={chatItem.id} className={styles.conversationSection}>
-                  {shouldShowDateDivider ? (
+                <section key={timelineItem.key} className={styles.conversationSection}>
+                  {shouldShowDateDivider && timelineItem.date ? (
                     <div className={styles.dateDivider}>
                       <span className={`${styles.dateText} typo-caption4`}>
-                        {formatDateDividerText(chatDate)}
+                        {formatDateDividerText(timelineItem.date)}
                       </span>
                     </div>
                   ) : null}
 
                   <div className={styles.userMessageGroup}>
                     <p className={`${styles.timeText} typo-caption4`}>
-                      {formatChatTime(chatItem.createdAt)}
+                      {formatTimeText(chatItem.createdAt)}
                     </p>
                     <div className={styles.userMessageContent}>
                       <p className={`${styles.userBubble} typo-body2`}>{chatItem.input_text}</p>
@@ -811,88 +854,61 @@ export default function ChatPage() {
                     </div>
                   </div>
 
-                  <div className={styles.assistantMessageGroup}>
-                    <AssistantMessageBubbles message={chatItem.response_payload.intro_message} />
+                  <div className={styles.assistantMessageRow}>
+                    <div className={styles.assistantMessageContent}>
+                      <AssistantMessageBubbles message={chatItem.response_payload.intro_message} />
 
-                    {chatItem.response_payload.chat_category === "recommendation" &&
-                    chatItem.response_payload.recommendations.length > 0 ? (
-                      <RecommendationSection
-                        chatId={chatItem.id}
-                        recommendations={chatItem.response_payload.recommendations}
-                        onMealRecordClick={() =>
-                          handleMenuRecordClick(
-                            chatItem,
-                            chatDateKey,
-                            chatDayMeals,
-                            fallbackMealRecord,
-                          )
-                        }
-                        onMealRecordCancelClick={() =>
-                          handleChatMealRecordCancelRequest(chatItem, chatMealRecord)
-                        }
-                        isMealRecorded={chatMealRecord !== null}
-                      />
-                    ) : null}
+                      {chatItem.response_payload.chat_category === "recommendation" &&
+                      chatItem.response_payload.recommendations.length > 0 ? (
+                        <RecommendationSection
+                          chatId={chatItem.id}
+                          recommendations={chatItem.response_payload.recommendations}
+                          onMealRecordClick={() =>
+                            handleMenuRecordClick(
+                              chatItem,
+                              chatDateKey,
+                              chatDayMeals,
+                              fallbackMealRecord,
+                            )
+                          }
+                          onMealRecordCancelClick={() =>
+                            handleChatMealRecordCancelRequest(chatItem, chatMealRecord)
+                          }
+                          isMealRecorded={chatMealRecord !== null}
+                        />
+                      ) : null}
 
-                    {chatItem.response_payload.chat_category === "feedback" ? (
-                      <FeedbackSection
-                        chatId={chatItem.id}
-                        feedback={chatItem.response_payload.feedback}
-                        onMealRecordClick={() =>
-                          handleMenuRecordClick(
-                            chatItem,
-                            chatDateKey,
-                            chatDayMeals,
-                            fallbackMealRecord,
-                          )
-                        }
-                        onMealRecordCancelClick={() =>
-                          handleChatMealRecordCancelRequest(chatItem, chatMealRecord)
-                        }
-                        isMealRecorded={chatMealRecord !== null}
-                      />
-                    ) : null}
-
-                    {mealRecordsAfterChatItem.map((dateMealRecord) => (
-                      <MealRecordCard
-                        key={`date-meal-${dateMealRecord.time}`}
-                        menus={dateMealRecord.recordedMenus}
-                        mealRecordTime={dateMealRecord.time}
-                        onCancelClick={() => handleMealRecordCancelRequest(dateMealRecord)}
-                        onEditClick={() => handleMealRecordEditClick(dateMealRecord)}
-                      />
-                    ))}
+                      {chatItem.response_payload.chat_category === "feedback" ? (
+                        <FeedbackSection
+                          chatId={chatItem.id}
+                          feedback={chatItem.response_payload.feedback}
+                          onMealRecordClick={() =>
+                            handleMenuRecordClick(
+                              chatItem,
+                              chatDateKey,
+                              chatDayMeals,
+                              fallbackMealRecord,
+                            )
+                          }
+                          onMealRecordCancelClick={() =>
+                            handleChatMealRecordCancelRequest(chatItem, chatMealRecord)
+                          }
+                          isMealRecorded={chatMealRecord !== null}
+                        />
+                      ) : null}
+                    </div>
+                    <p className={`${styles.timeText} typo-caption4`}>
+                      {formatTimeText(chatItem.createdAt)}
+                    </p>
                   </div>
                 </section>
               );
             })}
 
-            {standaloneTodayMealRecords.length > 0 ? (
-              <section className={styles.conversationSection}>
-                <div className={styles.dateDivider}>
-                  <span className={`${styles.dateText} typo-caption4`}>
-                    {formatDateDividerText(parseDateKey(todayDateKey))}
-                  </span>
-                </div>
-
-                <div className={styles.assistantMessageGroup}>
-                  {standaloneTodayMealRecords.map((dateMealRecord) => (
-                    <MealRecordCard
-                      key={`today-meal-${dateMealRecord.time}`}
-                      menus={dateMealRecord.recordedMenus}
-                      mealRecordTime={dateMealRecord.time}
-                      onCancelClick={() => handleMealRecordCancelRequest(dateMealRecord)}
-                      onEditClick={() => handleMealRecordEditClick(dateMealRecord)}
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
             {pendingInput !== null ? (
               <section className={styles.conversationSection} aria-live="polite">
                 <div className={styles.userMessageGroup}>
-                  <p className={`${styles.timeText} typo-caption4`}>{formatChatTime(new Date())}</p>
+                  <p className={`${styles.timeText} typo-caption4`}>{formatTimeText(new Date())}</p>
                   <p className={`${styles.userBubble} typo-body2`}>{pendingInput}</p>
                 </div>
 
@@ -1819,68 +1835,6 @@ function getRemainingMealRecordMenus(
   return mealRecord.menus.filter((menu) => !removeMenuIdSet.has(menu.id));
 }
 
-function getMealRecordsAfterChatItem({
-  chatList,
-  index,
-  dateKey,
-  mealRecords,
-}: {
-  chatList: ChatHistoryItemResponseDto[];
-  index: number;
-  dateKey: string;
-  mealRecords: MealRecordViewModel[];
-}) {
-  const chatItem = chatList[index];
-
-  if (!chatItem || mealRecords.length === 0) {
-    return [];
-  }
-
-  const mealTimesWithChat = getMealTimesWithChatOnDate(chatList, dateKey);
-  const currentMealTime = getFallbackMealTime(chatItem);
-  const isCurrentLastInMealTime = isLastChatItemOnMealTime(
-    chatList,
-    index,
-    dateKey,
-    currentMealTime,
-  );
-  const isCurrentLastOnDate = isLastChatItemOnDate(chatList, index, dateKey);
-
-  return mealRecords.filter((mealRecord) => {
-    if (mealTimesWithChat.has(mealRecord.time)) {
-      return mealRecord.time === currentMealTime && isCurrentLastInMealTime;
-    }
-
-    return isCurrentLastOnDate;
-  });
-}
-
-function getMealTimesWithChatOnDate(chatList: ChatHistoryItemResponseDto[], dateKey: string) {
-  const mealTimes = new Set<MealTime>();
-
-  chatList.forEach((chatItem) => {
-    if (getChatDateKey(chatItem) === dateKey) {
-      mealTimes.add(getFallbackMealTime(chatItem));
-    }
-  });
-
-  return mealTimes;
-}
-
-function isLastChatItemOnMealTime(
-  chatList: ChatHistoryItemResponseDto[],
-  index: number,
-  dateKey: string,
-  mealTime: MealTime,
-) {
-  return !chatList
-    .slice(index + 1)
-    .some(
-      (chatItem) =>
-        getChatDateKey(chatItem) === dateKey && getFallbackMealTime(chatItem) === mealTime,
-    );
-}
-
 function getMealRecordViewModelByTime(
   dayMeals: DayMealSummary | undefined,
   dateKey: string,
@@ -1942,6 +1896,8 @@ function buildMealRecordViewModel(
     dayMeals,
     image: getDiaryMealImage(dayMeals, mealTime),
     time: mealTime,
+    createdAt: dayMeals.mealRecordTimestampsByTime?.[mealTime]?.createdAt,
+    updatedAt: dayMeals.mealRecordTimestampsByTime?.[mealTime]?.updatedAt,
     menus: menus.map(toChatMealRecordMenu),
     recordedMenus: menus.map(toRecordedMenuSummary),
     previousMealRecord: {
@@ -1979,30 +1935,133 @@ function getBaseCalories(menu: MenuWithQuantity) {
   return menu.calories;
 }
 
-function isLastChatItemOnDate(
+function buildChatTimelineItems(
   chatList: ChatHistoryItemResponseDto[],
-  index: number,
-  dateKey: string,
+  mealRecords: MealRecordViewModel[],
+): ChatTimelineItem[] {
+  return [
+    ...chatList.map(toChatTimelineItem),
+    ...mealRecords.map(toMealRecordTimelineItem),
+  ].sort(compareChatTimelineItems);
+}
+
+function toChatTimelineItem(chatItem: ChatHistoryItemResponseDto): ChatTimelineItem {
+  const date = parseDate(chatItem.createdAt);
+
+  return {
+    type: "chat",
+    key: `chat-${chatItem.id}`,
+    date,
+    sortTime: parseDateValue(date),
+    chatItem,
+  };
+}
+
+function toMealRecordTimelineItem(mealRecord: MealRecordViewModel): ChatTimelineItem {
+  const date = getMealRecordTimelineDate(mealRecord);
+
+  return {
+    type: "mealRecord",
+    key: `meal-record-${mealRecord.dateKey}-${mealRecord.time}`,
+    date,
+    sortTime: parseDateValue(date),
+    mealRecord,
+  };
+}
+
+function compareChatTimelineItems(a: ChatTimelineItem, b: ChatTimelineItem) {
+  if (a.sortTime !== null && b.sortTime !== null && a.sortTime !== b.sortTime) {
+    return a.sortTime - b.sortTime;
+  }
+
+  if (a.sortTime === null && b.sortTime !== null) return -1;
+  if (a.sortTime !== null && b.sortTime === null) return 1;
+
+  const typeOrderDifference = getTimelineItemTypeOrder(a) - getTimelineItemTypeOrder(b);
+  if (typeOrderDifference !== 0) {
+    return typeOrderDifference;
+  }
+
+  return a.key.localeCompare(b.key);
+}
+
+function getTimelineItemTypeOrder(item: ChatTimelineItem) {
+  return item.type === "chat" ? 0 : 1;
+}
+
+function shouldShowTimelineDateDivider(
+  item: ChatTimelineItem,
+  previousItem: ChatTimelineItem | undefined,
 ) {
-  const nextChatItem = chatList[index + 1];
-  return !nextChatItem || getChatDateKey(nextChatItem) !== dateKey;
+  if (!item.date) {
+    return false;
+  }
+
+  if (!previousItem?.date) {
+    return true;
+  }
+
+  return formatDateKey(item.date) !== formatDateKey(previousItem.date);
+}
+
+function getMealRecordSavedAt(mealRecord: Pick<MealRecordViewModel, "createdAt" | "updatedAt">) {
+  const updatedAt = mealRecord.updatedAt?.trim();
+  if (updatedAt) {
+    return updatedAt;
+  }
+
+  const createdAt = mealRecord.createdAt?.trim();
+  return createdAt || null;
+}
+
+function getMealRecordTimelineDate(mealRecord: MealRecordViewModel) {
+  const recordDate = parseDateKey(mealRecord.dateKey);
+  const savedAt = getMealRecordSavedAt(mealRecord);
+  const savedAtDate = savedAt ? parseDate(savedAt) : null;
+
+  if (savedAtDate) {
+    recordDate.setHours(
+      savedAtDate.getHours(),
+      savedAtDate.getMinutes(),
+      savedAtDate.getSeconds(),
+      savedAtDate.getMilliseconds(),
+    );
+    return recordDate;
+  }
+
+  return getMealRecordFallbackDate(mealRecord);
+}
+
+function getMealRecordFallbackDate(mealRecord: Pick<MealRecordViewModel, "dateKey" | "time">) {
+  const date = parseDateKey(mealRecord.dateKey);
+
+  switch (mealRecord.time) {
+    case 0:
+      date.setHours(8, 0, 0, 0);
+      break;
+    case 1:
+      date.setHours(12, 0, 0, 0);
+      break;
+    case 2:
+      date.setHours(18, 0, 0, 0);
+      break;
+    case 3:
+      date.setHours(15, 0, 0, 0);
+      break;
+    case 4:
+      date.setHours(22, 0, 0, 0);
+      break;
+    default:
+      break;
+  }
+
+  return date;
 }
 
 // 문자열 날짜를 timestamp 숫자로 변환
-function parseDateValue(value: string) {
-  const timestamp = new Date(value).getTime();
-  return Number.isNaN(timestamp) ? null : timestamp;
-}
-
-// 채팅 말풍선 옆에 표시할 시간
-function formatChatTime(dateLike: Date | string) {
-  const date = typeof dateLike === "string" ? parseDate(dateLike) : dateLike;
-  if (!date) return "시간 미상";
-  return date.toLocaleTimeString("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+function parseDateValue(value: Date | string | null | undefined) {
+  const date = typeof value === "string" ? parseDate(value) : (value ?? null);
+  return date ? date.getTime() : null;
 }
 
 function formatMenuServing(menu: FeedbackDto["menus"][number]) {
