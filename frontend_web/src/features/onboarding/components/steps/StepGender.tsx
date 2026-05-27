@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { type StepComponentProps } from "@/features/onboarding/onboarding.types";
 import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
@@ -26,13 +26,9 @@ export default function StepGender({ data, update }: StepComponentProps) {
       }).map(String),
     [birthYearRange.max, birthYearRange.min],
   );
-  const visibleBirthYear = isValidBirthYear(data.birthYear) ? data.birthYear : defaultBirthYear;
+  const hasSelectedBirthYear = isValidBirthYear(data.birthYear);
+  const visibleBirthYear = hasSelectedBirthYear ? data.birthYear : defaultBirthYear;
   const [draftBirthYear, setDraftBirthYear] = useState(visibleBirthYear);
-
-  useEffect(() => {
-    if (data.birthYear === visibleBirthYear) return;
-    update({ birthYear: visibleBirthYear });
-  }, [data.birthYear, update, visibleBirthYear]);
 
   const openBirthYearSheet = () => {
     setDraftBirthYear(visibleBirthYear);
@@ -73,7 +69,11 @@ export default function StepGender({ data, update }: StepComponentProps) {
           className={styles.onboardingBirthYearTrigger}
           onClick={openBirthYearSheet}
         >
-          <span className={`${styles.textNormal} typo-h1`}>{visibleBirthYear} 년</span>
+          <span
+            className={`${hasSelectedBirthYear ? styles.textNormal : styles.textAssistive} typo-h1`}
+          >
+            {visibleBirthYear} 년
+          </span>{" "}
         </button>
       </div>
 
