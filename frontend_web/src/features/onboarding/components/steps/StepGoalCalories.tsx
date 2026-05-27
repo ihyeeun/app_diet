@@ -194,8 +194,6 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
         <h2 className="typo-title1">목표 칼로리를 설정해주세요</h2>
         {isPending ? (
           <div className={styles.onboardingLoadingRow}>
-            {/* <LoadingIndicator iconSize={24} label="추천 목표 칼로리를 계산하는 중입니다." /> */}
-            \
             <p className={`${styles.textAlternative} typo-body2`}>
               추천 목표 칼로리를 계산하고 있어요
             </p>
