@@ -18,6 +18,7 @@ import {
   getSelectedDiaryMenusByTime,
   type SelectedDiaryMealRecordMenu,
 } from "@/features/chat/utils/chatDiaryMealRecord";
+import { isChatHistoryItemResponse } from "@/features/chat/utils/chatHistoryItem";
 import {
   getMealTypeFromChatMealTime,
   getMealTypeFromCurrentTime,
@@ -188,7 +189,6 @@ export default function ChatPage() {
   const [pendingInput, setPendingInput] = useState<string | null>(null);
   const [localResponseChatItem, setLocalResponseChatItem] =
     useState<ChatHistoryItemResponseDto | null>(null);
-  const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
   const [isCameraActionMenuOpen, setIsCameraActionMenuOpen] = useState(false);
   const [isCameraHintDismissed, setIsCameraHintDismissed] = useState(
     getIsCameraHintDismissedInSession,
@@ -218,7 +218,7 @@ export default function ChatPage() {
 
   const chatList = useMemo(() => {
     const rawList = data?.chat_list ?? [];
-    return rawList.filter(isValidChatHistoryItem).sort(compareChatHistoryItems);
+    return rawList.filter(isChatHistoryItemResponse).sort(compareChatHistoryItems);
   }, [data]);
   const displayChatList = useMemo(() => {
     if (
@@ -288,7 +288,7 @@ export default function ChatPage() {
   const editingMealRecordMenus = editingMealRecordContext?.menus ?? [];
 
   const hasTimelineContent = timelineItems.length > 0 || pendingInput !== null;
-  const isTypingPending = pendingInput !== null && (isSendPending || isAwaitingHistory);
+  const isTypingPending = pendingInput !== null && isSendPending;
   const isInputEmpty = inputValue.trim().length === 0;
   const isQuickActionVisible = isInputEmpty && !isInputFocused;
   const isScrollToBottomButtonVisible = hasTimelineContent && isScrolledAwayFromBottom;
@@ -303,7 +303,12 @@ export default function ChatPage() {
     }
 
     const distanceToBottom = main.scrollHeight - main.scrollTop - main.clientHeight;
-    setIsScrolledAwayFromBottom(distanceToBottom > SCROLL_BOTTOM_THRESHOLD);
+    const isAwayFromBottom = distanceToBottom > SCROLL_BOTTOM_THRESHOLD;
+    setIsScrolledAwayFromBottom(isAwayFromBottom);
+
+    if (isAwayFromBottom) {
+      setIsCameraActionMenuOpen(false);
+    }
   }, []);
 
   const setTimelineScrollElementRef = useCallback((key: string, element: HTMLElement | null) => {
@@ -368,18 +373,6 @@ export default function ChatPage() {
 
     cancelTimelineScroll(key);
   }, [cancelTimelineScroll]);
-
-  useEffect(() => {
-    if (!isQuickActionVisible) {
-      setIsCameraActionMenuOpen(false);
-    }
-  }, [isQuickActionVisible]);
-
-  useEffect(() => {
-    if (isScrollToBottomButtonVisible) {
-      setIsCameraActionMenuOpen(false);
-    }
-  }, [isScrollToBottomButtonVisible]);
 
   useEffect(() => {
     if (
@@ -477,11 +470,21 @@ export default function ChatPage() {
       return;
     }
 
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const targetKey = getChatTimelineItemKey(targetChatItem.id);
     pendingChatResponseAfterIdRef.current = null;
-    setLocalResponseChatItem(null);
-    setPendingInput(null);
-    setIsAwaitingHistory(false);
-    commitChatResponseScroll(getChatTimelineItemKey(targetChatItem.id));
+    const frameId = window.requestAnimationFrame(() => {
+      setLocalResponseChatItem(null);
+      setPendingInput(null);
+      commitChatResponseScroll(targetKey);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, [chatList, commitChatResponseScroll]);
 
   useEffect(() => {
@@ -548,24 +551,21 @@ export default function ChatPage() {
     prepareChatResponseScroll();
     setPendingInput(text);
     setInputValue("");
-    setIsAwaitingHistory(true);
     track(EVENT_NAME.AI_COACH_CHAT, { input_length: text.length });
 
     try {
       const response = await sendMessageMutation({ input: text });
       const responsePayload = getSendMessageResponsePayload(response);
-      const responseChatItem = isValidChatHistoryItem(response)
-        ? response
-        : buildLocalChatHistoryItem(text, responsePayload);
+      const historyChatItem = isChatHistoryItemResponse(response) ? response : null;
+      const responseChatItem = historyChatItem ?? buildLocalChatHistoryItem(text, responsePayload);
 
-      if (isValidChatHistoryItem(response)) {
+      if (historyChatItem) {
         pendingChatResponseAfterIdRef.current = null;
       } else {
         setLocalResponseChatItem(responseChatItem);
       }
 
       setPendingInput(null);
-      setIsAwaitingHistory(false);
       commitChatResponseScroll(getChatTimelineItemKey(responseChatItem.id));
       track(
         EVENT_NAME.AI_COACH_RESPONSE_SUCCESS,
@@ -577,13 +577,9 @@ export default function ChatPage() {
       });
       cancelChatResponseScroll();
       setLocalResponseChatItem(null);
+      setPendingInput(null);
       toast.warning(resolveErrorMessage(error));
       setInputValue(text);
-    } finally {
-      if (pendingChatResponseAfterIdRef.current === null) {
-        setPendingInput(null);
-        setIsAwaitingHistory(false);
-      }
     }
   };
 
@@ -611,6 +607,22 @@ export default function ChatPage() {
 
   const handleCloseCameraActionMenu = () => {
     setIsCameraActionMenuOpen(false);
+  };
+
+  const handleInputValueChange = (nextValue: string) => {
+    setInputValue(nextValue);
+
+    if (nextValue.trim().length > 0) {
+      handleCloseCameraActionMenu();
+    }
+  };
+
+  const handleInputFocusChange = (isFocused: boolean) => {
+    setIsInputFocused(isFocused);
+
+    if (isFocused) {
+      handleCloseCameraActionMenu();
+    }
   };
 
   const handleScrollToBottom = () => {
@@ -1248,8 +1260,8 @@ export default function ChatPage() {
           value={inputValue}
           isInputEmpty={isInputEmpty}
           isSendPending={isSendPending}
-          onChange={setInputValue}
-          onInputFocusChange={setIsInputFocused}
+          onChange={handleInputValueChange}
+          onInputFocusChange={handleInputFocusChange}
           onDirectMenuRecordClick={handleNavigateDirectMenuRecord}
           onSubmit={handleSubmit}
         />
@@ -2350,21 +2362,6 @@ function resolveErrorMessage(
   }
 
   return fallbackMessage;
-}
-
-function isValidChatHistoryItem(value: unknown): value is ChatHistoryItemResponseDto {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const candidate = value as Partial<ChatHistoryItemResponseDto>;
-  return (
-    typeof candidate.id === "number" &&
-    typeof candidate.input_text === "string" &&
-    typeof candidate.createdAt === "string" &&
-    typeof candidate.response_payload === "object" &&
-    candidate.response_payload !== null
-  );
 }
 
 function getSendMessageResponsePayload(
