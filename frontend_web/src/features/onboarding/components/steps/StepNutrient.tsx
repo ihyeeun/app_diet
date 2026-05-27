@@ -131,7 +131,7 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
     targetKcal === undefined ? undefined : calculateTargetGram(targetKcal, nutrientType);
 
   return (
-    <div className={`${styles.onboardingNutrientCard} ${styles.onboardingNutrientCardReadable}`}>
+    <div className={`${styles.onboardingNutrientCard}`}>
       <label className={`${styles.textNormal} typo-title3`}>{label}</label>
       <NumberField
         value={value}
