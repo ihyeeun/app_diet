@@ -142,7 +142,8 @@ type MealRecordCancelTarget =
       mealRecord: MealRecordViewModel;
     };
 
-type MealRecordScrollTarget = {
+type TimelineScrollTarget = {
+  block: ScrollLogicalPosition;
   key: string;
   requestId: number;
 };
@@ -176,13 +177,17 @@ export default function ChatPage() {
   const todayDateKey = getTodayFormatDateKey();
   const mainRef = useRef<HTMLElement>(null);
   const endAnchorRef = useRef<HTMLDivElement>(null);
-  const mealRecordSectionRefs = useRef(new Map<string, HTMLElement>());
-  const mealRecordScrollRequestIdRef = useRef(0);
+  const timelineScrollElementRefs = useRef(new Map<string, HTMLElement>());
+  const timelineScrollRequestIdRef = useRef(0);
+  const pendingChatResponseAfterIdRef = useRef<number | null>(null);
   const pendingMealRecordScrollKeyRef = useRef<string | null>(null);
+  const skipNextAutoBottomScrollRef = useRef(false);
 
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [pendingInput, setPendingInput] = useState<string | null>(null);
+  const [localResponseChatItem, setLocalResponseChatItem] =
+    useState<ChatHistoryItemResponseDto | null>(null);
   const [isAwaitingHistory, setIsAwaitingHistory] = useState(false);
   const [isCameraActionMenuOpen, setIsCameraActionMenuOpen] = useState(false);
   const [isCameraHintDismissed, setIsCameraHintDismissed] = useState(
@@ -199,8 +204,8 @@ export default function ChatPage() {
   );
   const [mealRecordCancelTarget, setMealRecordCancelTarget] =
     useState<MealRecordCancelTarget | null>(null);
-  const [mealRecordScrollTarget, setMealRecordScrollTarget] =
-    useState<MealRecordScrollTarget | null>(null);
+  const [timelineScrollTarget, setTimelineScrollTarget] =
+    useState<TimelineScrollTarget | null>(null);
 
   const { data, isPending: isHistoryPending } = useGetChatHistoryQuery();
   const { mutateAsync: sendMessageMutation, isPending: isSendPending } = useSendMessageMutation();
@@ -213,23 +218,22 @@ export default function ChatPage() {
 
   const chatList = useMemo(() => {
     const rawList = data?.chat_list ?? [];
-    return [...rawList].sort((a, b) => {
-      const aTime = parseDateValue(a.createdAt);
-      const bTime = parseDateValue(b.createdAt);
-
-      if (aTime !== null && bTime !== null && aTime !== bTime) {
-        return aTime - bTime;
-      }
-
-      if (aTime === null && bTime !== null) return -1;
-      if (aTime !== null && bTime === null) return 1;
-      return a.id - b.id;
-    });
+    return rawList.filter(isValidChatHistoryItem).sort(compareChatHistoryItems);
   }, [data]);
+  const displayChatList = useMemo(() => {
+    if (
+      localResponseChatItem === null ||
+      chatList.some((chatItem) => chatItem.id === localResponseChatItem.id)
+    ) {
+      return chatList;
+    }
+
+    return [...chatList, localResponseChatItem].sort(compareChatHistoryItems);
+  }, [chatList, localResponseChatItem]);
   const chatDateKeys = useMemo(() => {
     const dateKeySet = new Set<string>([todayDateKey]);
 
-    chatList.forEach((chatItem) => {
+    displayChatList.forEach((chatItem) => {
       const dateKey = getChatDateKey(chatItem);
 
       if (dateKey !== null) {
@@ -238,7 +242,7 @@ export default function ChatPage() {
     });
 
     return [...dateKeySet];
-  }, [chatList, todayDateKey]);
+  }, [displayChatList, todayDateKey]);
   const dayMealQueries = useQueries({
     queries: chatDateKeys.map((dateKey) => ({
       queryKey: homeQueryKeys.dayMeals.byDate(dateKey),
@@ -271,8 +275,8 @@ export default function ChatPage() {
     });
   }, [chatDateKeys, dayMealsByDate]);
   const timelineItems = useMemo(
-    () => buildChatTimelineItems(chatList, timelineMealRecords),
-    [chatList, timelineMealRecords],
+    () => buildChatTimelineItems(displayChatList, timelineMealRecords),
+    [displayChatList, timelineMealRecords],
   );
   const timelineSignature = useMemo(
     () => timelineItems.map((item) => `${item.key}:${item.sortTime ?? "unknown"}`).join("|"),
@@ -302,14 +306,49 @@ export default function ChatPage() {
     setIsScrolledAwayFromBottom(distanceToBottom > SCROLL_BOTTOM_THRESHOLD);
   }, []);
 
-  const setMealRecordSectionRef = useCallback((key: string, element: HTMLElement | null) => {
+  const setTimelineScrollElementRef = useCallback((key: string, element: HTMLElement | null) => {
     if (element) {
-      mealRecordSectionRefs.current.set(key, element);
+      timelineScrollElementRefs.current.set(key, element);
       return;
     }
 
-    mealRecordSectionRefs.current.delete(key);
+    timelineScrollElementRefs.current.delete(key);
   }, []);
+
+  const prepareChatResponseScroll = useCallback(
+    () => {
+      pendingChatResponseAfterIdRef.current = chatList.reduce(
+        (maxId, chatItem) => Math.max(maxId, chatItem.id),
+        0,
+      );
+    },
+    [chatList],
+  );
+
+  const commitTimelineScroll = useCallback((key: string, block: ScrollLogicalPosition) => {
+    timelineScrollRequestIdRef.current += 1;
+    setTimelineScrollTarget({
+      block,
+      key,
+      requestId: timelineScrollRequestIdRef.current,
+    });
+  }, []);
+
+  const cancelTimelineScroll = useCallback((key?: string) => {
+    setTimelineScrollTarget((current) => (!key || current?.key === key ? null : current));
+  }, []);
+
+  const commitChatResponseScroll = useCallback(
+    (key: string) => {
+      commitTimelineScroll(key, "start");
+    },
+    [commitTimelineScroll],
+  );
+
+  const cancelChatResponseScroll = useCallback((key?: string) => {
+    pendingChatResponseAfterIdRef.current = null;
+    cancelTimelineScroll(key);
+  }, [cancelTimelineScroll]);
 
   const prepareMealRecordScroll = useCallback((dateKey: string, mealTime: MealTime) => {
     const key = getMealRecordTimelineItemKey(dateKey, mealTime);
@@ -319,20 +358,16 @@ export default function ChatPage() {
 
   const commitMealRecordScroll = useCallback((key: string) => {
     pendingMealRecordScrollKeyRef.current = key;
-    mealRecordScrollRequestIdRef.current += 1;
-    setMealRecordScrollTarget({
-      key,
-      requestId: mealRecordScrollRequestIdRef.current,
-    });
-  }, []);
+    commitTimelineScroll(key, "center");
+  }, [commitTimelineScroll]);
 
   const cancelMealRecordScroll = useCallback((key: string) => {
     if (pendingMealRecordScrollKeyRef.current === key) {
       pendingMealRecordScrollKeyRef.current = null;
     }
 
-    setMealRecordScrollTarget((current) => (current?.key === key ? null : current));
-  }, []);
+    cancelTimelineScroll(key);
+  }, [cancelTimelineScroll]);
 
   useEffect(() => {
     if (!isQuickActionVisible) {
@@ -347,7 +382,17 @@ export default function ChatPage() {
   }, [isScrollToBottomButtonVisible]);
 
   useEffect(() => {
-    if (pendingMealRecordScrollKeyRef.current !== null) {
+    if (
+      pendingMealRecordScrollKeyRef.current !== null ||
+      pendingChatResponseAfterIdRef.current !== null ||
+      timelineScrollTarget !== null
+    ) {
+      return;
+    }
+
+    if (skipNextAutoBottomScrollRef.current) {
+      skipNextAutoBottomScrollRef.current = false;
+      updateIsScrolledAwayFromBottom();
       return;
     }
 
@@ -357,15 +402,19 @@ export default function ChatPage() {
     });
 
     updateIsScrolledAwayFromBottom();
-  }, [timelineSignature, updateIsScrolledAwayFromBottom]);
+  }, [
+    timelineScrollTarget,
+    timelineSignature,
+    updateIsScrolledAwayFromBottom,
+  ]);
 
   useEffect(() => {
-    if (!mealRecordScrollTarget || typeof window === "undefined") {
+    if (!timelineScrollTarget || typeof window === "undefined") {
       return;
     }
 
-    const scrollToMealRecordTarget = () => {
-      const targetElement = mealRecordSectionRefs.current.get(mealRecordScrollTarget.key);
+    const scrollToTimelineTarget = () => {
+      const targetElement = timelineScrollElementRefs.current.get(timelineScrollTarget.key);
 
       if (!targetElement) {
         return false;
@@ -373,11 +422,14 @@ export default function ChatPage() {
 
       targetElement.scrollIntoView({
         behavior: "smooth",
-        block: "center",
+        block: timelineScrollTarget.block,
       });
-      pendingMealRecordScrollKeyRef.current = null;
-      setMealRecordScrollTarget((current) =>
-        current?.requestId === mealRecordScrollTarget.requestId ? null : current,
+      skipNextAutoBottomScrollRef.current = true;
+      if (pendingMealRecordScrollKeyRef.current === timelineScrollTarget.key) {
+        pendingMealRecordScrollKeyRef.current = null;
+      }
+      setTimelineScrollTarget((current) =>
+        current?.requestId === timelineScrollTarget.requestId ? null : current,
       );
       updateIsScrolledAwayFromBottom();
       return true;
@@ -385,13 +437,16 @@ export default function ChatPage() {
 
     let timeoutId: number | undefined;
     const frameId = window.requestAnimationFrame(() => {
-      if (scrollToMealRecordTarget()) {
+      if (scrollToTimelineTarget()) {
         return;
       }
 
       timeoutId = window.setTimeout(() => {
-        if (!scrollToMealRecordTarget()) {
-          cancelMealRecordScroll(mealRecordScrollTarget.key);
+        if (!scrollToTimelineTarget()) {
+          if (pendingMealRecordScrollKeyRef.current === timelineScrollTarget.key) {
+            pendingMealRecordScrollKeyRef.current = null;
+          }
+          cancelTimelineScroll(timelineScrollTarget.key);
         }
       }, 500);
     });
@@ -403,18 +458,46 @@ export default function ChatPage() {
       }
     };
   }, [
-    cancelMealRecordScroll,
-    mealRecordScrollTarget,
+    cancelTimelineScroll,
+    timelineScrollTarget,
     timelineSignature,
     updateIsScrolledAwayFromBottom,
   ]);
 
   useEffect(() => {
+    const pendingAfterId = pendingChatResponseAfterIdRef.current;
+
+    if (pendingAfterId === null) {
+      return;
+    }
+
+    const targetChatItem = chatList.find((chatItem) => chatItem.id > pendingAfterId);
+
+    if (!targetChatItem) {
+      return;
+    }
+
+    pendingChatResponseAfterIdRef.current = null;
+    setLocalResponseChatItem(null);
+    setPendingInput(null);
+    setIsAwaitingHistory(false);
+    commitChatResponseScroll(getChatTimelineItemKey(targetChatItem.id));
+  }, [chatList, commitChatResponseScroll]);
+
+  useEffect(() => {
+    if (
+      pendingInput === null ||
+      pendingMealRecordScrollKeyRef.current !== null ||
+      timelineScrollTarget !== null
+    ) {
+      return;
+    }
+
     endAnchorRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "end",
     });
-  }, [isTypingPending, pendingInput]);
+  }, [pendingInput, timelineScrollTarget]);
 
   useEffect(() => {
     updateIsScrolledAwayFromBottom();
@@ -461,6 +544,8 @@ export default function ChatPage() {
       saveCameraHintDismissedInSession();
     }
 
+    setLocalResponseChatItem(null);
+    prepareChatResponseScroll();
     setPendingInput(text);
     setInputValue("");
     setIsAwaitingHistory(true);
@@ -468,16 +553,37 @@ export default function ChatPage() {
 
     try {
       const response = await sendMessageMutation({ input: text });
-      track(EVENT_NAME.AI_COACH_RESPONSE_SUCCESS, getAiCoachResponseAnalyticsProperties(response));
+      const responsePayload = getSendMessageResponsePayload(response);
+      const responseChatItem = isValidChatHistoryItem(response)
+        ? response
+        : buildLocalChatHistoryItem(text, responsePayload);
+
+      if (isValidChatHistoryItem(response)) {
+        pendingChatResponseAfterIdRef.current = null;
+      } else {
+        setLocalResponseChatItem(responseChatItem);
+      }
+
+      setPendingInput(null);
+      setIsAwaitingHistory(false);
+      commitChatResponseScroll(getChatTimelineItemKey(responseChatItem.id));
+      track(
+        EVENT_NAME.AI_COACH_RESPONSE_SUCCESS,
+        getAiCoachResponseAnalyticsProperties(responsePayload),
+      );
     } catch (error) {
       track(EVENT_NAME.AI_COACH_RESPONSE_FAIL, {
         reason: resolveErrorMessage(error),
       });
+      cancelChatResponseScroll();
+      setLocalResponseChatItem(null);
       toast.warning(resolveErrorMessage(error));
       setInputValue(text);
     } finally {
-      setPendingInput(null);
-      setIsAwaitingHistory(false);
+      if (pendingChatResponseAfterIdRef.current === null) {
+        setPendingInput(null);
+        setIsAwaitingHistory(false);
+      }
     }
   };
 
@@ -891,7 +997,7 @@ export default function ChatPage() {
                 return (
                   <section
                     key={timelineItem.key}
-                    ref={(element) => setMealRecordSectionRef(timelineItem.key, element)}
+                    ref={(element) => setTimelineScrollElementRef(timelineItem.key, element)}
                     className={styles.conversationSection}
                   >
                     {shouldShowDateDivider && timelineItem.date ? (
@@ -951,7 +1057,10 @@ export default function ChatPage() {
                     </div>
                   ) : null}
 
-                  <div className={styles.userMessageGroup}>
+                  <div
+                    ref={(element) => setTimelineScrollElementRef(timelineItem.key, element)}
+                    className={styles.userMessageGroup}
+                  >
                     <p className={`${styles.timeText} typo-caption4`}>
                       {formatTimeText(chatItem.createdAt)}
                     </p>
@@ -2059,6 +2168,19 @@ function getBaseCalories(menu: MenuWithQuantity) {
   return menu.calories;
 }
 
+function compareChatHistoryItems(a: ChatHistoryItemResponseDto, b: ChatHistoryItemResponseDto) {
+  const aTime = parseDateValue(a.createdAt);
+  const bTime = parseDateValue(b.createdAt);
+
+  if (aTime !== null && bTime !== null && aTime !== bTime) {
+    return aTime - bTime;
+  }
+
+  if (aTime === null && bTime !== null) return -1;
+  if (aTime !== null && bTime === null) return 1;
+  return a.id - b.id;
+}
+
 function buildChatTimelineItems(
   chatList: ChatHistoryItemResponseDto[],
   mealRecords: MealRecordViewModel[],
@@ -2073,11 +2195,15 @@ function toChatTimelineItem(chatItem: ChatHistoryItemResponseDto): ChatTimelineI
 
   return {
     type: "chat",
-    key: `chat-${chatItem.id}`,
+    key: getChatTimelineItemKey(chatItem.id),
     date,
     sortTime: parseDateValue(date),
     chatItem,
   };
+}
+
+function getChatTimelineItemKey(chatId: number) {
+  return `chat-${chatId}`;
 }
 
 function toMealRecordTimelineItem(mealRecord: MealRecordViewModel): ChatTimelineItem {
@@ -2224,6 +2350,39 @@ function resolveErrorMessage(
   }
 
   return fallbackMessage;
+}
+
+function isValidChatHistoryItem(value: unknown): value is ChatHistoryItemResponseDto {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<ChatHistoryItemResponseDto>;
+  return (
+    typeof candidate.id === "number" &&
+    typeof candidate.input_text === "string" &&
+    typeof candidate.createdAt === "string" &&
+    typeof candidate.response_payload === "object" &&
+    candidate.response_payload !== null
+  );
+}
+
+function getSendMessageResponsePayload(
+  response: ChatHistoryItemResponseDto | ChatRecommendResponseDto,
+) {
+  return "response_payload" in response ? response.response_payload : response;
+}
+
+function buildLocalChatHistoryItem(
+  inputText: string,
+  responsePayload: ChatRecommendResponseDto,
+): ChatHistoryItemResponseDto {
+  return {
+    id: -Date.now(),
+    input_text: inputText,
+    createdAt: new Date().toISOString(),
+    response_payload: responsePayload,
+  };
 }
 
 function getAiCoachResponseAnalyticsProperties(response: ChatRecommendResponseDto) {
