@@ -1,13 +1,15 @@
 .header {
   display: flex;
   flex-direction: column;
-  padding: 0 25px;
+  padding: 0 20px;
   padding-top: var(--safe-area-top);
 }
 
 .navigation {
-  height: 44px;
-  padding: 10px 0;
+  align-items: center;
+  display: flex;
+  height: 46px;
+  padding: 8px 0;
 }
 
 .back {
@@ -15,22 +17,28 @@
   border: 0;
   color: var(--gray-1100);
   cursor: pointer;
+  display: inline-flex;
   margin: 0;
   padding: 0;
   text-align: start;
 }
 
+.back:disabled {
+  color: transparent;
+  pointer-events: none;
+}
+
 .progress {
   align-items: center;
   display: flex;
-  gap: 6px;
-  height: 12px;
-  padding: 4px 0;
+  gap: 5px;
+  height: 10px;
+  padding: 3px 0;
   width: 100%;
 }
 
 .progressSegment {
-  background: var(--gray-300);
+  background: rgba(80, 45, 45, 0.16);
   border-radius: 999px;
   flex: 1;
   height: 4px;

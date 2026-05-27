@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from "react";
 
 import { useRecommendNutrientMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
-import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
-import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
+import type { GoalEditDraft } from "@/features/profile/goalEdit.model";
 import NumberField from "@/shared/commons/input/NumberField";
+
+import styles from "./GoalEditSteps.module.css";
 
 const INTERNAL_DECIMALS = 4;
 const NUTRIENT_INPUT_PATTERN = /^(?:100(?:\.0?)?|[0-9]{0,2}(?:\.[0-9]?)?)$/;
@@ -14,6 +15,11 @@ const NUTRIENT_ENERGY_PER_GRAM = {
 } as const;
 
 type NutrientType = keyof typeof NUTRIENT_ENERGY_PER_GRAM;
+
+type Props = {
+  data: GoalEditDraft;
+  update: (patch: Partial<GoalEditDraft>) => void;
+};
 
 function roundToPrecision(value: number, decimals: number) {
   const factor = 10 ** decimals;
@@ -39,7 +45,7 @@ function isAllowedNutrientInput(nextInputValue: string) {
   return NUTRIENT_INPUT_PATTERN.test(nextInputValue);
 }
 
-export default function StepNutrient({ data, update }: StepComponentProps) {
+export default function GoalEditNutrientStep({ data, update }: Props) {
   const requestPayload = useMemo(
     () => ({
       target_calories: data.target_calories,
@@ -66,26 +72,22 @@ export default function StepNutrient({ data, update }: StepComponentProps) {
   }, [nutrient, update]);
 
   return (
-    <section className={`${styles.content} ${styles.onboardingStepReadable}`}>
-      <div
-        className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup} ${styles.onboardingTitleGroupCompact}`}
-      >
+    <section className={styles.content}>
+      <div className={`${styles.title} ${styles.titleGroup} ${styles.titleGroupCompact}`}>
         <h2 className="typo-title1">추천하는 탄단지 비율이에요</h2>
         {isPending ? (
-          <div className={styles.onboardingLoadingRow}>
-            <p className={`${styles.textAlternative} typo-body2`}>추천 비율을 계산하고 있어요</p>
+          <div className={styles.loadingRow}>
+            <p className={`${styles.subtitle} typo-body2`}>추천 비율을 계산하고 있어요</p>
           </div>
         ) : (
-          <p className={`${styles.textAlternative} typo-body2`}>비율을 수정할 수 있어요</p>
+          <p className={`${styles.subtitle} typo-body2`}>비율을 수정할 수 있어요</p>
         )}
       </div>
-      <div className={styles.onboardingNutrientContent}>
-        <p
-          className={`${styles.onboardingNutrientGoal} ${styles.textPrimary} textNoWrap typo-title1`}
-        >
+      <div className={styles.nutrientContent}>
+        <p className={`${styles.nutrientGoal} textNoWrap typo-title1`}>
           목표 칼로리 {data.target_calories ?? "--"}kcal
         </p>
-        <div className={styles.onboardingNutrientList}>
+        <div className={styles.nutrientList}>
           <NutrientCard
             label="탄수화물"
             nutrientType="carbs"
@@ -131,8 +133,8 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
     targetKcal === undefined ? undefined : calculateTargetGram(targetKcal, nutrientType);
 
   return (
-    <div className={`${styles.onboardingNutrientCard}`}>
-      <label className={`${styles.textNormal} typo-title3`}>{label}</label>
+    <div className={styles.nutrientCard}>
+      <label className={`${styles.nutrientLabel} typo-title3`}>{label}</label>
       <NumberField
         value={value}
         onChange={onChange}
@@ -143,18 +145,14 @@ function NutrientCard({ label, nutrientType, targetCalories, value, onChange }: 
         unit="%"
         isInputTextAllowed={isAllowedNutrientInput}
         classNames={{
-          decrement: styles.onboardingNutrientAdjustButton,
-          group: styles.onboardingNutrientControlGroup,
-          increment: styles.onboardingNutrientAdjustButton,
-          input: styles.onboardingNutrientInput,
-          inputWrapper: styles.onboardingNutrientInputWrapper,
-          unit: styles.onboardingNutrientUnit,
+          decrement: styles.weightAdjustButton,
+          increment: styles.weightAdjustButton,
         }}
       />
 
-      <div className={styles.onboardingNutrientDivider} />
+      <div className={styles.nutrientDivider} />
 
-      <div className={styles.onboardingNutrientMeta}>
+      <div className={styles.nutrientMeta}>
         <span className="typo-body1">{formatRoundedValue(targetGram)}g</span>
         <span className="textNoWrap typo-body1">{formatRoundedValue(targetKcal)}kcal</span>
       </div>

@@ -1,31 +1,37 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useTargetCaloriesMutation } from "@/features/onboarding/hooks/mutations/useRecommendMutation";
-import type { StepComponentProps } from "@/features/onboarding/onboarding.types";
-import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 import {
   getGoalWeekEstimate,
   type GoalWeekEstimateResult,
 } from "@/features/onboarding/utils/calculateGoalWeek";
+import type { GoalEditDraft } from "@/features/profile/goalEdit.model";
 import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { Button } from "@/shared/commons/button/Button";
 import { EditorInput } from "@/shared/commons/input/EditorInput";
 import { toast } from "@/shared/commons/toast/toast";
 
+import styles from "./GoalEditSteps.module.css";
+
 const GOAL_CALORIES_MIN = 1;
 const GOAL_CALORIES_MAX = 99999;
 const GOAL_CALORIES_STEP = 1;
+
+type Props = {
+  data: GoalEditDraft;
+  update: (patch: Partial<GoalEditDraft>) => void;
+};
 
 function toInteger(value: number) {
   return Math.trunc(value);
 }
 
-function formattargetCalories(value?: number) {
+function formatTargetCalories(value?: number) {
   if (value === undefined) return "--";
   return toInteger(value).toString();
 }
 
-function hasRequiredRecommendPayload(data: StepComponentProps["data"]) {
+function hasRequiredRecommendPayload(data: GoalEditDraft) {
   return (
     data.gender !== undefined &&
     data.birthYear !== undefined &&
@@ -78,9 +84,9 @@ function showInvalidGoalCaloriesToast(goalWeekEstimate: GoalWeekEstimateResult) 
   toast.warning("해당 칼로리로는 목표 달성이 어려워요.");
 }
 
-export default function SteptargetCalories({ data, update }: StepComponentProps) {
+export default function GoalEditTargetCaloriesStep({ data, update }: Props) {
   const [open, setOpen] = useState(false);
-  const [drafttargetCalories, setDrafttargetCalories] = useState<number | undefined>(undefined);
+  const [draftTargetCalories, setDraftTargetCalories] = useState<number | undefined>(undefined);
 
   const {
     mutate,
@@ -126,20 +132,19 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
       return;
     }
 
-    const nextRecommendedCalories = toInteger(responseData);
-    update({ target_calories: nextRecommendedCalories });
+    update({ target_calories: toInteger(responseData) });
   }, [responseData, update]);
 
   const displayRecommendedCalories =
     responseData === undefined ? undefined : toInteger(responseData);
-  const visibletargetCalories = data.target_calories ?? displayRecommendedCalories;
-  const normalizedVisibletargetCalories =
-    visibletargetCalories === undefined ? undefined : toInteger(visibletargetCalories);
+  const visibleTargetCalories = data.target_calories ?? displayRecommendedCalories;
+  const normalizedVisibleTargetCalories =
+    visibleTargetCalories === undefined ? undefined : toInteger(visibleTargetCalories);
 
   const goalWeekEstimate =
-    normalizedVisibletargetCalories === undefined
+    normalizedVisibleTargetCalories === undefined
       ? undefined
-      : getGoalWeekEstimate(data, normalizedVisibletargetCalories);
+      : getGoalWeekEstimate(data, normalizedVisibleTargetCalories);
 
   const goalWeekMessage = (() => {
     if (goalWeekEstimate === undefined) {
@@ -158,51 +163,48 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
   })();
 
   const openEditor = () => {
-    setDrafttargetCalories(normalizedVisibletargetCalories);
+    setDraftTargetCalories(normalizedVisibleTargetCalories);
     setOpen(true);
   };
 
-  const handleConfirmtargetCalories = () => {
-    if (drafttargetCalories === undefined || drafttargetCalories === 0) {
+  const handleConfirmTargetCalories = () => {
+    if (draftTargetCalories === undefined || draftTargetCalories === 0) {
       toast.warning("목표 칼로리는 1 이상 입력해주세요");
       return;
     }
 
-    const nexttargetCalories = toInteger(drafttargetCalories);
+    const nextTargetCalories = toInteger(draftTargetCalories);
 
-    if (nexttargetCalories < GOAL_CALORIES_MIN || nexttargetCalories > GOAL_CALORIES_MAX) {
+    if (nextTargetCalories < GOAL_CALORIES_MIN || nextTargetCalories > GOAL_CALORIES_MAX) {
       toast.warning("목표 칼로리는 1~99999 사이로 입력해주세요");
       return;
     }
 
-    const nextGoalWeekEstimate = getGoalWeekEstimate(data, nexttargetCalories);
+    const nextGoalWeekEstimate = getGoalWeekEstimate(data, nextTargetCalories);
 
     if (nextGoalWeekEstimate.status === "invalid") {
       showInvalidGoalCaloriesToast(nextGoalWeekEstimate);
       return;
     }
 
-    update({ target_calories: nexttargetCalories });
+    update({ target_calories: nextTargetCalories });
     setOpen(false);
+    toast.success("수정되었어요.");
   };
 
   return (
-    <section
-      className={`${styles.content} ${styles.onboardingStepReadable} ${styles.goalCaloriesContent}`}
-    >
-      <div className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup}`}>
-        <h2 className="typo-title1">목표 칼로리를 설정해주세요</h2>
+    <section className={styles.content}>
+      <div className={`${styles.title} ${styles.titleGroup}`}>
+        <h2 className="typo-title1">목표 칼로리를 선택해주세요</h2>
         {isPending ? (
-          <div className={styles.onboardingLoadingRow}>
-            <p className={`${styles.textAlternative} typo-body2`}>
-              추천 목표 칼로리를 계산하고 있어요
-            </p>
+          <div className={styles.loadingRow}>
+            <p className={`${styles.subtitle} typo-body2`}>추천 목표 칼로리를 계산하고 있어요</p>
           </div>
         ) : (
-          <p className={`${styles.textAlternative} typo-body2`}>
+          <p className={`${styles.subtitle} typo-body2`}>
             추천하는 목표 칼로리는{" "}
             <span className="textNoWrap">
-              {formattargetCalories(displayRecommendedCalories)}kcal
+              {formatTargetCalories(displayRecommendedCalories)}kcal
             </span>
             예요
           </p>
@@ -210,22 +212,22 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
       </div>
 
       <div className={styles.goalCalorieContainer}>
-        <button className={styles.onboardingGoalKcalTrigger} type="button" onClick={openEditor}>
-          <p className={`${styles.onboardingGoalKcalValue} textNoWrap typo-h1`}>
-            {formattargetCalories(visibletargetCalories)} kcal
+        <button className={styles.goalKcalTrigger} type="button" onClick={openEditor}>
+          <p className={`${styles.goalKcalValue} textNoWrap typo-h1`}>
+            {formatTargetCalories(visibleTargetCalories)} kcal
           </p>
           <img src="/icons/pencil.svg" alt="목표 칼로리 값 수정" width={24} height={24} />
         </button>
 
-        <p className={`${styles.onboardingGoalKcalHelper} typo-body1`}>{goalWeekMessage}</p>
+        <p className={`${styles.goalKcalHelper} typo-body1`}>{goalWeekMessage}</p>
       </div>
       <BottomSheet isOpen={open} onClose={() => setOpen(false)}>
-        <div className={`${styles.onboardingGoalKcalSheet}`}>
+        <div className={styles.goalKcalSheet}>
           <h3 className="typo-title2">목표 칼로리</h3>
           <EditorInput
             type="number"
             inputMode="numeric"
-            value={drafttargetCalories}
+            value={draftTargetCalories}
             max={GOAL_CALORIES_MAX}
             min={GOAL_CALORIES_MIN}
             step={GOAL_CALORIES_STEP}
@@ -235,20 +237,20 @@ export default function SteptargetCalories({ data, update }: StepComponentProps)
             clampOnChange={true}
             normalizeOnBlur={false}
             onChange={(value) => {
-              setDrafttargetCalories(value === undefined ? undefined : toInteger(value));
+              setDraftTargetCalories(value === undefined ? undefined : toInteger(value));
             }}
           />
-        </div>
-        <div className={styles.onboardingGoalKcalActions}>
-          <Button
-            onClick={handleConfirmtargetCalories}
-            fullWidth
-            interaction={drafttargetCalories ? "normal" : "disable"}
-            disabled={drafttargetCalories === undefined || drafttargetCalories === 0}
-            size="large"
-          >
-            다음
-          </Button>
+          <div className={styles.goalKcalActions}>
+            <Button
+              onClick={handleConfirmTargetCalories}
+              fullWidth
+              interaction={draftTargetCalories ? "normal" : "disable"}
+              disabled={draftTargetCalories === undefined || draftTargetCalories === 0}
+              size="large"
+            >
+              수정하기
+            </Button>
+          </div>
         </div>
       </BottomSheet>
     </section>

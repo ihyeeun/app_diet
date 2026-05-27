@@ -6,13 +6,11 @@
 
 .inputBox input {
   border: none;
-  font-size: var(--fs-40);
-  font-weight: var(--fw-medium);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: var(--line-height-120);
   outline: none;
   text-align: right;
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 input::placeholder {
@@ -29,9 +27,8 @@ input::placeholder {
 .unit {
   color: var(--label-assistive);
   flex-shrink: 0;
-  font-size: 40px;
-  margin-left: 4px;
   white-space: nowrap;
+  margin-left: 6px;
 }
 
 .inputBox:has(input:not(:placeholder-shown)) .unit {

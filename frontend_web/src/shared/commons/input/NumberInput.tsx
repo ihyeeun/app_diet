@@ -33,9 +33,9 @@ export function NumberInput({
   normalizeOnBlur = true,
 }: Props) {
   return (
-    <div className={styles.inputBox}>
+    <div className={`${styles.inputBox} typo-h1`}>
       <Input
-        className={styles.input}
+        className={`${styles.input} typo-h1`}
         type="number"
         inputMode={inputMode}
         value={value ?? ""}

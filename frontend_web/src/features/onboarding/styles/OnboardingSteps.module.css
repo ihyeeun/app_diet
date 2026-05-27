@@ -18,9 +18,7 @@
   background: var(--bg-white);
   border: 1px solid var(--border-neutral);
   border-radius: 8px;
-  color: var(--gray-1100);
   cursor: pointer;
-  height: 82px;
   padding: 16px 20px;
   text-align: left;
   width: 100%;
@@ -37,21 +35,6 @@
   gap: 3px;
 }
 
-.onboardingOptionCardTitle {
-  font-size: 17px;
-  font-weight: var(--fw-semibold);
-  line-height: var(--line-height-145);
-  margin: 0;
-}
-
-.onboardingOptionCardDescription {
-  color: var(--label-alternative);
-  font-size: 15px;
-  font-weight: var(--fw-medium);
-  line-height: var(--line-height-145);
-  margin: 0;
-}
-
 .onboardingBodyList {
   display: flex;
   flex-direction: column;
@@ -59,20 +42,9 @@
 }
 
 .onboardingInputCard {
-  background: var(--bg-white);
-  border: 1px solid var(--border-neutral);
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 112px;
-  padding: 16px 20px;
-}
-
-.onboardingInputCardLabel {
-  font-size: 18px;
-  font-weight: var(--fw-medium);
-  line-height: var(--line-height-145);
 }
 
 .onboardingGenderGrid {
@@ -120,13 +92,6 @@
   gap: 2px;
 }
 
-.onboardingSubtitle {
-  color: var(--label-alternative);
-  font-size: 16px;
-  font-weight: var(--fw-medium);
-  line-height: var(--line-height-145);
-}
-
 .onboardingLoadingRow {
   align-items: center;
   display: flex;
@@ -159,12 +124,13 @@
 .onboardingGoalKcalSheet {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
   padding: 0 24px;
 }
 
 .onboardingGoalKcalActions {
-  padding: 12px 0;
+  margin-top: 20px;
+  padding: 5px 20px;
 }
 
 .onboardingGoalWeightCard {
@@ -197,16 +163,11 @@
   background: var(--bg-white);
   border: 1px solid var(--border-neutral);
   border-radius: 8px;
-  color: var(--gray-1100);
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 16px 20px;
   width: 100%;
-}
-
-.onboardingNutrientLabel {
-  color: var(--label-normal);
 }
 
 .onboardingNutrientDivider {
@@ -217,7 +178,8 @@
 
 .onboardingNutrientMeta {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  padding: 0 20px;
 }
 
 .onboardingSubscribeInput {
@@ -258,15 +220,162 @@
   filter: brightness(0.96);
 }
 
-.weightAdjustButton:active:not(:disabled) {
-  filter: brightness(0.9);
+.onboardingStepReadable {
+  color: var(--label-normal);
+  gap: 0;
 }
 
-.weightAdjustButton:disabled {
-  background: var(--gray-400);
-  cursor: not-allowed;
+.onboardingStepReadable .onboardingTitle {
+  padding: 16px 0;
+}
+
+.onboardingStepReadable .onboardingTitle h2 {
+  color: var(--label-normal);
+}
+
+.onboardingStepReadable .onboardingSubtitle {
+  color: var(--label-alternative);
+}
+
+.onboardingGenderGroup,
+.onboardingBirthYearGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboardingGenderGroup {
+  margin-bottom: 24px;
+}
+
+.onboardingStepReadable .onboardingGenderGrid {
+  gap: 10px;
+}
+
+.onboardingGenderChoiceButton {
+  align-items: center;
+  background: var(--onboarding-card-bg, var(--bg-white));
+  border: 1px solid var(--onboarding-muted-border, var(--border-neutral));
+  border-radius: 100px;
+  color: var(--label-normal);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  padding: 16px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.onboardingGenderChoiceButtonActive {
+  background: var(--interaction-primary);
+  border-color: var(--border-primary);
+}
+
+.onboardingBirthYearTrigger {
+  align-items: center;
+  background: var(--onboarding-card-bg, var(--bg-white));
+  border: 1px solid var(--onboarding-muted-border, var(--border-neutral));
+  border-radius: 8px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  width: 100%;
+}
+
+.onboardingBirthYearSheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 20px 16px;
+  min-height: 460px;
+}
+
+.onboardingBirthYearPicker {
+  --wheel-highlight-height: 72px;
+
+  flex: 1;
+  height: 320px;
+  min-height: 320px;
+}
+
+.onboardingStepReadable .onboardingBodyList {
+  gap: 32px;
+}
+
+.onboardingStepReadable .onboardingInputCard {
+  gap: 10px;
+}
+
+.onboardingInputCardInput {
+  background: var(--onboarding-card-bg, var(--bg-white));
+  border: 1px solid var(--onboarding-muted-border, var(--border-neutral));
+  padding: 16px 20px;
+}
+
+.onboardingStepReadable .onboardingOptionList {
+  gap: 8px;
+}
+
+.onboardingNutrientAdjustButton {
+  align-items: center;
+  background: var(--interaction-alternative);
+  border: 0;
+  border-radius: 100px;
+  color: var(--static-white);
+  cursor: pointer;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  width: 24px;
+}
+
+.onboardingNutrientAdjustButton svg {
+  height: 16px;
+  width: 16px;
+}
+
+.onboardingNutrientControlGroup {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 0;
+  width: 100%;
+}
+
+.onboardingNutrientInputWrapper {
+  align-items: baseline;
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.onboardingNutrientInput {
+  text-align: right;
+  width: 4ch;
+}
+
+.onboardingNutrientUnit,
+.onboardingNutrientInput {
+  color: var(--label-normal);
+  font-size: 16px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-140);
 }
 
 .textPrimary {
   color: var(--label-primary);
+}
+
+.textNormal {
+  color: var(--label-normal);
+}
+
+.textAlternative {
+  color: var(--label-alternative);
+}
+
+.textAssistive {
+  color: var(--label-assistive);
 }

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import StepGoalCalories from "@/features/onboarding/components/steps/StepGoalCalories";
+import GoalEditTargetCaloriesStep from "@/features/profile/components/GoalEditTargetCaloriesStep";
 import {
   GOAL_CALORIES_MAX,
   GOAL_CALORIES_MIN,
@@ -72,7 +72,7 @@ export default function GoalEditTargetCaloriesPage() {
 
         {visibleDraft && (
           <section className={styles.stageSection}>
-            <StepGoalCalories data={visibleDraft} update={updateDraft} />
+            <GoalEditTargetCaloriesStep data={visibleDraft} update={updateDraft} />
           </section>
         )}
       </main>

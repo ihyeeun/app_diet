@@ -15,11 +15,11 @@ export default function StepGoalWeight({ data, update }: StepComponentProps) {
     diff === undefined ? undefined : Number.isInteger(diff) ? diff.toString() : diff.toFixed(1);
 
   return (
-    <section className={styles.content}>
+    <section className={`${styles.content} ${styles.onboardingStepReadable}`}>
       <div className={`${styles.onboardingTitle} ${styles.onboardingTitleGroup}`}>
         <h2 className="typo-title1">목표 몸무게가 몇인가요?</h2>
         {diff !== undefined && (
-          <p className={styles.onboardingSubtitle}>
+          <p className={`${styles.textAlternative} typo-body2`}>
             현재 몸무게 기준 {diff > 0 ? "+" : ""}
             {diffLabel}kg
           </p>

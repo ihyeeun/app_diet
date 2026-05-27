@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 
 import { registerWeight } from "@/features/home/api/health";
 import { queryKeys as homeQueryKeys } from "@/features/home/hooks/queries/queryKey";
-import StepNutrient from "@/features/onboarding/components/steps/StepNutrient";
 import {
   updateActivity,
   updateBirthYear,
@@ -15,6 +14,7 @@ import {
   updateTargetWeight,
   updateWeight,
 } from "@/features/profile/api/profile";
+import GoalEditNutrientStep from "@/features/profile/components/GoalEditNutrientStep";
 import {
   hasNutrientTotal,
   isRatioChanged,
@@ -223,7 +223,7 @@ export default function GoalEditNutrientPage() {
 
         {visibleDraft && (
           <section className={styles.stageSection}>
-            <StepNutrient data={visibleDraft} update={updateDraft} />
+            <GoalEditNutrientStep data={visibleDraft} update={updateDraft} />
           </section>
         )}
       </main>

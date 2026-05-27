@@ -7,7 +7,7 @@ import styles from "@/features/onboarding/styles/OnboardingSteps.module.css";
 
 export default function StepSubscribedCode({ data, update }: StepComponentProps) {
   return (
-    <section className={styles.content}>
+    <section className={`${styles.content} ${styles.onboardingStepReadable}`}>
       <div className={styles.onboardingTitle}>
         <h2 className="typo-title1">구독 코드가 있다면 입력해주세요</h2>
       </div>
