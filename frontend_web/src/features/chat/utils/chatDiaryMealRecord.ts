@@ -21,6 +21,11 @@ export type DiaryMealRecordSelection = {
   menus: SelectedDiaryMealRecordMenu[];
 };
 
+type DiaryMealRecordCandidateMenu = {
+  menu_id: number;
+  weight: number;
+};
+
 const MEAL_TIME_LIST: MealTime[] = [0, 1, 2, 3, 4];
 
 export function getChatDateKey(chatItem: Pick<ChatHistoryItemResponseDto, "createdAt">) {
@@ -107,6 +112,25 @@ export function getNextDiaryMenusByCandidateIds({
   );
 
   return mergeSelectedDiaryMenus(preservedMenus, selectedMenus);
+}
+
+export function getSelectedDiaryMenusFromCandidateMenus(
+  menus: DiaryMealRecordCandidateMenu[],
+): SelectedDiaryMealRecordMenu[] {
+  const latestMenusById = new Map<number, DiaryMealRecordCandidateMenu>();
+
+  menus.forEach((menu) => {
+    latestMenusById.set(menu.menu_id, menu);
+  });
+
+  return mergeSelectedDiaryMenus(
+    [],
+    [...latestMenusById.values()].map((menu) => ({
+      id: menu.menu_id,
+      quantity: menu.weight,
+      mode: "unit",
+    })),
+  );
 }
 
 export function getDiaryMealImage(dayMeals: DayMealSummary, mealTime: MealTime) {
