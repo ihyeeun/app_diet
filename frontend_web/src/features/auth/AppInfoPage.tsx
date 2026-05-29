@@ -95,7 +95,7 @@ export default function AppInfoPage() {
             ) : null}
           </section>
 
-          <img src="/login/login-image.svg" alt="logo" />
+          <img src="/login/login-image.svg" alt="logo" className={styles.loginImage} />
         </div>
       </div>
     </main>

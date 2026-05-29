@@ -6,6 +6,7 @@ import {
   ONBOARDING_HEIGHT_RANGE,
   ONBOARDING_WEIGHT_RANGE,
 } from "@/features/onboarding/constants/inputRanges";
+import { useAuthorizeSubCodeMutation } from "@/features/onboarding/hooks/mutations/useAuthorizeSubCodeMutation";
 import { useRegisterUserInfoMutation } from "@/features/onboarding/hooks/mutations/useRegisterUserInfoMutation";
 import styles from "@/features/onboarding/styles/OnboardingPage.module.css";
 import { PATH } from "@/router/path";
@@ -39,10 +40,7 @@ function resolveRegisterUserInfoError(error: Error): RegisterUserInfoErrorResolu
     };
   }
 
-  if (
-    error.statusCode === 400 &&
-    error.message === API_ERROR_MESSAGE.SUB_CODE_INACTIVE
-  ) {
+  if (error.message === API_ERROR_MESSAGE.SUB_CODE_INACTIVE) {
     return {
       stepId: "subscribedCode",
     };
@@ -55,7 +53,7 @@ function resolveRegisterUserInfoError(error: Error): RegisterUserInfoErrorResolu
     return {};
   }
 
-  if (error.statusCode === 404 && error.message === API_ERROR_MESSAGE.SUB_CODE_NOT_FOUND) {
+  if (error.message === API_ERROR_MESSAGE.SUB_CODE_NOT_FOUND) {
     return {
       stepId: "subscribedCode",
     };
@@ -67,16 +65,13 @@ function resolveRegisterUserInfoError(error: Error): RegisterUserInfoErrorResolu
     };
   }
 
-  if (error.statusCode === 409 && error.message === API_ERROR_MESSAGE.SUB_CODE_ALREADY_EXISTS) {
+  if (error.message === API_ERROR_MESSAGE.SUB_CODE_ALREADY_EXISTS) {
     return {
       stepId: "subscribedCode",
     };
   }
 
-  if (
-    error.statusCode === 409 &&
-    error.message === API_ERROR_MESSAGE.SUB_CODE_LIMIT_EXCEEDED
-  ) {
+  if (error.message === API_ERROR_MESSAGE.SUB_CODE_LIMIT_EXCEEDED) {
     return {
       stepId: "subscribedCode",
     };
@@ -128,9 +123,8 @@ export default function OnboardingPage() {
   const step = steps[stepIndex];
   const total = steps.length;
 
-  const { mutate, isPending: isRegisterPending } = useRegisterUserInfoMutation({
-    onSuccess: navigateAfterOnboarding,
-    onError: (error) => {
+  const handleOnboardingMutationError = useCallback(
+    (error: Error) => {
       const resolved = resolveRegisterUserInfoError(error);
 
       toast.warning(resolveRegisterUserInfoErrorMessage(error));
@@ -151,7 +145,18 @@ export default function OnboardingPage() {
         navigateAfterOnboarding();
       }
     },
+    [navigateAfterOnboarding, steps],
+  );
+
+  const { mutate, isPending: isRegisterPending } = useRegisterUserInfoMutation({
+    onSuccess: navigateAfterOnboarding,
+    onError: handleOnboardingMutationError,
   });
+  const { mutate: authorizeSubCode, isPending: isAuthorizeSubCodePending } =
+    useAuthorizeSubCodeMutation({
+      onError: handleOnboardingMutationError,
+    });
+  const isSubmitting = isRegisterPending || isAuthorizeSubCodePending;
 
   const update = useCallback((patch: Partial<OnboardingData>) => {
     setUserData((d) => ({ ...d, ...patch }));
@@ -192,7 +197,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    mutate({
+    const registerUserInfoPayload = {
       gender: userData.gender!,
       birthYear: userData.birthYear!,
       height: userData.height!,
@@ -201,9 +206,24 @@ export default function OnboardingPage() {
       goal: userData.goal!,
       target_weight: userData.target_weight!,
       target_calories: userData.target_calories!,
-      target_ratio: [userData.carbs!, userData.protein!, userData.fat!],
-      subCode: userData.subscribedCode?.trim() ?? "",
-    });
+      target_ratio: [userData.carbs!, userData.protein!, userData.fat!] as [
+        number,
+        number,
+        number,
+      ],
+    };
+
+    if (isWebOnboarding) {
+      authorizeSubCode(
+        { subCode: userData.subscribedCode?.trim() ?? "" },
+        {
+          onSuccess: () => mutate(registerUserInfoPayload),
+        },
+      );
+      return;
+    }
+
+    mutate(registerUserInfoPayload);
   };
 
   const prev = () => {
@@ -225,17 +245,18 @@ export default function OnboardingPage() {
       <footer className={styles.footer}>
         <Button
           onClick={next}
-          disabled={!canGoNext || isRegisterPending}
+          disabled={!canGoNext || isSubmitting}
           fullWidth
           variant="filled"
           size="large"
           color="primary"
-          interaction={canGoNext && !isRegisterPending ? "normal" : "disable"}
+          interaction={canGoNext && !isSubmitting ? "normal" : "disable"}
         >
           {step.nextText ?? "다음"}
         </Button>
       </footer>
 
+      {isAuthorizeSubCodePending ? <LoadingOverlay label="구독 코드를 확인하는 중입니다." /> : null}
       {isRegisterPending ? <LoadingOverlay label="회원 정보를 저장하는 중입니다." /> : null}
 
       <CheckButtonModal

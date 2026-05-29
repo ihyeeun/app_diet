@@ -166,6 +166,15 @@ const API_ERROR_USER_MESSAGE_BY_ERROR_CODE: Record<string, string> = {
   REQUEST_TIMEOUT: API_ERROR_MESSAGE.REQUEST_TIMEOUT,
 };
 
+const API_ERROR_USER_MESSAGE_BY_CUSTOM_STATUS_CODE: Partial<Record<number, string>> = {
+  40010: API_ERROR_MESSAGE.NUTRIENT_RATIO_TOTAL,
+  40012: API_ERROR_MESSAGE.SUB_CODE_REQUIRED,
+  40013: API_ERROR_MESSAGE.SUB_CODE_INACTIVE,
+  40410: API_ERROR_MESSAGE.SUB_CODE_NOT_FOUND,
+  40910: API_ERROR_MESSAGE.SUB_CODE_ALREADY_EXISTS,
+  40911: API_ERROR_MESSAGE.SUB_CODE_LIMIT_EXCEEDED,
+};
+
 export function resolveApiErrorMessage(response: ApiFailResponse) {
   const matchedRule = API_ERROR_USER_MESSAGE_RULES.find((rule) =>
     rule.messages?.includes(response.message),
@@ -176,6 +185,7 @@ export function resolveApiErrorMessage(response: ApiFailResponse) {
   const resolvedMessage =
     matchedRule?.userMessage ??
     matchedStatusRule?.userMessage ??
+    API_ERROR_USER_MESSAGE_BY_CUSTOM_STATUS_CODE[response.statusCode] ??
     API_ERROR_USER_MESSAGE_BY_ERROR_CODE[response.error] ??
     response.message;
 

@@ -68,7 +68,7 @@ const BASE_STEPS: StepMeta[] = [
 const SUBSCRIBED_CODE_STEP: StepMeta = {
   id: "subscribedCode",
   title: "코드 입력",
-  isValid: () => true,
+  isValid: (d) => Boolean(d.subscribedCode?.trim()),
 };
 
 type OnboardingStepOptions = {

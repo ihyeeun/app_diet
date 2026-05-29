@@ -45,7 +45,7 @@ export default function KakaoWebLoginPage() {
         <div className={styles.loginWrapper}>
           <img src="/login/login-logo.svg" alt="logo" height={70} />
 
-          <img src="/login/login-image.svg" alt="logo" />
+          <img src="/login/login-image.svg" alt="logo" className={styles.loginImage} />
 
           <section className={styles.loginActions}>
             <button

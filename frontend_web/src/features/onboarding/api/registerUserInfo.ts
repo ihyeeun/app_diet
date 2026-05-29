@@ -11,7 +11,6 @@ type UserInfoRequest = {
   target_weight: number;
   target_calories: number;
   target_ratio: [carbs: number, protein: number, fat: number];
-  subCode: string;
 };
 
 type UserInfoReponse = {
