@@ -165,7 +165,7 @@ export function NutrientDetailForm({
             }}
           >
             <Select.Trigger
-              className={`typo-body3 ${styles.valueInput} ${styles.selectTrigger}`}
+              className={`typo-body2 ${styles.valueInput} ${styles.selectTrigger}`}
               aria-label="중량 단위 선택"
             >
               <Select.Value>{selectedWeightUnitLabel}</Select.Value>
@@ -175,14 +175,14 @@ export function NutrientDetailForm({
             </Select.Trigger>
 
             <Select.Portal>
-              <Select.Positioner className={styles.selectPositioner}>
+              <Select.Positioner className={styles.selectPositioner} side="bottom" align="end">
                 <Select.Popup className={styles.selectPopup}>
                   <Select.List className={styles.selectList}>
                     {WEIGHT_UNIT_OPTIONS.map((option) => (
                       <Select.Item
                         key={option.value}
                         value={option.value}
-                        className={`typo-body3 ${styles.selectItem}`}
+                        className={`typo-body2 ${styles.selectItem}`}
                       >
                         <Select.ItemText>{option.label}</Select.ItemText>
                       </Select.Item>

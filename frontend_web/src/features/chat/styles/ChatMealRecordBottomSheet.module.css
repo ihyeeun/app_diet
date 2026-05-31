@@ -193,9 +193,10 @@
   background-color: var(--bg-white);
   border: 1px solid var(--border-neutral);
   border-radius: 10px;
-  box-shadow: var(--shadow-strong);
+  box-shadow: var(--shadow-emphasize);
   overflow: hidden;
-  width: 100px;
+  width: 166px;
+  padding: 8px;
 }
 
 .selectList {
@@ -205,11 +206,12 @@
 
 .selectItem {
   color: var(--label-normal);
-  padding: 10px 14px;
+  padding: 10px 6px;
+  text-align: end;
 }
 
 .selectItem[data-highlighted] {
-  background-color: var(--interaction-primary);
+  background-color: var(--bg-normal);
 }
 
 .primaryText {

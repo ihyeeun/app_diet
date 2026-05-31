@@ -312,25 +312,29 @@ export function ChatMealRecordBottomSheet({
                       }}
                     >
                       <Select.Trigger className={`${styles.unitSelectTrigger} typo-h2`}>
-                        <Select.Value className="typo-body3">{selectLabel}</Select.Value>
+                        <Select.Value className="typo-body2">{selectLabel}</Select.Value>
                         <Select.Icon className={styles.selectIcon} aria-hidden>
                           <SystemIcon name="chevron-down-normal" size={24} />
                         </Select.Icon>
                       </Select.Trigger>
 
                       <Select.Portal>
-                        <Select.Positioner className={styles.selectPositioner}>
+                        <Select.Positioner
+                          className={styles.selectPositioner}
+                          side="bottom"
+                          align="end"
+                        >
                           <Select.Popup className={styles.selectPopup}>
                             <Select.List className={styles.selectList}>
                               <Select.Item
                                 value="unit"
-                                className={`${styles.selectItem} typo-body3`}
+                                className={`${styles.selectItem} typo-body2`}
                               >
                                 <Select.ItemText>{item.servingContext.unitLabel}</Select.ItemText>
                               </Select.Item>
                               <Select.Item
                                 value="weight"
-                                className={`${styles.selectItem} typo-body3`}
+                                className={`${styles.selectItem} typo-body2`}
                               >
                                 <Select.ItemText>{item.servingContext.weightUnit}</Select.ItemText>
                               </Select.Item>

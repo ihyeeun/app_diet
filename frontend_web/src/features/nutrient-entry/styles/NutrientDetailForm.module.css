@@ -82,9 +82,10 @@
   background-color: var(--bg-white);
   border: 1px solid var(--border-neutral);
   border-radius: 10px;
-  box-shadow: var(--shadow-strong);
+  box-shadow: var(--shadow-emphasize);
   min-width: var(--anchor-width);
   overflow: hidden;
+  padding: 8px;
 }
 
 .selectList {
@@ -95,17 +96,17 @@
 .selectItem {
   color: var(--label-normal);
   cursor: pointer;
-  padding: 10px 14px;
+  padding: 10px 6px;
   text-align: right;
 }
 
 .selectItem[data-highlighted] {
-  background-color: var(--interaction-primary);
+  background-color: var(--bg-normal);
   outline: none;
 }
 
 .selectItem[data-selected] {
-  color: var(--label-primary);
+  color: var(--label-normal);
 }
 
 .selectIcon {
