@@ -10,21 +10,25 @@ type ChatMealRecordFocusRequest = {
 
 type ChatMealRecordFocusStoreState = {
   focusRequest: ChatMealRecordFocusRequest | null;
+  nextFocusRequestId: number;
   requestFocus: (request: Omit<ChatMealRecordFocusRequest, "id">) => void;
   clearFocusRequest: (requestId: number) => void;
 };
 
-let nextFocusRequestId = 0;
-
 const useChatMealRecordFocusStore = create<ChatMealRecordFocusStoreState>((set) => ({
   focusRequest: null,
+  nextFocusRequestId: 0,
   requestFocus: (request) => {
-    nextFocusRequestId += 1;
-    set({
-      focusRequest: {
-        ...request,
-        id: nextFocusRequestId,
-      },
+    set((state) => {
+      const nextFocusRequestId = state.nextFocusRequestId + 1;
+
+      return {
+        nextFocusRequestId,
+        focusRequest: {
+          ...request,
+          id: nextFocusRequestId,
+        },
+      };
     });
   },
   clearFocusRequest: (requestId) => {

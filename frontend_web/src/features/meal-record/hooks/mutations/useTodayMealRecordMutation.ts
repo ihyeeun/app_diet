@@ -26,7 +26,7 @@ type RegisterMealMutationParams = RegisterMealRequestDto & {
 };
 
 function trackMutationAnalytics(analytics?: MealRecordMutationAnalytics) {
-  if (analytics?.recommendMenuCancel) {
+  if (analytics?.recommendMenuCancel?.length) {
     trackRecommendMenuCancel(analytics.recommendMenuCancel);
   }
 }
@@ -146,10 +146,8 @@ export function useTodayMealRecordDeleteWithRollbackMutation() {
           : DELETE_MEAL_RECORD_RESULT.FAILED_UNRECOVERED;
       }
     },
-    onSuccess: (deleteResult, variables) => {
-      if (deleteResult === DELETE_MEAL_RECORD_RESULT.DELETED) {
-        trackMutationAnalytics(variables.analytics);
-      }
+    onSuccess: (_deleteResult, variables) => {
+      trackMutationAnalytics(variables.analytics);
     },
   });
 }

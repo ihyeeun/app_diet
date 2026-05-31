@@ -181,6 +181,69 @@ function saveCameraHintDismissedInSession() {
   }
 }
 
+type UseEnsureBottomOnQuickActionParams = {
+  isTop: boolean;
+  isQuickActionVisible: boolean;
+  isScrolledAwayFromBottom: boolean;
+  pendingMealRecordScrollKeyRef: Readonly<{ current: string | null }>;
+  timelineScrollTarget: TimelineScrollTarget | null;
+  endAnchorRef: Readonly<{ current: HTMLDivElement | null }>;
+  updateIsScrolledAwayFromBottom: () => void;
+};
+
+function useEnsureBottomOnQuickAction({
+  isTop,
+  isQuickActionVisible,
+  isScrolledAwayFromBottom,
+  pendingMealRecordScrollKeyRef,
+  timelineScrollTarget,
+  endAnchorRef,
+  updateIsScrolledAwayFromBottom,
+}: UseEnsureBottomOnQuickActionParams) {
+  const wasQuickActionVisibleRef = useRef(false);
+
+  useEffect(() => {
+    const becameQuickActionVisible =
+      isTop && isQuickActionVisible && !wasQuickActionVisibleRef.current;
+    wasQuickActionVisibleRef.current = isQuickActionVisible;
+
+    if (
+      !isTop ||
+      !becameQuickActionVisible ||
+      isScrolledAwayFromBottom ||
+      pendingMealRecordScrollKeyRef.current !== null ||
+      timelineScrollTarget !== null ||
+      typeof window === "undefined"
+    ) {
+      return;
+    }
+
+    const alignBottom = () => {
+      endAnchorRef.current?.scrollIntoView({
+        behavior: "instant",
+        block: "end",
+      });
+      updateIsScrolledAwayFromBottom();
+    };
+
+    const frameId = window.requestAnimationFrame(alignBottom);
+    const timeoutId = window.setTimeout(alignBottom, 180);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    endAnchorRef,
+    isTop,
+    isQuickActionVisible,
+    isScrolledAwayFromBottom,
+    pendingMealRecordScrollKeyRef,
+    timelineScrollTarget,
+    updateIsScrolledAwayFromBottom,
+  ]);
+}
+
 export default function ChatPage() {
   const navigate = useNavigate();
   const { isTop } = useActivity();
@@ -194,7 +257,6 @@ export default function ChatPage() {
   const skipNextAutoBottomScrollRef = useRef(false);
   const hiddenScrollTopSnapshotRef = useRef<number | null>(null);
   const previousIsTopRef = useRef(isTop);
-  const wasQuickActionVisibleRef = useRef(false);
 
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -606,44 +668,15 @@ export default function ChatPage() {
     };
   }, [updateIsScrolledAwayFromBottom]);
 
-  useEffect(() => {
-    const becameQuickActionVisible =
-      isTop && isQuickActionVisible && !wasQuickActionVisibleRef.current;
-    wasQuickActionVisibleRef.current = isQuickActionVisible;
-
-    if (
-      !isTop ||
-      !becameQuickActionVisible ||
-      isScrolledAwayFromBottom ||
-      pendingMealRecordScrollKeyRef.current !== null ||
-      timelineScrollTarget !== null ||
-      typeof window === "undefined"
-    ) {
-      return;
-    }
-
-    const alignBottom = () => {
-      endAnchorRef.current?.scrollIntoView({
-        behavior: "instant",
-        block: "end",
-      });
-      updateIsScrolledAwayFromBottom();
-    };
-
-    const frameId = window.requestAnimationFrame(alignBottom);
-    const timeoutId = window.setTimeout(alignBottom, 180);
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
-    };
-  }, [
+  useEnsureBottomOnQuickAction({
     isTop,
     isQuickActionVisible,
     isScrolledAwayFromBottom,
+    pendingMealRecordScrollKeyRef,
     timelineScrollTarget,
+    endAnchorRef,
     updateIsScrolledAwayFromBottom,
-  ]);
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") {
