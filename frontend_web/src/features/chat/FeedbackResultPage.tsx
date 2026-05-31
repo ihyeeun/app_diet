@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
+import { useRequestChatMealRecordFocus } from "@/features/chat/stores/mealRecordFocus.store";
 import styles from "@/features/chat/styles/RecommendResultPage.module.css";
 import {
   buildDiaryMealRecordRequest,
@@ -170,6 +171,7 @@ function FeedbackResultContent({
     () => selectedMenusOverride ?? diaryMealRecordSelection?.menus ?? [],
     [diaryMealRecordSelection, selectedMenusOverride],
   );
+  const requestChatMealRecordFocus = useRequestChatMealRecordFocus();
   const selectedMenuIds = useMemo(() => {
     return new Set(selectedMenus.map((menu) => menu.id));
   }, [selectedMenus]);
@@ -264,6 +266,10 @@ function FeedbackResultContent({
       );
 
       toast.success("식사 기록이 등록되었어요.");
+      requestChatMealRecordFocus({
+        dateKey: chatDateKey,
+        mealTime: targetMealTime,
+      });
       navigateBack({ fallbackTo: PATH.CHAT });
     } catch (error) {
       toast.warning(resolveErrorMessage(error));

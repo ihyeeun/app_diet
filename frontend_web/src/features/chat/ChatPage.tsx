@@ -10,6 +10,10 @@ import {
 } from "@/features/chat/components/ChatMealRecordBottomSheet";
 import { useSendMessageMutation } from "@/features/chat/hooks/mutations/useSendMessageMutation";
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
+import {
+  useChatMealRecordFocusRequest,
+  useClearChatMealRecordFocusRequest,
+} from "@/features/chat/stores/mealRecordFocus.store";
 import styles from "@/features/chat/styles/ChatPage.module.css";
 import {
   buildDiaryMealRecordRequest,
@@ -221,6 +225,8 @@ export default function ChatPage() {
     useTodayMealRecordRegisterMutation();
   const { mutateAsync: deleteDiaryMealRecordMutate, isPending: isDiaryMealDeletePending } =
     useTodayMealRecordDeleteWithRollbackMutation();
+  const chatMealRecordFocusRequest = useChatMealRecordFocusRequest();
+  const clearChatMealRecordFocusRequest = useClearChatMealRecordFocusRequest();
 
   const isMealRecordEditPending = isDiaryMealRegisterPending || isDiaryMealDeletePending;
 
@@ -388,6 +394,33 @@ export default function ChatPage() {
     },
     [cancelTimelineScroll],
   );
+
+  useEffect(() => {
+    if (!isTop || chatMealRecordFocusRequest === null) {
+      return;
+    }
+
+    const targetKey = getMealRecordTimelineItemKey(
+      chatMealRecordFocusRequest.dateKey,
+      chatMealRecordFocusRequest.mealTime,
+    );
+    const hasTargetMealRecord = timelineItems.some(
+      (item) => item.type === "mealRecord" && item.key === targetKey,
+    );
+
+    if (!hasTargetMealRecord) {
+      return;
+    }
+
+    commitMealRecordScroll(targetKey);
+    clearChatMealRecordFocusRequest(chatMealRecordFocusRequest.id);
+  }, [
+    chatMealRecordFocusRequest,
+    clearChatMealRecordFocusRequest,
+    commitMealRecordScroll,
+    isTop,
+    timelineItems,
+  ]);
 
   useLayoutEffect(() => {
     const main = mainRef.current;
