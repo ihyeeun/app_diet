@@ -74,7 +74,10 @@ export default function AppInfoPage() {
     <main className={styles.loginContainer}>
       <div className={styles.phoneFrame}>
         <div className={styles.loginWrapper}>
-          <img src="/login/login-logo.svg" alt="logo" height={70} />
+          <section className={styles.imageSection}>
+            <img src="/login/login-logo.svg" alt="logo" height={70} />
+            <img src="/login/login-image.png" alt="logo" className={styles.loginImage} />
+          </section>
 
           <section className={styles.loginActions}>
             <div className={styles.completeCopy}>
@@ -94,8 +97,6 @@ export default function AppInfoPage() {
               </button>
             ) : null}
           </section>
-
-          <img src="/login/login-image.svg" alt="logo" className={styles.loginImage} />
         </div>
       </div>
     </main>

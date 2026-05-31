@@ -43,9 +43,11 @@ export default function KakaoWebLoginPage() {
     <main className={styles.loginContainer}>
       <div className={styles.phoneFrame}>
         <div className={styles.loginWrapper}>
-          <img src="/login/login-logo.svg" alt="logo" height={70} />
+          <section className={styles.imageSection}>
+            <img src="/login/login-logo.svg" alt="logo" height={70} />
 
-          <img src="/login/login-image.svg" alt="logo" className={styles.loginImage} />
+            <img src="/login/login-image.png" alt="logo" className={styles.loginImage} />
+          </section>
 
           <section className={styles.loginActions}>
             <button
@@ -57,7 +59,7 @@ export default function KakaoWebLoginPage() {
               카카오로 계속하기
             </button>
             <p className={`${styles.loginFooter} typo-body3`}>
-              가입하면 Melo의 <br />
+              가입하면 melo의 <br />
               <a
                 href="https://third-princess-d57.notion.site/privacypolicy"
                 rel="noreferrer"
