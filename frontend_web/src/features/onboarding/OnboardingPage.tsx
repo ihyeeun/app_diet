@@ -214,10 +214,16 @@ export default function OnboardingPage() {
     };
 
     if (isWebOnboarding) {
+      const subCode = userData.subscribedCode?.trim() ?? "";
+      const webRegisterUserInfoPayload = {
+        ...registerUserInfoPayload,
+        subCode,
+      };
+
       authorizeSubCode(
-        { subCode: userData.subscribedCode?.trim() ?? "" },
+        { subCode },
         {
-          onSuccess: () => mutate(registerUserInfoPayload),
+          onSuccess: () => mutate(webRegisterUserInfoPayload),
         },
       );
       return;
