@@ -23,7 +23,7 @@ export default function SettingsFeedbackPage() {
   const { mutate, isPending: isSubmitPending } = useRegisterInquiryMutation();
 
   const trimmedFeedback = feedback.trim();
-  const canSubmit = trimmedFeedback.length > 0 && !isSubmitPending;
+  const canSubmit = trimmedFeedback.length > 0 && !isSubmitPending && appDeviceInfo !== null;
   const appInfoLabel = !isInNativeApp
     ? "앱 환경이 아니어서 앱/OS 정보를 표시하지 않습니다."
     : appDeviceInfo === null
@@ -62,16 +62,24 @@ export default function SettingsFeedbackPage() {
       return;
     }
 
-    mutate(trimmedFeedback, {
-      onSuccess: () => {
-        setFeedback("");
-        toast.success("의견이 접수되었어요");
-        navigate(-1);
+    mutate(
+      {
+        content: trimmedFeedback,
+        app_version: appDeviceInfo?.appVersion,
+        os_name: appDeviceInfo?.osName,
+        os_version: appDeviceInfo?.osVersion ?? "",
       },
-      onError: () => {
-        toast.warning("문의 등록에 실패했어요");
+      {
+        onSuccess: () => {
+          setFeedback("");
+          toast.success("의견이 접수되었어요");
+          navigate(-1);
+        },
+        onError: () => {
+          toast.warning("문의 등록에 실패했어요");
+        },
       },
-    });
+    );
   };
 
   return (

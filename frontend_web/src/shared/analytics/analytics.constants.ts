@@ -18,6 +18,10 @@ export const EVENT_NAME = {
   AI_COACH_RESPONSE_FAIL: "ai_coach_response_fail",
 
   RECOMMEND_MENU_SAVE: "recommend_menu_save",
+  RECOMMEND_MENU_CANCEL: "recommend_menu_cancel",
+
+  ONBOARDING_STEP_COMPLETE: "onboarding_step_complete",
+  USER_PROFILE_UPDATED: "user_profile_updated",
 } as const;
 
 export type AnalyticsEventName = (typeof EVENT_NAME)[keyof typeof EVENT_NAME];

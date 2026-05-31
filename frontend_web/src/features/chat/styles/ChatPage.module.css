@@ -558,12 +558,12 @@
 }
 
 .chipContainer {
-  background-color: var(--bg-white);
+  background-color: var(--bg-primary-2);
+  color: var(--label-primary);
   width: fit-content;
   padding: 8px 16px;
   border-radius: 100px;
   flex-shrink: 0;
-  border: 1px solid var(--border-neutral);
 }
 
 .textInputContainer {
@@ -835,4 +835,8 @@
   flex-direction: column;
   padding: 16px 20px;
   width: 95%;
+}
+
+.datelabel {
+  margin-bottom: 2px;
 }

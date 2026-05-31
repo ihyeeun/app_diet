@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
+import { useRequestChatMealRecordFocus } from "@/features/chat/stores/mealRecordFocus.store";
 import styles from "@/features/chat/styles/FeedbackDetailPage.module.css";
 import {
   buildDiaryMealRecordRequest,
@@ -73,6 +74,7 @@ export default function FeedbackDetailPage() {
   const { data: dayMeals, isPending: isDayMealsPending } = useDayMealsQuery(chatDateKey);
   const { mutateAsync: registerDiaryMealRecordMutate, isPending: isMealRegisterPending } =
     useTodayMealRecordRegisterMutation();
+  const requestChatMealRecordFocus = useRequestChatMealRecordFocus();
   const diaryMenuSelection = useMemo(() => {
     if (hasSelectionCallback || menuId === null) {
       return null;
@@ -140,6 +142,10 @@ export default function FeedbackDetailPage() {
       toast.success(
         diaryMenuSelection ? "식사 기록이 수정되었어요." : "식사 기록이 등록되었어요.",
       );
+      requestChatMealRecordFocus({
+        dateKey: chatDateKey,
+        mealTime: targetMealTime,
+      });
       navigateBack({ fallbackTo: PATH.CHAT });
     } catch (error) {
       toast.warning(resolveErrorMessage(error));

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
+import { useRequestChatMealRecordFocus } from "@/features/chat/stores/mealRecordFocus.store";
 import styles from "@/features/chat/styles/RecommendResultPage.module.css";
 import {
   buildDiaryMealRecordRequest,
@@ -17,8 +18,7 @@ import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery
 import { useTodayMealRecordRegisterMutation } from "@/features/meal-record/hooks/mutations/useTodayMealRecordMutation";
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { PATH } from "@/router/path";
-import { track } from "@/shared/analytics/analytics";
-import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
+import { trackRecommendMenuSave } from "@/shared/analytics/recommendMenuEvents";
 import { AppApiError } from "@/shared/api/appApi";
 import {
   type ChatHistoryItemResponseDto,
@@ -138,6 +138,7 @@ function RecommendResultContent({
     () => selectedMenusOverride ?? diaryMealRecordSelection?.menus ?? [],
     [diaryMealRecordSelection, selectedMenusOverride],
   );
+  const requestChatMealRecordFocus = useRequestChatMealRecordFocus();
   const selectedMenuIds = useMemo(() => {
     return new Set(selectedMenus.map((menu) => menu.id));
   }, [selectedMenus]);
@@ -190,26 +191,34 @@ function RecommendResultContent({
         selectedMenus,
         candidateIds: recommendationMenuIds,
       });
-
-      await registerDiaryMealRecordMutate(
-        buildDiaryMealRecordRequest({
-          dateKey: chatDateKey,
-          mealType,
-          selectedMenus: nextMenus,
-          image: getDiaryMealImage(dayMeals, targetMealTime),
-        }),
+      const previousSelectedMenuIds = new Set(
+        diaryMealRecordSelection?.menus.map((menu) => menu.id) ?? [],
+      );
+      const canceledMenus = recommendations.filter(
+        (menu) => previousSelectedMenuIds.has(menu.menu_id) && !selectedMenuIds.has(menu.menu_id),
       );
 
-      recommendations
-        .filter((menu) => selectedMenuIds.has(menu.menu_id))
-        .forEach((menu) => {
-          track(EVENT_NAME.RECOMMEND_MENU_SAVE, {
-            menu_name: menu.menu_name,
-            menu_id: menu.menu_id,
-          });
-        });
+      await registerDiaryMealRecordMutate(
+        {
+          ...buildDiaryMealRecordRequest({
+            dateKey: chatDateKey,
+            mealType,
+            selectedMenus: nextMenus,
+            image: getDiaryMealImage(dayMeals, targetMealTime),
+          }),
+          analytics: {
+            recommendMenuCancel: canceledMenus,
+          },
+        },
+      );
+
+      trackRecommendMenuSave(recommendations.filter((menu) => selectedMenuIds.has(menu.menu_id)));
 
       toast.success("식사 기록이 등록되었어요.");
+      requestChatMealRecordFocus({
+        dateKey: chatDateKey,
+        mealTime: targetMealTime,
+      });
       navigateBack({ fallbackTo: PATH.CHAT });
     } catch (error) {
       toast.warning(resolveErrorMessage(error));
