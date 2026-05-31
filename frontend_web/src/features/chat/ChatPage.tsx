@@ -2302,13 +2302,12 @@ function getChatTimelineItemKey(chatId: number) {
 }
 
 function toMealRecordTimelineItem(mealRecord: MealRecordViewModel): ChatTimelineItem {
-  const date = getMealRecordTimelineDate(mealRecord);
   const sortDate = getMealRecordSortDate(mealRecord);
 
   return {
     type: "mealRecord",
     key: getMealRecordTimelineItemKey(mealRecord.dateKey, mealRecord.time),
-    date,
+    date: sortDate,
     sortTime: parseDateValue(sortDate),
     mealRecord,
   };
@@ -2319,16 +2318,6 @@ function getMealRecordTimelineItemKey(dateKey: string, mealTime: MealTime) {
 }
 
 function compareChatTimelineItems(a: ChatTimelineItem, b: ChatTimelineItem) {
-  const aDateSortTime = getTimelineDateSortTime(a.date);
-  const bDateSortTime = getTimelineDateSortTime(b.date);
-
-  if (aDateSortTime !== null && bDateSortTime !== null && aDateSortTime !== bDateSortTime) {
-    return aDateSortTime - bDateSortTime;
-  }
-
-  if (aDateSortTime === null && bDateSortTime !== null) return -1;
-  if (aDateSortTime !== null && bDateSortTime === null) return 1;
-
   if (a.sortTime !== null && b.sortTime !== null && a.sortTime !== b.sortTime) {
     return a.sortTime - b.sortTime;
   }
@@ -2342,14 +2331,6 @@ function compareChatTimelineItems(a: ChatTimelineItem, b: ChatTimelineItem) {
   }
 
   return a.key.localeCompare(b.key);
-}
-
-function getTimelineDateSortTime(date: Date | null) {
-  if (!date) {
-    return null;
-  }
-
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
 function getTimelineItemTypeOrder(item: ChatTimelineItem) {
@@ -2379,10 +2360,6 @@ function getMealRecordSavedAt(mealRecord: Pick<MealRecordViewModel, "createdAt" 
 
   const createdAt = mealRecord.createdAt?.trim();
   return createdAt || null;
-}
-
-function getMealRecordTimelineDate(mealRecord: MealRecordViewModel) {
-  return parseDateKey(mealRecord.dateKey);
 }
 
 function getMealRecordSortDate(mealRecord: MealRecordViewModel) {
