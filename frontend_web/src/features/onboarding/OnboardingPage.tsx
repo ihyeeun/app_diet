@@ -212,7 +212,7 @@ export default function OnboardingPage() {
       persona_type: userData.persona_type ?? 0,
       eating_out_freq_weekly: userData.eating_out_freq_weekly ?? 0,
       job_type: userData.job_type ?? 0,
-      lunch_location: userData.lunch_location ?? 0,
+      lunch_location: userData.job_type === 0 ? userData.lunch_location ?? null : null,
     };
 
     if (isWebOnboarding) {
