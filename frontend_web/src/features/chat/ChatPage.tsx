@@ -2484,12 +2484,13 @@ function getChatTimelineItemKey(chatId: number) {
 }
 
 function toMealRecordTimelineItem(mealRecord: MealRecordViewModel): ChatTimelineItem {
+  const date = getMealRecordTimelineDate(mealRecord);
   const sortDate = getMealRecordSortDate(mealRecord);
 
   return {
     type: "mealRecord",
     key: getMealRecordTimelineItemKey(mealRecord.dateKey, mealRecord.time),
-    date: sortDate,
+    date,
     sortTime: parseDateValue(sortDate),
     mealRecord,
   };
@@ -2544,15 +2545,30 @@ function getMealRecordSavedAt(mealRecord: Pick<MealRecordViewModel, "createdAt" 
   return createdAt || null;
 }
 
+function getMealRecordTimelineDate(mealRecord: MealRecordViewModel) {
+  return parseDateKey(mealRecord.dateKey);
+}
+
 function getMealRecordSortDate(mealRecord: MealRecordViewModel) {
   const savedAt = getMealRecordSavedAt(mealRecord);
   const savedAtDate = savedAt ? parseDate(savedAt) : null;
 
   if (savedAtDate) {
-    return savedAtDate;
+    return getMealRecordDateWithSavedTime(mealRecord.dateKey, savedAtDate);
   }
 
   return getMealRecordFallbackDate(mealRecord);
+}
+
+function getMealRecordDateWithSavedTime(dateKey: string, savedAtDate: Date) {
+  const date = parseDateKey(dateKey);
+  date.setHours(
+    savedAtDate.getHours(),
+    savedAtDate.getMinutes(),
+    savedAtDate.getSeconds(),
+    savedAtDate.getMilliseconds(),
+  );
+  return date;
 }
 
 function getMealRecordFallbackDate(mealRecord: Pick<MealRecordViewModel, "dateKey" | "time">) {
