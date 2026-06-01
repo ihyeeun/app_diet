@@ -40,6 +40,10 @@ import { getDayMeals } from "@/features/home/api/dayMeal";
 import { queryKeys as homeQueryKeys } from "@/features/home/hooks/queries/queryKey";
 import type { DayMealSummary, MenuWithQuantity } from "@/features/home/utils/dayMealSummary";
 import {
+  MAX_MEAL_RECORD_MENUS,
+  MEAL_RECORD_MENU_LIMIT_MESSAGE,
+} from "@/features/meal-record/constants/menu.constants";
+import {
   DELETE_MEAL_RECORD_RESULT,
   useTodayMealRecordDeleteWithRollbackMutation,
   useTodayMealRecordRegisterMutation,
@@ -985,6 +989,11 @@ export default function ChatPage() {
       return;
     }
 
+    if (nextMealRecord.menus.length > MAX_MEAL_RECORD_MENUS) {
+      toast.warning(MEAL_RECORD_MENU_LIMIT_MESSAGE);
+      return;
+    }
+
     const hadMealRecord = getSelectedDiaryMenusByTime(dayMeals, nextMealRecord.time).length > 0;
     const scrollTargetKey = prepareMealRecordScroll(dateKey, nextMealRecord.time);
 
@@ -1260,6 +1269,11 @@ export default function ChatPage() {
       } catch {
         toast.warning("식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
+      return;
+    }
+
+    if (nextMenus.length > MAX_MEAL_RECORD_MENUS) {
+      toast.warning(MEAL_RECORD_MENU_LIMIT_MESSAGE);
       return;
     }
 
