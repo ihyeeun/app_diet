@@ -110,7 +110,7 @@ export function StackflowRuntime() {
 
   if (!isFeatureGuardReady) {
     // 웹앱 최초 진입 시 한 번, 프로필 구독 상태 기반 가드 설정 준비될 때까지 뜨는 로딩
-    return <LoadingScreen background="var(--bg-normal)" label="22222222" />;
+    return <LoadingScreen background="var(--bg-normal)" />;
   }
 
   return <StackComponent />;

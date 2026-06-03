@@ -74,7 +74,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Suspense fallback={<LoadingScreen background="var(--bg-normal)" label="1" />}>
+      <Suspense fallback={<LoadingScreen background="var(--bg-normal)" />}>
         <StackflowRuntime />
       </Suspense>
     </div>
