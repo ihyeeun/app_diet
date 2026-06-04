@@ -57,6 +57,10 @@ const FOOD_MARKER_BUBBLE_CONTENT_GAP = 8;
 const FOOD_MARKER_SCORE_TEXT_WIDTH = 35;
 const FOOD_MARKER_BUBBLE_TEXT_LINE_HEIGHT = 20;
 const FOOD_MARKER_FALLBACK_LAYOUT_SIZE = 360;
+const FOOD_MARKER_DEFAULT_BELOW_THRESHOLD = 0.18;
+const FOOD_MARKER_CLUSTER_SOURCE_BELOW_THRESHOLD = 0.42;
+const FOOD_MARKER_CLUSTER_SOURCE_PIN_SIZE = 28;
+const FOOD_MARKER_CLUSTER_SOURCE_BUBBLE_INLINE_MARGIN = 8;
 
 type FoodMarkerItem = {
   id: string;
@@ -87,6 +91,18 @@ type FoodMarkerRect = {
   left: number;
   right: number;
   top: number;
+};
+
+type FoodMarkerHorizontalClassOptions = {
+  bubbleWidth: number;
+  markerLayout: FoodMarkerLayout;
+};
+
+type FoodMarkerVerticalClassOptions = {
+  anchorEdgeOffset?: number;
+  belowThreshold?: number;
+  bubbleHeight: number;
+  markerLayout: FoodMarkerLayout;
 };
 
 export default function FeedbackResultPage() {
@@ -387,8 +403,8 @@ function FoodImageFeedbackPreview({
     () =>
       recognizedFoods.map((food, index) => {
         const matchedMenu = menuById.get(food.menu_id);
-        const markerX = clampPosition(food.position?.x ?? 0.5);
-        const markerY = clampPosition(food.position?.y ?? 0.5);
+        const markerX = getMarkerPosition(food.position?.x ?? 0.5);
+        const markerY = getMarkerPosition(food.position?.y ?? 0.5);
         const score = matchedMenu?.score;
         const label = matchedMenu?.menu_name ?? food.menu_name;
         const scoreText = typeof score === "number" ? `${Math.round(score)}점` : null;
@@ -410,6 +426,7 @@ function FoodImageFeedbackPreview({
     () => clusterFoodMarkers(foodMarkers, imageFeedbackSize),
     [foodMarkers, imageFeedbackSize],
   );
+  const markerLayout = useMemo(() => getFoodMarkerLayout(imageFeedbackSize), [imageFeedbackSize]);
   const foodMarkerSourcePinClusters = foodMarkerClusters.filter(
     (cluster) => cluster.markers.length > 1,
   );
@@ -471,6 +488,37 @@ function FoodImageFeedbackPreview({
     };
   }, []);
 
+  useEffect(() => {
+    if (!openSourceMarkerId) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      const targetElement = target instanceof Element ? target : target.parentElement;
+      const sourceMarkerElement = targetElement?.closest<HTMLElement>(
+        "[data-food-source-marker-id]",
+      );
+
+      if (sourceMarkerElement?.dataset.foodSourceMarkerId === openSourceMarkerId) {
+        return;
+      }
+
+      setOpenSourceMarkerId(null);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [openSourceMarkerId]);
+
   return (
     <section
       ref={imageFeedbackSectionRef}
@@ -486,17 +534,27 @@ function FoodImageFeedbackPreview({
         const markerX = cluster.x;
         const markerY = cluster.y;
         const isCluster = cluster.markers.length > 1;
+        const marker = cluster.markers[0];
+        const markerBubbleSize = marker ? getEstimatedFoodMarkerBubbleSize(marker) : null;
         const markerClassName = [
           styles.foodMarker,
-          getHorizontalMarkerClass(markerX),
-          getVerticalMarkerClass(markerY, false),
+          markerBubbleSize
+            ? getHorizontalMarkerClass(markerX, {
+                bubbleWidth: markerBubbleSize.width,
+                markerLayout,
+              })
+            : getHorizontalMarkerClass(markerX),
+          markerBubbleSize
+            ? getVerticalMarkerClass(markerY, {
+                bubbleHeight: markerBubbleSize.height,
+                markerLayout,
+              })
+            : getVerticalMarkerClass(markerY),
         ].join(" ");
 
         if (isCluster) {
           return null;
         }
-
-        const marker = cluster.markers[0];
 
         return (
           <button
@@ -528,17 +586,27 @@ function FoodImageFeedbackPreview({
       {foodMarkerSourcePinClusters.flatMap((cluster) =>
         cluster.markers.map((marker, markerIndex) => {
           const isSourceMarkerOpen = visibleOpenSourceMarkerId === marker.id;
+          const sourceBubbleSize = getEstimatedFoodClusterSourceBubbleSize(marker, markerLayout);
           const sourceMarkerClassName = [
             styles.foodClusterSourceMarker,
             isSourceMarkerOpen ? styles.foodClusterSourceMarkerOpen : "",
-            getHorizontalMarkerClass(marker.markerX),
-            getVerticalMarkerClass(marker.markerY, false),
+            getHorizontalMarkerClass(marker.markerX, {
+              bubbleWidth: sourceBubbleSize.width,
+              markerLayout,
+            }),
+            getVerticalMarkerClass(marker.markerY, {
+              anchorEdgeOffset: FOOD_MARKER_CLUSTER_SOURCE_PIN_SIZE / 2,
+              belowThreshold: FOOD_MARKER_CLUSTER_SOURCE_BELOW_THRESHOLD,
+              bubbleHeight: sourceBubbleSize.height,
+              markerLayout,
+            }),
           ].join(" ");
 
           return (
             <div
               key={`source-pin-${cluster.id}-${marker.id}`}
               className={sourceMarkerClassName}
+              data-food-source-marker-id={marker.id}
               style={{
                 left: `${marker.markerX * 100}%`,
                 top: `${marker.markerY * 100}%`,
@@ -651,12 +719,12 @@ function resolveErrorMessage(error: unknown) {
   return "식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.";
 }
 
-function clampPosition(value: number) {
+function getMarkerPosition(value: number) {
   if (!Number.isFinite(value)) {
     return 0.5;
   }
 
-  return Math.min(Math.max(value, 0.08), 0.92);
+  return value;
 }
 
 function clusterFoodMarkers(
@@ -748,8 +816,14 @@ function getFoodMarkerBubbleRect(
   const bubbleSize = getEstimatedFoodMarkerBubbleSize(marker);
   const anchorX = marker.markerX * markerLayout.width;
   const anchorY = marker.markerY * markerLayout.height;
-  const horizontalClass = getHorizontalMarkerClass(marker.markerX);
-  const verticalClass = getVerticalMarkerClass(marker.markerY, false);
+  const horizontalClass = getHorizontalMarkerClass(marker.markerX, {
+    bubbleWidth: bubbleSize.width,
+    markerLayout,
+  });
+  const verticalClass = getVerticalMarkerClass(marker.markerY, {
+    bubbleHeight: bubbleSize.height,
+    markerLayout,
+  });
   let left = anchorX - bubbleSize.width / 2;
 
   if (horizontalClass === styles.foodMarkerAlignStart) {
@@ -800,6 +874,35 @@ function getEstimatedFoodMarkerBubbleSize(marker: FoodMarkerItem) {
   };
 }
 
+function getEstimatedFoodClusterSourceBubbleSize(
+  marker: FoodMarkerItem,
+  markerLayout: FoodMarkerLayout,
+) {
+  const sourceBubbleWidth = Math.min(
+    FOOD_MARKER_BUBBLE_MAX_WIDTH,
+    Math.max(
+      FOOD_MARKER_BUBBLE_MIN_WIDTH,
+      markerLayout.width - FOOD_MARKER_CLUSTER_SOURCE_BUBBLE_INLINE_MARGIN,
+    ),
+  );
+  const scoreWidth = marker.scoreText ? FOOD_MARKER_SCORE_TEXT_WIDTH : 0;
+  const contentGap = marker.scoreText ? FOOD_MARKER_BUBBLE_CONTENT_GAP : 0;
+  const labelWidth = getEstimatedTextWidth(marker.label);
+  const labelContentWidth = Math.max(
+    1,
+    sourceBubbleWidth - scoreWidth - contentGap - FOOD_MARKER_BUBBLE_HORIZONTAL_PADDING,
+  );
+  const lineCount = Math.max(1, Math.ceil(labelWidth / labelContentWidth));
+
+  return {
+    height: Math.max(
+      FOOD_MARKER_BUBBLE_MIN_HEIGHT,
+      lineCount * FOOD_MARKER_BUBBLE_TEXT_LINE_HEIGHT + 20,
+    ),
+    width: sourceBubbleWidth,
+  };
+}
+
 function getEstimatedTextWidth(text: string) {
   return Array.from(text).reduce((width, character) => {
     if (/\s/.test(character)) {
@@ -832,7 +935,22 @@ function getFoodMarkerClusterId(markers: FoodMarkerItem[]) {
   return markers.map((marker) => marker.id).join("__");
 }
 
-function getHorizontalMarkerClass(x: number) {
+function getHorizontalMarkerClass(x: number, options?: FoodMarkerHorizontalClassOptions) {
+  if (options && options.markerLayout.width > 0 && options.bubbleWidth > 0) {
+    const anchorX = x * options.markerLayout.width;
+    const halfBubbleWidth = options.bubbleWidth / 2;
+
+    if (anchorX < halfBubbleWidth) {
+      return styles.foodMarkerAlignStart;
+    }
+
+    if (anchorX > options.markerLayout.width - halfBubbleWidth) {
+      return styles.foodMarkerAlignEnd;
+    }
+
+    return styles.foodMarkerAlignCenter;
+  }
+
   if (x < 0.28) {
     return styles.foodMarkerAlignStart;
   }
@@ -844,8 +962,31 @@ function getHorizontalMarkerClass(x: number) {
   return styles.foodMarkerAlignCenter;
 }
 
-function getVerticalMarkerClass(y: number, isCluster: boolean) {
-  const belowThreshold = isCluster ? 0.42 : 0.18;
+function getVerticalMarkerClass(y: number, options?: FoodMarkerVerticalClassOptions) {
+  const belowThreshold = options?.belowThreshold ?? FOOD_MARKER_DEFAULT_BELOW_THRESHOLD;
+
+  if (options && options.markerLayout.height > 0 && options.bubbleHeight > 0) {
+    const anchorY = y * options.markerLayout.height;
+    const anchorEdgeOffset = options.anchorEdgeOffset ?? 0;
+    const requiredSpace =
+      options.bubbleHeight + FOOD_MARKER_BUBBLE_ANCHOR_GAP + anchorEdgeOffset;
+    const hasSpaceAbove = anchorY >= requiredSpace;
+    const hasSpaceBelow = options.markerLayout.height - anchorY >= requiredSpace;
+
+    if (!hasSpaceAbove && hasSpaceBelow) {
+      return styles.foodMarkerBelow;
+    }
+
+    if (!hasSpaceBelow && hasSpaceAbove) {
+      return styles.foodMarkerAbove;
+    }
+
+    if (!hasSpaceAbove && !hasSpaceBelow) {
+      return anchorY < options.markerLayout.height / 2
+        ? styles.foodMarkerBelow
+        : styles.foodMarkerAbove;
+    }
+  }
 
   return y < belowThreshold ? styles.foodMarkerBelow : styles.foodMarkerAbove;
 }
