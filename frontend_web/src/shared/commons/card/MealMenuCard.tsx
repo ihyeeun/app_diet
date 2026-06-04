@@ -20,7 +20,7 @@ type MealMenuCardProps = {
   unit?: number;
   weight?: number;
   quantity?: number;
-  suggestionChipLabel?: boolean;
+  isAiEstimated?: boolean;
   data_source?: MenuDataSource | number;
   icon?: MealMenuCardIcon;
   state?: MealMenuCardState;
@@ -79,7 +79,7 @@ export function MealMenuCard({
   weight,
   quantity,
   data_source,
-  suggestionChipLabel,
+  isAiEstimated,
   icon = "delete",
   state = "default",
   className,
@@ -110,7 +110,7 @@ export function MealMenuCard({
 
   const isSelected = state === "select";
   const isPersonalMenu = data_source === MENU_DATA_SOURCE.PERSONAL;
-  const shouldShowChipList = isPersonalMenu || suggestionChipLabel;
+  const shouldShowChipList = isPersonalMenu || isAiEstimated;
   const safeQuantityInput =
     typeof quantity === "number" && Number.isFinite(quantity) && quantity > 0 ? quantity : null;
   const safeWeight = toPositiveNumber(weight);
@@ -122,6 +122,7 @@ export function MealMenuCard({
   const displayedCalories =
     typeof calories === "number" && Number.isFinite(calories) ? calories : null;
   const weightUnitText = unit === 1 ? "ml" : "g";
+  const shouldShowUnitQuantity = unit_quantity?.trim() === "인분";
 
   return (
     <article
@@ -162,10 +163,12 @@ export function MealMenuCard({
                 {brand}
               </span>
             )}
-            <span className={`${styles.unitAmount} typo-label4`}>
-              {formatQuantity(safeDisplayUnitCount)}
-              {unit_quantity}
-            </span>
+            {shouldShowUnitQuantity && (
+              <span className={`${styles.unitAmount} typo-label4`}>
+                {formatQuantity(safeDisplayUnitCount)}
+                {unit_quantity}
+              </span>
+            )}
             <span
               className={`${styles.unitAmount} typo-label4`}
             >{`(${formatQuantity(resolvedConsumedWeight)}${weightUnitText})`}</span>
@@ -181,7 +184,7 @@ export function MealMenuCard({
       {shouldShowChipList && (
         <div className={styles.chipList}>
           {isPersonalMenu && <DataSourceBadge variant="personal" active={isSelected} />}
-          {suggestionChipLabel && (
+          {isAiEstimated && (
             <DataSourceBadge variant="aiEstimated" active={isSelected} label={"AI 추정치"} />
           )}
         </div>

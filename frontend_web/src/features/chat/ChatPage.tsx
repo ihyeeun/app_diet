@@ -1469,11 +1469,7 @@ export default function ChatPage() {
                     <div className={styles.assistantMessageContent}>
                       <AssistantMessageBubbles
                         message={chatItem.response_payload.intro_message}
-                        timeText={
-                          chatItem.response_payload.chat_category === "recommendation"
-                            ? assistantTimeText
-                            : undefined
-                        }
+                        timeText={assistantTimeText}
                       />
 
                       {chatItem.response_payload.chat_category === "general" ? (
@@ -2054,7 +2050,7 @@ function RecommendationSection({
                 </span>
               )}
               <span className={`${styles.recommendAmount} typo-label4`}>
-                1{topRecommendation.unit_quantity} ({topRecommendation.weight}
+                1{getServingUnitLabel(topRecommendation.unit_quantity)} ({topRecommendation.weight}
                 {topRecommendation.unit === 0 ? "g" : "ml"})
               </span>
             </p>
@@ -2117,7 +2113,6 @@ function FeedbackSection({
   chatId,
   feedback,
   hasImage,
-  timeText,
   onMealRecordClick,
   onMealRecordCancelClick,
   isMealRecorded,
@@ -2277,9 +2272,6 @@ function FeedbackSection({
           </div>
         </div>
       </article>
-
-      <AssistantMessageBubbles message={feedback.feedback_summary} />
-      <AssistantMessageBubbles message={feedback.feedback_reason} timeText={timeText} />
     </div>
   );
 }
@@ -2651,6 +2643,11 @@ function getMealRecordTimelineItemKey(dateKey: string, mealTime: MealTime) {
 }
 
 function compareChatTimelineItems(a: ChatTimelineItem, b: ChatTimelineItem) {
+  const dateOrderDifference = compareTimelineItemDates(a, b);
+  if (dateOrderDifference !== 0) {
+    return dateOrderDifference;
+  }
+
   if (a.sortTime !== null && b.sortTime !== null && a.sortTime !== b.sortTime) {
     return a.sortTime - b.sortTime;
   }
@@ -2664,6 +2661,23 @@ function compareChatTimelineItems(a: ChatTimelineItem, b: ChatTimelineItem) {
   }
 
   return a.key.localeCompare(b.key);
+}
+
+function compareTimelineItemDates(a: ChatTimelineItem, b: ChatTimelineItem) {
+  if (a.date && b.date) {
+    const aDateKey = formatDateKey(a.date);
+    const bDateKey = formatDateKey(b.date);
+
+    if (aDateKey !== bDateKey) {
+      return aDateKey < bDateKey ? -1 : 1;
+    }
+
+    return 0;
+  }
+
+  if (!a.date && b.date) return -1;
+  if (a.date && !b.date) return 1;
+  return 0;
 }
 
 function getTimelineItemTypeOrder(item: ChatTimelineItem) {
@@ -2712,6 +2726,10 @@ function getMealRecordSortDate(mealRecord: MealRecordViewModel) {
 
 function getMealRecordDateWithSavedTime(dateKey: string, savedAtDate: Date) {
   const date = parseDateKey(dateKey);
+  const savedAtDateKey = formatDateKey(savedAtDate);
+  const dayOffset = getDateKeyDayDifference(dateKey, savedAtDateKey);
+
+  date.setDate(date.getDate() + dayOffset);
   date.setHours(
     savedAtDate.getHours(),
     savedAtDate.getMinutes(),
@@ -2719,6 +2737,14 @@ function getMealRecordDateWithSavedTime(dateKey: string, savedAtDate: Date) {
     savedAtDate.getMilliseconds(),
   );
   return date;
+}
+
+function getDateKeyDayDifference(fromDateKey: string, toDateKey: string) {
+  const fromDate = parseDateKey(fromDateKey);
+  const toDate = parseDateKey(toDateKey);
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+  return Math.round((toDate.getTime() - fromDate.getTime()) / millisecondsPerDay);
 }
 
 function getMealRecordFallbackDate(mealRecord: Pick<MealRecordViewModel, "dateKey" | "time">) {
@@ -2753,8 +2779,12 @@ function parseDateValue(value: Date | string | null | undefined) {
   return date ? date.getTime() : null;
 }
 
+function getServingUnitLabel(unitQuantity: string) {
+  return unitQuantity.trim() === "인분" ? unitQuantity : "기준량";
+}
+
 function formatMenuServing(menu: FeedbackDto["menus"][number]) {
-  return `1${menu.unit_quantity} (${formatNumberWithMaxOneDecimal(menu.weight)}${menu.unit === 0 ? "g" : "ml"})`;
+  return `1${getServingUnitLabel(menu.unit_quantity)} (${formatNumberWithMaxOneDecimal(menu.weight)}${menu.unit === 0 ? "g" : "ml"})`;
 }
 
 function resolveErrorMessage(
