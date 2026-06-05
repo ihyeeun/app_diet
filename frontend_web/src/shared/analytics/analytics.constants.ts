@@ -21,6 +21,8 @@ export const EVENT_NAME = {
   RECOMMEND_MENU_CANCEL: "recommend_menu_cancel",
 
   USER_PROFILE_UPDATED: "user_profile_updated",
+
+  CLICK_FEEDBACK_BUTTON: "click_feedback_button",
 } as const;
 
 export type AnalyticsEventName = (typeof EVENT_NAME)[keyof typeof EVENT_NAME];
