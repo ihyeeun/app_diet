@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
 import { useRequestChatMealRecordFocus } from "@/features/chat/stores/mealRecordFocus.store";
-import styles from "@/features/chat/styles/FeedbackDetailPage.module.css";
+import styles from "@/features/chat/styles/ChatMenuDetailPage.module.css";
 import {
   buildDiaryMealRecordRequest,
   getChatDateKey,
@@ -13,7 +13,7 @@ import {
 } from "@/features/chat/utils/chatDiaryMealRecord";
 import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
 import {
-  type FeedbackDetailNavigationState,
+  type ChatMenuDetailNavigationState,
   getFeedbackResultPath,
   getSafeChatId,
   getSafeMenuId,
@@ -43,18 +43,19 @@ import {
   useSearchParams,
 } from "@/shared/navigation/stackflowNavigation";
 
-export default function FeedbackDetailPage() {
+export default function ChatMenuDetailPage() {
   const navigate = useNavigate();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selection, setSelection] = useState<MealMenuNutrientSelection | null>(null);
-  const location = useLocation<FeedbackDetailNavigationState>();
+  const location = useLocation<ChatMenuDetailNavigationState>();
   const [searchParams] = useSearchParams();
   const chatId = getSafeChatId(searchParams.get("chatId"));
   const menuId = getSafeMenuId(searchParams.get("menuId"));
   const onConfirmSelection = location.state?.onConfirmSelection;
   const hasSelectionCallback = typeof onConfirmSelection === "function";
   const fallbackTo =
-    chatId === null || !hasSelectionCallback ? PATH.CHAT : getFeedbackResultPath(chatId);
+    location.state?.fallbackTo ??
+    (chatId === null || !hasSelectionCallback ? PATH.CHAT : getFeedbackResultPath(chatId));
   const initialSelection =
     location.state?.initialSelection?.menuId === menuId ? location.state.initialSelection : null;
 

@@ -141,9 +141,8 @@ const ChatPage = createGuardedLazyActivity(
 );
 const DiaryPage = createLazyActivity(() => import("@/features/diary/DiaryPage"));
 const RecommendResultPage = createLazyActivity(() => import("@/features/chat/RecommendResultPage"));
-const RecommendDetailPage = createLazyActivity(() => import("@/features/chat/RecommendDetailPage"));
+const ChatMenuDetailPage = createLazyActivity(() => import("@/features/chat/ChatMenuDetailPage"));
 const FeedbackResultPage = createLazyActivity(() => import("@/features/chat/FeedbackResultPage"));
-const FeedbackDetailPage = createLazyActivity(() => import("@/features/chat/FeedbackDetailPage"));
 const ChatFoodCameraPage = createGuardedLazyActivity(
   FEATURE_GUARD.FOOD_CAMERA,
   () => import("@/features/camera/ChatFoodCameraPage"),
@@ -172,14 +171,14 @@ const ACTIVITIES = {
   BrandSearch,
   Chat: ChatPage,
   RecommendResult: RecommendResultPage,
-  RecommendDetail: RecommendDetailPage,
+  RecommendDetail: ChatMenuDetailPage,
   Diary: DiaryPage,
   GoalEdit: GoalEditPage,
   GoalEditTargetCalories: GoalEditTargetCaloriesPage,
   GoalEditNutrient: GoalEditNutrientPage,
   AccountDelete: createStaticActivity(AccountDeletePage),
   FeedbackResult: FeedbackResultPage,
-  FeedbackDetail: FeedbackDetailPage,
+  FeedbackDetail: ChatMenuDetailPage,
   ChatFoodCamera: ChatFoodCameraPage,
   AppInfo: AppInfoPage,
 };

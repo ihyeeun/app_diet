@@ -13,7 +13,13 @@ import {
   type SelectedDiaryMealRecordMenu,
 } from "@/features/chat/utils/chatDiaryMealRecord";
 import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
-import { getRecommendDetailPath, getSafeChatId } from "@/features/chat/utils/recommendNavigation";
+import {
+  type ChatMenuDetailNavigationState,
+  type ChatMenuDetailSelectionPayload,
+  getRecommendDetailPath,
+  getRecommendResultPath,
+  getSafeChatId,
+} from "@/features/chat/utils/recommendNavigation";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
 import {
   MAX_MEAL_RECORD_MENUS,
@@ -158,6 +164,49 @@ function RecommendResultContent({
     return recommendations;
   }, [recommendations, selectedFilter]);
 
+  const handleConfirmDetailSelection = (selection: ChatMenuDetailSelectionPayload) => {
+    if (isDayMealsPending) {
+      return;
+    }
+
+    setSelectedMenusOverride((prev) => {
+      const currentMenus = prev ?? selectedMenus;
+      const nextMenu: SelectedMealRecordMenu = {
+        id: selection.menuId,
+        quantity: selection.quantity,
+        mode: selection.mode,
+      };
+      const existingIndex = currentMenus.findIndex((menu) => menu.id === selection.menuId);
+
+      if (existingIndex === -1) {
+        return [...currentMenus, nextMenu];
+      }
+
+      return currentMenus.map((menu) => (menu.id === selection.menuId ? nextMenu : menu));
+    });
+  };
+
+  const handleMenuClick = (menuId: number) => {
+    if (isDayMealsPending) {
+      return;
+    }
+
+    const initialSelection = selectedMenus.find((menu) => menu.id === menuId);
+    const state: ChatMenuDetailNavigationState = {
+      fallbackTo: getRecommendResultPath(chatItem.id),
+      initialSelection: initialSelection
+        ? {
+            menuId,
+            quantity: initialSelection.quantity,
+            mode: initialSelection.mode,
+          }
+        : null,
+      onConfirmSelection: handleConfirmDetailSelection,
+    };
+
+    navigate(getRecommendDetailPath(chatItem.id, menuId), { state });
+  };
+
   const handleToggleMenu = (menu: ChatRecommendItemResponseDto) => {
     if (isDayMealsPending) {
       return;
@@ -208,19 +257,17 @@ function RecommendResultContent({
         (menu) => previousSelectedMenuIds.has(menu.menu_id) && !selectedMenuIds.has(menu.menu_id),
       );
 
-      await registerDiaryMealRecordMutate(
-        {
-          ...buildDiaryMealRecordRequest({
-            dateKey: chatDateKey,
-            mealType,
-            selectedMenus: nextMenus,
-            image: getDiaryMealImage(dayMeals, targetMealTime),
-          }),
-          analytics: {
-            recommendMenuCancel: canceledMenus,
-          },
+      await registerDiaryMealRecordMutate({
+        ...buildDiaryMealRecordRequest({
+          dateKey: chatDateKey,
+          mealType,
+          selectedMenus: nextMenus,
+          image: getDiaryMealImage(dayMeals, targetMealTime),
+        }),
+        analytics: {
+          recommendMenuCancel: canceledMenus,
         },
-      );
+      });
 
       trackRecommendMenuSave(recommendations.filter((menu) => selectedMenuIds.has(menu.menu_id)));
 
@@ -279,7 +326,6 @@ function RecommendResultContent({
                   <MealMenuCard
                     rank={item.rank}
                     name={item.menu_name}
-                    description={item.one_line_summary}
                     calories={item.calories}
                     unit_quantity={item.unit_quantity}
                     brand={item.brand}
@@ -288,7 +334,7 @@ function RecommendResultContent({
                     unit={item.unit}
                     icon={isSelected ? "check" : "add"}
                     state={isSelected ? "select" : "default"}
-                    onClick={() => navigate(getRecommendDetailPath(chatItem.id, item.menu_id))}
+                    onClick={() => handleMenuClick(item.menu_id)}
                     onIconClick={isDayMealsPending ? undefined : () => handleToggleMenu(item)}
                   />
                 </li>
@@ -340,7 +386,12 @@ function RecommendResultSkeleton() {
                   <div className={styles.metaRow}>
                     <Skeleton width="30%" height={16} radius={999} />
                     <Skeleton width="26%" height={16} radius={999} />
-                    <Skeleton className={`${styles.calories} textNoWrap`} width="26%" height={22} radius={999} />
+                    <Skeleton
+                      className={`${styles.calories} textNoWrap`}
+                      width="26%"
+                      height={22}
+                      radius={999}
+                    />
                   </div>
                 </div>
               </div>

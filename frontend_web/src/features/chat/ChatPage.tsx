@@ -2074,9 +2074,6 @@ function RecommendationSection({
 
         <div className={styles.recommendContents}>
           <p className={`${styles.recommendMenuName} typo-title2`}>{topRecommendation.menu_name}</p>
-          <p className={`${styles.recommendSummary} typo-label4`}>
-            {topRecommendation.one_line_summary}
-          </p>
           <div className={styles.recommendMetaRow}>
             <p className={styles.menuInfoRow}>
               {topRecommendation.brand && (
