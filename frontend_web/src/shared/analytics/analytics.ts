@@ -107,10 +107,6 @@ export function identifyAnalyticsUser(source: AnalyticsUserIdentitySource) {
   syncUserProperties(buildAnalyticsUserProperties(source));
 }
 
-export function identifyUserProperties(source: Parameters<typeof buildAnalyticsUserProperties>[0]) {
-  syncUserProperties(buildAnalyticsUserProperties(source));
-}
-
 export function identifyNickname(nickname?: string | null) {
   const normalizedNickname = nickname?.trim() ?? null;
   if (!normalizedNickname) {
@@ -118,9 +114,7 @@ export function identifyNickname(nickname?: string | null) {
     return;
   }
 
-  identifyUserProperties({
-    nickname: normalizedNickname,
-  });
+  syncUserProperties({ nickname: normalizedNickname });
 }
 
 export function clearAnalyticsUserProperties() {

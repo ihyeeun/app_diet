@@ -95,27 +95,3 @@ export function isRatioChanged(initial: GoalEditDraft, draft: GoalEditDraft) {
     Math.abs(draft.fat - initial.fat) >= RATIO_TOLERANCE
   );
 }
-
-export function toUpdatedProfile(
-  previous: ProfileResponseDto,
-  draft: GoalEditDraft,
-): ProfileResponseDto {
-  const nextTargetRatio: [number, number, number] = [
-    draft.carbs ?? previous.target_ratio[0],
-    draft.protein ?? previous.target_ratio[1],
-    draft.fat ?? previous.target_ratio[2],
-  ];
-
-  return {
-    ...previous,
-    gender: draft.gender ?? previous.gender,
-    birthYear: draft.birthYear ?? previous.birthYear,
-    height: draft.height ?? previous.height,
-    weight: draft.weight ?? previous.weight,
-    activity: draft.activity ?? previous.activity,
-    goal: draft.goal ?? previous.goal,
-    target_weight: draft.target_weight ?? previous.target_weight,
-    target_calories: draft.target_calories ?? previous.target_calories,
-    target_ratio: nextTargetRatio,
-  };
-}
