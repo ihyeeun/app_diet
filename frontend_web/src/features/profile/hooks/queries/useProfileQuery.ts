@@ -4,23 +4,31 @@ import { useEffect } from "react";
 import { getProfile } from "@/features/profile/api/profile";
 import { queryKeys } from "@/features/profile/hooks/queries/queryKey";
 import { identifyAnalyticsUser } from "@/shared/analytics/analytics";
+import { useSetTargets } from "@/shared/stores/targetNutrient.store";
 
 type UseGetProfileQueryOptions = {
   enabled?: boolean;
 };
 
 export function useGetProfileQuery(options?: UseGetProfileQueryOptions) {
+  const setTargets = useSetTargets();
+  const isEnabled = options?.enabled;
+  const shouldSyncProfileSideEffects = isEnabled !== false;
   const query = useQuery({
     queryKey: queryKeys.profile,
     queryFn: getProfile,
     staleTime: Infinity,
-    enabled: options?.enabled,
+    enabled: isEnabled,
   });
 
   useEffect(() => {
-    if (!query.data) return;
+    if (!shouldSyncProfileSideEffects || !query.data) return;
     identifyAnalyticsUser(query.data);
-  }, [query.data]);
+    setTargets({
+      target_calories: query.data.target_calories,
+      target_ratio: query.data.target_ratio,
+    });
+  }, [query.data, setTargets, shouldSyncProfileSideEffects]);
 
   return query;
 }

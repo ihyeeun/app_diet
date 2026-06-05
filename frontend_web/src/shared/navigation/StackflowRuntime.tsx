@@ -2,14 +2,8 @@ import { useEffect } from "react";
 
 import { useGetProfileQuery } from "@/features/profile/hooks/queries/useProfileQuery";
 import { PATH } from "@/router/path";
-import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
 import { LoadingScreen } from "@/shared/commons/loading/Loading";
 import { setFreeUserGuardEnabled } from "@/shared/guards/featureGuard";
-import {
-  useSetTargets,
-  useTargetsLoadedState,
-  useTargetsState,
-} from "@/shared/stores/targetNutrient.store";
 
 import {
   getStackflowStackComponent,
@@ -51,29 +45,8 @@ function useSyncFeatureGuardFromProfile() {
   return !shouldFetchProfile || typeof isSubscribed === "boolean" || isError;
 }
 
-function useSyncTargetsFromProfile() {
-  const hasTargetsLoaded = useTargetsLoadedState();
-  const targets = useTargetsState();
-  const setTargets = useSetTargets();
-  const shouldFetchProfile =
-    hasTargetsLoaded && !targets && isNativeApp() && shouldFetchProfileForCurrentPath();
-  const { data: profile } = useGetProfileQuery({ enabled: shouldFetchProfile });
-
-  useEffect(() => {
-    if (!profile || targets) {
-      return;
-    }
-
-    setTargets({
-      target_calories: profile.target_calories,
-      target_ratio: profile.target_ratio,
-    });
-  }, [profile, setTargets, targets]);
-}
-
 export function StackflowRuntime() {
   const isFeatureGuardReady = useSyncFeatureGuardFromProfile();
-  useSyncTargetsFromProfile();
 
   useEffect(() => {
     const handleWebNavigationCommand = (event: Event) => {

@@ -16,7 +16,6 @@ import { Skeleton, SkeletonStatus } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 import {
-  useSetTargets,
   useTargetsLoadedState,
   useTargetsState,
 } from "@/shared/stores/targetNutrient.store";
@@ -39,25 +38,13 @@ export default function PreviewTodayScoreSection({
   const { data: dayMealSummary, isPending: isSummaryPending } = useDayMealsQuery(selectedDate);
 
   const targets = useTargetsState();
-  const setTargets = useSetTargets();
   const hasTargetsLoaded = useTargetsLoadedState();
   const targetCalories = resolveTargetCalories(targets);
   const hasTargetCalories = targetCalories !== null;
   const shouldFetchProfile = hasTargetsLoaded && !hasTargetCalories;
-  const { data: profile, isPending: isProfilePending } = useGetProfileQuery({
+  const { isPending: isProfilePending } = useGetProfileQuery({
     enabled: shouldFetchProfile,
   });
-
-  useEffect(() => {
-    if (!profile || hasTargetCalories) {
-      return;
-    }
-
-    setTargets({
-      target_calories: profile.target_calories,
-      target_ratio: profile.target_ratio,
-    });
-  }, [hasTargetCalories, profile, setTargets]);
 
   const nutritionInput =
     hasValidTargets(targets) && dayMealSummary
