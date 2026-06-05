@@ -54,6 +54,7 @@ type AppWebViewScreenProps = {
 };
 
 type WebViewOpenWindowEvent = Parameters<NonNullable<WebViewProps["onOpenWindow"]>>[0];
+type WebViewLoadProgressEvent = Parameters<NonNullable<WebViewProps["onLoadProgress"]>>[0];
 type WebViewLoadErrorEvent = Parameters<NonNullable<WebViewProps["onError"]>>[0];
 type WebViewHttpErrorEvent = Parameters<NonNullable<WebViewProps["onHttpError"]>>[0];
 type WebViewLoadError = {
@@ -345,7 +346,7 @@ export default function AppWebViewScreen({
   const tabBarHiddenByPathRef = useRef(false);
   const tabBarHiddenByWebRef = useRef(false);
   const [webViewKey, setWebViewKey] = useState(0);
-  const [isWebViewLoading, setIsWebViewLoading] = useState(true);
+  const [isInitialWebViewLoading, setIsInitialWebViewLoading] = useState(true);
   const [webViewLoadError, setWebViewLoadError] = useState<WebViewLoadError | null>(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -623,14 +624,14 @@ export default function AppWebViewScreen({
     webViewRef.current?.injectJavaScript(`${safeAreaSyncScript}true;`);
   }, [safeAreaSyncScript]);
 
-  const onLoadStart = useCallback(() => {
-    hasWebViewLoadErrorRef.current = false;
-    setIsWebViewLoading(true);
-    setWebViewLoadError(null);
+  const onLoadProgress = useCallback((event: WebViewLoadProgressEvent) => {
+    if (event.nativeEvent.progress >= 1) {
+      setIsInitialWebViewLoading(false);
+    }
   }, []);
 
   const onLoadEnd = useCallback(() => {
-    setIsWebViewLoading(false);
+    setIsInitialWebViewLoading(false);
 
     if (hasWebViewLoadErrorRef.current) {
       return;
@@ -647,7 +648,7 @@ export default function AppWebViewScreen({
     const error = formatWebViewLoadError(event);
 
     hasWebViewLoadErrorRef.current = true;
-    setIsWebViewLoading(false);
+    setIsInitialWebViewLoading(false);
     setWebViewLoadError(error);
     console.warn("[WebView] load failed", event.nativeEvent);
   }, []);
@@ -657,7 +658,7 @@ export default function AppWebViewScreen({
     if (!error) return;
 
     hasWebViewLoadErrorRef.current = true;
-    setIsWebViewLoading(false);
+    setIsInitialWebViewLoading(false);
     setWebViewLoadError(error);
     console.warn("[WebView] http error", event.nativeEvent);
   }, []);
@@ -668,7 +669,7 @@ export default function AppWebViewScreen({
     latestWebPathRef.current = null;
     pendingTabPathRef.current = isTabWebView ? normalizedTabPath : null;
     setWebViewLoadError(null);
-    setIsWebViewLoading(true);
+    setIsInitialWebViewLoading(true);
     setWebViewKey((key) => key + 1);
   }, [isTabWebView, normalizedTabPath]);
 
@@ -698,7 +699,7 @@ export default function AppWebViewScreen({
         source={webViewSource}
         injectedJavaScriptBeforeContentLoaded={injectedScriptBeforeContentLoaded}
         onMessage={onMessage}
-        onLoadStart={onLoadStart}
+        onLoadProgress={onLoadProgress}
         onLoadEnd={onLoadEnd}
         onError={onLoadError}
         onHttpError={onHttpError}
@@ -715,7 +716,7 @@ export default function AppWebViewScreen({
         showsVerticalScrollIndicator={false}
         onOpenWindow={onOpenWindow}
       />
-      {isWebViewLoading && !webViewLoadError ? (
+      {isInitialWebViewLoading && !webViewLoadError ? (
         <View pointerEvents="none" style={styles.loadingOverlay}>
           <ActivityIndicator size="small" color="#ff8000" />
         </View>
