@@ -3,6 +3,7 @@ import { useQueries } from "@tanstack/react-query";
 import type { FormEvent, KeyboardEvent, MouseEvent, PointerEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import { AssistantMessageText } from "@/features/chat/components/AssistantMessageText";
 import { AssistantPendingMessage } from "@/features/chat/components/AssistantPendingMessage";
 import {
   ChatMealRecordBottomSheet,
@@ -1693,15 +1694,26 @@ function ChatHistorySkeleton() {
 }
 
 function AssistantMessageBubbles({ message, timeText }: { message: string; timeText?: string }) {
+  const bubbleMessages = message.split(/\r?\n/).filter((bubbleMessage) => bubbleMessage.trim());
+
   return (
-    <p
-      className={`${styles.assistantBubble} ${
-        timeText ? styles.assistantBubbleWithTime : ""
-      } typo-body2`}
-      data-time={timeText}
-    >
-      {message}
-    </p>
+    <>
+      {bubbleMessages.map((bubbleMessage, index) => {
+        const isLastBubble = index === bubbleMessages.length - 1;
+
+        return (
+          <p
+            key={`${index}-${bubbleMessage}`}
+            className={`${styles.assistantBubble} ${
+              timeText && isLastBubble ? styles.assistantBubbleWithTime : ""
+            } typo-body2`}
+            data-time={timeText && isLastBubble ? timeText : undefined}
+          >
+            <AssistantMessageText text={bubbleMessage} />
+          </p>
+        );
+      })}
+    </>
   );
 }
 

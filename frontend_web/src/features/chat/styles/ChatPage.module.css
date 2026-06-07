@@ -269,6 +269,10 @@
   max-width: 96%;
 }
 
+.assistantBubble strong {
+  font-weight: var(--fw-bold);
+}
+
 .assistantBubbleWithTime,
 .mealRecordCardWithTime {
   position: relative;
