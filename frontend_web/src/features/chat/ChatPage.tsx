@@ -392,7 +392,6 @@ export default function ChatPage() {
   const endAnchorRef = useRef<HTMLDivElement>(null);
   const timelineScrollElementRefs = useRef(new Map<string, HTMLElement>());
   const timelineScrollRequestIdRef = useRef(0);
-  const pendingChatResponseAfterIdRef = useRef<number | null>(null);
   const pendingMealRecordScrollKeyRef = useRef<string | null>(null);
   const skipNextAutoBottomScrollRef = useRef(false);
   const hiddenScrollTopSnapshotRef = useRef<number | null>(null);
@@ -540,13 +539,6 @@ export default function ChatPage() {
     timelineScrollElementRefs.current.delete(key);
   }, []);
 
-  const prepareChatResponseScroll = useCallback(() => {
-    pendingChatResponseAfterIdRef.current = chatList.reduce(
-      (maxId, chatItem) => Math.max(maxId, chatItem.id),
-      0,
-    );
-  }, [chatList]);
-
   const commitTimelineScroll = useCallback((key: string, block: ScrollLogicalPosition) => {
     timelineScrollRequestIdRef.current += 1;
     setTimelineScrollTarget({
@@ -559,21 +551,6 @@ export default function ChatPage() {
   const cancelTimelineScroll = useCallback((key?: string) => {
     setTimelineScrollTarget((current) => (!key || current?.key === key ? null : current));
   }, []);
-
-  const commitChatResponseScroll = useCallback(
-    (key: string) => {
-      commitTimelineScroll(key, "start");
-    },
-    [commitTimelineScroll],
-  );
-
-  const cancelChatResponseScroll = useCallback(
-    (key?: string) => {
-      pendingChatResponseAfterIdRef.current = null;
-      cancelTimelineScroll(key);
-    },
-    [cancelTimelineScroll],
-  );
 
   const prepareMealRecordScroll = useCallback((dateKey: string, mealTime: MealTime) => {
     const key = getMealRecordTimelineItemKey(dateKey, mealTime);
@@ -651,11 +628,7 @@ export default function ChatPage() {
   }, [isTop, updateIsScrolledAwayFromBottom]);
 
   useEffect(() => {
-    if (
-      pendingMealRecordScrollKeyRef.current !== null ||
-      pendingChatResponseAfterIdRef.current !== null ||
-      timelineScrollTarget !== null
-    ) {
+    if (pendingMealRecordScrollKeyRef.current !== null || timelineScrollTarget !== null) {
       return;
     }
 
@@ -747,36 +720,6 @@ export default function ChatPage() {
   ]);
 
   useEffect(() => {
-    const pendingAfterId = pendingChatResponseAfterIdRef.current;
-
-    if (pendingAfterId === null) {
-      return;
-    }
-
-    const targetChatItem = chatList.find((chatItem) => chatItem.id > pendingAfterId);
-
-    if (!targetChatItem) {
-      return;
-    }
-
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const targetKey = getChatTimelineItemKey(targetChatItem.id);
-    pendingChatResponseAfterIdRef.current = null;
-    const frameId = window.requestAnimationFrame(() => {
-      setLocalResponseChatItem(null);
-      setPendingInput(null);
-      commitChatResponseScroll(targetKey);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [chatList, commitChatResponseScroll]);
-
-  useEffect(() => {
     if (
       pendingInput === null ||
       !isTop ||
@@ -849,7 +792,6 @@ export default function ChatPage() {
 
     setIsCameraActionMenuOpen(false);
     setLocalResponseChatItem(null);
-    prepareChatResponseScroll();
     setPendingInput(text);
     setInputValue("");
     track(EVENT_NAME.AI_COACH_CHAT, { input_length: text.length });
@@ -860,14 +802,11 @@ export default function ChatPage() {
       const historyChatItem = isChatHistoryItemResponse(response) ? response : null;
       const responseChatItem = historyChatItem ?? buildLocalChatHistoryItem(text, responsePayload);
 
-      if (historyChatItem) {
-        pendingChatResponseAfterIdRef.current = null;
-      } else {
+      if (!historyChatItem) {
         setLocalResponseChatItem(responseChatItem);
       }
 
       setPendingInput(null);
-      commitChatResponseScroll(getChatTimelineItemKey(responseChatItem.id));
       track(
         EVENT_NAME.AI_COACH_RESPONSE_SUCCESS,
         getAiCoachResponseAnalyticsProperties(responsePayload),
@@ -876,7 +815,6 @@ export default function ChatPage() {
       track(EVENT_NAME.AI_COACH_RESPONSE_FAIL, {
         reason: resolveErrorMessage(error),
       });
-      cancelChatResponseScroll();
       setLocalResponseChatItem(null);
       setPendingInput(null);
       toast.warning(resolveErrorMessage(error));
@@ -1428,10 +1366,7 @@ export default function ChatPage() {
                     </div>
                   ) : null}
 
-                  <div
-                    ref={(element) => setTimelineScrollElementRef(timelineItem.key, element)}
-                    className={styles.userMessageGroup}
-                  >
+                  <div className={styles.userMessageGroup}>
                     <p className={`${styles.timeText} typo-caption4`}>
                       {formatTimeText(chatItem.createdAt)}
                     </p>

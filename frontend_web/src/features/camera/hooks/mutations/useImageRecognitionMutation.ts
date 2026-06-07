@@ -6,7 +6,7 @@ import {
   uploadMenuBoardImage,
   uploadNutritionLabelImage,
 } from "@/features/camera/api/uploadCapturedImage";
-import { queryKeys } from "@/features/chat/hooks/queries/queryKey";
+import { refetchAndMergeChatHistoryIntoCache } from "@/features/chat/hooks/queries/chatHistoryCache";
 import type { UseMutationCallback } from "@/shared/api/types/callback.types";
 
 export function useFoodImageMutation(callbacks?: UseMutationCallback) {
@@ -45,11 +45,12 @@ export function useMenuBoardMutation(callbacks?: UseMutationCallback) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: uploadMenuBoardImage,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refetchAndMergeChatHistoryIntoCache(queryClient);
+
       if (callbacks?.onSuccess) {
         callbacks.onSuccess();
       }
-      queryClient.invalidateQueries({ queryKey: queryKeys.chatHistory });
     },
     onError: (error) => {
       if (callbacks?.onError) {
@@ -64,11 +65,12 @@ export function useChatFoodImageFeedbackMutation(callbacks?: UseMutationCallback
 
   return useMutation({
     mutationFn: uploadChatFoodImageFeedback,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refetchAndMergeChatHistoryIntoCache(queryClient);
+
       if (callbacks?.onSuccess) {
         callbacks.onSuccess();
       }
-      queryClient.invalidateQueries({ queryKey: queryKeys.chatHistory });
     },
     onError: (error) => {
       if (callbacks?.onError) {
