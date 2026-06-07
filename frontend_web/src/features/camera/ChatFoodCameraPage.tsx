@@ -16,10 +16,13 @@ import { PATH } from "@/router/path";
 import { track } from "@/shared/analytics/analytics";
 import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
 import { requestNativeCameraCapture, syncAppTab } from "@/shared/api/bridge/nativeBridge";
-import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { navigateBack, useNavigate } from "@/shared/navigation/stackflowNavigation";
+
+type ChatFoodCameraToChatLocationState = {
+  playbackChatItemId?: number;
+};
 
 export default function ChatFoodCameraPage() {
   const [isOpeningCamera, setIsOpeningCamera] = useState(true);
@@ -52,6 +55,7 @@ export default function ChatFoodCameraPage() {
         track(EVENT_NAME.FOOD_SCAN_CANCEL, {
           source: "chat_food_camera",
         });
+        navigateBack({ fallbackTo: PATH.CHAT });
         return;
       }
       track(EVENT_NAME.FOOD_SCAN_FAIL, {
@@ -67,12 +71,16 @@ export default function ChatFoodCameraPage() {
     try {
       setPreviewSrc(getCapturedImagePreviewSrc(image)); // 이미지 미리보기 설정
       setIsProcessing(true);
-      await uploadFoodImage(image);
+      const uploadResult = await uploadFoodImage(image);
+      const playbackChatItemId = getLatestAppendedChatItemId(uploadResult.appendedChatItems);
       track(EVENT_NAME.FOOD_SCAN_SUCCESS, { source: "chat_food_camera" });
       syncAppTab("chat");
 
       navigate(PATH.CHAT, {
         replace: true,
+        state: {
+          playbackChatItemId,
+        } satisfies ChatFoodCameraToChatLocationState,
       });
     } catch (error) {
       track(EVENT_NAME.FOOD_SCAN_FAIL, {
@@ -110,31 +118,11 @@ export default function ChatFoodCameraPage() {
       <PageHeader title="음식 촬영" onBack={() => navigateBack({ fallbackTo: PATH.CHAT })} />
 
       {isOpeningCamera ? (
-        <CameraLoading description="" previewSrc={null} />
+        <main className={styles.main} />
       ) : isProcessing ? (
         <CameraLoading description="음식을 분석 중이에요" previewSrc={previewSrc} />
       ) : (
-        <main className={styles.main}>
-          {/* <div className={styles.content}>
-            <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
-            <p className="typo-title1">
-              메뉴판 전체가 선명하게
-              <br />
-              보이도록 촬영해주세요
-            </p>
-          </div> */}
-          <div className={styles.actionButtons}>
-            <Button
-              variant="filled"
-              interaction="normal"
-              size="small"
-              color="primary"
-              onClick={handleCameraActions}
-            >
-              촬영하기
-            </Button>
-          </div>
-        </main>
+        <main className={styles.main} />
       )}
 
       <CheckButtonModal
@@ -145,4 +133,8 @@ export default function ChatFoodCameraPage() {
       />
     </section>
   );
+}
+
+function getLatestAppendedChatItemId(appendedChatItems: { id: number }[]) {
+  return appendedChatItems[appendedChatItems.length - 1]?.id;
 }

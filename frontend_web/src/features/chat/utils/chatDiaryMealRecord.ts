@@ -33,10 +33,8 @@ export function getChatDateKey(chatItem: Pick<ChatHistoryItemResponseDto, "creat
   return chatDate ? formatDateKey(chatDate) : getTodayFormatDateKey();
 }
 
-// 채팅 시간이 어느 식사 타임에 가까운지 계산
-export function getFallbackMealTime(chatItem: Pick<ChatHistoryItemResponseDto, "createdAt">) {
-  const chatDate = parseDate(chatItem.createdAt);
-  return Number(getMealTypeFromCurrentTime(chatDate ?? new Date())) as MealTime;
+export function getCurrentMealTime() {
+  return Number(getMealTypeFromCurrentTime(new Date())) as MealTime;
 }
 
 // 다이어리에 기록되어있는 메뉴들을 다시 저장할 수 있도록 ids, quantities, modes 형태를 뽑아 바꾸는 함수

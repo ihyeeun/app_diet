@@ -15,23 +15,17 @@ import { getMealType, getSafeDateKey } from "@/features/meal-record/utils/mealRe
 import { PATH } from "@/router/path";
 import { getPathWithMeal } from "@/router/pathHelpers";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
-import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
 import {
   navigateBack,
   navigateBackAndPush,
-  useLocation,
   useSearchParams,
 } from "@/shared/navigation/stackflowNavigation";
 
-type NutrientCameraLocationState = {
-  autoOpenCamera?: boolean;
-};
-
 export default function NutrientCameraPage() {
-  const location = useLocation();
+  const [isOpeningCamera, setIsOpeningCamera] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
   const [captureErrorFeedback, setCaptureErrorFeedback] =
@@ -41,11 +35,6 @@ export default function NutrientCameraPage() {
   const dateKey = getSafeDateKey(searchParams.get("date"));
   const mealType = getMealType(searchParams.get("mealType"));
   const autoTriggeredRef = useRef(false);
-  const locationState = (location.state ?? {}) as NutrientCameraLocationState;
-  const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
-  const [isAutoOpenPending, setIsAutoOpenPending] = useState(shouldAutoOpenCamera);
-  const shouldHideWebCameraPrompt =
-    isAutoOpenPending && !isUploading && captureErrorFeedback === null;
 
   const returnFromCameraPage = useCallback(() => {
     navigateBack({
@@ -71,17 +60,16 @@ export default function NutrientCameraPage() {
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
+      setIsOpeningCamera(true);
       capturedImage = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "NUTRITION_LABEL",
       });
-      setIsAutoOpenPending(false);
+      setIsOpeningCamera(false);
     } catch (error) {
-      setIsAutoOpenPending(false);
+      setIsOpeningCamera(false);
       if (isCameraCaptureCancelled(error)) {
-        if (shouldAutoOpenCamera) {
-          returnFromCameraPage();
-        }
+        returnFromCameraPage();
         return;
       }
       setCapturedPreviewSrc(null);
@@ -139,18 +127,15 @@ export default function NutrientCameraPage() {
     isUploading,
     returnFromCameraPage,
     searchParams,
-    shouldAutoOpenCamera,
     uploadImage,
   ]);
 
   useEffect(() => {
-    if (!shouldAutoOpenCamera || autoTriggeredRef.current) {
-      return;
-    }
+    if (autoTriggeredRef.current) return;
 
     autoTriggeredRef.current = true;
     void handleCameraActions();
-  }, [handleCameraActions, shouldAutoOpenCamera]);
+  }, [handleCameraActions]);
 
   const handleCaptureErrorModalOpenChange = useCallback(
     (open: boolean) => {
@@ -166,36 +151,14 @@ export default function NutrientCameraPage() {
 
   return (
     <section className={styles.page}>
-      {shouldHideWebCameraPrompt ? null : (
-        <PageHeader title="영양정보 촬영" onBack={returnFromCameraPage} />
-      )}
+      <PageHeader title="영양정보 촬영" onBack={returnFromCameraPage} />
 
-      {isUploading ? (
-        <CameraLoading description="영양 성분을 확인하고 있어요" previewSrc={capturedPreviewSrc} />
-      ) : shouldHideWebCameraPrompt ? (
+      {isOpeningCamera ? (
         <main className={styles.main} />
+      ) : isUploading ? (
+        <CameraLoading description="영양 성분을 확인하고 있어요" previewSrc={capturedPreviewSrc} />
       ) : (
-        <main className={styles.main}>
-          {/* <div className={styles.content}>
-            <img src="/icons/camera-icon.svg" alt="카메라 아이콘" className={styles.image} />
-            <p className="typo-title1">
-              영양성분표 전체가 선명하게
-              <br />
-              보이도록 촬영해주세요
-            </p>
-          </div> */}
-          <div className={styles.actionButtons}>
-            <Button
-              variant="filled"
-              interaction="normal"
-              size="small"
-              color="primary"
-              onClick={handleCameraActions}
-            >
-              촬영하기
-            </Button>
-          </div>
-        </main>
+        <main className={styles.main} />
       )}
 
       <CheckButtonModal

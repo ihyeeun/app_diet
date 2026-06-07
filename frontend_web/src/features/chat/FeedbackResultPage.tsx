@@ -6,17 +6,18 @@ import styles from "@/features/chat/styles/RecommendResultPage.module.css";
 import {
   buildDiaryMealRecordRequest,
   getChatDateKey,
+  getCurrentMealTime,
   getDiaryMealImage,
   getDiaryMealRecordSelectionByMenuIds,
-  getFallbackMealTime,
   getNextDiaryMenusByCandidateIds,
   type SelectedDiaryMealRecordMenu,
 } from "@/features/chat/utils/chatDiaryMealRecord";
 import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
 import {
-  type FeedbackDetailNavigationState,
-  type FeedbackDetailSelectionPayload,
+  type ChatMenuDetailNavigationState,
+  type ChatMenuDetailSelectionPayload,
   getFeedbackDetailPath,
+  getFeedbackResultPath,
   getSafeChatId,
 } from "@/features/chat/utils/recommendNavigation";
 import { useDayMealsQuery } from "@/features/home/hooks/queries/useDayMealsQuery";
@@ -185,7 +186,7 @@ function FeedbackResultContent({
     () => getDiaryMealRecordSelectionByMenuIds(dayMeals, feedbackMenuIds),
     [dayMeals, feedbackMenuIds],
   );
-  const targetMealTime = diaryMealRecordSelection?.time ?? getFallbackMealTime(chatItem);
+  const targetMealTime = diaryMealRecordSelection?.time ?? getCurrentMealTime();
   const mealType: MealType = getMealTypeFromChatMealTime(targetMealTime);
   const selectedMenus = useMemo(
     () => selectedMenusOverride ?? diaryMealRecordSelection?.menus ?? [],
@@ -196,7 +197,7 @@ function FeedbackResultContent({
     return new Set(selectedMenus.map((menu) => menu.id));
   }, [selectedMenus]);
 
-  const handleConfirmDetailSelection = (selection: FeedbackDetailSelectionPayload) => {
+  const handleConfirmDetailSelection = (selection: ChatMenuDetailSelectionPayload) => {
     if (isDayMealsPending) {
       return;
     }
@@ -224,7 +225,8 @@ function FeedbackResultContent({
     }
 
     const initialSelection = selectedMenus.find((menu) => menu.id === menuId);
-    const state: FeedbackDetailNavigationState = {
+    const state: ChatMenuDetailNavigationState = {
+      fallbackTo: getFeedbackResultPath(chatId),
       initialSelection: initialSelection
         ? {
             menuId,

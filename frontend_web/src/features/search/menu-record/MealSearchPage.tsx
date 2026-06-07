@@ -233,11 +233,7 @@ export default function MealSearchPage() {
       return;
     }
 
-    navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType), {
-      state: {
-        autoOpenCamera: true,
-      },
-    });
+    navigate(getPathWithMeal(PATH.FOOD_CAMERA, dateKey, mealType));
   };
 
   const handleMealSearch = (keyword = submittedKeyword) => {

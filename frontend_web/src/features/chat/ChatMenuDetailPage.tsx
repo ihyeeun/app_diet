@@ -2,19 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
 import { useRequestChatMealRecordFocus } from "@/features/chat/stores/mealRecordFocus.store";
-import styles from "@/features/chat/styles/FeedbackDetailPage.module.css";
+import styles from "@/features/chat/styles/ChatMenuDetailPage.module.css";
 import {
   buildDiaryMealRecordRequest,
   getChatDateKey,
+  getCurrentMealTime,
   getDiaryMealImage,
   getDiaryMealMenuSelection,
-  getFallbackMealTime,
   getNextDiaryMenusByCandidateIds,
 } from "@/features/chat/utils/chatDiaryMealRecord";
 import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
 import {
-  type FeedbackDetailNavigationState,
+  type ChatMenuDetailNavigationState,
   getFeedbackResultPath,
+  getRecommendResultPath,
   getSafeChatId,
   getSafeMenuId,
 } from "@/features/chat/utils/recommendNavigation";
@@ -43,18 +44,23 @@ import {
   useSearchParams,
 } from "@/shared/navigation/stackflowNavigation";
 
-export default function FeedbackDetailPage() {
+export default function ChatMenuDetailPage() {
   const navigate = useNavigate();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selection, setSelection] = useState<MealMenuNutrientSelection | null>(null);
-  const location = useLocation<FeedbackDetailNavigationState>();
+  const location = useLocation<ChatMenuDetailNavigationState>();
   const [searchParams] = useSearchParams();
   const chatId = getSafeChatId(searchParams.get("chatId"));
   const menuId = getSafeMenuId(searchParams.get("menuId"));
   const onConfirmSelection = location.state?.onConfirmSelection;
   const hasSelectionCallback = typeof onConfirmSelection === "function";
   const fallbackTo =
-    chatId === null || !hasSelectionCallback ? PATH.CHAT : getFeedbackResultPath(chatId);
+    location.state?.fallbackTo ??
+    (chatId === null || !hasSelectionCallback
+      ? PATH.CHAT
+      : location.pathname.startsWith(PATH.RECOMMEND_DETAIL)
+        ? getRecommendResultPath(chatId)
+        : getFeedbackResultPath(chatId));
   const initialSelection =
     location.state?.initialSelection?.menuId === menuId ? location.state.initialSelection : null;
 
@@ -120,7 +126,7 @@ export default function FeedbackDetailPage() {
     }
 
     try {
-      const targetMealTime = diaryMenuSelection?.time ?? getFallbackMealTime(chatItem);
+      const targetMealTime = diaryMenuSelection?.time ?? getCurrentMealTime();
       const nextMenus = getNextDiaryMenusByCandidateIds({
         dayMeals,
         time: targetMealTime,
@@ -148,9 +154,7 @@ export default function FeedbackDetailPage() {
         }),
       );
 
-      toast.success(
-        diaryMenuSelection ? "식사 기록이 수정되었어요." : "식사 기록이 등록되었어요.",
-      );
+      toast.success(diaryMenuSelection ? "식사 기록이 수정되었어요." : "식사 기록이 등록되었어요.");
       requestChatMealRecordFocus({
         dateKey: chatDateKey,
         mealTime: targetMealTime,
@@ -232,9 +236,7 @@ export default function FeedbackDetailPage() {
           fullWidth
           onClick={handleConfirmSelection}
           interaction={
-            selection && !isMealRegisterPending && !isDirectSubmitPending
-              ? "normal"
-              : "disable"
+            selection && !isMealRegisterPending && !isDirectSubmitPending ? "normal" : "disable"
           }
           disabled={!selection || isMealRegisterPending || isDirectSubmitPending}
         >

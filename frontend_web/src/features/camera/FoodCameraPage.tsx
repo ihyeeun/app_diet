@@ -28,25 +28,15 @@ import { track } from "@/shared/analytics/analytics";
 import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { type MealTime, MENU_INPUT_MODE } from "@/shared/api/types/api.dto";
-import { Button } from "@/shared/commons/button/Button";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
-import {
-  navigateBack,
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "@/shared/navigation/stackflowNavigation";
-
-type FoodCameraLocationState = {
-  autoOpenCamera?: boolean;
-};
+import { navigateBack, useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
 
 export default function FoodCameraPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const [isOpeningCamera, setIsOpeningCamera] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
   const [captureErrorFeedback, setCaptureErrorFeedback] =
@@ -61,11 +51,6 @@ export default function FoodCameraPage() {
   const draftKey = formatMenuDraftKey(dateKey, mealType);
 
   const upsertMenu = useMenuDraftUpsert();
-  const locationState = (location.state ?? {}) as FoodCameraLocationState;
-  const shouldAutoOpenCamera = locationState.autoOpenCamera === true;
-  const [isAutoOpenPending, setIsAutoOpenPending] = useState(shouldAutoOpenCamera);
-  const shouldHideWebCameraPrompt =
-    isAutoOpenPending && !isUploading && captureErrorFeedback === null;
 
   const returnFromCameraPage = useCallback(() => {
     navigateBack({ fallbackTo: getMealRecordPath(dateKey, mealType) });
@@ -80,20 +65,19 @@ export default function FoodCameraPage() {
 
     let capturedImage: Awaited<ReturnType<typeof requestNativeCameraCapture>>;
     try {
+      setIsOpeningCamera(true);
       capturedImage = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
         mode: "FOOD",
       });
-      setIsAutoOpenPending(false);
+      setIsOpeningCamera(false);
     } catch (error) {
-      setIsAutoOpenPending(false);
+      setIsOpeningCamera(false);
       if (isCameraCaptureCancelled(error)) {
         track(EVENT_NAME.FOOD_SCAN_CANCEL, {
           source: "meal_record_camera",
         });
-        if (shouldAutoOpenCamera) {
-          returnFromCameraPage();
-        }
+        returnFromCameraPage();
         return;
       }
       track(EVENT_NAME.FOOD_SCAN_FAIL, {
@@ -135,6 +119,7 @@ export default function FoodCameraPage() {
         toast.warning(MEAL_RECORD_MENU_LIMIT_MESSAGE);
         setCapturedPreviewSrc(null);
         setIsUploading(false);
+        returnFromCameraPage();
         return;
       }
 
@@ -181,19 +166,16 @@ export default function FoodCameraPage() {
     mealType,
     navigate,
     returnFromCameraPage,
-    shouldAutoOpenCamera,
     upsertMenu,
     uploadImage,
   ]);
 
   useEffect(() => {
-    if (!shouldAutoOpenCamera || autoTriggeredRef.current) {
-      return;
-    }
+    if (autoTriggeredRef.current) return;
 
     autoTriggeredRef.current = true;
     void handleCameraActions();
-  }, [handleCameraActions, shouldAutoOpenCamera]);
+  }, [handleCameraActions]);
 
   const handleCaptureErrorModalOpenChange = useCallback(
     (open: boolean) => {
@@ -209,36 +191,14 @@ export default function FoodCameraPage() {
 
   return (
     <section className={styles.page}>
-      {shouldHideWebCameraPrompt ? null : (
-        <PageHeader title="음식 촬영" onBack={returnFromCameraPage} />
-      )}
+      <PageHeader title="음식 촬영" onBack={returnFromCameraPage} />
 
-      {isUploading ? (
-        <CameraLoading description="음식을 분석하고 있어요" previewSrc={capturedPreviewSrc} />
-      ) : shouldHideWebCameraPrompt ? (
+      {isOpeningCamera ? (
         <main className={styles.main} />
+      ) : isUploading ? (
+        <CameraLoading description="음식을 분석하고 있어요" previewSrc={capturedPreviewSrc} />
       ) : (
-        <main className={styles.main}>
-          {/* <div className={styles.content}>
-            <img src="/icons/food-icon.svg" alt="카메라 아이콘" className={styles.image} />
-            <p className="typo-title1">
-              음식이 잘 보이도록
-              <br />
-              촬영해주세요
-            </p>
-          </div> */}
-          <div className={styles.actionButtons}>
-            <Button
-              variant="filled"
-              interaction="normal"
-              size="small"
-              color="primary"
-              onClick={handleCameraActions}
-            >
-              촬영하기
-            </Button>
-          </div>
-        </main>
+        <main className={styles.main} />
       )}
 
       <CheckButtonModal

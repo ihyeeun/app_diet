@@ -25,14 +25,6 @@
   padding-top: 20px;
 }
 
-.content {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  justify-content: center;
-}
-
 .loadingContent {
   align-items: center;
   display: flex;
@@ -111,16 +103,4 @@
     animation: none;
     transform: translateY(160%);
   }
-}
-
-.image {
-  height: 100px;
-  width: 100px;
-}
-
-.actionButtons {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }

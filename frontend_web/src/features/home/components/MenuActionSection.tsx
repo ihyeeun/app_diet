@@ -30,11 +30,7 @@ export default function MenuActionSection({
 
   const handleNavigateMenuBoardCamera = () => {
     handleCloseCameraActionSheet();
-    navigate(PATH.MENU_BOARD_CAMERA, {
-      state: {
-        autoOpenCamera: true,
-      },
-    });
+    navigate(PATH.MENU_BOARD_CAMERA);
   };
 
   const handleNavigateFoodCamera = () => {
