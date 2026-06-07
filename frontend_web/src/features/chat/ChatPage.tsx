@@ -22,8 +22,8 @@ import {
 import styles from "@/features/chat/styles/ChatPage.module.css";
 import {
   buildDiaryMealRecordRequest,
+  getCurrentMealTime,
   getDiaryMealImage,
-  getFallbackMealTime,
   getNextDiaryMenusByCandidateIds,
   getSelectedDiaryMenusByTime,
   getSelectedDiaryMenusFromCandidateMenus,
@@ -569,6 +569,7 @@ export default function ChatPage() {
   const isScrollToBottomButtonVisible = hasTimelineContent && isScrolledAwayFromBottom;
   const isFloatingButtonVisible =
     !isSoftKeyboardVisible && (isQuickActionVisible || isScrollToBottomButtonVisible);
+  const currentMealTime = getCurrentMealTime();
 
   const updateIsScrolledAwayFromBottom = useCallback(() => {
     const main = mainRef.current;
@@ -1181,9 +1182,9 @@ export default function ChatPage() {
     }
 
     const nextMealRecord = getMergedMealRecordPayload(
-      meal,
       mealRecordMenus,
       dayMeals,
+      currentMealTime,
       mealRecord?.previousMealRecord,
     );
 
@@ -1611,7 +1612,7 @@ export default function ChatPage() {
                   ? getMealRecordViewModelByTime(
                       chatDayMeals,
                       chatDateKey,
-                      getFallbackMealTime(chatItem),
+                      currentMealTime,
                     )
                   : null;
               const mealRecordMenus = getChatMealRecordMenus(chatItem);
@@ -2971,9 +2972,9 @@ function getChatDateKey(chatItem: ChatHistoryItemResponseDto) {
 }
 
 function getMergedMealRecordPayload(
-  chatItem: ChatHistoryItemResponseDto,
   mealRecordMenus: ChatMealRecordMenu[],
   dayMeals: DayMealSummary,
+  fallbackMealTime: MealTime,
   mealRecord?: MealRecordSnapshot,
 ): {
   time: MealTime;
@@ -2981,7 +2982,7 @@ function getMergedMealRecordPayload(
   addedMenus: ChatMealRecordMenu[];
   wasAdded: boolean;
 } {
-  const time = mealRecord?.time ?? getFallbackMealTime(chatItem);
+  const time = mealRecord?.time ?? fallbackMealTime;
   const previousMenus = mealRecord ? mealRecord.menus : getSelectedDiaryMenusByTime(dayMeals, time);
   const candidateMenus = getUniqueMealRecordMenus(mealRecordMenus);
   const candidateMenuIds = candidateMenus.map((menu) => menu.menu_id);

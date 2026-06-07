@@ -6,9 +6,9 @@ import styles from "@/features/chat/styles/ChatMenuDetailPage.module.css";
 import {
   buildDiaryMealRecordRequest,
   getChatDateKey,
+  getCurrentMealTime,
   getDiaryMealImage,
   getDiaryMealMenuSelection,
-  getFallbackMealTime,
   getNextDiaryMenusByCandidateIds,
 } from "@/features/chat/utils/chatDiaryMealRecord";
 import { getMealTypeFromChatMealTime } from "@/features/chat/utils/chatMeal";
@@ -121,7 +121,7 @@ export default function ChatMenuDetailPage() {
     }
 
     try {
-      const targetMealTime = diaryMenuSelection?.time ?? getFallbackMealTime(chatItem);
+      const targetMealTime = diaryMenuSelection?.time ?? getCurrentMealTime();
       const nextMenus = getNextDiaryMenusByCandidateIds({
         dayMeals,
         time: targetMealTime,

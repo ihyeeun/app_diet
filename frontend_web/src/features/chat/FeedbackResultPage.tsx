@@ -6,9 +6,9 @@ import styles from "@/features/chat/styles/RecommendResultPage.module.css";
 import {
   buildDiaryMealRecordRequest,
   getChatDateKey,
+  getCurrentMealTime,
   getDiaryMealImage,
   getDiaryMealRecordSelectionByMenuIds,
-  getFallbackMealTime,
   getNextDiaryMenusByCandidateIds,
   type SelectedDiaryMealRecordMenu,
 } from "@/features/chat/utils/chatDiaryMealRecord";
@@ -186,7 +186,7 @@ function FeedbackResultContent({
     () => getDiaryMealRecordSelectionByMenuIds(dayMeals, feedbackMenuIds),
     [dayMeals, feedbackMenuIds],
   );
-  const targetMealTime = diaryMealRecordSelection?.time ?? getFallbackMealTime(chatItem);
+  const targetMealTime = diaryMealRecordSelection?.time ?? getCurrentMealTime();
   const mealType: MealType = getMealTypeFromChatMealTime(targetMealTime);
   const selectedMenus = useMemo(
     () => selectedMenusOverride ?? diaryMealRecordSelection?.menus ?? [],
