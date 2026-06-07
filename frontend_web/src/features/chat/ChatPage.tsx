@@ -1118,11 +1118,7 @@ export default function ChatPage() {
 
   const handleNavigateMenuBoardCamera = () => {
     handleCloseCameraActionMenu();
-    navigate(PATH.MENU_BOARD_CAMERA, {
-      state: {
-        autoOpenCamera: true,
-      },
-    });
+    navigate(PATH.MENU_BOARD_CAMERA);
   };
 
   const handleNavigateFoodCamera = () => {

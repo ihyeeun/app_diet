@@ -104,11 +104,7 @@ export default function NutrientAddPage() {
       params.set("keyword", searchKeyword);
     }
 
-    navigation(PATH.NUTRIENT_CAMERA + "?" + params.toString(), {
-      state: {
-        autoOpenCamera: true,
-      },
-    });
+    navigation(PATH.NUTRIENT_CAMERA + "?" + params.toString());
   };
 
   const handleBack = () => {
