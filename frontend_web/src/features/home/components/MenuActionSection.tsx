@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
+import type { HomeOnboardingTarget } from "@/features/home/constants/homeOnboarding";
 import style from "@/features/home/styles/MenuActionSection.module.css";
 import { PATH } from "@/router/path";
 import { isNativeApp, syncAppTab } from "@/shared/api/bridge/nativeBridge";
@@ -9,10 +10,18 @@ import BottomSheet from "@/shared/commons/bottomSheet/BottomSheet";
 import { useNavigate } from "@/shared/navigation/stackflowNavigation";
 
 export default function MenuActionSection({
+  activeOnboardingTarget,
+  bodyLogSection,
+  disableInteractions = false,
+  renderOnboardingBubble,
   selectedDate,
   showChatCard,
   showMenuBoardCameraCard,
 }: {
+  activeOnboardingTarget?: HomeOnboardingTarget | null;
+  bodyLogSection?: ReactNode;
+  disableInteractions?: boolean;
+  renderOnboardingBubble?: (target: HomeOnboardingTarget) => ReactNode;
   selectedDate: string;
   showChatCard: boolean;
   showMenuBoardCameraCard: boolean;
@@ -42,61 +51,104 @@ export default function MenuActionSection({
     <div className={style.content}>
       <div className={style.menuContainer}>
         {showMenuBoardCameraCard ? (
-          <div data-home-onboarding-target="menu-board-camera">
+          <OnboardingTargetFrame
+            target="menu-board-camera"
+            activeTarget={activeOnboardingTarget}
+            renderBubble={renderOnboardingBubble}
+          >
             <MenuCard
               title={"메뉴 촬영"}
               description="메뉴판이나 음식을 찍어 피드백을 받아보세요"
               iconSrc="/icons/camera-icon.svg"
-              onClick={handleOpenCameraActionSheet}
+              onClick={disableInteractions ? undefined : handleOpenCameraActionSheet}
               type="camera"
             />
-          </div>
+          </OnboardingTargetFrame>
         ) : null}
         {showChatCard ? (
-          <div data-home-onboarding-target="chat">
+          <OnboardingTargetFrame
+            target="chat"
+            activeTarget={activeOnboardingTarget}
+            renderBubble={renderOnboardingBubble}
+          >
             <MenuCard
               title={"AI 코치"}
               description={"식단 고민,\n무엇이든 물어보세요"}
               iconSrc="/icons/chat-icon.svg"
-              onClick={() => {
-                if (isNativeApp()) {
-                  syncAppTab("chat");
-                  return;
-                }
+              onClick={
+                disableInteractions
+                  ? undefined
+                  : () => {
+                      if (isNativeApp()) {
+                        syncAppTab("chat");
+                        return;
+                      }
 
-                navigate(PATH.CHAT);
-              }}
+                      navigate(PATH.CHAT);
+                    }
+              }
             />
-          </div>
+          </OnboardingTargetFrame>
         ) : null}
       </div>
 
-      <TodayBodyLogSection date={selectedDate} />
+      {bodyLogSection ?? <TodayBodyLogSection date={selectedDate} />}
 
-      <BottomSheet isOpen={isCameraActionSheetOpen} onClose={handleCloseCameraActionSheet}>
-        <div className={style.cameraActionSheetContainer}>
-          <h2 className={`${style.cameraActionSheetTitle} typo-title2`}>무엇을 촬영할까요?</h2>
-          <div>
-            <button
-              type="button"
-              onClick={handleNavigateMenuBoardCamera}
-              className={style.cameraActionSheetButton}
-            >
-              <p className={`typo-label2`}>메뉴판 촬영</p>
-            </button>
+      {disableInteractions ? null : (
+        <BottomSheet isOpen={isCameraActionSheetOpen} onClose={handleCloseCameraActionSheet}>
+          <div className={style.cameraActionSheetContainer}>
+            <h2 className={`${style.cameraActionSheetTitle} typo-title2`}>무엇을 촬영할까요?</h2>
+            <div>
+              <button
+                type="button"
+                onClick={handleNavigateMenuBoardCamera}
+                className={style.cameraActionSheetButton}
+              >
+                <p className={`typo-label2`}>메뉴판 촬영</p>
+              </button>
 
-            <div className="divider" />
+              <div className="divider" />
 
-            <button
-              type="button"
-              className={style.cameraActionSheetButton}
-              onClick={handleNavigateFoodCamera}
-            >
-              <p className={`typo-label2`}>음식 촬영</p>
-            </button>
+              <button
+                type="button"
+                className={style.cameraActionSheetButton}
+                onClick={handleNavigateFoodCamera}
+              >
+                <p className={`typo-label2`}>음식 촬영</p>
+              </button>
+            </div>
           </div>
-        </div>
-      </BottomSheet>
+        </BottomSheet>
+      )}
+    </div>
+  );
+}
+
+function OnboardingTargetFrame({
+  activeTarget,
+  children,
+  renderBubble,
+  target,
+}: {
+  activeTarget?: HomeOnboardingTarget | null;
+  children: ReactNode;
+  renderBubble?: (target: HomeOnboardingTarget) => ReactNode;
+  target: HomeOnboardingTarget;
+}) {
+  const isActive = activeTarget === target;
+
+  return (
+    <div
+      className={[
+        style.menuCardFrame,
+        isActive ? style.onboardingTargetActive : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      data-home-onboarding-target={target}
+    >
+      {isActive ? renderBubble?.(target) : null}
+      {children}
     </div>
   );
 }
@@ -111,7 +163,7 @@ function MenuCard({
   title: string;
   description: string;
   iconSrc: string;
-  onClick: () => void;
+  onClick?: () => void;
   type?: string;
 }) {
   return (

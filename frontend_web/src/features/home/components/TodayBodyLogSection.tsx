@@ -107,6 +107,15 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
   );
 }
 
+export function TodayBodyLogPreviewSection() {
+  return (
+    <div className={style.todayContainer}>
+      <TodayMetricCard title="체중" value={62.4} unit="kg" />
+      <TodayMetricCard title="걸음 수" value={4821} unit="보" />
+    </div>
+  );
+}
+
 function TodayMetricCard({
   title,
   value,
@@ -116,7 +125,7 @@ function TodayMetricCard({
   title: string;
   value: number;
   unit: string;
-  onClick: () => void;
+  onClick?: () => void;
 }) {
   return (
     <ActionCard onClick={onClick}>
