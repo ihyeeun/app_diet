@@ -590,6 +590,10 @@ export default function ChatPage() {
 
       scrollToBottom(behavior);
 
+      if (behavior === "smooth") {
+        return;
+      }
+
       if (typeof window === "undefined") {
         updateIsScrolledAwayFromBottom();
         return;
