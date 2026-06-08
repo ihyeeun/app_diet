@@ -7,6 +7,17 @@ import type {
   ChatHistoryResponseDto,
 } from "@/shared/api/types/api.dto";
 
+type ResolveChatHistoryItemOptions = {
+  match?: (chatItem: ChatHistoryItemResponseDto) => boolean;
+};
+
+export class ChatHistorySyncError extends Error {
+  constructor() {
+    super("답변 저장을 확인하지 못했어요. 잠시 후 다시 확인해주세요.");
+    this.name = "ChatHistorySyncError";
+  }
+}
+
 export function appendMissingChatHistoryItemsToCache(
   queryClient: QueryClient,
   incomingItems: ChatHistoryItemResponseDto[],
@@ -56,4 +67,20 @@ export async function refetchAndMergeChatHistoryIntoCache(queryClient: QueryClie
   } catch (error) {
     throw new Error("결과를 불러오지 못했어요. 다시 시도해주세요.", { cause: error });
   }
+}
+
+export async function refetchAndResolveChatHistoryItem(
+  queryClient: QueryClient,
+  options?: ResolveChatHistoryItemOptions,
+) {
+  const appendedChatItems = await refetchAndMergeChatHistoryIntoCache(queryClient);
+  const matchedChatItems =
+    options?.match === undefined ? appendedChatItems : appendedChatItems.filter(options.match);
+  const chatItem = matchedChatItems.at(-1);
+
+  if (!chatItem) {
+    throw new ChatHistorySyncError();
+  }
+
+  return chatItem;
 }

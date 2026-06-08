@@ -15,18 +15,16 @@ import {
 import { PATH } from "@/router/path";
 import { track } from "@/shared/analytics/analytics";
 import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
-import { syncAppTab } from "@/shared/api/bridge/nativeBridge";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
-import { navigateBack, useNavigate } from "@/shared/navigation/stackflowNavigation";
-
-type MenuBoardToChatLocationState = {
-  playbackChatItemId?: number;
-};
+import {
+  isPreviousStackActivity,
+  navigateBack,
+  navigateBackAndPush,
+} from "@/shared/navigation/stackflowNavigation";
 
 export default function MenuBoardCameraPage() {
-  const navigate = useNavigate();
   const [isOpeningCamera, setIsOpeningCamera] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [capturedPreviewSrc, setCapturedPreviewSrc] = useState<string | null>(null);
@@ -37,6 +35,18 @@ export default function MenuBoardCameraPage() {
 
   const returnFromCameraPage = useCallback(() => {
     navigateBack({ fallbackTo: PATH.CHAT });
+  }, []);
+
+  const navigateToChatAfterSuccess = useCallback(() => {
+    if (isPreviousStackActivity("Chat")) {
+      navigateBack({ fallbackTo: PATH.CHAT });
+      return;
+    }
+
+    navigateBackAndPush({
+      fallbackTo: PATH.CHAT,
+      to: PATH.CHAT,
+    });
   }, []);
 
   const handleCameraActions = useCallback(async () => {
@@ -73,17 +83,10 @@ export default function MenuBoardCameraPage() {
     try {
       setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
       setIsProcessing(true);
-      const uploadResult = await uploadMenuBoardImage(capturedImage);
-      const playbackChatItemId = getLatestAppendedChatItemId(uploadResult.appendedChatItems);
+      await uploadMenuBoardImage(capturedImage);
       track(EVENT_NAME.OCR_SCAN_SUCCESS, { source: "menu_board_camera" });
-      syncAppTab("chat");
 
-      navigate(PATH.CHAT, {
-        replace: true,
-        state: {
-          playbackChatItemId,
-        } satisfies MenuBoardToChatLocationState,
-      });
+      navigateToChatAfterSuccess();
     } catch (error) {
       track(EVENT_NAME.OCR_SCAN_FAIL, {
         reason: getAnalyticsErrorMessage(error, "메뉴판 분석에 실패했어요."),
@@ -94,7 +97,7 @@ export default function MenuBoardCameraPage() {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, navigate, returnFromCameraPage, uploadMenuBoardImage]);
+  }, [isProcessing, navigateToChatAfterSuccess, returnFromCameraPage, uploadMenuBoardImage]);
 
   useEffect(() => {
     if (autoTriggeredRef.current) return;
@@ -135,8 +138,4 @@ export default function MenuBoardCameraPage() {
       />
     </section>
   );
-}
-
-function getLatestAppendedChatItemId(appendedChatItems: { id: number }[]) {
-  return appendedChatItems[appendedChatItems.length - 1]?.id;
 }

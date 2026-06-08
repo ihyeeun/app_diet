@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
@@ -20,13 +20,13 @@ export default function MenuActionSection({
   const navigate = useNavigate();
   const [isCameraActionSheetOpen, setIsCameraActionSheetOpen] = useState(false);
 
-  const handleOpenCameraActionSheet = () => {
+  const handleOpenCameraActionSheet = useCallback(() => {
     setIsCameraActionSheetOpen(true);
-  };
+  }, []);
 
-  const handleCloseCameraActionSheet = () => {
+  const handleCloseCameraActionSheet = useCallback(() => {
     setIsCameraActionSheetOpen(false);
-  };
+  }, []);
 
   const handleNavigateMenuBoardCamera = () => {
     handleCloseCameraActionSheet();

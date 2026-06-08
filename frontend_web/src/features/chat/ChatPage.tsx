@@ -1,5 +1,5 @@
 import { useActivity } from "@stackflow/react";
-import { type QueryClient, useQueries, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, KeyboardEvent, MouseEvent, PointerEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
@@ -11,8 +11,8 @@ import {
 } from "@/features/chat/components/ChatMealRecordBottomSheet";
 import { useSendMessageMutation } from "@/features/chat/hooks/mutations/useSendMessageMutation";
 import {
-  appendMissingChatHistoryItemsToCache,
-  refetchAndMergeChatHistoryIntoCache,
+  ChatHistorySyncError,
+  refetchAndResolveChatHistoryItem,
 } from "@/features/chat/hooks/queries/chatHistoryCache";
 import { useGetChatHistoryQuery } from "@/features/chat/hooks/queries/useGetChatQuery";
 import {
@@ -78,7 +78,7 @@ import { SystemIcon } from "@/shared/commons/icon/SystemIcon";
 import { ConfirmModal } from "@/shared/commons/modals/ConfirmModal";
 import { Skeleton, SkeletonStatus } from "@/shared/commons/skeleton/Skeleton";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBack, useLocation, useNavigate } from "@/shared/navigation/stackflowNavigation";
+import { navigateBack, useNavigate } from "@/shared/navigation/stackflowNavigation";
 import {
   formatDateDividerText,
   formatDateKey,
@@ -176,10 +176,6 @@ type AssistantPlaybackState = {
   chatItemId: number;
   visibleBubbleCount: number;
   resultVisibleCount: number;
-};
-
-type ChatLocationState = {
-  playbackChatItemId?: number;
 };
 
 type ClientOsName = AppDeviceInfoPayload["osName"] | "unknown";
@@ -405,7 +401,6 @@ function useSoftKeyboardVisible(isInputFocused: boolean, clientOsName: ClientOsN
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const location = useLocation<ChatLocationState>();
   const queryClient = useQueryClient();
   const { isTop } = useActivity();
   const todayDateKey = getTodayFormatDateKey();
@@ -424,12 +419,7 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [pendingInput, setPendingInput] = useState<string | null>(null);
-  const [localResponseChatItem, setLocalResponseChatItem] =
-    useState<ChatHistoryItemResponseDto | null>(null);
   const [assistantPlayback, setAssistantPlayback] = useState<AssistantPlaybackState | null>(null);
-  const [playedAssistantPlaybackChatItemIds, setPlayedAssistantPlaybackChatItemIds] = useState(
-    () => new Set<number>(),
-  );
   const [isCameraActionMenuOpen, setIsCameraActionMenuOpen] = useState(false);
   const [isCameraHintDismissed, setIsCameraHintDismissed] = useState(
     getIsCameraHintDismissedInSession,
@@ -452,16 +442,13 @@ export default function ChatPage() {
   const isSoftKeyboardVisible = useSoftKeyboardVisible(isInputFocused, clientOsName);
 
   const { data, isPending: isHistoryPending } = useGetChatHistoryQuery();
-  const { mutateAsync: sendMessageMutation, isPending: isSendPending } = useSendMessageMutation({
-    appendToCache: false,
-  });
+  const { mutateAsync: sendMessageMutation, isPending: isSendPending } = useSendMessageMutation();
   const { mutateAsync: registerDiaryMealRecordMutate, isPending: isDiaryMealRegisterPending } =
     useTodayMealRecordRegisterMutation();
   const { mutateAsync: deleteDiaryMealRecordMutate, isPending: isDiaryMealDeletePending } =
     useTodayMealRecordDeleteWithRollbackMutation();
   const chatMealRecordFocusRequest = useChatMealRecordFocusRequest();
   const clearChatMealRecordFocusRequest = useClearChatMealRecordFocusRequest();
-  const navigationPlaybackChatItemId = location.state?.playbackChatItemId;
 
   const isMealRecordEditPending = isDiaryMealRegisterPending || isDiaryMealDeletePending;
 
@@ -469,16 +456,7 @@ export default function ChatPage() {
     const rawList = data?.chat_list ?? [];
     return rawList.filter(isChatHistoryItemResponse).sort(compareChatHistoryItems);
   }, [data]);
-  const displayChatList = useMemo(() => {
-    if (
-      localResponseChatItem === null ||
-      chatList.some((chatItem) => chatItem.id === localResponseChatItem.id)
-    ) {
-      return chatList;
-    }
-
-    return [...chatList, localResponseChatItem].sort(compareChatHistoryItems);
-  }, [chatList, localResponseChatItem]);
+  const displayChatList = chatList;
   const chatDateKeys = useMemo(() => {
     const dateKeySet = new Set<string>([todayDateKey]);
 
@@ -831,10 +809,7 @@ export default function ChatPage() {
   ]);
 
   const playAssistantResponse = useCallback(
-    async (
-      responseChatItem: ChatHistoryItemResponseDto,
-      options: { clearLocalResponseOnComplete: boolean },
-    ) => {
+    async (responseChatItem: ChatHistoryItemResponseDto) => {
       const playbackRunId = assistantPlaybackRunIdRef.current + 1;
       const responsePayload = responseChatItem.response_payload;
       const bubbleRevealCount = getAssistantBubbleRevealCount(responsePayload);
@@ -862,11 +837,6 @@ export default function ChatPage() {
 
       assistantPlaybackRunIdRef.current = playbackRunId;
       assistantPlaybackChatItemIdsRef.current.add(responseChatItem.id);
-      setPlayedAssistantPlaybackChatItemIds((current) => {
-        const next = new Set(current);
-        next.add(responseChatItem.id);
-        return next;
-      });
 
       if (shouldPlayResponse) {
         setAssistantPlayback({
@@ -914,59 +884,12 @@ export default function ChatPage() {
         }
       }
 
-      if (options.clearLocalResponseOnComplete) {
-        setLocalResponseChatItem((current) =>
-          current?.id === responseChatItem.id ? null : current,
-        );
-      }
-
       setAssistantPlayback((current) =>
         current?.chatItemId === responseChatItem.id ? null : current,
       );
     },
     [],
   );
-
-  useEffect(() => {
-    if (
-      navigationPlaybackChatItemId === undefined ||
-      isHistoryPending ||
-      assistantPlayback !== null ||
-      pendingInput !== null ||
-      assistantPlaybackChatItemIdsRef.current.has(navigationPlaybackChatItemId)
-    ) {
-      return;
-    }
-
-    const chatItem = chatList.find((item) => item.id === navigationPlaybackChatItemId);
-
-    if (!chatItem) {
-      return;
-    }
-
-    if (knownHistoryChatItemIdsRef.current === null) {
-      knownHistoryChatItemIdsRef.current = new Set(chatList.map((item) => item.id));
-    } else {
-      knownHistoryChatItemIdsRef.current.add(chatItem.id);
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      void playAssistantResponse(chatItem, {
-        clearLocalResponseOnComplete: false,
-      });
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [
-    assistantPlayback,
-    chatList,
-    isHistoryPending,
-    navigationPlaybackChatItemId,
-    pendingInput,
-    playAssistantResponse,
-  ]);
 
   useLayoutEffect(() => {
     if (isHistoryPending) {
@@ -1007,9 +930,7 @@ export default function ChatPage() {
 
     const nextChatItem = newChatItems[0];
     knownChatItemIds.add(nextChatItem.id);
-    void playAssistantResponse(nextChatItem, {
-      clearLocalResponseOnComplete: false,
-    });
+    void playAssistantResponse(nextChatItem);
   }, [assistantPlayback, chatList, isHistoryPending, isTop, pendingInput, playAssistantResponse]);
 
   const sendChatMessage = async (rawInput: string) => {
@@ -1024,7 +945,6 @@ export default function ChatPage() {
     assistantPlaybackRunIdRef.current += 1;
     setAssistantPlayback(null);
     setIsCameraActionMenuOpen(false);
-    setLocalResponseChatItem(null);
     setPendingInput(text);
     setInputValue("");
     track(EVENT_NAME.AI_COACH_CHAT, { input_length: text.length });
@@ -1033,20 +953,15 @@ export default function ChatPage() {
       const response = await sendMessageMutation({ input: text });
       const responsePayload = getSendMessageResponsePayload(response);
       const directHistoryChatItem = isChatHistoryItemResponse(response) ? response : null;
-      const historyChatItem =
-        directHistoryChatItem ??
-        (await resolveHistoryChatItemFromResponse(queryClient, text, responsePayload, chatList));
-      const responseChatItem = historyChatItem ?? buildLocalChatHistoryItem(text, responsePayload);
-
-      setLocalResponseChatItem(responseChatItem);
-      setPendingInput(null);
-      const playbackPromise = playAssistantResponse(responseChatItem, {
-        clearLocalResponseOnComplete: historyChatItem !== null,
+      const responseChatItem = await refetchAndResolveChatHistoryItem(queryClient, {
+        match: (chatItem) =>
+          directHistoryChatItem
+            ? chatItem.id === directHistoryChatItem.id
+            : isMatchingHistoryChatItem(chatItem, text, responsePayload),
       });
 
-      if (directHistoryChatItem) {
-        appendMissingChatHistoryItemsToCache(queryClient, [directHistoryChatItem]);
-      }
+      setPendingInput(null);
+      const playbackPromise = playAssistantResponse(responseChatItem);
 
       track(
         EVENT_NAME.AI_COACH_RESPONSE_SUCCESS,
@@ -1059,9 +974,12 @@ export default function ChatPage() {
       });
       assistantPlaybackRunIdRef.current += 1;
       setAssistantPlayback(null);
-      setLocalResponseChatItem(null);
       setPendingInput(null);
       toast.warning(resolveErrorMessage(error));
+      if (error instanceof ChatHistorySyncError) {
+        return;
+      }
+
       setInputValue(text);
     }
   };
@@ -1594,10 +1512,7 @@ export default function ChatPage() {
               const chatItemPlayback =
                 assistantPlayback?.chatItemId === chatItem.id
                   ? assistantPlayback
-                  : navigationPlaybackChatItemId === chatItem.id &&
-                      !playedAssistantPlaybackChatItemIds.has(chatItem.id)
-                    ? getInitialAssistantPlaybackState(chatItem)
-                    : null;
+                  : null;
               const introMessage = chatItem.response_payload.intro_message;
               const generalAnswer =
                 chatItem.response_payload.chat_category === "general"
@@ -1900,14 +1815,6 @@ function delayAssistantPlayback(delayMs: number) {
   return new Promise<void>((resolve) => {
     globalThis.setTimeout(resolve, delayMs);
   });
-}
-
-function getInitialAssistantPlaybackState(chatItem: ChatHistoryItemResponseDto) {
-  return {
-    chatItemId: chatItem.id,
-    visibleBubbleCount: 0,
-    resultVisibleCount: 0,
-  } satisfies AssistantPlaybackState;
 }
 
 function getAssistantBubbleRevealCount(responsePayload: ChatRecommendResponseDto) {
@@ -3134,54 +3041,21 @@ function resolveErrorMessage(
   return fallbackMessage;
 }
 
-async function resolveHistoryChatItemFromResponse(
-  queryClient: QueryClient,
-  inputText: string,
-  responsePayload: ChatRecommendResponseDto,
-  currentChatItems: ChatHistoryItemResponseDto[],
-) {
-  const appendedChatItems = await refetchAndMergeChatHistoryIntoCache(queryClient);
-  return (
-    findMatchingHistoryChatItem(appendedChatItems, inputText, responsePayload) ??
-    findMatchingHistoryChatItem(currentChatItems, inputText, responsePayload)
-  );
-}
-
 function getSendMessageResponsePayload(
   response: ChatHistoryItemResponseDto | ChatRecommendResponseDto,
 ) {
   return "response_payload" in response ? response.response_payload : response;
 }
 
-function buildLocalChatHistoryItem(
-  inputText: string,
-  responsePayload: ChatRecommendResponseDto,
-): ChatHistoryItemResponseDto {
-  return {
-    id: -Date.now(),
-    input_text: inputText,
-    createdAt: new Date().toISOString(),
-    response_payload: responsePayload,
-  };
-}
-
-function findMatchingHistoryChatItem(
-  chatItems: ChatHistoryItemResponseDto[],
+function isMatchingHistoryChatItem(
+  chatItem: ChatHistoryItemResponseDto,
   inputText: string,
   responsePayload: ChatRecommendResponseDto,
 ) {
-  if (chatItems.length === 0) {
-    return null;
-  }
-
-  const normalizedInputText = inputText.trim();
-  const matchingChatItems = chatItems.filter(
-    (chatItem) =>
-      chatItem.input_text.trim() === normalizedInputText &&
-      isSameChatResponsePayload(chatItem.response_payload, responsePayload),
+  return (
+    chatItem.input_text.trim() === inputText.trim() &&
+    isSameChatResponsePayload(chatItem.response_payload, responsePayload)
   );
-
-  return matchingChatItems.at(-1) ?? null;
 }
 
 function isSameChatResponsePayload(
