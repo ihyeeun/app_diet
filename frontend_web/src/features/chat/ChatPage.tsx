@@ -803,7 +803,7 @@ export default function ChatPage() {
       return;
     }
 
-    keepBottomIfFollowing("smooth");
+    keepBottomIfFollowing("instant");
   }, [isTop, keepBottomIfFollowing, pendingInput, timelineScrollTarget]);
 
   useEffect(() => {
