@@ -1,8 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useCallback, useState } from "react";
 
-import { getChatHistory } from "@/features/chat/api/chat.api";
-import { queryKeys as chatQueryKeys } from "@/features/chat/hooks/queries/queryKey";
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import type { HomeOnboardingTarget } from "@/features/home/constants/homeOnboarding";
@@ -30,7 +27,6 @@ export default function MenuActionSection({
   showMenuBoardCameraCard: boolean;
 }) {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [isCameraActionSheetOpen, setIsCameraActionSheetOpen] = useState(false);
 
   const handleOpenCameraActionSheet = useCallback(() => {
@@ -41,23 +37,13 @@ export default function MenuActionSection({
     setIsCameraActionSheetOpen(false);
   }, []);
 
-  const prefetchChatHistory = useCallback(() => {
-    return queryClient.prefetchQuery({
-      queryKey: chatQueryKeys.chatHistory,
-      queryFn: getChatHistory,
-      staleTime: 0,
-    });
-  }, [queryClient]);
-
-  const handleNavigateMenuBoardCamera = async () => {
+  const handleNavigateMenuBoardCamera = () => {
     handleCloseCameraActionSheet();
-    await prefetchChatHistory();
     navigate(PATH.MENU_BOARD_CAMERA);
   };
 
-  const handleNavigateFoodCamera = async () => {
+  const handleNavigateFoodCamera = () => {
     handleCloseCameraActionSheet();
-    await prefetchChatHistory();
     navigate(PATH.CHAT_FOOD_CAMERA);
   };
 

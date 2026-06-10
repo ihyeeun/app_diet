@@ -30,6 +30,7 @@ import {
   type SelectedDiaryMealRecordMenu,
 } from "@/features/chat/utils/chatDiaryMealRecord";
 import { isChatHistoryItemResponse } from "@/features/chat/utils/chatHistoryItem";
+import { consumeChatHistoryPlaybackBaselineIds } from "@/features/chat/utils/chatHistoryPlayback";
 import {
   getMealTypeFromChatMealTime,
   getMealTypeFromCurrentTime,
@@ -948,6 +949,11 @@ export default function ChatPage() {
     }
 
     const currentChatItemIds = new Set(chatList.map((chatItem) => chatItem.id));
+    const playbackBaselineChatIds = consumeChatHistoryPlaybackBaselineIds(queryClient);
+
+    if (playbackBaselineChatIds !== null) {
+      knownHistoryChatItemIdsRef.current = new Set(playbackBaselineChatIds);
+    }
 
     if (knownHistoryChatItemIdsRef.current === null) {
       knownHistoryChatItemIdsRef.current = currentChatItemIds;
@@ -982,7 +988,15 @@ export default function ChatPage() {
     const nextChatItem = newChatItems[0];
     knownChatItemIds.add(nextChatItem.id);
     void playAssistantResponse(nextChatItem);
-  }, [assistantPlayback, chatList, isHistoryPending, isTop, pendingInput, playAssistantResponse]);
+  }, [
+    assistantPlayback,
+    chatList,
+    isHistoryPending,
+    isTop,
+    pendingInput,
+    queryClient,
+    playAssistantResponse,
+  ]);
 
   const sendChatMessage = async (rawInput: string) => {
     const text = rawInput.trim();

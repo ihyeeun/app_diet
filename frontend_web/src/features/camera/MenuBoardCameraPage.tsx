@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import styles from "@/features/camera/CameraPage.module.css";
@@ -12,6 +13,10 @@ import {
   getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
+import {
+  getChatHistoryPlaybackBaselineIds,
+  setChatHistoryPlaybackBaselineIds,
+} from "@/features/chat/utils/chatHistoryPlayback";
 import { PATH } from "@/router/path";
 import { track } from "@/shared/analytics/analytics";
 import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
@@ -31,6 +36,7 @@ export default function MenuBoardCameraPage() {
   const [captureErrorFeedback, setCaptureErrorFeedback] =
     useState<CameraCaptureErrorFeedback | null>(null);
   const autoTriggeredRef = useRef(false);
+  const queryClient = useQueryClient();
   const { mutateAsync: uploadMenuBoardImage } = useMenuBoardMutation();
 
   const returnFromCameraPage = useCallback(() => {
@@ -83,7 +89,11 @@ export default function MenuBoardCameraPage() {
     try {
       setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
       setIsProcessing(true);
+      const playbackBaselineChatIds = await getChatHistoryPlaybackBaselineIds(queryClient);
       await uploadMenuBoardImage(capturedImage);
+      if (playbackBaselineChatIds !== null) {
+        setChatHistoryPlaybackBaselineIds(queryClient, playbackBaselineChatIds);
+      }
       track(EVENT_NAME.OCR_SCAN_SUCCESS, { source: "menu_board_camera" });
 
       navigateToChatAfterSuccess();
@@ -97,7 +107,13 @@ export default function MenuBoardCameraPage() {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, navigateToChatAfterSuccess, returnFromCameraPage, uploadMenuBoardImage]);
+  }, [
+    isProcessing,
+    navigateToChatAfterSuccess,
+    queryClient,
+    returnFromCameraPage,
+    uploadMenuBoardImage,
+  ]);
 
   useEffect(() => {
     if (autoTriggeredRef.current) return;
