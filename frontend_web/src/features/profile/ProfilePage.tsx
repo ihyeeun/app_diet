@@ -53,8 +53,6 @@ const METRIC_CONFIG: Record<
 
 const NICKNAME_MAX_LENGTH = 15;
 const NICKNAME_ALLOWED_PATTERN = /[^0-9A-Za-zㄱ-ㅎㅏ-ㅣ가-힣]/g;
-const WEEKLY_RECORD_SKELETON_Y_TICK_WIDTHS = [24, 30, 26, 32, 22];
-const WEEKLY_RECORD_SKELETON_X_TICK_WIDTHS = [24, 26, 24, 26, 24, 26, 34];
 
 const sanitizeNickName = (value: string) =>
   value.replace(NICKNAME_ALLOWED_PATTERN, "").slice(0, NICKNAME_MAX_LENGTH);
@@ -424,7 +422,7 @@ function WeeklyRecordSkeleton() {
       <div className={styles.weeklyChartSkeleton} aria-hidden="true">
         <div className={styles.weeklyChartSkeletonPlot}>
           <div className={styles.weeklyChartSkeletonYAxis}>
-            {WEEKLY_RECORD_SKELETON_Y_TICK_WIDTHS.map((index) => (
+            {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} width={10} height={10} radius={999} />
             ))}
           </div>
@@ -439,7 +437,7 @@ function WeeklyRecordSkeleton() {
         </div>
 
         <div className={styles.weeklyChartSkeletonXAxis}>
-          {WEEKLY_RECORD_SKELETON_X_TICK_WIDTHS.map((index) => (
+          {Array.from({ length: 7 }).map((_, index) => (
             <Skeleton
               key={index}
               className={styles.weeklyChartSkeletonXAxisTick}

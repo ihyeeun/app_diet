@@ -80,7 +80,7 @@ export default function SettingsFeedbackPage() {
       .then((deviceInfo) => {
         if (!isActive) return;
 
-        setAppVersion(deviceInfo.appVersion);
+        setAppVersion(deviceInfo.appVersion ?? null);
       })
       .catch(() => {
         if (!isActive) return;
