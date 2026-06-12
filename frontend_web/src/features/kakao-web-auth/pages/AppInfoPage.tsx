@@ -1,7 +1,6 @@
+import styles from "@/features/kakao-web-auth/styles/AppInfo.module.css";
 import { Button } from "@/shared/commons/button/Button";
 import { useSearchParams } from "@/shared/navigation/stackflowNavigation";
-
-import styles from "./AuthRedirectPage.module.css";
 
 const APP_SCHEME_URL = "melo://";
 const ANDROID_PACKAGE_NAME = "com.melo.frontend";
@@ -89,8 +88,8 @@ export default function AppInfoPage() {
 
           <section className={styles.loginActions}>
             <div className={styles.completeCopy}>
-              {!isInstallMode && <p className={styles.completeTitle}>회원가입이 완료됐어요</p>}
-              <p className={styles.completeDescription}>
+              {!isInstallMode && <p className="typo-title2 textNormal">회원가입이 완료됐어요</p>}
+              <p className="typo-body2 textAssistive">
                 {isInstallMode ? "앱을 열거나 설치해 주세요" : "멜로에서 만나요!"}
               </p>
             </div>

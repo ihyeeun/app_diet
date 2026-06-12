@@ -5,12 +5,11 @@ import {
   KakaoWebAuthApiError,
   postHasUserInfo,
   redirectToKakaoWebLogin,
-} from "@/features/auth/api/kakaoWebAuth";
+} from "@/features/kakao-web-auth/api/kakaoWebAuth";
+import styles from "@/features/kakao-web-auth/styles/AppInfo.module.css";
 import { PATH } from "@/router/path";
 import { Button } from "@/shared/commons/button/Button";
 import { LoadingIndicator } from "@/shared/commons/loading/Loading";
-
-import styles from "./AuthRedirectPage.module.css";
 
 const DEFAULT_ERROR_MESSAGE = "카카오 로그인 처리 중 오류가 발생했습니다.";
 
@@ -90,7 +89,7 @@ export default function KakaoWebCallbackPage() {
   if (errorMessage) {
     return (
       <main className={styles.container}>
-        <h1 className={styles.title}>카카오 로그인 실패</h1>
+        <h1 className="textNormal">카카오 로그인 실패</h1>
         <p className={styles.description}>{errorMessage}</p>
         <div className={styles.actions}>
           <Button className={styles.actionButton} onClick={retryKakaoLogin}>

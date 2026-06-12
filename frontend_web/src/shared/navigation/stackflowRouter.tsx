@@ -145,7 +145,7 @@ const ChatFoodCameraPage = createGuardedLazyActivity(
   FEATURE_GUARD.FOOD_CAMERA,
   () => import("@/features/camera/ChatFoodCameraPage"),
 );
-const AppInfoPage = createLazyActivity(() => import("@/features/auth/AppInfoPage"));
+const AppInfoPage = createLazyActivity(() => import("@/features/kakao-web-auth/pages/AppInfoPage"));
 
 const ACTIVITIES = {
   Home: HomePage,

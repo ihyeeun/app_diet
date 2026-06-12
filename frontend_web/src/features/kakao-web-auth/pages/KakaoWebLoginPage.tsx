@@ -1,44 +1,7 @@
-import { getApiBaseUrl, redirectToKakaoWebLogin } from "@/features/auth/api/kakaoWebAuth";
-import { Button } from "@/shared/commons/button/Button";
-
-import styles from "./AuthRedirectPage.module.css";
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return "카카오 로그인을 시작하지 못했습니다.";
-}
+import { redirectToKakaoWebLogin } from "@/features/kakao-web-auth/api/kakaoWebAuth";
+import styles from "@/features/kakao-web-auth/styles/AppInfo.module.css";
 
 export default function KakaoWebLoginPage() {
-  let errorMessage = "";
-
-  try {
-    getApiBaseUrl();
-  } catch (error) {
-    errorMessage = getErrorMessage(error);
-  }
-
-  const startKakaoLogin = () => {
-    try {
-      redirectToKakaoWebLogin();
-    } catch (error) {
-      console.error(getErrorMessage(error));
-    }
-  };
-
-  if (errorMessage) {
-    return (
-      <main className={styles.container}>
-        <h1 className={styles.title}>카카오 로그인 실패</h1>
-        <p className={styles.description}>{errorMessage}</p>
-        <div className={styles.actions}>
-          <Button className={styles.actionButton} onClick={startKakaoLogin}>
-            다시 시도
-          </Button>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className={styles.loginContainer}>
       <div className={styles.phoneFrame}>
@@ -53,7 +16,7 @@ export default function KakaoWebLoginPage() {
             <button
               className={`${styles.kakaoButton} typo-label3`}
               type="button"
-              onClick={startKakaoLogin}
+              onClick={redirectToKakaoWebLogin}
             >
               <img src="/login/kakao-logo.svg" alt="kakao-logo" width={20} />
               카카오로 계속하기

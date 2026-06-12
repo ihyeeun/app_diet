@@ -11,10 +11,6 @@
   width: 100%;
 }
 
-.title {
-  color: var(--label-normal);
-}
-
 .description {
   color: var(--label-assistive);
   max-width: 320px;
@@ -99,22 +95,6 @@
   text-align: center;
 }
 
-.completeTitle {
-  color: var(--label-normal);
-  font-size: var(--fs-20);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0;
-  line-height: var(--line-height-140);
-}
-
-.completeDescription {
-  color: var(--label-assistive);
-  font-size: var(--fs-16);
-  font-weight: var(--fw-medium);
-  letter-spacing: 0;
-  line-height: var(--line-height-145);
-}
-
 .kakaoButton {
   align-items: center;
   background: #fee500;
@@ -135,9 +115,6 @@
 
 .storeLinkButton {
   color: var(--label-assistive);
-  font-size: var(--fs-13);
-  font-weight: var(--fw-medium);
-  line-height: var(--line-height-140);
   text-align: center;
   text-decoration: underline;
   text-underline-offset: 3px;

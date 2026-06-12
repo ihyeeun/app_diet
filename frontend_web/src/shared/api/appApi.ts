@@ -5,7 +5,6 @@ import {
   type ApiResponse,
   isApiSuccess,
 } from "@/shared/api/types/apiResponse.types";
-import { getAccessToken } from "@/shared/auth/authSession";
 
 export type RequestOptions = {
   endpoint: string;
@@ -16,22 +15,10 @@ export type RequestOptions = {
 };
 
 type WebRequestOptions = {
-  includeAuthorization?: boolean;
+  bearerToken?: string | null;
 };
 
-export function getApiBaseUrl() {
-  const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  if (configuredBaseUrl) {
-    return configuredBaseUrl.replace(/\/+$/, "");
-  }
-
-  if (import.meta.env.DEV) {
-    return "http://localhost:8080";
-  }
-
-  throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-}
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, "");
 
 function appendParams(url: URL, params?: RequestOptions["params"]) {
   if (!params) return;
@@ -160,8 +147,8 @@ export async function webApi<T>(
   webOptions?: WebRequestOptions,
 ): Promise<ApiResponse<T>> {
   const { endpoint, method, body, params, timeoutMs } = options;
-  const url = new URL(`${getApiBaseUrl()}${endpoint}`);
-  const accessToken = getAccessToken();
+  const url = new URL(`${API_BASE_URL}${endpoint}`);
+  const bearerToken = webOptions?.bearerToken;
   appendParams(url, params);
 
   const headers = new Headers({
@@ -172,8 +159,8 @@ export async function webApi<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  if (webOptions?.includeAuthorization !== false && accessToken) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
+  if (bearerToken) {
+    headers.set("Authorization", `Bearer ${bearerToken}`);
   }
 
   const abortController = timeoutMs && timeoutMs > 0 ? new AbortController() : null;
@@ -218,10 +205,6 @@ export async function webApi<T>(
       window.clearTimeout(timeoutId);
     }
   }
-}
-
-export function authedApi<T>(options: RequestOptions): Promise<ApiResponse<T>> {
-  return isNativeApp() ? appApi<T>(options) : webApi<T>(options);
 }
 
 export class AppApiError extends Error {
@@ -274,7 +257,17 @@ export async function webApiData<T>(
   return resolveApiData(response);
 }
 
-export async function authedApiData<T>(options: RequestOptions): Promise<T> {
-  const response = await authedApi<T>(options);
+export function platformApi<T>(
+  options: RequestOptions,
+  webOptions?: WebRequestOptions,
+): Promise<ApiResponse<T>> {
+  return isNativeApp() ? appApi<T>(options) : webApi<T>(options, webOptions);
+}
+
+export async function platformApiData<T>(
+  options: RequestOptions,
+  webOptions?: WebRequestOptions,
+): Promise<T> {
+  const response = await platformApi<T>(options, webOptions);
   return resolveApiData(response);
 }
