@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { getWebAuthAccessToken } from "@/features/kakao-web-auth/api/webAuthApi";
 import OnboardingHeader from "@/features/onboarding/components/OnboardingHeader";
 import {
   isInRange,
@@ -106,6 +107,14 @@ export default function OnboardingPage() {
     () => getOnboardingSteps({ showSubscribedCodeStep }),
     [showSubscribedCodeStep],
   );
+
+  useEffect(() => {
+    if (!isWebOnboarding) return;
+    if (getWebAuthAccessToken()) return;
+
+    navigate(PATH.KAKAO_WEB_LOGIN, { replace: true });
+  }, [isWebOnboarding, navigate]);
+
   const navigateAfterOnboarding = useCallback(() => {
     if (isNativeApp()) {
       syncAppTab("home");
