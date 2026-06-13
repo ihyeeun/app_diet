@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { queryKeys as calendarQueryKeys } from "@/features/calendar/hooks/queries/queryKey";
+import { queryKeys as calendarQueryKeys } from "@/features/calendar/hooks/queries/calendar.queryKey";
 import { queryKeys } from "@/features/home/hooks/queries/queryKey";
 import {
   deleteTodayMealRecord,
