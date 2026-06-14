@@ -104,7 +104,7 @@ export default function MenuActionSection({
                 onClick={handleNavigateMenuBoardCamera}
                 className={style.cameraActionSheetButton}
               >
-                <p className={`typo-label2`}>메뉴판 촬영</p>
+                <p className={`typo-label2`}>메뉴판 찍기</p>
               </button>
 
               <div className="divider" />
@@ -114,7 +114,7 @@ export default function MenuActionSection({
                 className={style.cameraActionSheetButton}
                 onClick={handleNavigateFoodCamera}
               >
-                <p className={`typo-label2`}>음식 촬영</p>
+                <p className={`typo-label2`}>음식 찍기</p>
               </button>
             </div>
           </div>

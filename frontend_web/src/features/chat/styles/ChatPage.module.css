@@ -218,6 +218,13 @@
   white-space: pre-wrap;
 }
 
+.userBubble,
+.assistantBubble {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 .userImageButton,
 .userImageBubbleFrame {
   width: 240px;
@@ -476,6 +483,7 @@
 .recommendMetaRow {
   align-items: flex-end;
   display: flex;
+  gap: 4px;
 }
 
 .menuInfoRow {
@@ -485,6 +493,10 @@
 
 .recommendBrand {
   color: var(--label-assistive);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recommendAmount {

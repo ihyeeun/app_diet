@@ -92,7 +92,11 @@ import {
 } from "@/shared/utils/dateFormat";
 import { formatNumberWithMaxOneDecimal } from "@/shared/utils/numberFormat";
 
-const QUICK_CHIP_LIST = ["지금 먹기 좋은 메뉴를 추천해줘"];
+const QUICK_CHIP_LIST = [
+  "지금 먹기 좋은 메뉴를 추천해줘",
+  "포만감 있는 점심 메뉴 추천해줘",
+  "칼로리 부담 적은 배달 음식 추천해줘",
+];
 const FEEDBACK_GAUGE_VIEWBOX_WIDTH = 220;
 const FEEDBACK_GAUGE_VIEWBOX_HEIGHT = 100;
 const FEEDBACK_GAUGE_CENTER_X = 110;
@@ -2461,7 +2465,7 @@ function RecommendationSection({
                     {topRecommendation.brand}
                   </span>
                 )}
-                <span className={`${styles.recommendAmount} typo-label4`}>
+                <span className={`${styles.recommendAmount} textNoWrap typo-label4`}>
                   1{getServingUnitLabel(topRecommendation.unit_quantity)} (
                   {topRecommendation.weight}
                   {topRecommendation.unit === 0 ? "g" : "ml"})
