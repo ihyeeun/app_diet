@@ -137,7 +137,7 @@ export default function TodayMealScorePage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="오늘의 식사 분석" onBack={() => navigateBack({ fallbackTo: PATH.HOME })} />
+      <PageHeader title="오늘의 식사 분석" onBack={() => navigateBack()} />
 
       <main className={styles.main}>
         <div className={styles.content}>
@@ -210,7 +210,7 @@ export default function TodayMealScorePage() {
 
       <footer className={styles.footer}>
         <Button
-          onClick={() => navigateBack({ fallbackTo: PATH.HOME })}
+          onClick={() => navigateBack()}
           variant="filled"
           interaction="normal"
           size="large"
