@@ -104,7 +104,7 @@ export default function ProfilePage() {
       if (selectedMetric === "weight") {
         return {
           label: record.label,
-          value: record.weight,
+          value: record.weight ?? currentWeight,
           target: record.targetWeight,
         };
       }
@@ -122,7 +122,7 @@ export default function ProfilePage() {
         value: record.steps ?? 0,
       };
     });
-  }, [selectedMetric, weeklyRecordQuery.records]);
+  }, [currentWeight, selectedMetric, weeklyRecordQuery.records]);
 
   const handleSelectMetric = (metric: WeeklyMetricType) => {
     setSelectedMetric(metric);
