@@ -47,8 +47,7 @@ export function buildAndroidIntentUrl(path: string, fallbackUrl: string) {
   const normalizedPath = path.replace(/^\/+/, "");
 
   return [
-    `intent://${normalizedPath}`,
-    "#Intent",
+    `intent://${normalizedPath}#Intent`,
     `scheme=${APP_SCHEME}`,
     `package=${ANDROID_PACKAGE_NAME}`,
     `S.browser_fallback_url=${encodeURIComponent(fallbackUrl)}`,
