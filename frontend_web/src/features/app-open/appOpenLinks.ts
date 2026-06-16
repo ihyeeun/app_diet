@@ -75,19 +75,20 @@ export function openAppWithFallback(path: string, onFallback?: () => void) {
   const fallbackUrl = buildInstallGuideUrl();
   const appOpenUrl = buildAppOpenUrl(path);
 
+  function clearFallback() {
+    if (document.hidden) {
+      window.clearTimeout(fallbackTimer);
+      document.removeEventListener("visibilitychange", clearFallback);
+    }
+  }
+
   const fallbackTimer = window.setTimeout(() => {
     if (!document.hidden) {
       window.history.replaceState(null, "", fallbackUrl);
       onFallback?.();
     }
+    document.removeEventListener("visibilitychange", clearFallback);
   }, APP_OPEN_FALLBACK_DELAY_MS);
-
-  const clearFallback = () => {
-    if (document.hidden) {
-      window.clearTimeout(fallbackTimer);
-      document.removeEventListener("visibilitychange", clearFallback);
-    }
-  };
 
   document.addEventListener("visibilitychange", clearFallback);
   window.location.assign(appOpenUrl);
