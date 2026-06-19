@@ -1769,7 +1769,7 @@ export default function ChatPage() {
                 )}
               <button
                 type="button"
-                className={styles.cameraButton}
+                className={`${styles.cameraButton} ${isScrollToBottomButtonVisible ? styles.scrollButton : ""}`}
                 onClick={
                   isScrollToBottomButtonVisible
                     ? handleScrollToBottom
@@ -2222,7 +2222,7 @@ function ChatInput({
             rows={1}
             value={value}
             className={`${styles.textInput} typo-body2`}
-            placeholder="맥도날드에 왔는데 뭐 먹을까?"
+            // placeholder="맥도날드에 왔는데 뭐 먹을까?"
             onChange={(event) => handleInputChange(event.target.value.slice(0, 500))}
             onFocus={() => onInputFocusChange(true)}
             onBlur={() => onInputFocusChange(false)}
