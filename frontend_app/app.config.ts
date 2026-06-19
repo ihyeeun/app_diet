@@ -87,6 +87,15 @@ const config: ExpoConfig = {
         imageWidth: 190,
       },
     ],
+    [
+      "@kingstinct/react-native-healthkit",
+      {
+        NSHealthShareUsageDescription:
+          "걸음 수를 자동으로 기록하기 위해 Apple 건강 데이터를 읽습니다",
+        NSHealthUpdateUsageDescription: "건강 데이터를 직접 수정하거나 추가하지 않습니다",
+        background: false,
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
