@@ -3,6 +3,8 @@ import { useQueries, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, KeyboardEvent, MouseEvent, PointerEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import { ChatCameraUpdateRequiredModal } from "@/features/camera/components/ChatCameraUpdateRequiredModal";
+import { navigateToChatCameraIfSupported } from "@/features/camera/utils/chatCameraSupport";
 import { AssistantMessageText } from "@/features/chat/components/AssistantMessageText";
 import { AssistantPendingMessage } from "@/features/chat/components/AssistantPendingMessage";
 import {
@@ -430,6 +432,8 @@ export default function ChatPage() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [pendingInput, setPendingInput] = useState<string | null>(null);
   const [assistantPlayback, setAssistantPlayback] = useState<AssistantPlaybackState | null>(null);
+  const [chatCameraUpdateUrl, setChatCameraUpdateUrl] = useState<string | null>(null);
+  const [isChatCameraUpdateModalOpen, setIsChatCameraUpdateModalOpen] = useState(false);
   const [isCameraHintDismissed, setIsCameraHintDismissed] = useState(
     getIsCameraHintDismissedInSession,
   );
@@ -1085,8 +1089,13 @@ export default function ChatPage() {
     keepBottomIfFollowing("instant");
   }, [keepBottomIfFollowing]);
 
-  const handleNavigateChatCamera = () => {
-    navigate(PATH.CHAT_CAMERA);
+  const handleNavigateChatCamera = async () => {
+    const result = await navigateToChatCameraIfSupported(navigate);
+
+    if (!result.isSupported) {
+      setChatCameraUpdateUrl(result.updateUrl);
+      setIsChatCameraUpdateModalOpen(true);
+    }
   };
 
   const handleNavigateDirectMenuRecord = () => {
@@ -1765,6 +1774,13 @@ export default function ChatPage() {
         confirmDisabled={isMealRecordEditPending}
         closeOnConfirm={false}
         onConfirm={handleMealRecordCancelConfirm}
+      />
+      <ChatCameraUpdateRequiredModal
+        open={isChatCameraUpdateModalOpen}
+        updateUrl={chatCameraUpdateUrl}
+        onOpenChange={(open) => {
+          setIsChatCameraUpdateModalOpen(open);
+        }}
       />
       {previewImageUrl ? (
         <UserImagePreviewOverlay src={previewImageUrl} onClose={() => setPreviewImageUrl(null)} />

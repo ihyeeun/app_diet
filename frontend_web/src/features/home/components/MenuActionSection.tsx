@@ -1,5 +1,7 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
+import { ChatCameraUpdateRequiredModal } from "@/features/camera/components/ChatCameraUpdateRequiredModal";
+import { navigateToChatCameraIfSupported } from "@/features/camera/utils/chatCameraSupport";
 import ActionCard from "@/features/home/components/cards/ActionCard";
 import TodayBodyLogSection from "@/features/home/components/TodayBodyLogSection";
 import type { HomeOnboardingTarget } from "@/features/home/constants/homeOnboarding";
@@ -26,8 +28,16 @@ export default function MenuActionSection({
   showMenuBoardCameraCard: boolean;
 }) {
   const navigate = useNavigate();
-  const handleNavigateChatCamera = () => {
-    navigate(PATH.CHAT_CAMERA);
+  const [chatCameraUpdateUrl, setChatCameraUpdateUrl] = useState<string | null>(null);
+  const [isChatCameraUpdateModalOpen, setIsChatCameraUpdateModalOpen] = useState(false);
+
+  const handleNavigateChatCamera = async () => {
+    const result = await navigateToChatCameraIfSupported(navigate);
+
+    if (!result.isSupported) {
+      setChatCameraUpdateUrl(result.updateUrl);
+      setIsChatCameraUpdateModalOpen(true);
+    }
   };
 
   return (
@@ -76,6 +86,14 @@ export default function MenuActionSection({
       </div>
 
       {bodyLogSection ?? <TodayBodyLogSection date={selectedDate} />}
+
+      <ChatCameraUpdateRequiredModal
+        open={isChatCameraUpdateModalOpen}
+        updateUrl={chatCameraUpdateUrl}
+        onOpenChange={(open) => {
+          setIsChatCameraUpdateModalOpen(open);
+        }}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CameraLoading } from "@/features/camera/components/CameraLoading";
+import { ChatCameraUpdateRequiredModal } from "@/features/camera/components/ChatCameraUpdateRequiredModal";
 import {
   useCreateMealFeedbackByFoodImageMutation,
   useGetFeedbackByNutritionLabelImageMutation,
@@ -17,6 +18,7 @@ import {
   getRecognitionErrorFeedback,
   isCameraCaptureCancelled,
 } from "@/features/camera/utils/cameraCapture";
+import { getChatCameraSupportResult } from "@/features/camera/utils/chatCameraSupport";
 import {
   getChatHistoryPlaybackBaselineIds,
   setChatHistoryPlaybackBaselineIds,
@@ -82,6 +84,8 @@ export default function ChatCameraPage() {
   const [loadingDescription, setLoadingDescription] = useState<string>(
     CHAT_CAMERA_LOADING_DESCRIPTION.FOOD,
   );
+  const [chatCameraUpdateUrl, setChatCameraUpdateUrl] = useState<string | null>(null);
+  const [isChatCameraUpdateModalOpen, setIsChatCameraUpdateModalOpen] = useState(false);
   const [captureErrorFeedback, setCaptureErrorFeedback] =
     useState<CameraCaptureErrorFeedback | null>(null);
   const autoTriggeredRef = useRef(false);
@@ -112,6 +116,15 @@ export default function ChatCameraPage() {
 
     let image: CapturedImage;
     try {
+      const supportResult = await getChatCameraSupportResult();
+
+      if (!supportResult.isSupported) {
+        setIsOpeningCamera(false);
+        setChatCameraUpdateUrl(supportResult.updateUrl);
+        setIsChatCameraUpdateModalOpen(true);
+        return;
+      }
+
       setIsOpeningCamera(true);
       image = await requestNativeCameraCapture({
         quality: DEFAULT_CAMERA_CAPTURE_QUALITY,
@@ -211,6 +224,17 @@ export default function ChatCameraPage() {
         onOpenChange={handleCaptureErrorModalOpenChange}
         title={captureErrorFeedback?.title ?? ""}
         description={captureErrorFeedback?.description}
+      />
+      <ChatCameraUpdateRequiredModal
+        open={isChatCameraUpdateModalOpen}
+        updateUrl={chatCameraUpdateUrl}
+        onOpenChange={(open) => {
+          setIsChatCameraUpdateModalOpen(open);
+
+          if (!open) {
+            returnFromCameraPage();
+          }
+        }}
       />
     </section>
   );
