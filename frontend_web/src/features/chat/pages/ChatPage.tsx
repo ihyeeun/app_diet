@@ -72,6 +72,7 @@ import {
 } from "@/shared/api/types/api.dto";
 import type {
   ChatHistoryItemResponseDto,
+  ChatNutritionLabelFeedbackResponseDto,
   ChatRecommendItemResponseDto,
   ChatRecommendResponseDto,
   FeedbackItemDto,
@@ -1556,13 +1557,28 @@ export default function ChatPage() {
                 chatItemPlayback === null
                   ? Number.POSITIVE_INFINITY
                   : chatItemPlayback.resultVisibleCount;
+              const nutritionLabelFeedback = getNutritionLabelFeedback(chatItem.response_payload);
               const assistantBubbleGroups = getAssistantVisibleBubbleGroups(
                 chatItem.response_payload,
                 visibleBubbleCount,
               );
               const isResponseAnimating = chatItemPlayback !== null;
-              const userImageAction =
-                chatItem.response_payload.chat_category === "feedback"
+              const userImageAction = nutritionLabelFeedback
+                ? {
+                    ariaLabel: "영양성분 등록하기",
+                    onClick: () =>
+                      navigate(getChatNutritionRegisterPath(chatItem.id), {
+                        state: {
+                          ...nutritionLabelFeedback.recognized_nutrition,
+                          name: "",
+                          brand: "",
+                          entrySource: "chatNutritionLabel" as const,
+                          chatId: chatItem.id,
+                        },
+                      }),
+                  }
+                : chatItem.response_payload.chat_category === "feedback" &&
+                    chatItem.response_payload.feedback
                   ? {
                       ariaLabel: "피드백 결과 보기",
                       onClick: () => navigate(getFeedbackResultPath(chatItem.id)),
@@ -1817,6 +1833,28 @@ function getAssistantBubbleGroups(
   }
 
   return bubbleGroups;
+}
+
+function getNutritionLabelFeedback(
+  responsePayload: ChatRecommendResponseDto,
+): ChatNutritionLabelFeedbackResponseDto | null {
+  if (
+    responsePayload.chat_category === "feedback" &&
+    "recognized_nutrition" in responsePayload &&
+    responsePayload.recognized_nutrition
+  ) {
+    return responsePayload;
+  }
+
+  return null;
+}
+
+function getChatNutritionRegisterPath(chatId: number) {
+  const params = new URLSearchParams({
+    chatId: String(chatId),
+  });
+
+  return `${PATH.CHAT_NUTRITION_REGISTER}?${params.toString()}`;
 }
 
 function getAssistantVisibleBubbleGroups(

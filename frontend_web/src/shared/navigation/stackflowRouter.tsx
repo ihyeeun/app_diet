@@ -148,6 +148,14 @@ const ChatPage = createGuardedLazyActivity(
   FEATURE_GUARD.CHAT,
   () => import("@/features/chat/pages/ChatPage"),
 );
+const ChatNutritionRegisterPage = createGuardedLazyActivity(
+  FEATURE_GUARD.CHAT,
+  () => import("@/features/chat/pages/ChatNutritionRegisterPage"),
+);
+const ChatNutritionDetailActivity = createGuardedLazyActivity(
+  FEATURE_GUARD.CHAT,
+  () => import("@/features/chat/pages/ChatMenuDetailPage"),
+);
 const DiaryPage = createLazyActivity(() => import("@/features/diary/DiaryPage"));
 const RecommendResultPage = createLazyActivity(
   () => import("@/features/chat/pages/RecommendResultPage"),
@@ -192,6 +200,8 @@ const ACTIVITIES = {
   NutrientAddModify: NutrientModifyPage,
   BrandSearch,
   Chat: ChatPage,
+  ChatNutritionRegister: ChatNutritionRegisterPage,
+  ChatNutritionDetail: ChatNutritionDetailActivity,
   RecommendResult: RecommendResultPage,
   RecommendDetail: ChatMenuDetailPage,
   Diary: DiaryPage,
@@ -229,6 +239,8 @@ const ACTIVITY_ROUTES: Record<keyof typeof ACTIVITIES, RoutePath> = {
   NutrientAddModify: PATH.NUTRIENT_ADD_MODIFY,
   BrandSearch: PATH.BRAND_SEARCH,
   Chat: PATH.CHAT,
+  ChatNutritionRegister: PATH.CHAT_NUTRITION_REGISTER,
+  ChatNutritionDetail: PATH.CHAT_NUTRITION_DETAIL,
   RecommendResult: PATH.RECOMMEND_RESULT,
   RecommendDetail: PATH.RECOMMEND_DETAIL,
   Diary: PATH.DIARY,

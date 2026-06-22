@@ -148,6 +148,7 @@ export interface WeightStepsResponseDto {
 export type ChatRecommendResponseDto =
   | ChatRecommendationResponseDto
   | ChatFeedbackResponseDto
+  | ChatNutritionLabelFeedbackResponseDto
   | ChatGeneralResponseDto;
 
 interface ChatResponseBaseDto {
@@ -176,6 +177,8 @@ export interface ChatNutritionLabelFeedbackResponseDto extends ChatResponseBaseD
   chat_category: "feedback";
   image_summary: string;
   recognized_nutrition: NutritionLabelRecognitionResponseDto;
+  feedback?: never;
+  recognized_foods?: never;
 }
 
 export interface ChatRecommendItemResponseDto {
