@@ -54,7 +54,7 @@ function getAmplitudeApiKey(userRole: ProfileResponseDto["role"]) {
     return import.meta.env.VITE_DEV_AMPLITUDE_API_KEY;
   }
 
-  return import.meta.env.VITE_PRD_AMPLITUDE_API_KEY;
+  return import.meta.env.VITE_PROD_AMPLITUDE_API_KEY;
 }
 
 function disableAnalytics() {
