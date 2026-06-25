@@ -116,7 +116,7 @@ const ASSISTANT_BUBBLE_REVEAL_START_DELAY_MS = 180;
 const ASSISTANT_BUBBLE_GAP_MS = 1000;
 const ASSISTANT_RESULT_REVEAL_DELAY_MS = 1000;
 const ASSISTANT_RESULT_CARD_GAP_MS = 460;
-const MEAL_RECORD_LOOKBACK_DAYS = 4;
+const MEAL_RECORD_LOOKBACK_DAYS = 7;
 
 type RecordedMenuSummary = {
   menu_id: number;
@@ -481,21 +481,12 @@ export default function ChatPage() {
     return rawList.filter(isChatHistoryItemResponse).sort(compareChatHistoryItems);
   }, [data]);
   const displayChatList = chatList;
-  const chatDateKeys = useMemo(() => {
-    const dateKeySet = new Set<string>(getRecentDateKeys(todayDateKey, MEAL_RECORD_LOOKBACK_DAYS));
-
-    displayChatList.forEach((chatItem) => {
-      const dateKey = getChatDateKey(chatItem);
-
-      if (dateKey !== null) {
-        dateKeySet.add(dateKey);
-      }
-    });
-
-    return [...dateKeySet];
-  }, [displayChatList, todayDateKey]);
+  const mealRecordDateKeys = useMemo(
+    () => getRecentDateKeys(todayDateKey, MEAL_RECORD_LOOKBACK_DAYS),
+    [todayDateKey],
+  );
   const dayMealQueries = useQueries({
-    queries: chatDateKeys.map((dateKey) => ({
+    queries: mealRecordDateKeys.map((dateKey) => ({
       queryKey: homeQueryKeys.dayMeals.byDate(dateKey),
       queryFn: () => getTodayMealRecordMenus(dateKey),
       staleTime: Infinity,
@@ -504,7 +495,7 @@ export default function ChatPage() {
   const dayMealsByDate = useMemo(() => {
     const dayMeals = new Map<string, DayMealSummary>();
 
-    chatDateKeys.forEach((dateKey, index) => {
+    mealRecordDateKeys.forEach((dateKey, index) => {
       const queryData = dayMealQueries[index]?.data;
 
       if (queryData) {
@@ -513,9 +504,9 @@ export default function ChatPage() {
     });
 
     return dayMeals;
-  }, [chatDateKeys, dayMealQueries]);
+  }, [mealRecordDateKeys, dayMealQueries]);
   const timelineMealRecords = useMemo(() => {
-    return chatDateKeys.flatMap((dateKey) => {
+    return mealRecordDateKeys.flatMap((dateKey) => {
       const dayMeals = dayMealsByDate.get(dateKey);
 
       if (!dayMeals) {
@@ -524,7 +515,7 @@ export default function ChatPage() {
 
       return getDateMealRecordViewModels(dayMeals, dateKey);
     });
-  }, [chatDateKeys, dayMealsByDate]);
+  }, [mealRecordDateKeys, dayMealsByDate]);
   const timelineItems = useMemo(
     () => buildChatTimelineItems(displayChatList, timelineMealRecords),
     [displayChatList, timelineMealRecords],
@@ -533,7 +524,7 @@ export default function ChatPage() {
     () => timelineItems.map((item) => `${item.key}:${item.sortTime ?? "unknown"}`).join("|"),
     [timelineItems],
   );
-  const todayMealQueryIndex = chatDateKeys.indexOf(todayDateKey);
+  const todayMealQueryIndex = mealRecordDateKeys.indexOf(todayDateKey);
   const isTodayMealPending =
     todayMealQueryIndex >= 0 ? (dayMealQueries[todayMealQueryIndex]?.isPending ?? false) : false;
   const editingMealRecordMenus = editingMealRecordContext?.menus ?? [];
