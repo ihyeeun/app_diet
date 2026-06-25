@@ -1591,13 +1591,10 @@ export default function ChatPage() {
                       onClick: () => setPreviewImageUrl(userImageUrl),
                     };
               const isMealRecorded = hasChatMealRecordMenus(chatItem, currentMealRecord);
-              const isNutritionRegisteredChat = isNutritionLabelMenuRegisteredPayload(
-                chatItem.response_payload,
-              );
-              const nutritionCardMenu = getNutritionCardMenu(
-                nutritionLabelFeedback?.response_payload,
-              );
-              const nutritionMenuId = nutritionCardMenu?.menu_id ?? null;
+              const nutritionResponsePayload = nutritionLabelFeedback?.response_payload;
+              const nutritionMenuId = getNutritionMenuId(nutritionResponsePayload);
+              const nutritionCardMenu = getNutritionCardMenu(nutritionResponsePayload);
+              const isNutritionRegisteredChat = nutritionMenuId !== null;
               const isNutritionMealRecorded =
                 typeof nutritionMenuId === "number" &&
                 currentMealRecord?.previousMealRecord.menus.some(
@@ -1717,12 +1714,14 @@ export default function ChatPage() {
                         )}
 
                       {nutritionLabelFeedback &&
-                      nutritionCardMenu &&
+                      isNutritionRegisteredChat &&
                       visibleResultCount >= 1 ? (
                         <NutritionSection
                           animate={isResponseAnimating}
                           chatItem={nutritionLabelFeedback}
                           isMealRecorded={isNutritionMealRecorded}
+                          meal={nutritionCardMenu}
+                          menuId={nutritionMenuId}
                           onMealRecordClick={(meal) =>
                             handleMenuRecordClick(
                               chatItem,
@@ -1958,13 +1957,19 @@ function getNutritionCardMenu(
     return toChatMealRecordMenuFromRegisteredMenu(registeredMenu);
   }
 
-  if (!isNutritionLabelMenuRegisteredPayload(responsePayload)) {
+  const menuId = getNutritionMenuId(responsePayload);
+
+  if (
+    menuId === null ||
+    !("menu_name" in responsePayload) ||
+    typeof responsePayload.menu_name !== "string"
+  ) {
     return null;
   }
 
   return toChatMealRecordMenuFromNutrition({
-    brand: responsePayload.brand,
-    menuId: responsePayload.menu_id,
+    brand: "brand" in responsePayload ? responsePayload.brand : undefined,
+    menuId,
     menuName: responsePayload.menu_name,
     nutrition: responsePayload.recognized_nutrition,
   });
@@ -1973,17 +1978,7 @@ function getNutritionCardMenu(
 function isNutritionLabelMenuNotFoundPayload(responsePayload: ChatRecommendResponseDto) {
   return (
     isNutritionLabelFeedbackPayload(responsePayload) &&
-    !isNutritionLabelMenuRegisteredPayload(responsePayload)
-  );
-}
-
-function isNutritionLabelMenuRegisteredPayload(
-  responsePayload: ChatRecommendResponseDto,
-): responsePayload is ChatNutritionLabelMenuRegisteredResponseDto {
-  return (
-    isNutritionLabelFeedbackPayload(responsePayload) &&
-    "action" in responsePayload &&
-    responsePayload.action === "nutrition_label_menu_registered"
+    getNutritionMenuId(responsePayload) === null
   );
 }
 
@@ -2862,24 +2857,22 @@ function NutritionSection({
   animate = false,
   chatItem,
   isMealRecorded,
+  meal,
+  menuId,
   onMealRecordCancelClick,
   onMealRecordClick,
 }: {
   animate?: boolean;
   chatItem: ChatNutritionLabelFeedbackItem;
   isMealRecorded: boolean;
+  meal: ChatMealRecordMenu | null;
+  menuId: number;
   onMealRecordCancelClick: (meal: ChatMealRecordMenu) => void;
   onMealRecordClick: (meal: ChatMealRecordMenu) => void;
 }) {
   const navigate = useNavigate();
-  const menuId = getNutritionMenuId(chatItem.response_payload);
-  const meal = getNutritionCardMenu(chatItem.response_payload);
 
   const handleNutritionDetailClick = () => {
-    if (menuId === null) {
-      return;
-    }
-
     navigate(getChatNutritionDetailPath(chatItem.id, menuId));
   };
 
@@ -2895,10 +2888,6 @@ function NutritionSection({
     event.preventDefault();
     handleNutritionDetailClick();
   };
-
-  if (menuId === null) {
-    return null;
-  }
 
   return (
     <section className={styles.feedbackSection}>
