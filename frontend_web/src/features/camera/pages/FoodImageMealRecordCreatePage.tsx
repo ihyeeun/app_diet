@@ -78,9 +78,7 @@ export default function FoodCameraPage() {
     } catch (error) {
       setIsOpeningCamera(false);
       if (isCameraCaptureCancelled(error)) {
-        track(EVENT_NAME.FOOD_SCAN_CANCEL, {
-          source: "meal_record_camera",
-        });
+        track(EVENT_NAME.CAMERA_CANCEL);
         returnFromCameraPage();
         return;
       }

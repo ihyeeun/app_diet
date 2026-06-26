@@ -11,10 +11,6 @@ export function trackNutritionLabelScanSuccess(properties?: NutritionLabelAnalyt
   track(EVENT_NAME.LABEL_SCAN_SUCCESS, properties);
 }
 
-export function trackNutritionLabelScanCancel(properties?: NutritionLabelAnalyticsProperties) {
-  track(EVENT_NAME.LABEL_SCAN_CANCEL, properties);
-}
-
 export function trackNutritionLabelScanFail(
   reason: string,
   properties?: NutritionLabelAnalyticsProperties,

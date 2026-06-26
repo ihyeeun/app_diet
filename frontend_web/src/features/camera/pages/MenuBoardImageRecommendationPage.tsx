@@ -71,9 +71,7 @@ export default function MenuBoardCameraPage() {
     } catch (error) {
       setIsOpeningCamera(false);
       if (isCameraCaptureCancelled(error)) {
-        track(EVENT_NAME.OCR_SCAN_CANCEL, {
-          source: "menu_board_camera",
-        });
+        track(EVENT_NAME.CAMERA_CANCEL);
         returnFromCameraPage();
         return;
       }

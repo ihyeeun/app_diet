@@ -27,7 +27,6 @@ import { PATH } from "@/router/path";
 import { track } from "@/shared/analytics/analytics";
 import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
 import {
-  trackNutritionLabelScanCancel,
   trackNutritionLabelScanFail,
   trackNutritionLabelScanStart,
   trackNutritionLabelScanSuccess,
@@ -82,15 +81,8 @@ function trackScanSuccess(mode: ChatCameraMode) {
   });
 }
 
-function trackScanCancel(mode: ChatCameraMode) {
-  if (mode === "NUTRITION_LABEL") {
-    trackNutritionLabelScanCancel({ source: CHAT_CAMERA_SOURCE[mode] });
-    return;
-  }
-
-  track(mode === "FOOD" ? EVENT_NAME.FOOD_SCAN_CANCEL : EVENT_NAME.OCR_SCAN_CANCEL, {
-    source: CHAT_CAMERA_SOURCE[mode],
-  });
+function trackScanCancel() {
+  track(EVENT_NAME.CAMERA_CANCEL);
 }
 
 function trackScanFail(mode: ChatCameraMode, reason: string) {
@@ -163,7 +155,7 @@ export default function ChatCameraPage() {
     } catch (error) {
       setIsOpeningCamera(false);
       if (isCameraCaptureCancelled(error)) {
-        trackScanCancel("FOOD");
+        trackScanCancel();
         returnFromCameraPage();
         return;
       }

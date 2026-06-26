@@ -69,9 +69,7 @@ export default function ChatFoodCameraPage() {
     } catch (error) {
       setIsOpeningCamera(false);
       if (isCameraCaptureCancelled(error)) {
-        track(EVENT_NAME.FOOD_SCAN_CANCEL, {
-          source: "chat_food_camera",
-        });
+        track(EVENT_NAME.CAMERA_CANCEL);
         navigateBack({ fallbackTo: PATH.CHAT });
         return;
       }
