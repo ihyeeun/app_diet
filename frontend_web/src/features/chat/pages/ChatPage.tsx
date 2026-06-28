@@ -528,9 +528,8 @@ export default function ChatPage() {
     () => timelineItems.map((item) => `${item.key}:${item.sortTime ?? "unknown"}`).join("|"),
     [timelineItems],
   );
-  const todayMealQueryIndex = mealRecordDateKeys.indexOf(todayDateKey);
-  const isTodayMealPending =
-    todayMealQueryIndex >= 0 ? (dayMealQueries[todayMealQueryIndex]?.isPending ?? false) : false;
+  const isMealRecordTimelinePending = dayMealQueries.some((query) => query.isPending);
+  const isTimelineDataPending = isHistoryPending || isMealRecordTimelinePending;
   const editingMealRecordMenus = editingMealRecordContext?.menus ?? [];
 
   const assistantPlaybackSignature = assistantPlayback
@@ -547,7 +546,11 @@ export default function ChatPage() {
   const isTypingPending = isAwaitingChatResponse && isSendPending;
   const isInputEmpty = inputValue.trim().length === 0;
   const isQuickActionVisible = isInputEmpty && !isSoftKeyboardVisible && !isAwaitingChatResponse;
-  const isScrollToBottomButtonVisible = hasTimelineContent && isScrolledAwayFromBottom;
+  const shouldDeferTimelineRender = pendingInput === null && isTimelineDataPending;
+  const shouldRenderTimeline = hasTimelineContent && !shouldDeferTimelineRender;
+  const shouldShowTimelineSkeleton = shouldDeferTimelineRender;
+  const shouldShowEmptySection = !hasTimelineContent && !isTimelineDataPending;
+  const isScrollToBottomButtonVisible = shouldRenderTimeline && isScrolledAwayFromBottom;
   const isFloatingButtonVisible =
     !isSoftKeyboardVisible && (isQuickActionVisible || isScrollToBottomButtonVisible);
   const shouldShowCameraHint =
@@ -723,7 +726,12 @@ export default function ChatPage() {
     }
   }, [isTop, updateIsScrolledAwayFromBottom]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!shouldRenderTimeline) {
+      updateIsScrolledAwayFromBottom();
+      return;
+    }
+
     if (pendingMealRecordScrollKeyRef.current !== null || timelineScrollTarget !== null) {
       return;
     }
@@ -749,6 +757,7 @@ export default function ChatPage() {
     assistantPlaybackSignature,
     isTop,
     keepBottomIfFollowing,
+    shouldRenderTimeline,
     timelineScrollTarget,
     timelineSignature,
     updateIsScrolledAwayFromBottom,
@@ -1515,14 +1524,10 @@ export default function ChatPage() {
       <PageHeader onBack={handleBack} />
 
       <main ref={mainRef} className={styles.main}>
-        {!hasTimelineContent && !isHistoryPending && !isTodayMealPending ? <EmptySection /> : null}
-        {(isHistoryPending || isTodayMealPending) &&
-        !hasTimelineContent &&
-        pendingInput === null ? (
-          <ChatHistorySkeleton />
-        ) : null}
+        {shouldShowEmptySection ? <EmptySection /> : null}
+        {shouldShowTimelineSkeleton ? <ChatHistorySkeleton /> : null}
 
-        {hasTimelineContent ? (
+        {shouldRenderTimeline ? (
           <div className={styles.chatTimeline}>
             {timelineItems.map((timelineItem, index) => {
               // 현재 아이템과 이전 아이템의 날짜를 비교해 날짜 구분선 렌더링 결정
