@@ -198,7 +198,7 @@ export default function ProfilePage() {
                 <p className={`${styles.activeCardTitle} typo-title4`}>체중</p>
 
                 <div className={styles.activeCardValueRow}>
-                  <span className={`${styles.activeCardValue} typo-body3`}>
+                  <span className={`${styles.activeCardValue} typo-body3 amp-mask`}>
                     {currentWeight.toLocaleString("ko-KR")}
                   </span>
                   <span className={`${styles.activeCardUnit} typo-caption3`}>kg</span>

@@ -35,12 +35,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
     <>
       <div className={style.todayContainer}>
         <TodayMetricCard title="체중" value={displayWeight} unit="kg" onClick={openWeightEditor} />
-        <TodayMetricCard
-          title="걸음 수"
-          value={displaySteps}
-          unit="보"
-          onClick={openStepsEditor}
-        />
+        <TodayMetricCard title="걸음 수" value={displaySteps} unit="보" onClick={openStepsEditor} />
       </div>
     </>
   );
@@ -74,7 +69,9 @@ function TodayMetricCard({
           <SystemIcon name="circle-plus-fill" mode="image" size={24} />
         </div>
         <div className={style.valueText}>
-          <span className={`typo-h2 ${style.highlightValue}`}>{value.toLocaleString()}</span>
+          <span className={`typo-h2 amp-mask ${style.highlightValue}`}>
+            {value.toLocaleString()}
+          </span>
           <span className="typo-caption3">{unit}</span>
         </div>
       </div>
