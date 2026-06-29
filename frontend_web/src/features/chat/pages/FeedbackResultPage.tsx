@@ -411,29 +411,36 @@ function FoodImageFeedbackPreview({
   const [openSourceMarkerId, setOpenSourceMarkerId] = useState<string | null>(null);
   const [isUnpositionedMenuListOpen, setIsUnpositionedMenuListOpen] = useState(false);
   const menuById = useMemo(() => new Map(menus.map((menu) => [menu.menu_id, menu])), [menus]);
-  const recognizedMenuIds = useMemo(
-    () => new Set(recognizedFoods.map((food) => food.menu_id)),
-    [recognizedFoods],
+  const positionedFoods = useMemo(
+    () =>
+      recognizedFoods.filter(
+        (food) => menuById.has(food.menu_id) && hasValidFoodPosition(food),
+      ),
+    [menuById, recognizedFoods],
+  );
+  const positionedMenuIds = useMemo(
+    () => new Set(positionedFoods.map((food) => food.menu_id)),
+    [positionedFoods],
   );
   const unpositionedMenus = useMemo(
-    () => menus.filter((menu) => !recognizedMenuIds.has(menu.menu_id)),
-    [menus, recognizedMenuIds],
+    () => menus.filter((menu) => !positionedMenuIds.has(menu.menu_id)),
+    [menus, positionedMenuIds],
   );
 
   const markerLayout = useMemo(() => getFoodMarkerLayout(imageFeedbackSize), [imageFeedbackSize]);
   const foodMarkers = useMemo(
     () =>
-      recognizedFoods.map((food, index) => {
+      positionedFoods.map((food, index) => {
         const matchedMenu = menuById.get(food.menu_id);
         const score = matchedMenu?.score;
         const label = matchedMenu?.menu_name ?? food.menu_name;
         const scoreText = typeof score === "number" ? `${Math.round(score)}점` : null;
         const markerBubbleSize = getEstimatedFoodMarkerBubbleSize({ label, scoreText });
-        const markerX = getMarkerPosition(food.position?.x ?? 0.5, {
+        const markerX = getMarkerPosition(food.position.x, {
           bubbleWidth: markerBubbleSize.width,
           markerLayout,
         });
-        const markerY = getMarkerPosition(food.position?.y ?? 0.5);
+        const markerY = getMarkerPosition(food.position.y);
 
         return {
           id: `food-${food.menu_id}-${index}`,
@@ -446,7 +453,7 @@ function FoodImageFeedbackPreview({
           scoreText,
         };
       }),
-    [markerLayout, menuById, recognizedFoods],
+    [markerLayout, menuById, positionedFoods],
   );
   const foodMarkerClusters = useMemo(
     () => clusterFoodMarkers(foodMarkers, imageFeedbackSize),
@@ -825,6 +832,22 @@ function resolveErrorMessage(error: unknown) {
   }
 
   return "식사 기록 저장에 실패했어요. 잠시 후 다시 시도해주세요.";
+}
+
+function hasValidFoodPosition(food: ChatFoodImageRecognizedMenuResponseDto) {
+  const x = food.position?.x;
+  const y = food.position?.y;
+
+  return (
+    typeof x === "number" &&
+    Number.isFinite(x) &&
+    x >= 0 &&
+    x <= 1 &&
+    typeof y === "number" &&
+    Number.isFinite(y) &&
+    y >= 0 &&
+    y <= 1
+  );
 }
 
 function getMarkerPosition(value: number, options?: FoodMarkerHorizontalClassOptions) {
