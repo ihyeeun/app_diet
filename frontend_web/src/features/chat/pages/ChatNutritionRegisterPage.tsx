@@ -71,14 +71,29 @@ export default function ChatNutritionRegisterPage() {
       return;
     }
 
-    let hasRegisterSucceeded = false;
+    let playbackBaselineChatIds: Awaited<
+      ReturnType<typeof getChatHistoryPlaybackBaselineIds>
+    > = null;
 
     try {
-      const playbackBaselineChatIds = await getChatHistoryPlaybackBaselineIds(queryClient);
-      await registerMenu({ body });
-      hasRegisterSucceeded = true;
-      trackNutritionLabelRegisterSuccess();
+      playbackBaselineChatIds = await getChatHistoryPlaybackBaselineIds(queryClient);
+    } catch {
+      playbackBaselineChatIds = null;
+    }
 
+    try {
+      await registerMenu({ body });
+    } catch (error) {
+      trackNutritionLabelRegisterFail(
+        getAnalyticsErrorMessage(error, "등록에 실패했어요. 잠시 후 다시 시도해주세요."),
+      );
+      toast.warning("등록에 실패했어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    trackNutritionLabelRegisterSuccess();
+
+    try {
       await queryClient.refetchQueries({
         queryKey: chatQueryKeys.chatHistory,
         type: "all",
@@ -87,17 +102,12 @@ export default function ChatNutritionRegisterPage() {
       if (playbackBaselineChatIds !== null) {
         setChatHistoryPlaybackBaselineIds(queryClient, playbackBaselineChatIds);
       }
-
-      toast.success("메뉴가 등록되었어요.");
-      navigateBack({ fallbackTo: PATH.CHAT });
-    } catch (error) {
-      if (!hasRegisterSucceeded) {
-        trackNutritionLabelRegisterFail(
-          getAnalyticsErrorMessage(error, "등록에 실패했어요. 잠시 후 다시 시도해주세요."),
-        );
-      }
-      toast.warning("등록에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } catch {
+      // Cache sync is best-effort after the menu registration has already succeeded.
     }
+
+    toast.success("메뉴가 등록되었어요.");
+    navigateBack({ fallbackTo: PATH.CHAT });
   };
 
   return (
