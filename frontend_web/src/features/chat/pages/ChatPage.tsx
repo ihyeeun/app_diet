@@ -60,7 +60,7 @@ import { PATH } from "@/router/path";
 import { getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import { track } from "@/shared/analytics/analytics";
 import { EVENT_NAME } from "@/shared/analytics/analytics.constants";
-import { trackRecommendMenuSave } from "@/shared/analytics/recommendMenuEvents";
+import { trackChatMenuSave } from "@/shared/analytics/recommendMenuEvents";
 import { AppApiError } from "@/shared/api/apiClient";
 import { isNativeApp, requestNativeAppDeviceInfo } from "@/shared/api/bridge/nativeBridge";
 import type { AppDeviceInfoPayload } from "@/shared/api/bridge/nativeBridge.types";
@@ -1181,8 +1181,12 @@ export default function ChatPage() {
           selectedMenus: nextMealRecord.menus,
           image: mealRecord?.image ?? getDiaryMealImage(dayMeals, nextMealRecord.time),
         }),
+        {
+          onSuccess: () => {
+            trackChatMenuSave(nextMealRecord.addedMenus);
+          },
+        },
       );
-      trackRecommendMenuSave(nextMealRecord.addedMenus);
 
       let successMessage = "식사 기록이 수정되었어요.";
 

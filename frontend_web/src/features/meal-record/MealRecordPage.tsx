@@ -28,6 +28,10 @@ import {
 import { PATH } from "@/router/path";
 import { getMealDetailPath, getMealRecordPath, getMealSearchPath } from "@/router/pathHelpers";
 import {
+  type MenuSaveAnalyticsItem,
+  trackDiaryMenuSave,
+} from "@/shared/analytics/recommendMenuEvents";
+import {
   MEAL_TYPE_OPTIONS,
   type MealServingInputMode,
   type MealTime,
@@ -393,6 +397,28 @@ export default function MealRecordPage() {
       }));
   };
 
+  const getSavedMenusFromRequest = (request: RegisterMealRequestDto): MenuSaveAnalyticsItem[] => {
+    if (!currentMenus) {
+      return [];
+    }
+
+    const requestMenuIds = request.menu_ids ?? [];
+    if (requestMenuIds.length === 0) {
+      return [];
+    }
+
+    const type = String(request.time) as MealType;
+    const draftByType = allDrafts[formatMenuDraftKey(dateKey, type)];
+    const currentMenuNameById = new Map(
+      currentMenus.menusByTime[request.time].map((menu) => [menu.id, menu.name]),
+    );
+
+    return requestMenuIds.map((menuId) => ({
+      menu_id: menuId,
+      menu_name: currentMenuNameById.get(menuId) ?? draftByType?.previewsById[menuId]?.name,
+    }));
+  };
+
   const handleComplete = async () => {
     if (!currentMenus || isSavePending) {
       return;
@@ -441,12 +467,19 @@ export default function MealRecordPage() {
           continue;
         }
 
-        await registerMealAsync({
-          ...request,
-          analytics: {
-            recommendMenuCancel: canceledMenus,
+        await registerMealAsync(
+          {
+            ...request,
+            analytics: {
+              recommendMenuCancel: canceledMenus,
+            },
           },
-        });
+          {
+            onSuccess: () => {
+              trackDiaryMenuSave(getSavedMenusFromRequest(request));
+            },
+          },
+        );
       }
 
       clearAllDrafts();

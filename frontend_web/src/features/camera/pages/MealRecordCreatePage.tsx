@@ -35,6 +35,7 @@ import {
   trackNutritionLabelScanStart,
   trackNutritionLabelScanSuccess,
 } from "@/shared/analytics/nutritionLabelEvents";
+import { trackDiaryMenuSave } from "@/shared/analytics/recommendMenuEvents";
 import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { type MealTime, MENU_INPUT_MODE } from "@/shared/api/types/api.dto";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
@@ -160,16 +161,23 @@ export default function MealRecordCreatePage() {
 
         const latestMenus = useMenuDraftStore.getState().drafts[draftKey]?.existingMenus ?? [];
 
-        await mealRegisterAsync({
-          date: dateKey,
-          time: Number(mealType) as MealTime,
-          menu_ids: latestMenus.map((m) => m.id),
-          menu_quantities: latestMenus.map((m) => m.quantity),
-          menu_input_modes: latestMenus.map((menu) =>
-            menu.mode === "unit" ? MENU_INPUT_MODE.UNIT : MENU_INPUT_MODE.WEIGHT,
-          ),
-          image: imageData.image_url,
-        });
+        await mealRegisterAsync(
+          {
+            date: dateKey,
+            time: Number(mealType) as MealTime,
+            menu_ids: latestMenus.map((m) => m.id),
+            menu_quantities: latestMenus.map((m) => m.quantity),
+            menu_input_modes: latestMenus.map((menu) =>
+              menu.mode === "unit" ? MENU_INPUT_MODE.UNIT : MENU_INPUT_MODE.WEIGHT,
+            ),
+            image: imageData.image_url,
+          },
+          {
+            onSuccess: () => {
+              trackDiaryMenuSave(imageData.menu_ids.map((menuId) => ({ menu_id: menuId })));
+            },
+          },
+        );
 
         toast.success("촬영한 사진의 메뉴가 기록되었어요.");
         navigate(getMealRecordPath(dateKey, mealType), { replace: true });
