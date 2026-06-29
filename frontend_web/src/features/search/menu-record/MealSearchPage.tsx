@@ -172,10 +172,6 @@ export default function MealSearchPage() {
     navigate(getMealRecordPath(dateKey, mealType), { replace: true });
   }, [dateKey, hasDraft, isDayMealsError, isDayMealsPending, isTop, mealType, navigate]);
 
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
-
   const handleToggleMenuSelection = (menu: MenuSimpleResponseDto) => {
     const menuId = menu.id;
 
