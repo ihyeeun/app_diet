@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-
 import {
   isNativeApp,
-  readNativeStepCountRecords,
+  readNativeStepCountRecords as readNativeStepCountRecordsFromApp,
   requestNativeHealthPermissionStatus,
+  requestNativeHealthReadPermission,
 } from "@/shared/api/bridge/nativeBridge";
 import type {
   HealthConnectionSource,
@@ -13,31 +12,39 @@ import { isValidDateKey } from "@/shared/utils/dateFormat";
 
 const MAX_STEPS = 999999;
 
-type NativeStepCountResult = {
-  permissionStatus: HealthPermissionStatus | null;
-  readAt?: string;
-  source: HealthConnectionSource;
-  steps: number | null;
-};
-
-type NativeStepCountRecord = {
+export type NativeStepCountRecord = {
   date: string;
   source: Exclude<HealthConnectionSource, null>;
   steps: number;
 };
 
-type NativeStepCountRecordsResult = {
+export type NativeStepCountRecordsResult = {
   permissionStatus: HealthPermissionStatus | null;
   readAt?: string;
   records: NativeStepCountRecord[];
   source: HealthConnectionSource;
 };
 
+export type NativeStepCountResult = {
+  permissionStatus: HealthPermissionStatus | null;
+  readAt?: string;
+  source: HealthConnectionSource;
+  steps: number | null;
+};
+
+type ReadNativeStepCountOptions = {
+  shouldRequestPermission?: boolean;
+};
+
+export function canUseNativeStepCount(startDate: string, endDate: string, enabled = true) {
+  return enabled && isNativeApp() && isValidDateKey(startDate) && isValidDateKey(endDate);
+}
+
 function normalizeStepCount(steps: number) {
   return Math.min(MAX_STEPS, Math.max(0, Math.trunc(steps)));
 }
 
-function canAttemptNativeStepRead(
+function canReadNativeStepCount(
   permissionStatus: HealthPermissionStatus | null,
   source: HealthConnectionSource,
 ) {
@@ -47,15 +54,28 @@ function canAttemptNativeStepRead(
   return permissionStatus === "granted";
 }
 
-async function readNativeStepCountRecordsRange(
+async function resolveNativeStepCountPermission({
+  shouldRequestPermission = false,
+}: ReadNativeStepCountOptions = {}) {
+  const currentPermission = await requestNativeHealthPermissionStatus();
+
+  if (!shouldRequestPermission || currentPermission.permissionStatus === "granted") {
+    return currentPermission;
+  }
+
+  return requestNativeHealthReadPermission();
+}
+
+export async function readNativeStepCountRecordsRange(
   startDate: string,
   endDate: string,
+  options?: ReadNativeStepCountOptions,
 ): Promise<NativeStepCountRecordsResult> {
   let permissionStatus: HealthPermissionStatus | null = null;
   let source: HealthConnectionSource = null;
 
   try {
-    const permission = await requestNativeHealthPermissionStatus();
+    const permission = await resolveNativeStepCountPermission(options);
     permissionStatus = permission.permissionStatus;
     source = permission.source;
   } catch {
@@ -66,7 +86,7 @@ async function readNativeStepCountRecordsRange(
     };
   }
 
-  if (!canAttemptNativeStepRead(permissionStatus, source)) {
+  if (!canReadNativeStepCount(permissionStatus, source)) {
     return {
       permissionStatus,
       records: [],
@@ -75,7 +95,7 @@ async function readNativeStepCountRecordsRange(
   }
 
   try {
-    const result = await readNativeStepCountRecords({
+    const result = await readNativeStepCountRecordsFromApp({
       startDate,
       endDate,
     });
@@ -99,8 +119,11 @@ async function readNativeStepCountRecordsRange(
   }
 }
 
-async function readNativeStepCount(date: string): Promise<NativeStepCountResult> {
-  const result = await readNativeStepCountRecordsRange(date, date);
+export async function readNativeStepCount(
+  date: string,
+  options?: ReadNativeStepCountOptions,
+): Promise<NativeStepCountResult> {
+  const result = await readNativeStepCountRecordsRange(date, date, options);
   const record = result.records.find((item) => item.date === date);
 
   return {
@@ -109,42 +132,4 @@ async function readNativeStepCount(date: string): Promise<NativeStepCountResult>
     source: record?.source ?? result.source,
     steps: record ? record.steps : null,
   };
-}
-
-function canUseNativeSteps(startDate: string, endDate: string, enabledOption?: boolean) {
-  const canReadNativeSteps = isNativeApp();
-
-  return (
-    (enabledOption ?? true) &&
-    canReadNativeSteps &&
-    isValidDateKey(startDate) &&
-    isValidDateKey(endDate)
-  );
-}
-
-export function useNativeStepCountRecordsQuery(
-  payload: { endDate: string; startDate: string },
-  options?: { enabled?: boolean },
-) {
-  const enabled = canUseNativeSteps(payload.startDate, payload.endDate, options?.enabled);
-
-  return useQuery({
-    queryKey: ["native-step-count-records", payload.startDate, payload.endDate],
-    queryFn: () => readNativeStepCountRecordsRange(payload.startDate, payload.endDate),
-    enabled,
-    retry: false,
-    refetchOnMount: "always",
-  });
-}
-
-export function useNativeStepCountQuery(date: string, options?: { enabled?: boolean }) {
-  const enabled = canUseNativeSteps(date, date, options?.enabled);
-
-  return useQuery({
-    queryKey: ["native-step-count", date],
-    queryFn: () => readNativeStepCount(date),
-    enabled,
-    retry: false,
-    refetchOnMount: "always",
-  });
 }
