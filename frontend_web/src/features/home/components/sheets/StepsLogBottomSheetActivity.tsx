@@ -44,8 +44,11 @@ export default function StepsLogBottomSheetActivity() {
   const isOpen =
     activity.transitionState === "enter-active" || activity.transitionState === "enter-done";
   const canImportNativeSteps = isNativeApp();
-  const canReadNativeSteps = canImportNativeSteps && activity.params.nativeStepsRead === "true";
-  const nativeSyncedSteps = canReadNativeSteps ? (bodyLog?.steps ?? null) : null;
+  const nativeStepConnectionStatus = canImportNativeSteps
+    ? activity.params.nativeStepConnectionStatus
+    : "disconnected";
+  const canInputSteps = nativeStepConnectionStatus === "disconnected";
+  const nativeSyncedSteps = canInputSteps ? null : (bodyLog?.steps ?? null);
 
   const closeSheet = () => {
     if (!activity.isActive) return;
@@ -98,20 +101,7 @@ export default function StepsLogBottomSheetActivity() {
             <p className={`${style.sheetTitle} typo-title2`}>오늘의 걸음 수</p>
           </div>
           <div className={style.stepsFieldRow}>
-            {canReadNativeSteps ? (
-              <p
-                className={`${style.syncedStepsValue} typo-body1`}
-                aria-label={
-                  nativeSyncedSteps === null
-                    ? "연동된 오늘의 걸음 수 데이터 없음"
-                    : `연동된 오늘의 걸음 수 ${nativeSyncedSteps.toLocaleString()}보`
-                }
-              >
-                {nativeSyncedSteps === null
-                  ? "걸음 수 데이터가 없어요"
-                  : `${nativeSyncedSteps.toLocaleString()} 보`}
-              </p>
-            ) : (
+            {canInputSteps ? (
               <NumberField
                 key={date}
                 value={draftSteps}
@@ -147,10 +137,23 @@ export default function StepsLogBottomSheetActivity() {
                 }}
                 suffix={<span className={`typo-caption1 ${style.stepsUnit}`}>보</span>}
               />
+            ) : (
+              <p
+                className={`${style.syncedStepsValue} typo-body1`}
+                aria-label={
+                  nativeSyncedSteps === null
+                    ? "연동된 오늘의 걸음 수 데이터 없음"
+                    : `연동된 오늘의 걸음 수 ${nativeSyncedSteps.toLocaleString()}보`
+                }
+              >
+                {nativeSyncedSteps === null
+                  ? "걸음 수 데이터가 없어요"
+                  : `${nativeSyncedSteps.toLocaleString()} 보`}
+              </p>
             )}
           </div>
           <div className={style.sheetActions}>
-            {!canReadNativeSteps && (
+            {canInputSteps && (
               <Button onClick={handleSubmit} fullWidth size="large" disabled={isManualStepsPending}>
                 기록하기
               </Button>

@@ -2,17 +2,14 @@ import { useEffect, useState } from "react";
 
 import {
   canUseNativeStepCount,
+  type NativeStepConnectionStatus,
   readNativeStepCount,
 } from "@/features/health/services/nativeStepCount.service";
 import { useRegisterStepsMutation } from "@/features/home/hooks/mutations/useBodyLogMutation";
+import { isNativeApp } from "@/shared/api/bridge/nativeBridge";
 
 const nativeStepSyncCompletedDates = new Set<string>();
 const nativeStepSyncingDates = new Set<string>();
-
-type NativeStepReadState = {
-  date: string;
-  steps: number;
-};
 
 type UseSyncNativeStepCountOptions = {
   enabled?: boolean;
@@ -23,52 +20,68 @@ export function useSyncNativeStepCount(
   date: string,
   { enabled = true, savedSteps }: UseSyncNativeStepCountOptions = {},
 ) {
+  const isNativeEnvironment = isNativeApp();
   const canSyncNativeSteps = canUseNativeStepCount(date, date, enabled);
-  const [readState, setReadState] = useState<NativeStepReadState | null>(null);
+  const [nativeStepConnectionStatus, setNativeStepConnectionStatus] =
+    useState<NativeStepConnectionStatus>(isNativeEnvironment ? "unknown" : "disconnected");
   const { mutateAsync: registerNativeSteps } = useRegisterStepsMutation();
 
   useEffect(() => {
-    if (!canSyncNativeSteps) return;
-    if (nativeStepSyncCompletedDates.has(date) || nativeStepSyncingDates.has(date)) return;
+    if (!isNativeEnvironment) {
+      setNativeStepConnectionStatus("disconnected");
+      return;
+    }
+
+    if (!canSyncNativeSteps) {
+      setNativeStepConnectionStatus("unknown");
+      return;
+    }
+
+    if (nativeStepSyncCompletedDates.has(date)) {
+      setNativeStepConnectionStatus("connected");
+      return;
+    }
+
+    if (nativeStepSyncingDates.has(date)) {
+      setNativeStepConnectionStatus("unknown");
+      return;
+    }
 
     const syncNativeStepCount = async () => {
       nativeStepSyncingDates.add(date);
+      setNativeStepConnectionStatus("unknown");
 
       try {
         const result = await readNativeStepCount(date, {
           shouldRequestPermission: true,
         });
 
-        if (result.steps === null) {
+        setNativeStepConnectionStatus(result.connectionStatus);
+
+        if (!result.readSucceeded) {
           return;
         }
 
-        setReadState({
-          date,
-          steps: result.steps,
-        });
-
-        if (savedSteps === result.steps) {
-          return;
+        if (result.steps !== null && savedSteps !== result.steps) {
+          await registerNativeSteps({
+            date,
+            steps: result.steps,
+          });
         }
 
-        await registerNativeSteps({
-          date,
-          steps: result.steps,
-        });
+        nativeStepSyncCompletedDates.add(date);
       } catch {
         // 자동 동기화 실패는 화면 진입을 막지 않고, 사용자는 직접 걸음 수를 입력할 수 있다.
+        setNativeStepConnectionStatus("unknown");
       } finally {
         nativeStepSyncingDates.delete(date);
-        nativeStepSyncCompletedDates.add(date);
       }
     };
 
     void syncNativeStepCount();
-  }, [canSyncNativeSteps, date, registerNativeSteps, savedSteps]);
+  }, [canSyncNativeSteps, date, isNativeEnvironment, registerNativeSteps, savedSteps]);
 
   return {
-    hasReadNativeSteps: readState?.date === date,
-    nativeSteps: readState?.date === date ? readState.steps : null,
+    nativeStepConnectionStatus,
   };
 }

@@ -16,7 +16,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
   const isBodyLogLoaded = bodyLog !== undefined;
   const displayWeight = bodyLog?.weight ?? (isToday ? (profile?.weight ?? 0) : 0);
   const displaySteps = bodyLog?.steps ?? 0;
-  const { hasReadNativeSteps } = useSyncNativeStepCount(date, {
+  const { nativeStepConnectionStatus } = useSyncNativeStepCount(date, {
     enabled: isBodyLogLoaded,
     savedSteps: bodyLog?.steps,
   });
@@ -34,7 +34,7 @@ export default function TodayBodyLogSection({ date }: { date: string }) {
   const openStepsEditor = () => {
     navigate(
       getSheetPath(PATH.HOME_STEPS_LOG_SHEET, {
-        nativeStepsRead: String(hasReadNativeSteps),
+        nativeStepConnectionStatus,
       }),
     );
   };

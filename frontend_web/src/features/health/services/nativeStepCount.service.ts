@@ -19,15 +19,19 @@ export type NativeStepCountRecord = {
 };
 
 export type NativeStepCountRecordsResult = {
+  connectionStatus: NativeStepConnectionStatus;
   permissionStatus: HealthPermissionStatus | null;
   readAt?: string;
+  readSucceeded: boolean;
   records: NativeStepCountRecord[];
   source: HealthConnectionSource;
 };
 
 export type NativeStepCountResult = {
+  connectionStatus: NativeStepConnectionStatus;
   permissionStatus: HealthPermissionStatus | null;
   readAt?: string;
+  readSucceeded: boolean;
   source: HealthConnectionSource;
   steps: number | null;
 };
@@ -35,6 +39,8 @@ export type NativeStepCountResult = {
 type ReadNativeStepCountOptions = {
   shouldRequestPermission?: boolean;
 };
+
+export type NativeStepConnectionStatus = "connected" | "disconnected" | "unknown";
 
 export function canUseNativeStepCount(startDate: string, endDate: string, enabled = true) {
   return enabled && isNativeApp() && isValidDateKey(startDate) && isValidDateKey(endDate);
@@ -80,7 +86,9 @@ export async function readNativeStepCountRecordsRange(
     source = permission.source;
   } catch {
     return {
+      connectionStatus: "unknown",
       permissionStatus,
+      readSucceeded: false,
       records: [],
       source,
     };
@@ -88,7 +96,9 @@ export async function readNativeStepCountRecordsRange(
 
   if (!canReadNativeStepCount(permissionStatus, source)) {
     return {
+      connectionStatus: "disconnected",
       permissionStatus,
+      readSucceeded: false,
       records: [],
       source,
     };
@@ -105,14 +115,18 @@ export async function readNativeStepCountRecordsRange(
     }));
 
     return {
+      connectionStatus: "connected",
       permissionStatus,
       readAt: result.readAt,
+      readSucceeded: true,
       records,
       source: records[0]?.source ?? source,
     };
   } catch {
     return {
+      connectionStatus: "connected",
       permissionStatus,
+      readSucceeded: false,
       records: [],
       source,
     };
@@ -127,8 +141,10 @@ export async function readNativeStepCount(
   const record = result.records.find((item) => item.date === date);
 
   return {
+    connectionStatus: result.connectionStatus,
     permissionStatus: result.permissionStatus,
     readAt: result.readAt,
+    readSucceeded: result.readSucceeded,
     source: record?.source ?? result.source,
     steps: record ? record.steps : null,
   };
