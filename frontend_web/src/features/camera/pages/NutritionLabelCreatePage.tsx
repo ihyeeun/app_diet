@@ -18,7 +18,11 @@ import { requestNativeCameraCapture } from "@/shared/api/bridge/nativeBridge";
 import { PageHeader } from "@/shared/commons/header/PageHeader";
 import { CheckButtonModal } from "@/shared/commons/modals/CheckButtonModal";
 import { toast } from "@/shared/commons/toast/toast";
-import { navigateBack, useNavigate, useSearchParams } from "@/shared/navigation/stackflowNavigation";
+import {
+  navigateBack,
+  useNavigate,
+  useSearchParams,
+} from "@/shared/navigation/stackflowNavigation";
 
 export default function NutrientCameraPage() {
   const navigation = useNavigate();
@@ -78,24 +82,9 @@ export default function NutrientCameraPage() {
       setCapturedPreviewSrc(getCapturedImagePreviewSrc(capturedImage));
       setIsUploading(true);
       const imageData = await uploadImage(capturedImage);
-      const rawDateKey = searchParams.get("date");
-      const rawMealType = searchParams.get("mealType");
-      const keyword = searchParams.get("keyword");
-      const registerParams = new URLSearchParams();
-      const searchReturnPath = getMealSearchPath(dateKey, mealType, keyword ?? undefined);
-
-      if (rawDateKey) {
-        registerParams.set("date", rawDateKey);
-      }
-      if (rawMealType) {
-        registerParams.set("mealType", rawMealType);
-      }
-      if (keyword && keyword.trim().length > 0) {
-        registerParams.set("keyword", keyword.trim());
-      }
-      const registerPath = registerParams.toString().length
-        ? `${PATH.NUTRIENT_ADD_REGISTER}?${registerParams.toString()}`
-        : PATH.NUTRIENT_ADD_REGISTER;
+      const keyword = searchParams.get("keyword")?.trim() || undefined;
+      const registerPath = getPathWithMeal(PATH.NUTRIENT_ADD_REGISTER, dateKey, mealType, keyword);
+      const searchReturnPath = getMealSearchPath(dateKey, mealType, keyword);
 
       navigation(registerPath, {
         replace: true,
@@ -105,8 +94,8 @@ export default function NutrientCameraPage() {
           name: searchParams.get("name") ?? "",
           brand: searchParams.get("brand") ?? "",
           entrySource: "camera" as const,
-          dateKey: rawDateKey ?? undefined,
-          mealType: rawMealType ?? undefined,
+          dateKey,
+          mealType,
           keyword: keyword ?? undefined,
           backReturnPath: searchReturnPath,
           afterAddReturnPath: getMealRecordPath(dateKey, mealType),
@@ -120,7 +109,7 @@ export default function NutrientCameraPage() {
     } finally {
       setIsUploading(false);
     }
-  }, [isUploading, navigation, returnFromCameraPage, searchParams, uploadImage]);
+  }, [isUploading, navigation, returnFromCameraPage, searchParams, uploadImage, dateKey, mealType]);
 
   useEffect(() => {
     if (autoTriggeredRef.current) return;
